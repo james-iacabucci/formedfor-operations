@@ -1,6 +1,7 @@
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CreateSculptureForm } from "@/components/CreateSculptureForm";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -13,16 +14,27 @@ const Index = () => {
           <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Get Started</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              This is your dashboard. You're successfully logged in and can start building your application.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Sculpture</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CreateSculptureForm />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Sculptures</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Your created sculptures will appear here.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
