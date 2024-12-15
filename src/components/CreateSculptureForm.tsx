@@ -22,15 +22,20 @@ export function CreateSculptureForm() {
     
     setIsLoading(true);
     try {
-      // First, get the profile id for the current user
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
+      // Try to create the sculpture directly with the user's ID
+      // Since we now have a trigger that creates profiles automatically,
+      // the user_id (which references profiles.id) should exist
+      const { error } = await supabase
+        .from('sculptures')
+        .insert([
+          {
+            prompt: data.prompt,
+            user_id: user.id
+          }
+        ]);
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
+      if (error) {
+        console.error('Error creating sculpture:', error);
         toast({
           title: "Error",
           description: "Could not create sculpture. Please try again.",
@@ -38,18 +43,6 @@ export function CreateSculptureForm() {
         });
         return;
       }
-
-      // Now create the sculpture using the profile id
-      const { error } = await supabase
-        .from('sculptures')
-        .insert([
-          {
-            prompt: data.prompt,
-            user_id: profile.id
-          }
-        ]);
-
-      if (error) throw error;
       
       reset();
       toast({
