@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FormData {
   prompt: string;
@@ -12,6 +13,7 @@ interface FormData {
 
 export function CreateSculptureForm() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
 
@@ -20,21 +22,48 @@ export function CreateSculptureForm() {
     
     setIsLoading(true);
     try {
+      // First, get the profile id for the current user
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        toast({
+          title: "Error",
+          description: "Could not create sculpture. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Now create the sculpture using the profile id
       const { error } = await supabase
         .from('sculptures')
         .insert([
           {
             prompt: data.prompt,
-            user_id: user.id
+            user_id: profile.id
           }
         ]);
 
       if (error) throw error;
       
       reset();
+      toast({
+        title: "Success",
+        description: "Sculpture created successfully",
+      });
       console.log('Sculpture created successfully');
     } catch (error) {
       console.error('Error creating sculpture:', error);
+      toast({
+        title: "Error",
+        description: "Could not create sculpture. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
