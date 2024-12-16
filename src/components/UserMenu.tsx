@@ -5,15 +5,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, User, LogOut, Moon, Sun } from "lucide-react";
+import { Settings, User, LogOut } from "lucide-react";
 import { useAuth } from "./AuthProvider";
-import { useTheme } from "./ThemeProvider";
 import { useState } from "react";
 import { SettingsSheet } from "./settings/SettingsSheet";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
   const email = user?.email || "User";
   const [showSettings, setShowSettings] = useState(false);
 
@@ -34,14 +32,6 @@ export function UserMenu() {
           <DropdownMenuItem onClick={() => setShowSettings(true)}>
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-            {theme === "light" ? (
-              <Moon className="mr-2 h-4 w-4" />
-            ) : (
-              <Sun className="mr-2 h-4 w-4" />
-            )}
-            Toggle theme
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => signOut()}>
             <LogOut className="mr-2 h-4 w-4" />
