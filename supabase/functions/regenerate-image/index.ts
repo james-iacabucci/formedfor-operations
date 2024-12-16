@@ -120,11 +120,24 @@ serve(async (req) => {
         }),
       });
 
+      if (!openaiResponse.ok) {
+        console.error('OpenAI API error:', await openaiResponse.text());
+        throw new Error('Failed to generate metadata');
+      }
+
       const aiResponse = await openaiResponse.json();
       console.log('OpenAI response:', aiResponse);
 
+      if (!aiResponse.choices || !aiResponse.choices[0]?.message?.content) {
+        console.error('Invalid OpenAI response format:', aiResponse);
+        throw new Error('Invalid response from OpenAI');
+      }
+
       try {
         newMetadata = JSON.parse(aiResponse.choices[0].message.content);
+        if (!newMetadata?.name || !newMetadata?.description) {
+          throw new Error('Invalid metadata format');
+        }
       } catch (error) {
         console.error('Error parsing AI response:', error);
         const content = aiResponse.choices[0].message.content;
