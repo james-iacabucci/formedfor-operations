@@ -10,14 +10,9 @@ import { AddToFolderDialog } from "./sculpture/AddToFolderDialog";
 import { FolderSelect } from "./folders/FolderSelect";
 
 export function SculpturesList() {
-  const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(
-    null
-  );
-  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(
-    null
-  );
-  const [sculptureToAddToFolder, setSculptureToAddToFolder] =
-    useState<Sculpture | null>(null);
+  const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
+  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
+  const [sculptureToAddToFolder, setSculptureToAddToFolder] = useState<Sculpture | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -28,13 +23,13 @@ export function SculpturesList() {
       let query = supabase.from("sculptures").select("*");
 
       if (selectedFolderId) {
-        query = query.in(
-          "id",
-          supabase
-            .from("folder_sculptures")
-            .select("sculpture_id")
-            .eq("folder_id", selectedFolderId)
-        );
+        const { data: folderSculptures } = await supabase
+          .from("folder_sculptures")
+          .select("sculpture_id")
+          .eq("folder_id", selectedFolderId);
+
+        const sculptureIds = folderSculptures?.map(fs => fs.sculpture_id) || [];
+        query = query.in("id", sculptureIds);
       }
 
       const { data, error } = await query.order("created_at", {
@@ -114,7 +109,7 @@ export function SculpturesList() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sculptures.map((sculpture) => (
+        {sculptures?.map((sculpture) => (
           <SculptureCard
             key={sculpture.id}
             sculpture={sculpture}

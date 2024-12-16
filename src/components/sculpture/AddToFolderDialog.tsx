@@ -34,6 +34,9 @@ export function AddToFolderDialog({
   const { data: folders } = useQuery({
     queryKey: ["folders"],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("folders")
         .select("*")
@@ -72,9 +75,12 @@ export function AddToFolderDialog({
 
   const createFolderMutation = useMutation({
     mutationFn: async (name: string) => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("folders")
-        .insert([{ name }])
+        .insert([{ name, user_id: user.user.id }])
         .select()
         .single();
 

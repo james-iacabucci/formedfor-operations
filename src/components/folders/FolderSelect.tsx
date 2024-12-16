@@ -33,6 +33,9 @@ export function FolderSelect({ selectedFolderId, onFolderChange }: FolderSelectP
     queryKey: ["folders"],
     queryFn: async () => {
       console.log("Fetching folders...");
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("folders")
         .select("*")
@@ -50,9 +53,12 @@ export function FolderSelect({ selectedFolderId, onFolderChange }: FolderSelectP
 
   const createFolderMutation = useMutation({
     mutationFn: async (name: string) => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("folders")
-        .insert([{ name }])
+        .insert([{ name, user_id: user.user.id }])
         .select()
         .single();
 
