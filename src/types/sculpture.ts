@@ -7,4 +7,5 @@ export type Sculpture = {
   original_sculpture_id?: string | null;
   ai_generated_name?: string | null;
   ai_description?: string | null;
+  user_id: string;
 };

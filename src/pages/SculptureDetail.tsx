@@ -10,12 +10,13 @@ import { ManageTagsDialog } from "@/components/tags/ManageTagsDialog";
 import { SculptureImage } from "@/components/sculpture/detail/SculptureImage";
 import { SculptureAttributes } from "@/components/sculpture/detail/SculptureAttributes";
 import { SculptureVariations } from "@/components/sculpture/detail/SculptureVariations";
+import { Sculpture } from "@/types/sculpture";
 
 export default function SculptureDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [sculptureToDelete, setSculptureToDelete] = useState<any>(null);
-  const [sculptureToManageTags, setSculptureToManageTags] = useState<any>(null);
+  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
+  const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
 
@@ -34,7 +35,7 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       console.log("Fetched sculpture:", data);
-      return data;
+      return data as Sculpture;
     },
   });
 
@@ -51,7 +52,7 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       console.log("Fetched original sculpture:", data);
-      return data;
+      return data as Sculpture;
     },
   });
 
@@ -151,7 +152,6 @@ export default function SculptureDetail() {
         </Button>
 
         <div className="grid grid-cols-3 gap-8">
-          {/* Image Section - Takes up 2/3 of the width */}
           <div className="col-span-2">
             <SculptureImage
               imageUrl={sculpture.image_url}
@@ -166,12 +166,11 @@ export default function SculptureDetail() {
             <SculptureVariations sculptureId={sculpture.id} />
           </div>
 
-          {/* Attributes Section - Takes up 1/3 of the width */}
           <div className="col-span-1">
             <SculptureAttributes
               sculpture={sculpture}
               originalSculpture={originalSculpture}
-              tags={tags}
+              tags={tags || []}
             />
           </div>
         </div>
