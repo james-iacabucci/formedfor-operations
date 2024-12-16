@@ -8,12 +8,20 @@ import {
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
 
+interface RegenerationOptions {
+  creativity: "none" | "small" | "medium" | "large";
+  changes?: string;
+  updateExisting: boolean;
+  regenerateImage: boolean;
+  regenerateMetadata: boolean;
+}
+
 interface SculptureActionsProps {
   isRegenerating: boolean;
   onDelete: () => void;
   onDownload: () => void;
   onManageTags: () => void;
-  onRegenerate: (creativity: "small" | "medium" | "large", changes?: string) => void;
+  onRegenerate: (options: RegenerationOptions) => void;
 }
 
 export function SculptureActions({

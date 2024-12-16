@@ -3,11 +3,21 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+interface RegenerationOptions {
+  creativity: "none" | "small" | "medium" | "large";
+  changes?: string;
+  updateExisting: boolean;
+  regenerateImage: boolean;
+  regenerateMetadata: boolean;
+}
 
 interface RegenerationSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRegenerate: (creativity: "small" | "medium" | "large", changes?: string) => void;
+  onRegenerate: (options: RegenerationOptions) => void;
   isRegenerating: boolean;
 }
 
@@ -18,11 +28,20 @@ export function RegenerationSheet({
   isRegenerating 
 }: RegenerationSheetProps) {
   const [changes, setChanges] = useState("");
-  const [creativity, setCreativity] = useState<"small" | "medium" | "large">("medium");
+  const [creativity, setCreativity] = useState<"none" | "small" | "medium" | "large">("medium");
+  const [updateExisting, setUpdateExisting] = useState(false);
+  const [regenerateImage, setRegenerateImage] = useState(true);
+  const [regenerateMetadata, setRegenerateMetadata] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onRegenerate(creativity, changes.trim());
+    onRegenerate({
+      creativity,
+      changes: changes.trim(),
+      updateExisting,
+      regenerateImage,
+      regenerateMetadata,
+    });
     onOpenChange(false);
     setChanges("");
   };
@@ -33,20 +52,21 @@ export function RegenerationSheet({
         <SheetHeader>
           <SheetTitle>Generate Variation</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="space-y-2">
             <label htmlFor="changes" className="text-sm font-medium">
-              Describe the changes you'd like
+              Describe the changes you'd like to make (Optional)
             </label>
             <Textarea
               id="changes"
-              placeholder="Describe the changes you'd like to make..."
+              placeholder="What aspects specifically do you want to change"
               value={changes}
               onChange={(e) => setChanges(e.target.value)}
               className="min-h-[200px] resize-y"
               rows={10}
             />
           </div>
+          
           <div className="space-y-2">
             <label className="text-sm font-medium">
               Creativity Level
@@ -54,14 +74,45 @@ export function RegenerationSheet({
             <ToggleGroup
               type="single"
               value={creativity}
-              onValueChange={(value) => value && setCreativity(value as "small" | "medium" | "large")}
+              onValueChange={(value) => value && setCreativity(value as "none" | "small" | "medium" | "large")}
               className="justify-start"
             >
+              <ToggleGroupItem value="none">None</ToggleGroupItem>
               <ToggleGroupItem value="small">Low</ToggleGroupItem>
               <ToggleGroupItem value="medium">Normal</ToggleGroupItem>
               <ToggleGroupItem value="large">High</ToggleGroupItem>
             </ToggleGroup>
           </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="updateExisting" className="text-sm font-medium">Update Existing Sculpture</Label>
+              <Switch
+                id="updateExisting"
+                checked={updateExisting}
+                onCheckedChange={setUpdateExisting}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="regenerateImage" className="text-sm font-medium">Regenerate Image</Label>
+              <Switch
+                id="regenerateImage"
+                checked={regenerateImage}
+                onCheckedChange={setRegenerateImage}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="regenerateMetadata" className="text-sm font-medium">Regenerate Name & Description</Label>
+              <Switch
+                id="regenerateMetadata"
+                checked={regenerateMetadata}
+                onCheckedChange={setRegenerateMetadata}
+              />
+            </div>
+          </div>
+
           <Button type="submit" disabled={isRegenerating} className="w-full">
             {isRegenerating ? "Generating..." : "Generate Variation"}
           </Button>
