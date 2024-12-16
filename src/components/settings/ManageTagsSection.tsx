@@ -102,7 +102,7 @@ export function ManageTagsSection() {
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleDeleteTag(tag.id)}
                     className="h-7 w-7 p-0"

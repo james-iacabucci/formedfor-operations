@@ -22,7 +22,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-xl">
+      <SheetContent className="sm:max-w-md">
         <SheetHeader className="space-y-1">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
