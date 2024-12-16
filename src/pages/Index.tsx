@@ -2,6 +2,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateSculptureForm } from "@/components/CreateSculptureForm";
+import { SculpturesList } from "@/components/SculpturesList";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -29,9 +30,7 @@ const Index = () => {
               <CardTitle>Your Sculptures</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Your created sculptures will appear here.
-              </p>
+              <SculpturesList />
             </CardContent>
           </Card>
         </div>
