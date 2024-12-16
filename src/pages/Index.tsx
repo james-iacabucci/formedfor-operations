@@ -5,9 +5,11 @@ import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
+import { TagsSelect } from "@/components/tags/TagsSelect";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -22,11 +24,18 @@ const Index = () => {
           <Card>
             {/* Toolbar */}
             <div className="border-b border-border p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Your Sculptures</h2>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <h2 className="text-lg font-semibold">Your Sculptures</h2>
+                  <TagsSelect 
+                    selectedTags={selectedTags} 
+                    onTagsChange={setSelectedTags}
+                    className="!mb-0" 
+                  />
+                </div>
                 <Button 
                   onClick={() => setIsCreateSheetOpen(true)}
-                  className="gap-2"
+                  className="gap-2 shrink-0"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Create Sculpture
@@ -34,7 +43,7 @@ const Index = () => {
               </div>
             </div>
             <CardContent>
-              <SculpturesList />
+              <SculpturesList selectedTags={selectedTags} />
             </CardContent>
           </Card>
         </div>

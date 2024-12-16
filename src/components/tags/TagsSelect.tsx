@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 interface TagsSelectProps {
   selectedTags: string[];
   onTagsChange: (tags: string[]) => void;
+  className?: string;
 }
 
-export function TagsSelect({ selectedTags, onTagsChange }: TagsSelectProps) {
+export function TagsSelect({ selectedTags, onTagsChange, className }: TagsSelectProps) {
   const { data: tags } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
@@ -47,7 +48,7 @@ export function TagsSelect({ selectedTags, onTagsChange }: TagsSelectProps) {
   const isAllSelected = selectedTags.length === 0;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-6">
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <Badge
         variant={isAllSelected ? "secondary" : "outline"}
         className={cn(
