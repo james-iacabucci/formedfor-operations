@@ -5,7 +5,7 @@ import { useTagsManagement } from "../tags/useTagsManagement";
 import { TagsList } from "../tags/TagsList";
 import { CreateTagForm } from "../tags/CreateTagForm";
 import { toast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export function ManageTagsSection() {
   const { tags, createTagMutation, removeTagMutation } = useTagsManagement(undefined);
@@ -97,17 +97,17 @@ export function ManageTagsSection() {
                     variant="outline"
                     size="sm"
                     onClick={() => startEditingTag(tag.id, tag.name)}
-                    className="h-7 text-xs"
+                    className="h-7 w-7 p-0"
                   >
-                    Rename
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteTag(tag.id)}
-                    className="h-7 text-xs"
+                    className="h-7 w-7 p-0"
                   >
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </>
