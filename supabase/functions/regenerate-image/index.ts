@@ -13,13 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata } = await req.json();
+    const { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata, changes } = await req.json();
     
     if (!prompt || !sculptureId) {
       throw new Error('Missing required parameters');
     }
 
-    console.log('Regenerating with params:', { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata });
+    console.log('Regenerating with params:', { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata, changes });
 
     // Initialize Supabase client
     const supabaseAdmin = createClient(
@@ -55,6 +55,9 @@ serve(async (req) => {
         large: 0.5,
       };
 
+      // Construct the prompt with changes only if provided
+      const finalPrompt = changes ? `${prompt}. Changes: ${changes}` : prompt;
+
       // Call Runware API for image generation
       const runwareResponse = await fetch("https://api.runware.ai/v1", {
         method: 'POST',
@@ -69,7 +72,7 @@ serve(async (req) => {
           {
             taskType: "imageInference",
             taskUUID: crypto.randomUUID(),
-            positivePrompt: prompt,
+            positivePrompt: finalPrompt,
             model: "runware:100@1",
             width: 1024,
             height: 1024,
@@ -106,7 +109,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-4",
           messages: [
             {
               role: "system",
@@ -154,9 +157,7 @@ serve(async (req) => {
     if (updateExisting) {
       console.log('Updating existing sculpture:', sculptureId);
       // Update existing sculpture
-      const updateData: any = {
-        prompt: prompt // Always update the prompt
-      };
+      const updateData: any = {};
       
       if (regenerateImage && newImageUrl) {
         updateData.image_url = newImageUrl;
