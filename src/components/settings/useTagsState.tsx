@@ -22,7 +22,11 @@ export function useTagsState() {
   const handleUpdateTag = async () => {
     if (!editingTag) return;
     
+    console.log("Handling tag update:", editingTag);
+    
+    // Only add to pending edits if the name has actually changed
     if (editingTag.name !== editingTag.originalName) {
+      console.log("Adding pending edit for tag:", editingTag.id, editingTag.name);
       setPendingEdits(new Map(pendingEdits.set(editingTag.id, editingTag.name)));
     }
     setEditingTag(null);
@@ -46,8 +50,12 @@ export function useTagsState() {
 
   const applyChanges = async () => {
     try {
+      console.log("Applying changes - Deletes:", Array.from(pendingDeletes));
+      console.log("Applying changes - Edits:", Array.from(pendingEdits.entries()));
+
       // Handle deletes
       for (const tagId of pendingDeletes) {
+        console.log("Deleting tag:", tagId);
         const { error } = await supabase
           .from('tags')
           .delete()
@@ -58,6 +66,7 @@ export function useTagsState() {
 
       // Handle edits
       for (const [tagId, newName] of pendingEdits) {
+        console.log("Updating tag:", tagId, "with new name:", newName);
         const { error } = await supabase
           .from('tags')
           .update({ name: newName })
@@ -71,8 +80,8 @@ export function useTagsState() {
       setPendingEdits(new Map());
       
       // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['sculptures'] });
+      await queryClient.invalidateQueries({ queryKey: ['tags'] });
+      await queryClient.invalidateQueries({ queryKey: ['sculptures'] });
       
       toast({
         title: "Success",
