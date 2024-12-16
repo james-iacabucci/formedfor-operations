@@ -1,39 +1,48 @@
-import { useAuth } from "@/components/AuthProvider";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/UserMenu";
+import { FolderSelect } from "@/components/folders/FolderSelect";
 
 const Index = () => {
-  const { user, signOut } = useAuth();
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl">
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Welcome{user?.email ? `, ${user.email}` : ''}</h1>
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => setIsCreateSheetOpen(true)}
-              className="gap-2"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Create Sculpture
-            </Button>
-            <Button variant="outline" onClick={() => signOut()}>Sign Out</Button>
-          </div>
+          <h1 className="text-2xl font-bold">Formed For Design</h1>
+          <UserMenu />
         </div>
 
         <div className="grid gap-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Your Sculptures</CardTitle>
-            </CardHeader>
+            {/* Toolbar */}
+            <div className="border-b border-border p-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Your Sculptures</h2>
+                <div className="flex items-center gap-4">
+                  <FolderSelect
+                    selectedFolderId={selectedFolderId}
+                    onFolderChange={setSelectedFolderId}
+                  />
+                  <Button 
+                    onClick={() => setIsCreateSheetOpen(true)}
+                    className="gap-2"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    Create Sculpture
+                  </Button>
+                </div>
+              </div>
+            </div>
             <CardContent>
-              <SculpturesList />
+              <SculpturesList selectedFolderId={selectedFolderId} />
             </CardContent>
           </Card>
         </div>
@@ -41,6 +50,7 @@ const Index = () => {
         <CreateSculptureSheet 
           open={isCreateSheetOpen} 
           onOpenChange={setIsCreateSheetOpen}
+          selectedFolderId={selectedFolderId}
         />
       </div>
     </div>
