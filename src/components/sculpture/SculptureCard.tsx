@@ -25,14 +25,14 @@ export function SculptureCard({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
 
-  const handleRegenerate = async (creativity: "small" | "medium" | "large") => {
+  const handleRegenerate = async (creativity: "small" | "medium" | "large", changes?: string) => {
     if (isRegenerating) return;
 
     setIsRegenerating(true);
     try {
       const { error } = await supabase.functions.invoke("regenerate-image", {
         body: {
-          prompt: sculpture.prompt,
+          prompt: sculpture.prompt + (changes ? `. Changes: ${changes}` : ""),
           sculptureId: sculpture.id,
           creativity,
         },
