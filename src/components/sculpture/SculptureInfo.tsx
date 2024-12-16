@@ -9,7 +9,7 @@ interface SculptureInfoProps {
   showAIContent?: boolean;
 }
 
-export function SculptureInfo({ sculpture, tags, showAIContent }: SculptureInfoProps) {
+export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between">

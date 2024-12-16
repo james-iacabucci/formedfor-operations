@@ -2,12 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureCard } from "./sculpture/SculptureCard";
 import { Sculpture } from "@/types/sculpture";
+import { useState } from "react";
+import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
+import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
+import { ManageTagsDialog } from "./tags/ManageTagsDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculpturesListProps {
   selectedTags: string[];
 }
 
 export function SculpturesList({ selectedTags }: SculpturesListProps) {
+  const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
+  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
+  const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
+  const { toast } = useToast();
+
   const { data: sculptures, isLoading } = useQuery({
     queryKey: ["sculptures", selectedTags],
     queryFn: async () => {
@@ -37,6 +47,25 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
     },
   });
 
+  // Query to fetch tags
+  const { data: tags } = useQuery({
+    queryKey: ["tags"],
+    queryFn: async () => {
+      console.log("Fetching tags...");
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("tags")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      console.log("Fetched tags:", data);
+      return data;
+    },
+  });
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -46,10 +75,37 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {sculptures.map((sculpture) => (
-        <SculptureCard key={sculpture.id} sculpture={sculpture} />
-      ))}
-    </div>
+    <>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {sculptures.map((sculpture) => (
+          <SculptureCard 
+            key={sculpture.id} 
+            sculpture={sculpture}
+            tags={tags || []}
+            onPreview={setSelectedSculpture}
+            onDelete={setSculptureToDelete}
+            onManageTags={setSculptureToManageTags}
+          />
+        ))}
+      </div>
+
+      <SculpturePreviewDialog
+        sculpture={selectedSculpture}
+        open={!!selectedSculpture}
+        onOpenChange={(open) => !open && setSelectedSculpture(null)}
+      />
+
+      <DeleteSculptureDialog
+        sculpture={sculptureToDelete}
+        open={!!sculptureToDelete}
+        onOpenChange={(open) => !open && setSculptureToDelete(null)}
+      />
+
+      <ManageTagsDialog
+        sculpture={sculptureToManageTags}
+        open={!!sculptureToManageTags}
+        onOpenChange={(open) => !open && setSculptureToManageTags(null)}
+      />
+    </>
   );
 }
