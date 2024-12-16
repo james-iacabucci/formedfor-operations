@@ -8,11 +8,16 @@ import { Settings2, Plus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ManageTagsSection } from "./ManageTagsSection";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+interface SettingsSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
