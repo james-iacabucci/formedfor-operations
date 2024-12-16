@@ -25,18 +25,20 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
 
-      let query = supabase
-        .from("sculptures")
-        .select(`
-          *,
-          sculpture_tags!inner (
-            tag_id
-          )
-        `)
-        .eq("user_id", user.user.id);
+      let query = supabase.from("sculptures").select("*").eq("user_id", user.user.id);
 
       if (selectedTags.length > 0) {
-        query = query.in('sculpture_tags.tag_id', selectedTags);
+        // Only apply the tag filtering if tags are selected
+        query = supabase
+          .from("sculptures")
+          .select(`
+            *,
+            sculpture_tags!inner (
+              tag_id
+            )
+          `)
+          .eq("user_id", user.user.id)
+          .in('sculpture_tags.tag_id', selectedTags);
       }
 
       const { data, error } = await query;
