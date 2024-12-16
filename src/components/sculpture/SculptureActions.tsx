@@ -5,7 +5,7 @@ import {
   DownloadIcon,
   TagIcon,
   CopyIcon,
-  RecycleIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
 
@@ -88,7 +88,7 @@ export function SculptureActions({
           onClick={handleRegenerateImage}
           title="Regenerate Image"
         >
-          <RecycleIcon className="w-4 h-4" />
+          <RefreshCwIcon className="w-4 h-4" />
         </Button>
         <Button
           size="icon"
