@@ -5,6 +5,7 @@ import {
   DownloadIcon,
   TagIcon,
   CopyIcon,
+  ImageIcon,
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
 
@@ -32,6 +33,16 @@ export function SculptureActions({
   onRegenerate,
 }: SculptureActionsProps) {
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false);
+
+  const handleRegenerateImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRegenerate({
+      creativity: "medium",
+      updateExisting: true,
+      regenerateImage: true,
+      regenerateMetadata: false,
+    });
+  };
 
   return (
     <>
@@ -68,6 +79,16 @@ export function SculptureActions({
           }}
         >
           <TagIcon className="w-4 h-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          className="bg-black/50 hover:bg-black/70 text-white"
+          disabled={isRegenerating}
+          onClick={handleRegenerateImage}
+          title="Regenerate Image"
+        >
+          <ImageIcon className="w-4 h-4" />
         </Button>
         <Button
           size="icon"
