@@ -44,8 +44,8 @@ serve(async (req) => {
           {
             role: 'system',
             content: field === 'ai_generated_name' 
-              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide thoughtful, artistic names that are 3-4 words maximum.'
-              : 'You are an art curator helping to generate descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations in 2-3 sentences.'
+              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide thoughtful, artistic names that are 3-4 words maximum. Do not use quotes in your response.'
+              : 'You are an art curator helping to generate descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations in 2-3 sentences. Do not use quotes in your response.'
           },
           {
             role: 'user',
@@ -56,7 +56,7 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    const generatedText = data.choices[0].message.content;
+    const generatedText = data.choices[0].message.content.replace(/['"]/g, ''); // Remove any quotes that might be in the response
 
     // Update the sculpture with the generated metadata
     const { error: updateError } = await supabaseClient
