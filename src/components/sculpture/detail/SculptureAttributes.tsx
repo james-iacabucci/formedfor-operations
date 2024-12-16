@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { Sculpture } from "@/types/sculpture";
 
 interface SculptureAttributesProps {
-  sculpture: any;
-  originalSculpture: any;
+  sculpture: Sculpture;
+  originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
 }
 
@@ -73,7 +74,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           <div>
             <h2 className="text-lg font-semibold mb-2">Tags</h2>
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag: any) => (
+              {tags.map((tag) => (
                 <Badge
                   key={tag.id}
                   variant="secondary"
