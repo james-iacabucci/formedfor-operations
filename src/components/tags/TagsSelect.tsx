@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Tag, TagIcon, X } from "lucide-react";
+import { Tag as TagIcon, X, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface TagsSelectProps {
   selectedTags: string[];
@@ -41,52 +42,62 @@ export function TagsSelect({ selectedTags, onTagsChange }: TagsSelectProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <TagIcon className="h-4 w-4 text-muted-foreground" />
-      <div className="flex flex-wrap items-center gap-2">
-        {selectedTags.length === 0 ? (
-          <span className="text-sm text-muted-foreground">All Sculptures</span>
-        ) : (
-          <>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex-1">
+          {selectedTags.length === 0 ? (
+            <span className="text-sm text-muted-foreground">All Sculptures</span>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              {tags
+                ?.filter((tag) => selectedTags.includes(tag.id))
+                .map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                    onClick={() => handleTagClick(tag.id)}
+                  >
+                    {tag.name}
+                    <X className="ml-1 h-3 w-3" />
+                  </Badge>
+                ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearTags}
+                className="h-7 px-2 text-muted-foreground hover:text-foreground"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {tags && tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 px-3">
+          <TagIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex flex-wrap gap-2">
             {tags
-              ?.filter((tag) => selectedTags.includes(tag.id))
+              .filter((tag) => !selectedTags.includes(tag.id))
               .map((tag) => (
                 <Badge
                   key={tag.id}
-                  variant="secondary"
-                  className="cursor-pointer"
+                  variant="outline"
+                  className={cn(
+                    "cursor-pointer hover:bg-secondary/50 transition-colors",
+                    "border-dashed"
+                  )}
                   onClick={() => handleTagClick(tag.id)}
                 >
                   {tag.name}
-                  <X className="ml-1 h-3 w-3" />
                 </Badge>
               ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearTags}
-              className="h-7 px-2"
-            >
-              Clear
-            </Button>
-          </>
-        )}
-      </div>
-      <div className="flex-1" />
-      <div className="flex flex-wrap items-center gap-2">
-        {tags
-          ?.filter((tag) => !selectedTags.includes(tag.id))
-          .map((tag) => (
-            <Badge
-              key={tag.id}
-              variant="outline"
-              className="cursor-pointer"
-              onClick={() => handleTagClick(tag.id)}
-            >
-              {tag.name}
-            </Badge>
-          ))}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
