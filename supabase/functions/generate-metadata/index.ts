@@ -53,7 +53,7 @@ serve(async (req) => {
           {
             role: 'system',
             content: field === 'ai_generated_name' 
-              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide thoughtful, artistic names that are 3-4 words maximum. Do not use quotes in your response.'
+              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide a thoughtful, artistic name using EXACTLY 2 WORDS. Do not use quotes, periods, or any punctuation in your response. Only return the two words.'
               : 'You are an art curator analyzing AI-generated sculptures. In exactly 2 sentences, describe how the sculpture enhances its architectural setting, and comment on its material qualities or distinctive shape. Focus on the visual impact and physical characteristics that make it unique. Do not use quotes in your response.'
           },
           {
@@ -72,7 +72,25 @@ serve(async (req) => {
       throw new Error('Invalid response from OpenAI API');
     }
 
-    const generatedText = data.choices[0].message.content.replace(/['"]/g, '');
+    let generatedText = data.choices[0].message.content.replace(/['"]/g, '');
+    
+    // For names, ensure exactly two words and remove any punctuation
+    if (field === 'ai_generated_name') {
+      generatedText = generatedText
+        .replace(/[.,!?]/g, '') // Remove punctuation
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .join(' ');
+      
+      // Validate that we have exactly two words
+      const wordCount = generatedText.trim().split(/\s+/).length;
+      if (wordCount !== 2) {
+        console.error('Generated name does not have exactly 2 words:', generatedText);
+        throw new Error('Generated name must have exactly 2 words');
+      }
+    }
+
     console.log('Generated text:', generatedText);
 
     // Update the sculpture with the generated metadata
