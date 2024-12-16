@@ -43,14 +43,11 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           <div className="py-6 space-y-8">
             {/* Appearance Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Appearance</h3>
+              <h3 className="text-lg font-medium">Choose your Theme</h3>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>Theme</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose between light and dark mode
-                  </p>
                 </div>
                 <ThemeToggle />
               </div>
