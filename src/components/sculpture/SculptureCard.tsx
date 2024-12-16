@@ -40,20 +40,36 @@ export function SculptureCard({
 
     setIsRegenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("regenerate-image", {
-        body: {
-          prompt: sculpture.prompt + (options.changes ? `. Changes: ${options.changes}` : ""),
-          sculptureId: sculpture.id,
-          creativity: options.creativity,
-          updateExisting: options.updateExisting,
-          regenerateImage: options.regenerateImage,
-          regenerateMetadata: options.regenerateMetadata,
-        },
-      });
+      const finalPrompt = sculpture.prompt + (options.changes ? `. Changes: ${options.changes}` : "");
 
-      if (error) throw error;
+      // Handle image regeneration if requested
+      if (options.regenerateImage) {
+        const { error: imageError } = await supabase.functions.invoke("regenerate-image", {
+          body: {
+            prompt: finalPrompt,
+            sculptureId: sculpture.id,
+            creativity: options.creativity,
+            updateExisting: options.updateExisting,
+            regenerateImage: true,
+          },
+        });
 
-      // Invalidate both the individual sculpture query and any queries that list sculptures
+        if (imageError) throw imageError;
+      }
+
+      // Handle metadata regeneration if requested
+      if (options.regenerateMetadata) {
+        const { error: metadataError } = await supabase.functions.invoke("generate-metadata", {
+          body: {
+            prompt: finalPrompt,
+            sculptureId: sculpture.id,
+          },
+        });
+
+        if (metadataError) throw metadataError;
+      }
+
+      // Invalidate queries to refresh the UI
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
 
@@ -64,10 +80,10 @@ export function SculptureCard({
           : "New variation generated successfully.",
       });
     } catch (error) {
-      console.error("Error regenerating image:", error);
+      console.error("Error regenerating:", error);
       toast({
         title: "Error",
-        description: "Failed to generate variation. Please try again.",
+        description: "Failed to generate. Please try again.",
         variant: "destructive",
       });
     } finally {
