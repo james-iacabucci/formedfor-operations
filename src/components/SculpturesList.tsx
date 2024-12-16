@@ -1,33 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
-import { ImageIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-
-type Sculpture = {
-  id: string;
-  prompt: string;
-  image_url: string | null;
-  created_at: string;
-};
+import { Sculpture } from "@/types/sculpture";
+import { SculptureCard } from "./sculpture/SculptureCard";
+import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
+import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 
 export function SculpturesList() {
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(
@@ -114,105 +92,29 @@ export function SculpturesList() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sculptures.map((sculpture) => (
-          <Card
+          <SculptureCard
             key={sculpture.id}
-            className={`group relative ${
-              sculpture.image_url ? "cursor-pointer" : ""
-            }`}
-            onClick={(e) => {
-              // Only open preview if clicking on the card itself, not the delete button
-              if (
-                sculpture.image_url &&
-                !(e.target as HTMLElement).closest("button")
-              ) {
-                setSelectedSculpture(sculpture);
-              }
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
-                {sculpture.image_url ? (
-                  <>
-                    <img
-                      src={sculpture.image_url}
-                      alt={sculpture.prompt}
-                      className="object-cover w-full h-full transition-transform group-hover:scale-105"
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(sculpture);
-                      }}
-                      className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                      aria-label="Delete sculpture"
-                    >
-                      <Trash2Icon className="w-4 h-4" />
-                    </button>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="flex flex-col items-center text-muted-foreground">
-                      <ImageIcon className="w-12 h-12 mb-2" />
-                      <span>Generating...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-muted-foreground">
-                  {format(new Date(sculpture.created_at), "MMM d, yyyy")}
-                </p>
-                <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
-              </div>
-            </CardContent>
-          </Card>
+            sculpture={sculpture}
+            onPreview={setSelectedSculpture}
+            onDelete={handleDelete}
+          />
         ))}
       </div>
 
-      <Dialog
-        open={selectedSculpture !== null}
+      <SculpturePreviewDialog
+        sculpture={selectedSculpture}
         onOpenChange={(open) => {
           if (!open) setSelectedSculpture(null);
         }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
-              {selectedSculpture?.prompt}
-            </DialogTitle>
-          </DialogHeader>
-          {selectedSculpture?.image_url && (
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-              <img
-                src={selectedSculpture.image_url}
-                alt={selectedSculpture.prompt}
-                className="object-cover"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      />
 
-      <AlertDialog
-        open={sculptureToDelete !== null}
+      <DeleteSculptureDialog
+        sculpture={sculptureToDelete}
         onOpenChange={(open) => {
           if (!open) setSculptureToDelete(null);
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              sculpture.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }
