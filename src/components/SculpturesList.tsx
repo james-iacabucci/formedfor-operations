@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -6,10 +6,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 type Sculpture = {
   id: string;
@@ -22,6 +33,10 @@ export function SculpturesList() {
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(
     null
   );
+  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(
+    null
+  );
+  const queryClient = useQueryClient();
 
   const { data: sculptures, isLoading } = useQuery({
     queryKey: ["sculptures"],
@@ -41,6 +56,43 @@ export function SculpturesList() {
       return data as Sculpture[];
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (sculptureId: string) => {
+      const { error } = await supabase
+        .from("sculptures")
+        .delete()
+        .eq("id", sculptureId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      toast({
+        title: "Sculpture deleted",
+        description: "The sculpture has been successfully deleted.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting sculpture:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the sculpture. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (sculpture: Sculpture) => {
+    setSculptureToDelete(sculpture);
+  };
+
+  const confirmDelete = () => {
+    if (sculptureToDelete) {
+      deleteMutation.mutate(sculptureToDelete.id);
+      setSculptureToDelete(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -64,9 +116,15 @@ export function SculpturesList() {
         {sculptures.map((sculpture) => (
           <Card
             key={sculpture.id}
-            className={sculpture.image_url ? "cursor-pointer group" : ""}
-            onClick={() => {
-              if (sculpture.image_url) {
+            className={`group relative ${
+              sculpture.image_url ? "cursor-pointer" : ""
+            }`}
+            onClick={(e) => {
+              // Only open preview if clicking on the card itself, not the delete button
+              if (
+                sculpture.image_url &&
+                !(e.target as HTMLElement).closest("button")
+              ) {
                 setSelectedSculpture(sculpture);
               }
             }}
@@ -74,11 +132,23 @@ export function SculpturesList() {
             <CardContent className="p-4">
               <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
                 {sculpture.image_url ? (
-                  <img
-                    src={sculpture.image_url}
-                    alt={sculpture.prompt}
-                    className="object-cover w-full h-full transition-transform group-hover:scale-105"
-                  />
+                  <>
+                    <img
+                      src={sculpture.image_url}
+                      alt={sculpture.prompt}
+                      className="object-cover w-full h-full transition-transform group-hover:scale-105"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(sculpture);
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                      aria-label="Delete sculpture"
+                    >
+                      <Trash2Icon className="w-4 h-4" />
+                    </button>
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="flex flex-col items-center text-muted-foreground">
@@ -122,6 +192,27 @@ export function SculpturesList() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={sculptureToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setSculptureToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              sculpture.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
