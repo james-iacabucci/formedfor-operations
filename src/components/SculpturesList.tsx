@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { SculptureCard } from "./sculpture/SculptureCard";
 import { Sculpture } from "@/types/sculpture";
 import { useState } from "react";
-import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 import { ManageTagsDialog } from "./tags/ManageTagsDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +12,6 @@ interface SculpturesListProps {
 }
 
 export function SculpturesList({ selectedTags }: SculpturesListProps) {
-  const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const { toast } = useToast();
@@ -84,18 +82,11 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
             key={sculpture.id} 
             sculpture={sculpture}
             tags={tags || []}
-            onPreview={setSelectedSculpture}
             onDelete={setSculptureToDelete}
             onManageTags={setSculptureToManageTags}
           />
         ))}
       </div>
-
-      <SculpturePreviewDialog
-        sculpture={selectedSculpture}
-        open={!!selectedSculpture}
-        onOpenChange={(open) => !open && setSelectedSculpture(null)}
-      />
 
       <DeleteSculptureDialog
         sculpture={sculptureToDelete}
