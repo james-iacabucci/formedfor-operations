@@ -92,7 +92,7 @@ export function SculptureCard({
         }
       }}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-0">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
           <SculptureImage
             imageUrl={sculpture.image_url}
