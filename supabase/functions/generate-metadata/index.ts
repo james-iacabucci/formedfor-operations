@@ -16,55 +16,62 @@ serve(async (req) => {
     const { prompt, sculptureId } = await req.json();
     console.log('Generating metadata for prompt:', prompt);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
-            content: "You are an art curator helping to generate names and descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations."
+            content: "You are an art curator helping to generate names and descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations. Always respond with valid JSON containing 'name' and 'description' fields."
           },
           {
             role: "user",
             content: `Generate a creative name (max 3-4 words) and a 2-3 sentence artistic description for a sculpture based on this prompt: "${prompt}". Format the response as JSON with 'name' and 'description' fields.`
           }
         ],
+        temperature: 0.7
       }),
     });
 
-    if (!response.ok) {
-      console.error('OpenAI API error:', await response.text());
-      throw new Error('Failed to generate metadata: OpenAI API error');
+    if (!openAIResponse.ok) {
+      const errorText = await openAIResponse.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${errorText}`);
     }
 
-    const aiResponse = await response.json();
-    console.log('OpenAI response:', aiResponse);
+    const aiResponse = await openAIResponse.json();
+    console.log('OpenAI API response:', JSON.stringify(aiResponse, null, 2));
 
     if (!aiResponse.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response from OpenAI');
+      console.error('Invalid OpenAI response format:', aiResponse);
+      throw new Error('Invalid response format from OpenAI');
     }
 
     let metadata;
     try {
       metadata = JSON.parse(aiResponse.choices[0].message.content);
+      
       if (!metadata?.name || !metadata?.description) {
-        console.warn('Invalid metadata format, using fallback');
+        console.warn('Invalid metadata format from OpenAI, using fallback');
         metadata = {
           name: 'Untitled Sculpture',
           description: 'A unique sculptural interpretation.',
         };
       }
     } catch (error) {
-      console.error('Error parsing AI response:', error);
-      // Use regex fallback
+      console.error('Error parsing OpenAI response:', error);
+      console.log('Raw content:', aiResponse.choices[0].message.content);
+      
+      // Fallback using regex
       const content = aiResponse.choices[0].message.content;
       const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
       const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
+      
       metadata = {
         name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
         description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
@@ -73,6 +80,8 @@ serve(async (req) => {
 
     // Update the sculpture with the new metadata if sculptureId is provided
     if (sculptureId) {
+      console.log('Updating sculpture metadata:', { sculptureId, metadata });
+      
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -90,6 +99,8 @@ serve(async (req) => {
         console.error('Error updating sculpture metadata:', updateError);
         throw new Error('Failed to update sculpture metadata in database');
       }
+      
+      console.log('Successfully updated sculpture metadata');
     }
 
     return new Response(
