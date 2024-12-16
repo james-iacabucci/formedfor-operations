@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -6,38 +6,36 @@ import { Sculpture } from "@/types/sculpture";
 import { SculptureCard } from "./sculpture/SculptureCard";
 import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
-import { AddToFolderDialog } from "./sculpture/AddToFolderDialog";
+import { ManageTagsDialog } from "./tags/ManageTagsDialog";
+import { TagsSelect } from "./tags/TagsSelect";
 
-interface SculpturesListProps {
-  selectedFolderId: string | null;
-}
-
-export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
+export function SculpturesList() {
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
-  const [sculptureToAddToFolder, setSculptureToAddToFolder] = useState<Sculpture | null>(null);
-  const queryClient = useQueryClient();
+  const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
 
   const { data: sculptures, isLoading } = useQuery({
-    queryKey: ["sculptures", selectedFolderId],
+    queryKey: ["sculptures", selectedTags],
     queryFn: async () => {
-      console.log("Fetching sculptures for folder:", selectedFolderId);
+      console.log("Fetching sculptures for tags:", selectedTags);
       let query = supabase
         .from("sculptures")
         .select(`
           *,
-          folder_sculptures!left (
-            folder:folders(id, name)
+          sculpture_tags!left (
+            tag:tags(id, name)
           )
         `);
 
-      if (selectedFolderId) {
-        const { data: folderSculptures } = await supabase
-          .from("folder_sculptures")
+      if (selectedTags.length > 0) {
+        const { data: taggedSculptures } = await supabase
+          .from("sculpture_tags")
           .select("sculpture_id")
-          .eq("folder_id", selectedFolderId);
+          .in("tag_id", selectedTags);
 
-        const sculptureIds = folderSculptures?.map(fs => fs.sculpture_id) || [];
+        const sculptureIds = taggedSculptures?.map(ts => ts.sculpture_id) || [];
+        if (sculptureIds.length === 0) return [];
         query = query.in("id", sculptureIds);
       }
 
@@ -51,33 +49,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
       }
 
       console.log("Fetched sculptures:", data);
-      return data as (Sculpture & { folder_sculptures: Array<{ folder: { id: string, name: string } }> })[];
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (sculptureId: string) => {
-      const { error } = await supabase
-        .from("sculptures")
-        .delete()
-        .eq("id", sculptureId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      toast({
-        title: "Sculpture deleted",
-        description: "The sculpture has been successfully deleted.",
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting sculpture:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the sculpture. Please try again.",
-        variant: "destructive",
-      });
+      return data as (Sculpture & { sculpture_tags: Array<{ tag: { id: string, name: string } }> })[];
     },
   });
 
@@ -85,9 +57,28 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
     setSculptureToDelete(sculpture);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (sculptureToDelete) {
-      deleteMutation.mutate(sculptureToDelete.id);
+      try {
+        const { error } = await supabase
+          .from("sculptures")
+          .delete()
+          .eq("id", sculptureToDelete.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sculpture deleted",
+          description: "The sculpture has been successfully deleted.",
+        });
+      } catch (error) {
+        console.error("Error deleting sculpture:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete the sculpture. Please try again.",
+          variant: "destructive",
+        });
+      }
       setSculptureToDelete(null);
     }
   };
@@ -100,29 +91,34 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
     );
   }
 
-  if (!sculptures?.length) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No sculptures found in this folder. Try creating one above!
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sculptures?.map((sculpture) => (
-          <SculptureCard
-            key={sculpture.id}
-            sculpture={sculpture}
-            folders={!selectedFolderId ? sculpture.folder_sculptures.map(fs => fs.folder).filter(Boolean) : []}
-            onPreview={setSelectedSculpture}
-            onDelete={handleDelete}
-            onAddToFolder={setSculptureToAddToFolder}
-            showAIContent={!!selectedFolderId}
-          />
-        ))}
+      <div className="mb-6">
+        <TagsSelect
+          selectedTags={selectedTags}
+          onTagsChange={setSelectedTags}
+        />
       </div>
+
+      {!sculptures?.length ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No sculptures found. Try creating one above!
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {sculptures?.map((sculpture) => (
+            <SculptureCard
+              key={sculpture.id}
+              sculpture={sculpture}
+              tags={sculpture.sculpture_tags.map(st => st.tag).filter(Boolean)}
+              onPreview={setSelectedSculpture}
+              onDelete={handleDelete}
+              onManageTags={setSculptureToManageTags}
+              showAIContent={selectedTags.length > 0}
+            />
+          ))}
+        </div>
+      )}
 
       <SculpturePreviewDialog
         sculpture={selectedSculpture}
@@ -139,10 +135,10 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
         onConfirm={confirmDelete}
       />
 
-      <AddToFolderDialog
-        sculpture={sculptureToAddToFolder}
+      <ManageTagsDialog
+        sculpture={sculptureToManageTags}
         onOpenChange={(open) => {
-          if (!open) setSculptureToAddToFolder(null);
+          if (!open) setSculptureToManageTags(null);
         }}
       />
     </>

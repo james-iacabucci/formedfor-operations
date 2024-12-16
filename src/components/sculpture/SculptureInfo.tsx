@@ -1,14 +1,15 @@
 import { format } from "date-fns";
-import { LinkIcon, FolderIcon } from "lucide-react";
+import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
+import { Badge } from "@/components/ui/badge";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
-  folders: Array<{ id: string; name: string }>;
+  tags: Array<{ id: string; name: string }>;
   showAIContent?: boolean;
 }
 
-export function SculptureInfo({ sculpture, folders, showAIContent }: SculptureInfoProps) {
+export function SculptureInfo({ sculpture, tags, showAIContent }: SculptureInfoProps) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between">
@@ -32,16 +33,17 @@ export function SculptureInfo({ sculpture, folders, showAIContent }: SculptureIn
         <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
       )}
 
-      {folders.length > 0 && (
+      {tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
-          {folders.map(folder => (
-            <div
-              key={folder.id}
-              className="flex items-center gap-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md"
+          {tags.map(tag => (
+            <Badge
+              key={tag.id}
+              variant="secondary"
+              className="flex items-center gap-1"
             >
-              <FolderIcon className="w-3 h-3" />
-              <span>{folder.name}</span>
-            </div>
+              <TagIcon className="w-3 h-3" />
+              <span>{tag.name}</span>
+            </Badge>
           ))}
         </div>
       )}

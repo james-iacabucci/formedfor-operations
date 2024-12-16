@@ -9,19 +9,19 @@ import { SculptureInfo } from "./SculptureInfo";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
-  folders: Array<{ id: string; name: string }>;
+  tags: Array<{ id: string; name: string }>;
   onPreview: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
-  onAddToFolder: (sculpture: Sculpture) => void;
+  onManageTags: (sculpture: Sculpture) => void;
   showAIContent?: boolean;
 }
 
 export function SculptureCard({
   sculpture,
-  folders,
+  tags,
   onPreview,
   onDelete,
-  onAddToFolder,
+  onManageTags,
   showAIContent,
 }: SculptureCardProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -106,7 +106,7 @@ export function SculptureCard({
                 isRegenerating={isRegenerating}
                 onDelete={() => onDelete(sculpture)}
                 onDownload={handleDownload}
-                onAddToFolder={() => onAddToFolder(sculpture)}
+                onManageTags={() => onManageTags(sculpture)}
                 onRegenerate={handleRegenerate}
               />
             </div>
@@ -114,7 +114,7 @@ export function SculptureCard({
         </div>
         <SculptureInfo 
           sculpture={sculpture}
-          folders={folders}
+          tags={tags}
           showAIContent={showAIContent}
         />
       </CardContent>

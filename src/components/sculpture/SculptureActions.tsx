@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   Trash2Icon,
   DownloadIcon,
-  FolderPlusIcon,
+  TagIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
@@ -12,7 +12,7 @@ interface SculptureActionsProps {
   isRegenerating: boolean;
   onDelete: () => void;
   onDownload: () => void;
-  onAddToFolder: () => void;
+  onManageTags: () => void;
   onRegenerate: (creativity: "small" | "medium" | "large", changes?: string) => void;
 }
 
@@ -20,7 +20,7 @@ export function SculptureActions({
   isRegenerating,
   onDelete,
   onDownload,
-  onAddToFolder,
+  onManageTags,
   onRegenerate,
 }: SculptureActionsProps) {
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false);
@@ -56,10 +56,10 @@ export function SculptureActions({
           className="bg-black/50 hover:bg-black/70 text-white"
           onClick={(e) => {
             e.stopPropagation();
-            onAddToFolder();
+            onManageTags();
           }}
         >
-          <FolderPlusIcon className="w-4 h-4" />
+          <TagIcon className="w-4 h-4" />
         </Button>
         <Button
           size="icon"

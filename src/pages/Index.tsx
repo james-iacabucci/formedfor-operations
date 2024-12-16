@@ -5,11 +5,9 @@ import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
-import { FolderSelect } from "@/components/folders/FolderSelect";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -26,23 +24,17 @@ const Index = () => {
             <div className="border-b border-border p-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Your Sculptures</h2>
-                <div className="flex items-center gap-4">
-                  <FolderSelect
-                    selectedFolderId={selectedFolderId}
-                    onFolderChange={setSelectedFolderId}
-                  />
-                  <Button 
-                    onClick={() => setIsCreateSheetOpen(true)}
-                    className="gap-2"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    Create Sculpture
-                  </Button>
-                </div>
+                <Button 
+                  onClick={() => setIsCreateSheetOpen(true)}
+                  className="gap-2"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Create Sculpture
+                </Button>
               </div>
             </div>
             <CardContent>
-              <SculpturesList selectedFolderId={selectedFolderId} />
+              <SculpturesList />
             </CardContent>
           </Card>
         </div>
@@ -50,11 +42,10 @@ const Index = () => {
         <CreateSculptureSheet 
           open={isCreateSheetOpen} 
           onOpenChange={setIsCreateSheetOpen}
-          selectedFolderId={selectedFolderId}
         />
       </div>
     </div>
   );
-};
+}
 
 export default Index;
