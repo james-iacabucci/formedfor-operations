@@ -29,10 +29,19 @@ serve(async (req) => {
       .eq('id', sculptureId)
       .single();
 
-    if (sculptureError) throw sculptureError;
+    if (sculptureError) {
+      console.error('Error fetching sculpture:', sculptureError);
+      throw sculptureError;
+    }
+
+    if (!sculpture) {
+      throw new Error('Sculpture not found');
+    }
+
+    console.log('Fetched sculpture prompt:', sculpture.prompt);
 
     // Generate content using OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
@@ -55,8 +64,16 @@ serve(async (req) => {
       }),
     });
 
-    const data = await response.json();
-    const generatedText = data.choices[0].message.content.replace(/['"]/g, ''); // Remove any quotes that might be in the response
+    const data = await openAIResponse.json();
+    console.log('OpenAI API response:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI API response:', data);
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    const generatedText = data.choices[0].message.content.replace(/['"]/g, '');
+    console.log('Generated text:', generatedText);
 
     // Update the sculpture with the generated metadata
     const { error: updateError } = await supabaseClient
@@ -64,7 +81,10 @@ serve(async (req) => {
       .update({ [field]: generatedText })
       .eq('id', sculptureId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error updating sculpture:', updateError);
+      throw updateError;
+    }
 
     return new Response(JSON.stringify({ [field]: generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
