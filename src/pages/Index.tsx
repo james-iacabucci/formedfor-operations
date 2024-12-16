@@ -18,9 +18,14 @@ const Index = () => {
       <div className="sticky top-0 z-10 bg-background border-b">
         {/* Header content */}
         <div className="mx-auto max-w-7xl p-6 pb-0">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
-            <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="text-2xl font-bold shrink-0">Formed For</h1>
+            <TagsSelect 
+              selectedTags={selectedTags} 
+              onTagsChange={setSelectedTags}
+              className="!mb-0" 
+            />
+            <div className="flex items-center gap-4 ml-auto">
               <ThemeToggle />
               <UserMenu />
             </div>
@@ -31,15 +36,7 @@ const Index = () => {
         <div className="mx-auto max-w-7xl px-6">
           <Card className="border-0 shadow-none">
             <div className="border-b border-border p-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4 flex-wrap">
-                  <h2 className="text-lg font-semibold">Your Sculptures</h2>
-                  <TagsSelect 
-                    selectedTags={selectedTags} 
-                    onTagsChange={setSelectedTags}
-                    className="!mb-0" 
-                  />
-                </div>
+              <div className="flex justify-end">
                 <Button 
                   onClick={() => setIsCreateSheetOpen(true)}
                   className="gap-2 shrink-0"
