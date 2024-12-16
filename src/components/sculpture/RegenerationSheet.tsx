@@ -29,7 +29,7 @@ export function RegenerationSheet({
 }: RegenerationSheetProps) {
   const [changes, setChanges] = useState("");
   const [creativity, setCreativity] = useState<"none" | "small" | "medium" | "large">("medium");
-  const [updateExisting, setUpdateExisting] = useState(false);
+  const [updateMode, setUpdateMode] = useState<"new" | "update">("new");
   const [regenerateImage, setRegenerateImage] = useState(true);
   const [regenerateMetadata, setRegenerateMetadata] = useState(true);
 
@@ -38,7 +38,7 @@ export function RegenerationSheet({
     onRegenerate({
       creativity,
       changes: changes.trim(),
-      updateExisting,
+      updateExisting: updateMode === "update",
       regenerateImage,
       regenerateMetadata,
     });
@@ -84,16 +84,22 @@ export function RegenerationSheet({
             </ToggleGroup>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="updateExisting" className="text-sm font-medium">Update Existing Sculpture</Label>
-              <Switch
-                id="updateExisting"
-                checked={updateExisting}
-                onCheckedChange={setUpdateExisting}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Variation Mode
+            </label>
+            <ToggleGroup
+              type="single"
+              value={updateMode}
+              onValueChange={(value) => value && setUpdateMode(value as "new" | "update")}
+              className="justify-start"
+            >
+              <ToggleGroupItem value="new">Create New Sculpture</ToggleGroupItem>
+              <ToggleGroupItem value="update">Update Existing Sculpture</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="regenerateImage" className="text-sm font-medium">Regenerate Image</Label>
               <Switch
