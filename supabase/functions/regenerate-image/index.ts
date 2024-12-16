@@ -8,23 +8,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-      console.log('Request body:', body);
-    } catch (e) {
-      console.error('Error parsing request body:', e);
-      throw new Error('Invalid request body');
-    }
-
-    const { prompt, sculptureId, creativity } = body;
+    const { prompt, sculptureId, creativity } = await req.json();
     
     if (!prompt || !sculptureId || !creativity) {
       throw new Error('Missing required parameters');
@@ -89,15 +78,32 @@ serve(async (req) => {
       }
     );
 
-    // Update the sculpture with the new image URL
-    const { error: updateError } = await supabaseAdmin
+    // Get the original sculpture to copy its user_id
+    const { data: originalSculpture, error: fetchError } = await supabaseAdmin
       .from('sculptures')
-      .update({ image_url: imageData.imageURL })
-      .eq('id', sculptureId);
+      .select('user_id')
+      .eq('id', sculptureId)
+      .single();
 
-    if (updateError) {
-      console.error('Error updating sculpture:', updateError);
-      throw new Error('Failed to update sculpture');
+    if (fetchError || !originalSculpture) {
+      console.error('Error fetching original sculpture:', fetchError);
+      throw new Error('Failed to fetch original sculpture');
+    }
+
+    // Create a new sculpture record as a variation
+    const { error: insertError } = await supabaseAdmin
+      .from('sculptures')
+      .insert({
+        prompt,
+        image_url: imageData.imageURL,
+        user_id: originalSculpture.user_id,
+        creativity_level: creativity,
+        original_sculpture_id: sculptureId
+      });
+
+    if (insertError) {
+      console.error('Error creating variation:', insertError);
+      throw new Error('Failed to create variation');
     }
 
     return new Response(

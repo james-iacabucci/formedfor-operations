@@ -33,26 +33,39 @@ export type Database = {
       sculptures: {
         Row: {
           created_at: string
+          creativity_level: string | null
           id: string
           image_url: string | null
+          original_sculpture_id: string | null
           prompt: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          creativity_level?: string | null
           id?: string
           image_url?: string | null
+          original_sculpture_id?: string | null
           prompt: string
           user_id: string
         }
         Update: {
           created_at?: string
+          creativity_level?: string | null
           id?: string
           image_url?: string | null
+          original_sculpture_id?: string | null
           prompt?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sculptures_original_sculpture_id_fkey"
+            columns: ["original_sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sculptures_user_id_fkey"
             columns: ["user_id"]

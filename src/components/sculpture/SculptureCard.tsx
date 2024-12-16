@@ -1,17 +1,11 @@
 import { format } from "date-fns";
-import { ImageIcon, Trash2Icon, RefreshCwIcon } from "lucide-react";
+import { ImageIcon, Trash2Icon, RefreshCwIcon, LinkIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Sculpture } from "@/types/sculpture";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
@@ -40,13 +34,13 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
 
       toast({
         title: "Success",
-        description: "Image regenerated successfully.",
+        description: "New variation generated successfully.",
       });
     } catch (error) {
       console.error('Error regenerating image:', error);
       toast({
         title: "Error",
-        description: "Failed to regenerate image. Please try again.",
+        description: "Failed to generate variation. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -76,29 +70,50 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                 className="object-cover w-full h-full transition-transform group-hover:scale-105"
               />
               <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="bg-black/50 hover:bg-black/70 text-white"
-                      disabled={isRegenerating}
-                    >
-                      <RefreshCwIcon className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleRegenerate('small')}>
-                      Small Variation
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleRegenerate('medium')}>
-                      Medium Variation
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleRegenerate('large')}>
-                      Large Variation
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    disabled={isRegenerating}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRegenerate('small');
+                    }}
+                    title="Small Variation"
+                  >
+                    <RefreshCwIcon className="w-4 h-4" />
+                    <span className="sr-only">Small Variation</span>
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    disabled={isRegenerating}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRegenerate('medium');
+                    }}
+                    title="Medium Variation"
+                  >
+                    <RefreshCwIcon className="w-4 h-4" />
+                    <span className="sr-only">Medium Variation</span>
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    disabled={isRegenerating}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRegenerate('large');
+                    }}
+                    title="Large Variation"
+                  >
+                    <RefreshCwIcon className="w-4 h-4" />
+                    <span className="sr-only">Large Variation</span>
+                  </Button>
+                </div>
                 <Button
                   size="icon"
                   variant="secondary"
@@ -122,9 +137,17 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
           )}
         </div>
         <div className="mt-4">
-          <p className="text-sm text-muted-foreground">
-            {format(new Date(sculpture.created_at), "MMM d, yyyy")}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {format(new Date(sculpture.created_at), "MMM d, yyyy")}
+            </p>
+            {sculpture.original_sculpture_id && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <LinkIcon className="w-4 h-4" />
+                <span>Variation ({sculpture.creativity_level})</span>
+              </div>
+            )}
+          </div>
           <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
         </div>
       </CardContent>
