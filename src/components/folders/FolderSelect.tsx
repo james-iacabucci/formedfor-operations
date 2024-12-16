@@ -7,17 +7,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { PlusIcon } from "lucide-react";
-
-interface Folder {
-  id: string;
-  name: string;
-}
 
 interface FolderSelectProps {
   selectedFolderId: string | null;
@@ -47,7 +42,7 @@ export function FolderSelect({ selectedFolderId, onFolderChange }: FolderSelectP
       }
 
       console.log("Fetched folders:", data);
-      return data as Folder[];
+      return data;
     },
   });
 
@@ -109,11 +104,9 @@ export function FolderSelect({ selectedFolderId, onFolderChange }: FolderSelectP
       </Select>
 
       <Dialog open={isNewFolderDialogOpen} onOpenChange={setIsNewFolderDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="icon">
-            <PlusIcon className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
+        <Button variant="outline" size="icon" onClick={() => setIsNewFolderDialogOpen(true)}>
+          <PlusIcon className="h-4 w-4" />
+        </Button>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Folder</DialogTitle>

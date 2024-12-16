@@ -101,13 +101,6 @@ export function SculpturesList() {
 
   return (
     <>
-      <div className="mb-6">
-        <FolderSelect
-          selectedFolderId={selectedFolderId}
-          onFolderChange={setSelectedFolderId}
-        />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sculptures?.map((sculpture) => (
           <SculptureCard
