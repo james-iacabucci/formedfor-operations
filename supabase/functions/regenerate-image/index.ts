@@ -139,14 +139,21 @@ serve(async (req) => {
     }
 
     if (updateExisting) {
+      console.log('Updating existing sculpture:', sculptureId);
       // Update existing sculpture
-      const updateData: any = {};
+      const updateData: any = {
+        prompt: prompt // Always update the prompt
+      };
+      
       if (regenerateImage && newImageUrl) {
         updateData.image_url = newImageUrl;
       }
       if (regenerateMetadata && newMetadata) {
         updateData.ai_generated_name = newMetadata.name;
         updateData.ai_description = newMetadata.description;
+      }
+      if (creativity) {
+        updateData.creativity_level = creativity;
       }
 
       const { error: updateError } = await supabaseAdmin
@@ -158,7 +165,10 @@ serve(async (req) => {
         console.error('Error updating sculpture:', updateError);
         throw new Error('Failed to update sculpture');
       }
+
+      console.log('Successfully updated sculpture:', sculptureId);
     } else {
+      console.log('Creating new sculpture as variation');
       // Create a new sculpture as a variation
       const { error: insertError } = await supabaseAdmin
         .from('sculptures')
@@ -178,6 +188,7 @@ serve(async (req) => {
         console.error('Error creating variation:', insertError);
         throw new Error('Failed to create variation');
       }
+      console.log('Successfully created new sculpture variation');
     }
 
     return new Response(
