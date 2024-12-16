@@ -7,13 +7,15 @@ import { SculptureCard } from "./sculpture/SculptureCard";
 import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 import { AddToFolderDialog } from "./sculpture/AddToFolderDialog";
-import { FolderSelect } from "./folders/FolderSelect";
 
-export function SculpturesList() {
+interface SculpturesListProps {
+  selectedFolderId: string | null;
+}
+
+export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToAddToFolder, setSculptureToAddToFolder] = useState<Sculpture | null>(null);
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: sculptures, isLoading } = useQuery({
