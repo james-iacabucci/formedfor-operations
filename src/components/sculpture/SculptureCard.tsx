@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ImageIcon, Trash2Icon, RefreshCwIcon, LinkIcon } from "lucide-react";
+import { ImageIcon, Trash2Icon, LinkIcon, ArrowUpIcon, ArrowUpRightIcon, ArrowUpCircleIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sculpture } from "@/types/sculpture";
@@ -48,6 +48,17 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
     }
   };
 
+  const getCreativityIcon = (level: 'small' | 'medium' | 'large') => {
+    switch (level) {
+      case 'small':
+        return <ArrowUpIcon className="w-4 h-4" />;
+      case 'medium':
+        return <ArrowUpRightIcon className="w-4 h-4" />;
+      case 'large':
+        return <ArrowUpCircleIcon className="w-4 h-4" />;
+    }
+  };
+
   return (
     <Card
       className={`group relative ${sculpture.image_url ? "cursor-pointer" : ""}`}
@@ -82,7 +93,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     }}
                     title="Small Variation"
                   >
-                    <RefreshCwIcon className="w-4 h-4" />
+                    {getCreativityIcon('small')}
                     <span className="sr-only">Small Variation</span>
                   </Button>
                   <Button
@@ -96,7 +107,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     }}
                     title="Medium Variation"
                   >
-                    <RefreshCwIcon className="w-4 h-4" />
+                    {getCreativityIcon('medium')}
                     <span className="sr-only">Medium Variation</span>
                   </Button>
                   <Button
@@ -110,7 +121,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     }}
                     title="Large Variation"
                   >
-                    <RefreshCwIcon className="w-4 h-4" />
+                    {getCreativityIcon('large')}
                     <span className="sr-only">Large Variation</span>
                   </Button>
                 </div>
