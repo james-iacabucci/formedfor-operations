@@ -16,7 +16,7 @@ const Index = () => {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Formed For Design</h1>
+          <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
           <UserMenu />
         </div>
 
