@@ -1,20 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { format } from "date-fns";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { ImageIcon } from "lucide-react";
 import { useState } from "react";
 
 type Sculpture = {
@@ -66,40 +60,44 @@ export function SculpturesList() {
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Description</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sculptures.map((sculpture) => (
-            <TableRow
-              key={sculpture.id}
-              className={sculpture.image_url ? "cursor-pointer hover:bg-muted" : ""}
-              onClick={() => {
-                if (sculpture.image_url) {
-                  setSelectedSculpture(sculpture);
-                }
-              }}
-            >
-              <TableCell className="font-medium">{sculpture.prompt}</TableCell>
-              <TableCell>
-                {format(new Date(sculpture.created_at), "MMM d, yyyy")}
-              </TableCell>
-              <TableCell>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {sculptures.map((sculpture) => (
+          <Card
+            key={sculpture.id}
+            className={sculpture.image_url ? "cursor-pointer group" : ""}
+            onClick={() => {
+              if (sculpture.image_url) {
+                setSelectedSculpture(sculpture);
+              }
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
                 {sculpture.image_url ? (
-                  <span className="text-green-600">Generated</span>
+                  <img
+                    src={sculpture.image_url}
+                    alt={sculpture.prompt}
+                    className="object-cover w-full h-full transition-transform group-hover:scale-105"
+                  />
                 ) : (
-                  <span className="text-yellow-600">Pending</span>
+                  <div className="flex items-center justify-center h-full">
+                    <div className="flex flex-col items-center text-muted-foreground">
+                      <ImageIcon className="w-12 h-12 mb-2" />
+                      <span>Generating...</span>
+                    </div>
+                  </div>
                 )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(sculpture.created_at), "MMM d, yyyy")}
+                </p>
+                <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <Dialog
         open={selectedSculpture !== null}
