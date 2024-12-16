@@ -3,15 +3,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 interface RegenerationOptions {
   creativity: "none" | "small" | "medium" | "large";
   changes?: string;
-  updateExisting: boolean;
-  regenerateImage: boolean;
-  regenerateMetadata: boolean;
 }
 
 interface RegenerationSheetProps {
@@ -29,18 +24,12 @@ export function RegenerationSheet({
 }: RegenerationSheetProps) {
   const [changes, setChanges] = useState("");
   const [creativity, setCreativity] = useState<"none" | "small" | "medium" | "large">("medium");
-  const [updateMode, setUpdateMode] = useState<"new" | "update">("new");
-  const [regenerateImage, setRegenerateImage] = useState(true);
-  const [regenerateMetadata, setRegenerateMetadata] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onRegenerate({
       creativity,
       changes: changes.trim(),
-      updateExisting: updateMode === "update",
-      regenerateImage,
-      regenerateMetadata,
     });
     onOpenChange(false);
     setChanges("");
@@ -84,44 +73,6 @@ export function RegenerationSheet({
               <ToggleGroupItem value="medium">Normal</ToggleGroupItem>
               <ToggleGroupItem value="large">High</ToggleGroupItem>
             </ToggleGroup>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Variation Mode
-            </label>
-            <ToggleGroup
-              type="single"
-              value={updateMode}
-              onValueChange={(value) => value && setUpdateMode(value as "new" | "update")}
-              className="justify-start"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ToggleGroupItem value="new">Create New Sculpture</ToggleGroupItem>
-              <ToggleGroupItem value="update">Update Existing Sculpture</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="regenerateImage" className="text-sm font-medium">Regenerate Image</Label>
-              <Switch
-                id="regenerateImage"
-                checked={regenerateImage}
-                onCheckedChange={setRegenerateImage}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="regenerateMetadata" className="text-sm font-medium">Regenerate Name & Description</Label>
-              <Switch
-                id="regenerateMetadata"
-                checked={regenerateMetadata}
-                onCheckedChange={setRegenerateMetadata}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
           </div>
 
           <Button 
