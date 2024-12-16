@@ -5,4 +5,6 @@ export type Sculpture = {
   created_at: string;
   creativity_level?: 'small' | 'medium' | 'large' | null;
   original_sculpture_id?: string | null;
+  ai_generated_name?: string | null;
+  ai_description?: string | null;
 };

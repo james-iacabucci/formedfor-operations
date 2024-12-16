@@ -10,10 +10,9 @@ import { useQueryClient } from "@tanstack/react-query";
 interface CreateSculptureSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedFolderId?: string | null;
 }
 
-export function CreateSculptureSheet({ open, onOpenChange, selectedFolderId }: CreateSculptureSheetProps) {
+export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureSheetProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
@@ -25,7 +24,6 @@ export function CreateSculptureSheet({ open, onOpenChange, selectedFolderId }: C
     
     setIsLoading(true);
     try {
-      // Create the sculpture
       const { data: sculpture, error } = await supabase
         .from('sculptures')
         .insert([
@@ -45,26 +43,6 @@ export function CreateSculptureSheet({ open, onOpenChange, selectedFolderId }: C
           variant: "destructive",
         });
         return;
-      }
-
-      // If a folder is selected, add the sculpture to it
-      if (selectedFolderId) {
-        const { error: folderError } = await supabase
-          .from('folder_sculptures')
-          .insert([
-            {
-              folder_id: selectedFolderId,
-              sculpture_id: sculpture.id
-            }
-          ]);
-
-        if (folderError) {
-          console.error('Error adding sculpture to folder:', folderError);
-          toast({
-            title: "Warning",
-            description: "Sculpture created but couldn't be added to the folder.",
-          });
-        }
       }
 
       // Trigger image generation
