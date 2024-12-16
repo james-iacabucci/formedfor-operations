@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PenIcon } from "lucide-react";
+import { CheckIcon, PenIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -54,41 +54,44 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
 
   if (isEditing) {
     return (
-      <div className="space-y-2">
+      <div className="flex items-center gap-2">
         {type === "input" ? (
           <Input
             value={editedValue}
             onChange={(e) => setEditedValue(e.target.value)}
-            className="w-full"
+            className="flex-1"
             placeholder="Enter a name"
+            autoFocus
           />
         ) : (
           <Textarea
             value={editedValue}
             onChange={(e) => setEditedValue(e.target.value)}
-            className="w-full"
+            className="flex-1"
             placeholder="Enter a description"
+            autoFocus
           />
         )}
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleUpdate} 
-            disabled={isUpdating}
-            size="sm"
-          >
-            Save
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setEditedValue(value);
-              setIsEditing(false);
-            }}
-            size="sm"
-          >
-            Cancel
-          </Button>
-        </div>
+        <Button 
+          onClick={handleUpdate} 
+          disabled={isUpdating}
+          size="icon"
+          variant="ghost"
+          className="h-9 w-9"
+        >
+          <CheckIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          onClick={() => {
+            setEditedValue(value);
+            setIsEditing(false);
+          }}
+          size="icon"
+          className="h-9 w-9"
+        >
+          <XIcon className="h-4 w-4" />
+        </Button>
       </div>
     );
   }
