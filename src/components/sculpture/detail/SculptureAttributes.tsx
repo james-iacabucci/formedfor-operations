@@ -35,7 +35,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           type="textarea"
           sculptureId={sculpture.id}
           field="ai_description"
-          className="text-lg text-muted-foreground leading-relaxed"
+          className="text-muted-foreground italic"
         />
       </div>
 

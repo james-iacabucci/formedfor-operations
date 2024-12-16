@@ -45,7 +45,7 @@ serve(async (req) => {
             role: 'system',
             content: field === 'ai_generated_name' 
               ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide thoughtful, artistic names that are 3-4 words maximum. Do not use quotes in your response.'
-              : 'You are an art curator helping to generate descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations in 2-3 sentences. Do not use quotes in your response.'
+              : 'You are an art curator analyzing AI-generated sculptures. In exactly 2 sentences, describe how the sculpture enhances its architectural setting, and comment on its material qualities or distinctive shape. Focus on the visual impact and physical characteristics that make it unique. Do not use quotes in your response.'
           },
           {
             role: 'user',
