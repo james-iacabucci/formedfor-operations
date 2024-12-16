@@ -48,11 +48,11 @@ export function RegenerationSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
         <SheetHeader>
           <SheetTitle>Generate Variation</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4" onClick={(e) => e.stopPropagation()}>
           <div className="space-y-2">
             <label htmlFor="changes" className="text-sm font-medium">
               Describe the changes you'd like to make (Optional)
@@ -64,6 +64,7 @@ export function RegenerationSheet({
               onChange={(e) => setChanges(e.target.value)}
               className="min-h-[200px] resize-y"
               rows={10}
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
           
@@ -76,6 +77,7 @@ export function RegenerationSheet({
               value={creativity}
               onValueChange={(value) => value && setCreativity(value as "none" | "small" | "medium" | "large")}
               className="justify-start"
+              onClick={(e) => e.stopPropagation()}
             >
               <ToggleGroupItem value="none">None</ToggleGroupItem>
               <ToggleGroupItem value="small">Low</ToggleGroupItem>
@@ -93,6 +95,7 @@ export function RegenerationSheet({
               value={updateMode}
               onValueChange={(value) => value && setUpdateMode(value as "new" | "update")}
               className="justify-start"
+              onClick={(e) => e.stopPropagation()}
             >
               <ToggleGroupItem value="new">Create New Sculpture</ToggleGroupItem>
               <ToggleGroupItem value="update">Update Existing Sculpture</ToggleGroupItem>
@@ -106,6 +109,7 @@ export function RegenerationSheet({
                 id="regenerateImage"
                 checked={regenerateImage}
                 onCheckedChange={setRegenerateImage}
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
 
@@ -115,11 +119,17 @@ export function RegenerationSheet({
                 id="regenerateMetadata"
                 checked={regenerateMetadata}
                 onCheckedChange={setRegenerateMetadata}
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           </div>
 
-          <Button type="submit" disabled={isRegenerating} className="w-full">
+          <Button 
+            type="submit" 
+            disabled={isRegenerating} 
+            className="w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             {isRegenerating ? "Generating..." : "Generate Variation"}
           </Button>
         </form>
