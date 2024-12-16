@@ -4,7 +4,7 @@ import {
   Trash2Icon,
   DownloadIcon,
   TagIcon,
-  RefreshCwIcon,
+  CopyIcon,
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
 
@@ -80,7 +80,7 @@ export function SculptureActions({
           }}
           title="Generate Variation"
         >
-          <RefreshCwIcon className="w-4 h-4" />
+          <CopyIcon className="w-4 h-4" />
         </Button>
       </div>
 
