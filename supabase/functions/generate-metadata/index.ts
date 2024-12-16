@@ -53,7 +53,7 @@ serve(async (req) => {
           {
             role: 'system',
             content: field === 'ai_generated_name' 
-              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide a thoughtful, artistic name using EXACTLY 2 WORDS. Do not use quotes, periods, or any punctuation in your response. Only return the two words.'
+              ? 'You are an art curator helping to generate creative names for AI-generated sculptures. Provide a thoughtful, artistic name using 1 or 2 words maximum. Do not use quotes, periods, or any punctuation in your response. Do not start the name with "The". Only return the word(s).'
               : 'You are an art curator analyzing AI-generated sculptures. In exactly 2 sentences, describe how the sculpture enhances its architectural setting, and comment on its material qualities or distinctive shape. Focus on the visual impact and physical characteristics that make it unique. Do not use quotes in your response.'
           },
           {
@@ -74,7 +74,7 @@ serve(async (req) => {
 
     let generatedText = data.choices[0].message.content.replace(/['"]/g, '');
     
-    // For names, ensure exactly two words and remove any punctuation
+    // For names, ensure max two words and remove any punctuation
     if (field === 'ai_generated_name') {
       generatedText = generatedText
         .replace(/[.,!?]/g, '') // Remove punctuation
@@ -83,11 +83,16 @@ serve(async (req) => {
         .slice(0, 2)
         .join(' ');
       
-      // Validate that we have exactly two words
+      // Remove "The" if it starts with it
+      if (generatedText.toLowerCase().startsWith('the ')) {
+        generatedText = generatedText.slice(4).trim();
+      }
+      
+      // Validate that we have 1 or 2 words
       const wordCount = generatedText.trim().split(/\s+/).length;
-      if (wordCount !== 2) {
-        console.error('Generated name does not have exactly 2 words:', generatedText);
-        throw new Error('Generated name must have exactly 2 words');
+      if (wordCount < 1 || wordCount > 2) {
+        console.error('Generated name does not have 1 or 2 words:', generatedText);
+        throw new Error('Generated name must have 1 or 2 words');
       }
     }
 
