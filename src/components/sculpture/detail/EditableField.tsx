@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EditableFieldProps {
   value: string;
@@ -19,6 +20,7 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
   const [editedValue, setEditedValue] = useState(value);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleUpdate = async () => {
     if (editedValue === value) {
@@ -34,6 +36,10 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
         .eq('id', sculptureId);
 
       if (error) throw error;
+
+      // Invalidate both the individual sculpture query and any queries that list sculptures
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
 
       toast({
         title: "Success",
