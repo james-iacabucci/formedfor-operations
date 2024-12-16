@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import SculptureDetail from "./pages/SculptureDetail";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -34,6 +35,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Index />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sculpture/:id"
+                element={
+                  <ProtectedRoute>
+                    <SculptureDetail />
                   </ProtectedRoute>
                 }
               />

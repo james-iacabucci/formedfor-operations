@@ -6,11 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { SculptureImage } from "./SculptureImage";
 import { SculptureActions } from "./SculptureActions";
 import { SculptureInfo } from "./SculptureInfo";
+import { useNavigate } from "react-router-dom";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
   tags: Array<{ id: string; name: string }>;
-  onPreview: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
   onManageTags: (sculpture: Sculpture) => void;
   showAIContent?: boolean;
@@ -19,13 +19,13 @@ interface SculptureCardProps {
 export function SculptureCard({
   sculpture,
   tags,
-  onPreview,
   onDelete,
   onManageTags,
   showAIContent,
 }: SculptureCardProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleRegenerate = async (creativity: "small" | "medium" | "large", changes?: string) => {
     if (isRegenerating) return;
@@ -88,7 +88,7 @@ export function SculptureCard({
           sculpture.image_url &&
           !(e.target as HTMLElement).closest("button")
         ) {
-          onPreview(sculpture);
+          navigate(`/sculpture/${sculpture.id}`);
         }
       }}
     >
@@ -98,7 +98,7 @@ export function SculptureCard({
             imageUrl={sculpture.image_url}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
-            onImageClick={() => onPreview(sculpture)}
+            onImageClick={() => navigate(`/sculpture/${sculpture.id}`)}
           />
           {sculpture.image_url && (
             <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
