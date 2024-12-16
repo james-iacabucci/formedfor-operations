@@ -4,7 +4,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Settings2 } from "lucide-react";
+import { Settings2, Plus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ManageTagsSection } from "./ManageTagsSection";
@@ -21,6 +21,7 @@ interface SettingsSheetProps {
 
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleApply = () => {
     // TODO: Implement settings save logic
@@ -78,6 +79,14 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Manage Sculpture Tags</h3>
+                <Button 
+                  onClick={() => setShowCreateForm(true)} 
+                  size="sm"
+                  className="h-8"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Tag
+                </Button>
               </div>
               <Separator />
               <ManageTagsSection />

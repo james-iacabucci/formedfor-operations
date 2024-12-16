@@ -38,23 +38,6 @@ export function ManageTagsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h4 className="text-sm font-medium">Manage Tags</h4>
-          <p className="text-sm text-muted-foreground">
-            Create, edit, and delete tags to organize your sculptures
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowCreateForm(true)} 
-          size="sm"
-          className="h-8"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Tag
-        </Button>
-      </div>
-
       {showCreateForm && (
         <div className="rounded-md border p-4 bg-muted/50">
           <CreateTagForm
