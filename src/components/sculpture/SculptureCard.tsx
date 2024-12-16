@@ -13,6 +13,7 @@ interface SculptureCardProps {
   onPreview: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
   onAddToFolder: (sculpture: Sculpture) => void;
+  showAIContent?: boolean;
 }
 
 export function SculptureCard({
@@ -21,6 +22,7 @@ export function SculptureCard({
   onPreview,
   onDelete,
   onAddToFolder,
+  showAIContent,
 }: SculptureCardProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
@@ -113,6 +115,7 @@ export function SculptureCard({
         <SculptureInfo 
           sculpture={sculpture}
           folders={folders}
+          showAIContent={showAIContent}
         />
       </CardContent>
     </Card>

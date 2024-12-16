@@ -94,6 +94,8 @@ export type Database = {
       }
       sculptures: {
         Row: {
+          ai_description: string | null
+          ai_generated_name: string | null
           created_at: string
           creativity_level: string | null
           id: string
@@ -103,6 +105,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_description?: string | null
+          ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
           id?: string
@@ -112,6 +116,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_description?: string | null
+          ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
           id?: string

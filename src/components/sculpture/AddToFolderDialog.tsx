@@ -49,14 +49,31 @@ export function AddToFolderDialog({
 
   const addToFolderMutation = useMutation({
     mutationFn: async (folderId: string) => {
+      // First add to folder
       const { error } = await supabase
         .from("folder_sculptures")
         .insert([{ folder_id: folderId, sculpture_id: sculpture?.id }]);
 
       if (error) throw error;
+
+      // Then generate metadata
+      if (sculpture) {
+        const { error: metadataError } = await supabase.functions.invoke("generate-sculpture-metadata", {
+          body: { sculptureId: sculpture.id, prompt: sculpture.prompt }
+        });
+
+        if (metadataError) {
+          console.error('Error generating metadata:', metadataError);
+          toast({
+            title: "Warning",
+            description: "Added to folder but couldn't generate metadata.",
+          });
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["folders"] });
+      queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       toast({
         title: "Added to folder",
         description: "The sculpture has been added to the folder.",

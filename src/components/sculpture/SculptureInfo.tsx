@@ -5,9 +5,10 @@ import { Sculpture } from "@/types/sculpture";
 interface SculptureInfoProps {
   sculpture: Sculpture;
   folders: Array<{ id: string; name: string }>;
+  showAIContent?: boolean;
 }
 
-export function SculptureInfo({ sculpture, folders }: SculptureInfoProps) {
+export function SculptureInfo({ sculpture, folders, showAIContent }: SculptureInfoProps) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between">
@@ -21,7 +22,16 @@ export function SculptureInfo({ sculpture, folders }: SculptureInfoProps) {
           </div>
         )}
       </div>
-      <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
+      
+      {showAIContent && sculpture.ai_generated_name ? (
+        <>
+          <h3 className="mt-2 font-semibold">{sculpture.ai_generated_name}</h3>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{sculpture.ai_description}</p>
+        </>
+      ) : (
+        <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
+      )}
+
       {folders.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           {folders.map(folder => (

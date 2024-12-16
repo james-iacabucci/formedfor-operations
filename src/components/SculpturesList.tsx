@@ -119,6 +119,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
             onPreview={setSelectedSculpture}
             onDelete={handleDelete}
             onAddToFolder={setSculptureToAddToFolder}
+            showAIContent={!!selectedFolderId}
           />
         ))}
       </div>
