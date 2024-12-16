@@ -51,7 +51,7 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <CardContent>
+            <CardContent className="pt-6">
               <SculpturesList selectedTags={selectedTags} />
             </CardContent>
           </Card>
