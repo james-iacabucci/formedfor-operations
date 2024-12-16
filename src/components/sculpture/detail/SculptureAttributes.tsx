@@ -16,22 +16,29 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
   return (
     <div className="space-y-6">
-      {sculpture.ai_generated_name && (
-        <h1 className="text-3xl font-bold">{sculpture.ai_generated_name}</h1>
-      )}
+      {/* Title Section */}
+      <div>
+        {sculpture.ai_generated_name ? (
+          <h1 className="text-4xl font-bold tracking-tight">{sculpture.ai_generated_name}</h1>
+        ) : (
+          <h1 className="text-4xl font-bold tracking-tight">Untitled Sculpture</h1>
+        )}
+      </div>
+
+      {/* Description Section */}
+      <div>
+        {sculpture.ai_description && (
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            {sculpture.ai_description}
+          </p>
+        )}
+      </div>
 
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Prompt</h2>
           <p className="text-muted-foreground">{sculpture.prompt}</p>
         </div>
-
-        {sculpture.ai_description && (
-          <div>
-            <h2 className="text-lg font-semibold mb-2">AI Description</h2>
-            <p className="text-muted-foreground">{sculpture.ai_description}</p>
-          </div>
-        )}
 
         <div>
           <h2 className="text-lg font-semibold mb-2">Details</h2>
