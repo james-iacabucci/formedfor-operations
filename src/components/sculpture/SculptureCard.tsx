@@ -7,6 +7,7 @@ import { SculptureImage } from "./SculptureImage";
 import { SculptureActions } from "./SculptureActions";
 import { SculptureInfo } from "./SculptureInfo";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
@@ -26,6 +27,7 @@ export function SculptureCard({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleRegenerate = async (options: {
     creativity: "none" | "small" | "medium" | "large";
@@ -50,6 +52,10 @@ export function SculptureCard({
       });
 
       if (error) throw error;
+
+      // Invalidate both the individual sculpture query and any queries that list sculptures
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
 
       toast({
         title: "Success",
