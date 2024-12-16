@@ -26,7 +26,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
         .from("sculptures")
         .select(`
           *,
-          folder_sculptures!inner (
+          folder_sculptures!left (
             folder:folders(id, name)
           )
         `);
@@ -115,7 +115,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
           <SculptureCard
             key={sculpture.id}
             sculpture={sculpture}
-            folders={!selectedFolderId ? sculpture.folder_sculptures.map(fs => fs.folder) : []}
+            folders={!selectedFolderId ? sculpture.folder_sculptures.map(fs => fs.folder).filter(Boolean) : []}
             onPreview={setSelectedSculpture}
             onDelete={handleDelete}
             onAddToFolder={setSculptureToAddToFolder}
