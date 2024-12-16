@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureHeader } from "@/components/sculpture/detail/SculptureHeader";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
+import { Sculpture } from "@/types/sculpture";
 
 export default function SculptureDetail() {
   const { id } = useParams();
@@ -21,8 +22,15 @@ export default function SculptureDetail() {
         .single();
 
       if (error) throw error;
-      console.log("Fetched sculpture:", data);
-      return data;
+      
+      // Ensure the creativity_level is one of the allowed values
+      const validatedData = {
+        ...data,
+        creativity_level: data.creativity_level as Sculpture["creativity_level"]
+      };
+      
+      console.log("Fetched sculpture:", validatedData);
+      return validatedData;
     },
   });
 
@@ -38,8 +46,15 @@ export default function SculptureDetail() {
         .single();
 
       if (error) throw error;
-      console.log("Fetched original sculpture:", data);
-      return data;
+
+      // Ensure the creativity_level is one of the allowed values
+      const validatedData = {
+        ...data,
+        creativity_level: data.creativity_level as Sculpture["creativity_level"]
+      };
+      
+      console.log("Fetched original sculpture:", validatedData);
+      return validatedData;
     },
   });
 
