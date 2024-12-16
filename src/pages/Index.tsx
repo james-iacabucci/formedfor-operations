@@ -13,17 +13,22 @@ const Index = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <UserMenu />
+    <div className="min-h-screen bg-background">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="mx-auto max-w-7xl p-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="mx-auto max-w-7xl p-6">
         <div className="grid gap-6">
           <Card className="border-0 shadow-none">
             {/* Toolbar */}
