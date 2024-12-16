@@ -8,7 +8,7 @@ import { Settings2, Plus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ManageTagsSection } from "./ManageTagsSection";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,22 @@ interface SettingsSheetProps {
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const manageTagsSectionRef = useRef<{ applyChanges: () => Promise<void> }>(null);
 
-  const handleApply = () => {
-    // TODO: Implement settings save logic
-    toast.success("Settings saved successfully");
-    onOpenChange(false);
+  const handleApply = async () => {
+    try {
+      // Apply tag changes if any
+      if (manageTagsSectionRef.current) {
+        await manageTagsSectionRef.current.applyChanges();
+      }
+      
+      // TODO: Implement other settings save logic
+      toast.success("Settings saved successfully");
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error("Failed to save some settings. Please try again.");
+    }
   };
 
   return (
@@ -86,7 +97,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                 </Button>
               </div>
               <Separator />
-              <ManageTagsSection />
+              <ManageTagsSection ref={manageTagsSectionRef} />
             </div>
           </div>
         </div>
