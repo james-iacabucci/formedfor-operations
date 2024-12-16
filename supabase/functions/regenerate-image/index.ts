@@ -13,58 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, sculptureId, creativity } = await req.json();
+    const { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata } = await req.json();
     
-    if (!prompt || !sculptureId || !creativity) {
+    if (!prompt || !sculptureId) {
       throw new Error('Missing required parameters');
     }
 
-    console.log('Regenerating image with prompt:', prompt, 'sculptureId:', sculptureId, 'creativity:', creativity);
-
-    // Map creativity levels to CFG values (lower = more creative)
-    const cfgValues = {
-      small: 1.5,
-      medium: 1.0,
-      large: 0.5,
-    };
-
-    // Call Runware API
-    const runwareResponse = await fetch("https://api.runware.ai/v1", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([
-        {
-          taskType: "authentication",
-          apiKey: Deno.env.get('RUNWARE_API_KEY')
-        },
-        {
-          taskType: "imageInference",
-          taskUUID: crypto.randomUUID(),
-          positivePrompt: prompt,
-          model: "runware:100@1",
-          width: 1024,
-          height: 1024,
-          numberResults: 1,
-          CFGScale: cfgValues[creativity] || 1.0
-        }
-      ])
-    });
-
-    const data = await runwareResponse.json();
-    console.log('Runware API response:', data);
-
-    if (data.error || !data.data) {
-      console.error('Runware API error:', data.error || 'No data returned');
-      throw new Error(data.error || 'Failed to generate image');
-    }
-
-    const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
-    if (!imageData || !imageData.imageURL) {
-      console.error('No image URL in response');
-      throw new Error('No image URL in response');
-    }
+    console.log('Regenerating with params:', { prompt, sculptureId, creativity, updateExisting, regenerateImage, regenerateMetadata });
 
     // Initialize Supabase client
     const supabaseAdmin = createClient(
@@ -90,24 +45,147 @@ serve(async (req) => {
       throw new Error('Failed to fetch original sculpture');
     }
 
-    // Create a new sculpture record as a variation
-    const { error: insertError } = await supabaseAdmin
-      .from('sculptures')
-      .insert({
-        prompt,
-        image_url: imageData.imageURL,
-        user_id: originalSculpture.user_id,
-        creativity_level: creativity,
-        original_sculpture_id: sculptureId
+    let newImageUrl = null;
+    if (regenerateImage) {
+      // Map creativity levels to CFG values (lower = more creative)
+      const cfgValues = {
+        none: 2.0,
+        small: 1.5,
+        medium: 1.0,
+        large: 0.5,
+      };
+
+      // Call Runware API for image generation
+      const runwareResponse = await fetch("https://api.runware.ai/v1", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([
+          {
+            taskType: "authentication",
+            apiKey: Deno.env.get('RUNWARE_API_KEY')
+          },
+          {
+            taskType: "imageInference",
+            taskUUID: crypto.randomUUID(),
+            positivePrompt: prompt,
+            model: "runware:100@1",
+            width: 1024,
+            height: 1024,
+            numberResults: 1,
+            CFGScale: cfgValues[creativity] || 1.0
+          }
+        ])
       });
 
-    if (insertError) {
-      console.error('Error creating variation:', insertError);
-      throw new Error('Failed to create variation');
+      const data = await runwareResponse.json();
+      console.log('Runware API response:', data);
+
+      if (data.error || !data.data) {
+        console.error('Runware API error:', data.error || 'No data returned');
+        throw new Error(data.error || 'Failed to generate image');
+      }
+
+      const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
+      if (!imageData || !imageData.imageURL) {
+        console.error('No image URL in response');
+        throw new Error('No image URL in response');
+      }
+
+      newImageUrl = imageData.imageURL;
+    }
+
+    let newMetadata = null;
+    if (regenerateMetadata) {
+      // Generate content using OpenAI
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are an art curator helping to generate names and descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations."
+            },
+            {
+              role: "user",
+              content: `Generate a creative name (max 3-4 words) and a 2-3 sentence artistic description for a sculpture based on this prompt: "${prompt}". Format the response as JSON with 'name' and 'description' fields.`
+            }
+          ],
+        }),
+      });
+
+      const aiResponse = await openaiResponse.json();
+      console.log('OpenAI response:', aiResponse);
+
+      try {
+        newMetadata = JSON.parse(aiResponse.choices[0].message.content);
+      } catch (error) {
+        console.error('Error parsing AI response:', error);
+        const content = aiResponse.choices[0].message.content;
+        // Fallback parsing attempt
+        const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
+        const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
+        newMetadata = {
+          name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
+          description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
+        };
+      }
+    }
+
+    if (updateExisting) {
+      // Update existing sculpture
+      const updateData: any = {};
+      if (regenerateImage && newImageUrl) {
+        updateData.image_url = newImageUrl;
+      }
+      if (regenerateMetadata && newMetadata) {
+        updateData.ai_generated_name = newMetadata.name;
+        updateData.ai_description = newMetadata.description;
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from('sculptures')
+        .update(updateData)
+        .eq('id', sculptureId);
+
+      if (updateError) {
+        console.error('Error updating sculpture:', updateError);
+        throw new Error('Failed to update sculpture');
+      }
+    } else {
+      // Create a new sculpture as a variation
+      const { error: insertError } = await supabaseAdmin
+        .from('sculptures')
+        .insert({
+          prompt,
+          image_url: newImageUrl,
+          user_id: originalSculpture.user_id,
+          creativity_level: creativity,
+          original_sculpture_id: sculptureId,
+          ...(newMetadata ? {
+            ai_generated_name: newMetadata.name,
+            ai_description: newMetadata.description,
+          } : {})
+        });
+
+      if (insertError) {
+        console.error('Error creating variation:', insertError);
+        throw new Error('Failed to create variation');
+      }
     }
 
     return new Response(
-      JSON.stringify({ success: true, imageUrl: imageData.imageURL }),
+      JSON.stringify({ 
+        success: true, 
+        imageUrl: newImageUrl,
+        metadata: newMetadata 
+      }),
       { 
         headers: { 
           ...corsHeaders,
