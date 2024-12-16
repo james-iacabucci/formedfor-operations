@@ -16,7 +16,7 @@ const Index = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-8 pb-4 border-b">
           <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -25,7 +25,7 @@ const Index = () => {
         </div>
 
         <div className="grid gap-6">
-          <Card>
+          <Card className="border-0 shadow-none">
             {/* Toolbar */}
             <div className="border-b border-border p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
