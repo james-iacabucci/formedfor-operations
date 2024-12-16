@@ -76,7 +76,9 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
             {/* Tags Management Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Tags</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Manage Sculpture Tags</h3>
+              </div>
               <Separator />
               <ManageTagsSection />
             </div>
