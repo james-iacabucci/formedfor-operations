@@ -9,6 +9,68 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      folder_sculptures: {
+        Row: {
+          created_at: string
+          folder_id: string
+          sculpture_id: string
+        }
+        Insert: {
+          created_at?: string
+          folder_id: string
+          sculpture_id: string
+        }
+        Update: {
+          created_at?: string
+          folder_id?: string
+          sculpture_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folder_sculptures_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folder_sculptures_sculpture_id_fkey"
+            columns: ["sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

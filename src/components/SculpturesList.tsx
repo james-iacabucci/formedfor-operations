@@ -6,6 +6,8 @@ import { Sculpture } from "@/types/sculpture";
 import { SculptureCard } from "./sculpture/SculptureCard";
 import { SculpturePreviewDialog } from "./sculpture/SculpturePreviewDialog";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
+import { AddToFolderDialog } from "./sculpture/AddToFolderDialog";
+import { FolderSelect } from "./folders/FolderSelect";
 
 export function SculpturesList() {
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(
@@ -14,16 +16,30 @@ export function SculpturesList() {
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(
     null
   );
+  const [sculptureToAddToFolder, setSculptureToAddToFolder] =
+    useState<Sculpture | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: sculptures, isLoading } = useQuery({
-    queryKey: ["sculptures"],
+    queryKey: ["sculptures", selectedFolderId],
     queryFn: async () => {
-      console.log("Fetching sculptures...");
-      const { data, error } = await supabase
-        .from("sculptures")
-        .select("*")
-        .order("created_at", { ascending: false });
+      console.log("Fetching sculptures for folder:", selectedFolderId);
+      let query = supabase.from("sculptures").select("*");
+
+      if (selectedFolderId) {
+        query = query.in(
+          "id",
+          supabase
+            .from("folder_sculptures")
+            .select("sculpture_id")
+            .eq("folder_id", selectedFolderId)
+        );
+      }
+
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) {
         console.error("Error fetching sculptures:", error);
@@ -83,13 +99,20 @@ export function SculpturesList() {
   if (!sculptures?.length) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No sculptures created yet. Try creating one above!
+        No sculptures found in this folder. Try creating one above!
       </div>
     );
   }
 
   return (
     <>
+      <div className="mb-6">
+        <FolderSelect
+          selectedFolderId={selectedFolderId}
+          onFolderChange={setSelectedFolderId}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sculptures.map((sculpture) => (
           <SculptureCard
@@ -97,6 +120,7 @@ export function SculpturesList() {
             sculpture={sculpture}
             onPreview={setSelectedSculpture}
             onDelete={handleDelete}
+            onAddToFolder={setSculptureToAddToFolder}
           />
         ))}
       </div>
@@ -114,6 +138,13 @@ export function SculpturesList() {
           if (!open) setSculptureToDelete(null);
         }}
         onConfirm={confirmDelete}
+      />
+
+      <AddToFolderDialog
+        sculpture={sculptureToAddToFolder}
+        onOpenChange={(open) => {
+          if (!open) setSculptureToAddToFolder(null);
+        }}
       />
     </>
   );

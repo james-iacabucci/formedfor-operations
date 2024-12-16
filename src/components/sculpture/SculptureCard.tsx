@@ -1,5 +1,14 @@
 import { format } from "date-fns";
-import { ImageIcon, Trash2Icon, LinkIcon, ArrowUpIcon, ArrowUpRightIcon, ArrowUpCircleIcon, DownloadIcon } from "lucide-react";
+import {
+  ImageIcon,
+  Trash2Icon,
+  LinkIcon,
+  ArrowUpIcon,
+  ArrowUpRightIcon,
+  ArrowUpCircleIcon,
+  DownloadIcon,
+  FolderPlusIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sculpture } from "@/types/sculpture";
@@ -11,23 +20,29 @@ interface SculptureCardProps {
   sculpture: Sculpture;
   onPreview: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
+  onAddToFolder: (sculpture: Sculpture) => void;
 }
 
-export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardProps) {
+export function SculptureCard({
+  sculpture,
+  onPreview,
+  onDelete,
+  onAddToFolder,
+}: SculptureCardProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
 
-  const handleRegenerate = async (creativity: 'small' | 'medium' | 'large') => {
+  const handleRegenerate = async (creativity: "small" | "medium" | "large") => {
     if (isRegenerating) return;
 
     setIsRegenerating(true);
     try {
-      const { error } = await supabase.functions.invoke('regenerate-image', {
-        body: { 
+      const { error } = await supabase.functions.invoke("regenerate-image", {
+        body: {
           prompt: sculpture.prompt,
           sculptureId: sculpture.id,
-          creativity
-        }
+          creativity,
+        },
       });
 
       if (error) throw error;
@@ -37,7 +52,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
         description: "New variation generated successfully.",
       });
     } catch (error) {
-      console.error('Error regenerating image:', error);
+      console.error("Error regenerating image:", error);
       toast({
         title: "Error",
         description: "Failed to generate variation. Please try again.",
@@ -53,7 +68,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
       const response = await fetch(sculpture.image_url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `sculpture-${sculpture.id}.png`;
       document.body.appendChild(a);
@@ -61,7 +76,7 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading image:', error);
+      console.error("Error downloading image:", error);
       toast({
         title: "Error",
         description: "Failed to download image. Please try again.",
@@ -70,13 +85,13 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
     }
   };
 
-  const getCreativityIcon = (level: 'small' | 'medium' | 'large') => {
+  const getCreativityIcon = (level: "small" | "medium" | "large") => {
     switch (level) {
-      case 'small':
+      case "small":
         return <ArrowUpIcon className="w-4 h-4" />;
-      case 'medium':
+      case "medium":
         return <ArrowUpRightIcon className="w-4 h-4" />;
-      case 'large':
+      case "large":
         return <ArrowUpCircleIcon className="w-4 h-4" />;
     }
   };
@@ -130,14 +145,25 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     size="icon"
                     variant="secondary"
                     className="bg-black/50 hover:bg-black/70 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToFolder(sculpture);
+                    }}
+                  >
+                    <FolderPlusIcon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
                     disabled={isRegenerating}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRegenerate('small');
+                      handleRegenerate("small");
                     }}
                     title="Small Variation"
                   >
-                    {getCreativityIcon('small')}
+                    {getCreativityIcon("small")}
                   </Button>
                   <Button
                     size="icon"
@@ -146,11 +172,11 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     disabled={isRegenerating}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRegenerate('medium');
+                      handleRegenerate("medium");
                     }}
                     title="Medium Variation"
                   >
-                    {getCreativityIcon('medium')}
+                    {getCreativityIcon("medium")}
                   </Button>
                   <Button
                     size="icon"
@@ -159,11 +185,11 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     disabled={isRegenerating}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRegenerate('large');
+                      handleRegenerate("large");
                     }}
                     title="Large Variation"
                   >
-                    {getCreativityIcon('large')}
+                    {getCreativityIcon("large")}
                   </Button>
                 </div>
               </div>
