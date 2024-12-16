@@ -14,9 +14,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky Header */}
+      {/* Header with sticky toolbar */}
       <div className="sticky top-0 z-10 bg-background border-b">
-        <div className="mx-auto max-w-7xl p-6">
+        {/* Header content */}
+        <div className="mx-auto max-w-7xl p-6 pb-0">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
             <div className="flex items-center gap-4">
@@ -25,13 +26,10 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="mx-auto max-w-7xl p-6">
-        <div className="grid gap-6">
+        {/* Sticky toolbar */}
+        <div className="mx-auto max-w-7xl px-6">
           <Card className="border-0 shadow-none">
-            {/* Toolbar */}
             <div className="border-b border-border p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4 flex-wrap">
@@ -51,17 +49,23 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <CardContent className="pt-6">
-              <SculpturesList selectedTags={selectedTags} />
-            </CardContent>
           </Card>
         </div>
-
-        <CreateSculptureSheet 
-          open={isCreateSheetOpen} 
-          onOpenChange={setIsCreateSheetOpen}
-        />
       </div>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-7xl p-6 pt-6">
+        <Card className="border-0 shadow-none">
+          <CardContent className="pt-6">
+            <SculpturesList selectedTags={selectedTags} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <CreateSculptureSheet 
+        open={isCreateSheetOpen} 
+        onOpenChange={setIsCreateSheetOpen}
+      />
     </div>
   );
 }
