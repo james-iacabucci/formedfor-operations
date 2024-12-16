@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ImageIcon, Trash2Icon, LinkIcon, ArrowUpIcon, ArrowUpRightIcon, ArrowUpCircleIcon } from "lucide-react";
+import { ImageIcon, Trash2Icon, LinkIcon, ArrowUpIcon, ArrowUpRightIcon, ArrowUpCircleIcon, DownloadIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sculpture } from "@/types/sculpture";
@@ -48,6 +48,28 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(sculpture.image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sculpture-${sculpture.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getCreativityIcon = (level: 'small' | 'medium' | 'large') => {
     switch (level) {
       case 'small':
@@ -86,6 +108,28 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     size="icon"
                     variant="secondary"
                     className="bg-black/50 hover:bg-black/70 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(sculpture);
+                    }}
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload();
+                    }}
+                  >
+                    <DownloadIcon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white"
                     disabled={isRegenerating}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -94,7 +138,6 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     title="Small Variation"
                   >
                     {getCreativityIcon('small')}
-                    <span className="sr-only">Small Variation</span>
                   </Button>
                   <Button
                     size="icon"
@@ -108,7 +151,6 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     title="Medium Variation"
                   >
                     {getCreativityIcon('medium')}
-                    <span className="sr-only">Medium Variation</span>
                   </Button>
                   <Button
                     size="icon"
@@ -122,20 +164,8 @@ export function SculptureCard({ sculpture, onPreview, onDelete }: SculptureCardP
                     title="Large Variation"
                   >
                     {getCreativityIcon('large')}
-                    <span className="sr-only">Large Variation</span>
                   </Button>
                 </div>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="bg-black/50 hover:bg-black/70 text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(sculpture);
-                  }}
-                >
-                  <Trash2Icon className="w-4 h-4" />
-                </Button>
               </div>
             </>
           ) : (
