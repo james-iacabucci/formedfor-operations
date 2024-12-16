@@ -30,15 +30,13 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
       {/* Description Section */}
       <div>
-        {sculpture.ai_description ? (
-          <EditableField
-            value={sculpture.ai_description}
-            type="textarea"
-            sculptureId={sculpture.id}
-            field="ai_description"
-            className="text-lg text-muted-foreground leading-relaxed"
-          />
-        ) : null}
+        <EditableField
+          value={sculpture.ai_description || "Sculpture description not defined"}
+          type="textarea"
+          sculptureId={sculpture.id}
+          field="ai_description"
+          className="text-lg text-muted-foreground leading-relaxed"
+        />
       </div>
 
       <div className="space-y-4">
