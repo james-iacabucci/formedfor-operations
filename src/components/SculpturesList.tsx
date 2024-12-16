@@ -93,19 +93,19 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
       <SculpturePreviewDialog
         sculpture={selectedSculpture}
-        isOpen={!!selectedSculpture}
+        open={!!selectedSculpture}
         onOpenChange={(open) => !open && setSelectedSculpture(null)}
       />
 
       <DeleteSculptureDialog
         sculpture={sculptureToDelete}
-        isOpen={!!sculptureToDelete}
+        open={!!sculptureToDelete}
         onOpenChange={(open) => !open && setSculptureToDelete(null)}
       />
 
       <ManageTagsDialog
         sculpture={sculptureToManageTags}
-        isOpen={!!sculptureToManageTags}
+        open={!!sculptureToManageTags}
         onOpenChange={(open) => !open && setSculptureToManageTags(null)}
       />
     </>

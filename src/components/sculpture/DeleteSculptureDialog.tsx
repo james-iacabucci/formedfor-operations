@@ -12,17 +12,17 @@ import { Sculpture } from "@/types/sculpture";
 
 interface DeleteSculptureDialogProps {
   sculpture: Sculpture | null;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
 }
 
 export function DeleteSculptureDialog({
   sculpture,
+  open,
   onOpenChange,
-  onConfirm,
 }: DeleteSculptureDialogProps) {
   return (
-    <AlertDialog open={sculpture !== null} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -33,7 +33,7 @@ export function DeleteSculptureDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
+          <AlertDialogAction>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

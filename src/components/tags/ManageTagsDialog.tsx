@@ -11,16 +11,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Sculpture } from "@/types/sculpture";
-import { Tag as TagIcon, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ManageTagsDialogProps {
   sculpture: Sculpture | null;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function ManageTagsDialog({
   sculpture,
+  open,
   onOpenChange,
 }: ManageTagsDialogProps) {
   const [newTagName, setNewTagName] = useState("");
@@ -147,7 +149,7 @@ export function ManageTagsDialog({
   };
 
   return (
-    <Dialog open={sculpture !== null} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Manage Tags</DialogTitle>

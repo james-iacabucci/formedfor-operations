@@ -8,15 +8,17 @@ import { Sculpture } from "@/types/sculpture";
 
 interface SculpturePreviewDialogProps {
   sculpture: Sculpture | null;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function SculpturePreviewDialog({
   sculpture,
+  open,
   onOpenChange,
 }: SculpturePreviewDialogProps) {
   return (
-    <Dialog open={sculpture !== null} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-xl">{sculpture?.prompt}</DialogTitle>
