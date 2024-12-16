@@ -6,6 +6,7 @@ import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { TagsSelect } from "@/components/tags/TagsSelect";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
@@ -17,7 +18,10 @@ const Index = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Formed For AI Studio</h1>
-          <UserMenu />
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <UserMenu />
+          </div>
         </div>
 
         <div className="grid gap-6">
