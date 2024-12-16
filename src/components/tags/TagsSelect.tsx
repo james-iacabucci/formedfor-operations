@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Tag as TagIcon, X, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -29,75 +27,53 @@ export function TagsSelect({ selectedTags, onTagsChange }: TagsSelectProps) {
     },
   });
 
-  const handleClearTags = () => {
-    onTagsChange([]);
-  };
-
   const handleTagClick = (tagId: string) => {
-    if (selectedTags.includes(tagId)) {
-      onTagsChange(selectedTags.filter((id) => id !== tagId));
+    if (tagId === "all") {
+      // If "All Sculptures" is clicked, clear all other selections
+      onTagsChange([]);
     } else {
-      onTagsChange([...selectedTags, tagId]);
+      let newSelectedTags: string[];
+      if (selectedTags.includes(tagId)) {
+        // Remove tag if already selected
+        newSelectedTags = selectedTags.filter((id) => id !== tagId);
+      } else {
+        // Add tag and ensure "All Sculptures" is not selected
+        newSelectedTags = [...selectedTags, tagId];
+      }
+      onTagsChange(newSelectedTags);
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <div className="flex-1">
-          {selectedTags.length === 0 ? (
-            <span className="text-sm text-muted-foreground">All Sculptures</span>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              {tags
-                ?.filter((tag) => selectedTags.includes(tag.id))
-                .map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                    onClick={() => handleTagClick(tag.id)}
-                  >
-                    {tag.name}
-                    <X className="ml-1 h-3 w-3" />
-                  </Badge>
-                ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearTags}
-                className="h-7 px-2 text-muted-foreground hover:text-foreground"
-              >
-                Clear all
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+  const isAllSelected = selectedTags.length === 0;
 
-      {tags && tags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 px-3">
-          <TagIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-          <div className="flex flex-wrap gap-2">
-            {tags
-              .filter((tag) => !selectedTags.includes(tag.id))
-              .map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="outline"
-                  className={cn(
-                    "cursor-pointer hover:bg-secondary/50 transition-colors",
-                    "border-dashed"
-                  )}
-                  onClick={() => handleTagClick(tag.id)}
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-          </div>
-        </div>
-      )}
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-6">
+      <Badge
+        variant={isAllSelected ? "secondary" : "outline"}
+        className={cn(
+          "cursor-pointer transition-colors",
+          isAllSelected ? "hover:bg-secondary/80" : "hover:bg-secondary/50 border-dashed"
+        )}
+        onClick={() => handleTagClick("all")}
+      >
+        All Sculptures
+      </Badge>
+
+      {tags?.map((tag) => (
+        <Badge
+          key={tag.id}
+          variant={selectedTags.includes(tag.id) ? "secondary" : "outline"}
+          className={cn(
+            "cursor-pointer transition-colors",
+            selectedTags.includes(tag.id)
+              ? "hover:bg-secondary/80"
+              : "hover:bg-secondary/50 border-dashed"
+          )}
+          onClick={() => handleTagClick(tag.id)}
+        >
+          {tag.name}
+        </Badge>
+      ))}
     </div>
   );
 }
