@@ -112,11 +112,13 @@ export function SculptureCard({
             </div>
           )}
         </div>
-        <SculptureInfo 
-          sculpture={sculpture}
-          tags={tags}
-          showAIContent={showAIContent}
-        />
+        <div className="px-4 pb-4">
+          <SculptureInfo 
+            sculpture={sculpture}
+            tags={tags}
+            showAIContent={showAIContent}
+          />
+        </div>
       </CardContent>
     </Card>
   );
