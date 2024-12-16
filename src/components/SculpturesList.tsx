@@ -78,7 +78,7 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sculptures.map((sculpture) => (
           <SculptureCard 
             key={sculpture.id} 
@@ -93,19 +93,19 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
       <SculpturePreviewDialog
         sculpture={selectedSculpture}
-        open={!!selectedSculpture}
+        isOpen={!!selectedSculpture}
         onOpenChange={(open) => !open && setSelectedSculpture(null)}
       />
 
       <DeleteSculptureDialog
         sculpture={sculptureToDelete}
-        open={!!sculptureToDelete}
+        isOpen={!!sculptureToDelete}
         onOpenChange={(open) => !open && setSculptureToDelete(null)}
       />
 
       <ManageTagsDialog
         sculpture={sculptureToManageTags}
-        open={!!sculptureToManageTags}
+        isOpen={!!sculptureToManageTags}
         onOpenChange={(open) => !open && setSculptureToManageTags(null)}
       />
     </>
