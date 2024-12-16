@@ -101,56 +101,61 @@ serve(async (req) => {
 
     let newMetadata = null;
     if (regenerateMetadata) {
-      // Generate content using OpenAI
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content: "You are an art curator helping to generate names and descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations."
-            },
-            {
-              role: "user",
-              content: `Generate a creative name (max 3-4 words) and a 2-3 sentence artistic description for a sculpture based on this prompt: "${prompt}". Format the response as JSON with 'name' and 'description' fields.`
-            }
-          ],
-        }),
-      });
-
-      if (!openaiResponse.ok) {
-        console.error('OpenAI API error:', await openaiResponse.text());
-        throw new Error('Failed to generate metadata');
-      }
-
-      const aiResponse = await openaiResponse.json();
-      console.log('OpenAI response:', aiResponse);
-
-      if (!aiResponse.choices || !aiResponse.choices[0]?.message?.content) {
-        console.error('Invalid OpenAI response format:', aiResponse);
-        throw new Error('Invalid response from OpenAI');
-      }
-
       try {
-        newMetadata = JSON.parse(aiResponse.choices[0].message.content);
-        if (!newMetadata?.name || !newMetadata?.description) {
-          throw new Error('Invalid metadata format');
+        // Generate content using OpenAI
+        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: "You are an art curator helping to generate names and descriptions for AI-generated sculptures. Provide thoughtful, artistic interpretations."
+              },
+              {
+                role: "user",
+                content: `Generate a creative name (max 3-4 words) and a 2-3 sentence artistic description for a sculpture based on this prompt: "${prompt}". Format the response as JSON with 'name' and 'description' fields.`
+              }
+            ],
+          }),
+        });
+
+        if (!openaiResponse.ok) {
+          console.error('OpenAI API error:', await openaiResponse.text());
+          throw new Error('OpenAI API returned an error');
+        }
+
+        const aiResponse = await openaiResponse.json();
+        console.log('OpenAI response:', aiResponse);
+
+        if (!aiResponse.choices || !aiResponse.choices[0]?.message?.content) {
+          console.error('Invalid OpenAI response format:', aiResponse);
+          throw new Error('Invalid response from OpenAI');
+        }
+
+        try {
+          newMetadata = JSON.parse(aiResponse.choices[0].message.content);
+          if (!newMetadata?.name || !newMetadata?.description) {
+            throw new Error('Invalid metadata format');
+          }
+        } catch (error) {
+          console.error('Error parsing AI response:', error);
+          const content = aiResponse.choices[0].message.content;
+          // Fallback parsing attempt
+          const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
+          const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
+          newMetadata = {
+            name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
+            description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
+          };
         }
       } catch (error) {
-        console.error('Error parsing AI response:', error);
-        const content = aiResponse.choices[0].message.content;
-        // Fallback parsing attempt
-        const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
-        const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
-        newMetadata = {
-          name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
-          description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
-        };
+        console.error('Error generating metadata:', error);
+        throw new Error('Failed to generate metadata');
       }
     }
 
