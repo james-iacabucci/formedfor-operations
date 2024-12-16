@@ -2,11 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { TagsSelect } from "@/components/tags/TagsSelect";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
@@ -26,7 +25,13 @@ const Index = () => {
               className="!mb-0" 
             />
             <div className="flex items-center gap-4 ml-auto">
-              <ThemeToggle />
+              <Button 
+                onClick={() => setIsCreateSheetOpen(true)}
+                className="gap-2 shrink-0"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Create Sculpture
+              </Button>
               <UserMenu />
             </div>
           </div>
@@ -37,13 +42,6 @@ const Index = () => {
           <Card className="border-0 shadow-none">
             <div className="border-b border-border p-4">
               <div className="flex justify-end">
-                <Button 
-                  onClick={() => setIsCreateSheetOpen(true)}
-                  className="gap-2 shrink-0"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  Create Sculpture
-                </Button>
               </div>
             </div>
           </Card>
