@@ -62,7 +62,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               <Separator />
               <div className="space-y-2">
                 <Label htmlFor="ai-context">Default AI Context</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs italic text-muted-foreground">
                   This context will be automatically included in all your AI image generation prompts
                 </p>
                 <Textarea
