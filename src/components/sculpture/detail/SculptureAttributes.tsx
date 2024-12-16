@@ -4,6 +4,7 @@ import { LinkIcon, TagIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
+import { EditableField } from "./EditableField";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
@@ -18,25 +19,31 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
     <div className="space-y-6">
       {/* Title Section */}
       <div>
-        {sculpture.ai_generated_name ? (
-          <h1 className="text-4xl font-bold tracking-tight">{sculpture.ai_generated_name}</h1>
-        ) : (
-          <h1 className="text-4xl font-bold tracking-tight">Untitled Sculpture</h1>
-        )}
+        <EditableField
+          value={sculpture.ai_generated_name || "Untitled Sculpture"}
+          type="input"
+          sculptureId={sculpture.id}
+          field="ai_generated_name"
+          className="text-4xl font-bold tracking-tight"
+        />
       </div>
 
       {/* Description Section */}
       <div>
-        {sculpture.ai_description && (
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {sculpture.ai_description}
-          </p>
-        )}
+        {sculpture.ai_description ? (
+          <EditableField
+            value={sculpture.ai_description}
+            type="textarea"
+            sculptureId={sculpture.id}
+            field="ai_description"
+            className="text-lg text-muted-foreground leading-relaxed"
+          />
+        ) : null}
       </div>
 
       <div className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold mb-2">Prompt</h2>
+          <h2 className="text-lg font-semibold mb-2">AI Prompt</h2>
           <p className="text-muted-foreground">{sculpture.prompt}</p>
         </div>
 
