@@ -5,6 +5,7 @@ import { useTagsManagement } from "../tags/useTagsManagement";
 import { TagsList } from "../tags/TagsList";
 import { CreateTagForm } from "../tags/CreateTagForm";
 import { toast } from "@/hooks/use-toast";
+import { Plus } from "lucide-react";
 
 export function ManageTagsSection() {
   const { tags, createTagMutation, removeTagMutation } = useTagsManagement(undefined);
@@ -38,47 +39,65 @@ export function ManageTagsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Manage Tags</h3>
-        <Button onClick={() => setShowCreateForm(true)} size="sm">
-          Add New Tag
+        <div className="space-y-1">
+          <h4 className="text-sm font-medium">Manage Tags</h4>
+          <p className="text-sm text-muted-foreground">
+            Create, edit, and delete tags to organize your sculptures
+          </p>
+        </div>
+        <Button 
+          onClick={() => setShowCreateForm(true)} 
+          size="sm"
+          className="h-8"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Tag
         </Button>
       </div>
 
       {showCreateForm && (
-        <CreateTagForm
-          onCreateTag={handleCreateTag}
-          onCancel={() => setShowCreateForm(false)}
-        />
+        <div className="rounded-md border p-4 bg-muted/50">
+          <CreateTagForm
+            onCreateTag={handleCreateTag}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {tags?.map((tag) => (
-          <div key={tag.id} className="flex items-center justify-between gap-2">
+          <div 
+            key={tag.id} 
+            className="flex items-center justify-between gap-2 rounded-lg border p-2 bg-card"
+          >
             {editingTagId === tag.id ? (
               <div className="flex flex-1 items-center gap-2">
                 <Input
                   value={editingTagName}
                   onChange={(e) => setEditingTagName(e.target.value)}
+                  className="h-8"
                 />
-                <Button onClick={() => handleUpdateTag(tag.id)} size="sm">
+                <Button onClick={() => handleUpdateTag(tag.id)} size="sm" className="h-8">
                   Save
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setEditingTagId(null)}
                   size="sm"
+                  className="h-8"
                 >
                   Cancel
                 </Button>
               </div>
             ) : (
               <>
-                <span className="flex-1">{tag.name}</span>
+                <span className="flex-1 text-sm">{tag.name}</span>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => startEditingTag(tag.id, tag.name)}
+                    className="h-7 text-xs"
                   >
                     Rename
                   </Button>
@@ -86,6 +105,7 @@ export function ManageTagsSection() {
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteTag(tag.id)}
+                    className="h-7 text-xs"
                   >
                     Delete
                   </Button>
