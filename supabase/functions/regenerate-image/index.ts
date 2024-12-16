@@ -47,7 +47,7 @@ serve(async (req) => {
 
     let newImageUrl = null;
     if (regenerateImage) {
-      // Map creativity levels to CFG values (lower = more creative)
+      // Map creativity levels to CFG values
       const cfgValues = {
         none: 2.0,
         small: 1.5,
@@ -58,51 +58,55 @@ serve(async (req) => {
       // Construct the prompt with changes only if provided
       const finalPrompt = changes ? `${prompt}. Changes: ${changes}` : prompt;
 
-      // Call Runware API for image generation
-      const runwareResponse = await fetch("https://api.runware.ai/v1", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([
-          {
-            taskType: "authentication",
-            apiKey: Deno.env.get('RUNWARE_API_KEY')
+      try {
+        // Call Runware API for image generation
+        const runwareResponse = await fetch("https://api.runware.ai/v1", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          {
-            taskType: "imageInference",
-            taskUUID: crypto.randomUUID(),
-            positivePrompt: finalPrompt,
-            model: "runware:100@1",
-            width: 1024,
-            height: 1024,
-            numberResults: 1,
-            CFGScale: cfgValues[creativity] || 1.0
-          }
-        ])
-      });
+          body: JSON.stringify([
+            {
+              taskType: "authentication",
+              apiKey: Deno.env.get('RUNWARE_API_KEY')
+            },
+            {
+              taskType: "imageInference",
+              taskUUID: crypto.randomUUID(),
+              positivePrompt: finalPrompt,
+              model: "runware:100@1",
+              width: 1024,
+              height: 1024,
+              numberResults: 1,
+              CFGScale: cfgValues[creativity] || 1.0
+            }
+          ])
+        });
 
-      const data = await runwareResponse.json();
-      console.log('Runware API response:', data);
+        const data = await runwareResponse.json();
+        console.log('Runware API response:', data);
 
-      if (data.error || !data.data) {
-        console.error('Runware API error:', data.error || 'No data returned');
-        throw new Error(data.error || 'Failed to generate image');
+        if (data.error || !data.data) {
+          console.error('Runware API error:', data.error || 'No data returned');
+          throw new Error(data.error || 'Failed to generate image');
+        }
+
+        const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
+        if (!imageData || !imageData.imageURL) {
+          console.error('No image URL in response');
+          throw new Error('No image URL in response');
+        }
+
+        newImageUrl = imageData.imageURL;
+      } catch (error) {
+        console.error('Error generating image:', error);
+        throw new Error('Failed to generate image');
       }
-
-      const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
-      if (!imageData || !imageData.imageURL) {
-        console.error('No image URL in response');
-        throw new Error('No image URL in response');
-      }
-
-      newImageUrl = imageData.imageURL;
     }
 
     let newMetadata = null;
     if (regenerateMetadata) {
       try {
-        // Generate content using OpenAI
         const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -124,44 +128,46 @@ serve(async (req) => {
           }),
         });
 
-        if (!openaiResponse.ok) {
-          console.error('OpenAI API error:', await openaiResponse.text());
-          throw new Error('OpenAI API returned an error');
-        }
-
         const aiResponse = await openaiResponse.json();
         console.log('OpenAI response:', aiResponse);
 
-        if (!aiResponse.choices || !aiResponse.choices[0]?.message?.content) {
-          console.error('Invalid OpenAI response format:', aiResponse);
-          throw new Error('Invalid response from OpenAI');
-        }
-
-        try {
-          newMetadata = JSON.parse(aiResponse.choices[0].message.content);
-          if (!newMetadata?.name || !newMetadata?.description) {
-            throw new Error('Invalid metadata format');
+        if (aiResponse.error) {
+          console.error('OpenAI API error:', aiResponse.error);
+          // Don't throw, just continue without metadata
+          console.log('Continuing without metadata due to OpenAI API error');
+        } else {
+          try {
+            if (aiResponse.choices?.[0]?.message?.content) {
+              newMetadata = JSON.parse(aiResponse.choices[0].message.content);
+              if (!newMetadata?.name || !newMetadata?.description) {
+                console.warn('Invalid metadata format, using fallback');
+                newMetadata = {
+                  name: 'Untitled Sculpture',
+                  description: 'A unique sculptural interpretation.',
+                };
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing AI response:', error);
+            // Use regex fallback
+            const content = aiResponse.choices[0].message.content;
+            const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
+            const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
+            newMetadata = {
+              name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
+              description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
+            };
           }
-        } catch (error) {
-          console.error('Error parsing AI response:', error);
-          const content = aiResponse.choices[0].message.content;
-          // Fallback parsing attempt
-          const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
-          const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
-          newMetadata = {
-            name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
-            description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
-          };
         }
       } catch (error) {
-        console.error('Error generating metadata:', error);
-        throw new Error('Failed to generate metadata');
+        console.error('Error in metadata generation:', error);
+        // Don't throw, just continue without metadata
+        console.log('Continuing without metadata due to error');
       }
     }
 
     if (updateExisting) {
       console.log('Updating existing sculpture:', sculptureId);
-      // Update existing sculpture
       const updateData: any = {};
       
       if (regenerateImage && newImageUrl) {
@@ -188,7 +194,6 @@ serve(async (req) => {
       console.log('Successfully updated sculpture:', sculptureId);
     } else {
       console.log('Creating new sculpture as variation');
-      // Create a new sculpture as a variation
       const { error: insertError } = await supabaseAdmin
         .from('sculptures')
         .insert({
