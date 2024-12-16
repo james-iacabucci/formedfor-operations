@@ -1,5 +1,13 @@
 import { SculptureActions } from "../SculptureActions";
 
+interface RegenerationOptions {
+  creativity: "none" | "small" | "medium" | "large";
+  changes?: string;
+  updateExisting: boolean;
+  regenerateImage: boolean;
+  regenerateMetadata: boolean;
+}
+
 interface SculptureImageProps {
   imageUrl: string;
   prompt: string;
@@ -7,7 +15,7 @@ interface SculptureImageProps {
   onDelete: () => void;
   onDownload: () => void;
   onManageTags: () => void;
-  onRegenerate: (creativity: "small" | "medium" | "large", changes?: string) => void;
+  onRegenerate: (options: RegenerationOptions) => void;
 }
 
 export function SculptureImage({

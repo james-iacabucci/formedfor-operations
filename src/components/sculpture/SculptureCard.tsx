@@ -27,16 +27,25 @@ export function SculptureCard({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleRegenerate = async (creativity: "small" | "medium" | "large", changes?: string) => {
+  const handleRegenerate = async (options: {
+    creativity: "none" | "small" | "medium" | "large";
+    changes?: string;
+    updateExisting: boolean;
+    regenerateImage: boolean;
+    regenerateMetadata: boolean;
+  }) => {
     if (isRegenerating) return;
 
     setIsRegenerating(true);
     try {
       const { error } = await supabase.functions.invoke("regenerate-image", {
         body: {
-          prompt: sculpture.prompt + (changes ? `. Changes: ${changes}` : ""),
+          prompt: sculpture.prompt + (options.changes ? `. Changes: ${options.changes}` : ""),
           sculptureId: sculpture.id,
-          creativity,
+          creativity: options.creativity,
+          updateExisting: options.updateExisting,
+          regenerateImage: options.regenerateImage,
+          regenerateMetadata: options.regenerateMetadata,
         },
       });
 
