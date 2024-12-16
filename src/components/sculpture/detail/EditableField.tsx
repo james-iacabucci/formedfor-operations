@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckIcon, PenIcon, XIcon } from "lucide-react";
+import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState(value);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -37,7 +38,6 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
 
       if (error) throw error;
 
-      // Invalidate both the individual sculpture query and any queries that list sculptures
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
 
@@ -55,6 +55,40 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (isRegenerating) return;
+
+    setIsRegenerating(true);
+    try {
+      console.log("Regenerating metadata for field:", field);
+      const { error: metadataError } = await supabase.functions.invoke("generate-metadata", {
+        body: {
+          sculptureId,
+          field,
+        },
+      });
+
+      if (metadataError) throw metadataError;
+
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+
+      toast({
+        title: "Success",
+        description: `${field === 'ai_generated_name' ? 'Name' : 'Description'} regenerated successfully.`,
+      });
+    } catch (error) {
+      console.error('Error regenerating:', error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -105,13 +139,23 @@ export function EditableField({ value, type, sculptureId, field, className }: Ed
   return (
     <div className="group relative">
       <div className={className}>{value}</div>
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute -right-6 top-1 opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Edit"
-      >
-        <PenIcon className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-      </button>
+      <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => setIsEditing(true)}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Edit"
+        >
+          <PenIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={handleRegenerate}
+          className="text-muted-foreground hover:text-foreground"
+          disabled={isRegenerating}
+          aria-label="Regenerate"
+        >
+          <RefreshCwIcon className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
     </div>
   );
 }
