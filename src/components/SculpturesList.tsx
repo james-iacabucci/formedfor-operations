@@ -22,7 +22,14 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
     queryKey: ["sculptures", selectedFolderId],
     queryFn: async () => {
       console.log("Fetching sculptures for folder:", selectedFolderId);
-      let query = supabase.from("sculptures").select("*");
+      let query = supabase
+        .from("sculptures")
+        .select(`
+          *,
+          folder_sculptures!inner (
+            folder:folders(id, name)
+          )
+        `);
 
       if (selectedFolderId) {
         const { data: folderSculptures } = await supabase
@@ -44,7 +51,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
       }
 
       console.log("Fetched sculptures:", data);
-      return data as Sculpture[];
+      return data as (Sculpture & { folder_sculptures: Array<{ folder: { id: string, name: string } }> })[];
     },
   });
 
@@ -108,6 +115,7 @@ export function SculpturesList({ selectedFolderId }: SculpturesListProps) {
           <SculptureCard
             key={sculpture.id}
             sculpture={sculpture}
+            folders={!selectedFolderId ? sculpture.folder_sculptures.map(fs => fs.folder) : []}
             onPreview={setSelectedSculpture}
             onDelete={handleDelete}
             onAddToFolder={setSculptureToAddToFolder}

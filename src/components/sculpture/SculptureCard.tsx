@@ -9,6 +9,7 @@ import { SculptureInfo } from "./SculptureInfo";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
+  folders: Array<{ id: string; name: string }>;
   onPreview: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
   onAddToFolder: (sculpture: Sculpture) => void;
@@ -16,6 +17,7 @@ interface SculptureCardProps {
 
 export function SculptureCard({
   sculpture,
+  folders,
   onPreview,
   onDelete,
   onAddToFolder,
@@ -108,7 +110,10 @@ export function SculptureCard({
             </div>
           )}
         </div>
-        <SculptureInfo sculpture={sculpture} />
+        <SculptureInfo 
+          sculpture={sculpture}
+          folders={folders}
+        />
       </CardContent>
     </Card>
   );
