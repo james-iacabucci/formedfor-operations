@@ -14,23 +14,12 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-interface SettingsSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const manageTagsSectionRef = useRef<{ applyChanges: () => Promise<void> }>(null);
 
   const handleApply = async () => {
     try {
-      // Apply tag changes if any
-      if (manageTagsSectionRef.current) {
-        await manageTagsSectionRef.current.applyChanges();
-      }
-      
       // TODO: Implement other settings save logic
       toast.success("Settings saved successfully");
       onOpenChange(false);
@@ -97,7 +86,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                 </Button>
               </div>
               <Separator />
-              <ManageTagsSection ref={manageTagsSectionRef} />
+              <ManageTagsSection />
             </div>
           </div>
         </div>
