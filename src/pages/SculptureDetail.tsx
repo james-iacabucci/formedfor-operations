@@ -1,24 +1,11 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { DeleteSculptureDialog } from "@/components/sculpture/DeleteSculptureDialog";
-import { ManageTagsDialog } from "@/components/tags/ManageTagsDialog";
-import { SculptureImage } from "@/components/sculpture/detail/SculptureImage";
-import { SculptureAttributes } from "@/components/sculpture/detail/SculptureAttributes";
-import { SculptureVariations } from "@/components/sculpture/detail/SculptureVariations";
-import { Sculpture } from "@/types/sculpture";
+import { SculptureHeader } from "@/components/sculpture/detail/SculptureHeader";
+import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
 
 export default function SculptureDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
-  const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const { toast } = useToast();
 
   const { data: sculpture, isLoading: isLoadingSculpture } = useQuery({
     queryKey: ["sculpture", id],
@@ -35,7 +22,7 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       console.log("Fetched sculpture:", data);
-      return data as Sculpture;
+      return data;
     },
   });
 
@@ -52,7 +39,7 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       console.log("Fetched original sculpture:", data);
-      return data as Sculpture;
+      return data;
     },
   });
 
@@ -78,68 +65,6 @@ export default function SculptureDetail() {
     },
   });
 
-  const handleRegenerate = async (options: {
-    creativity: "none" | "small" | "medium" | "large";
-    changes?: string;
-    updateExisting: boolean;
-    regenerateImage: boolean;
-    regenerateMetadata: boolean;
-  }) => {
-    if (isRegenerating) return;
-
-    setIsRegenerating(true);
-    try {
-      const { error } = await supabase.functions.invoke("regenerate-image", {
-        body: {
-          prompt: sculpture.prompt + (options.changes ? `. Changes: ${options.changes}` : ""),
-          sculptureId: sculpture.id,
-          creativity: options.creativity,
-          updateExisting: options.updateExisting,
-          regenerateImage: options.regenerateImage,
-          regenerateMetadata: options.regenerateMetadata,
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "New variation generated successfully.",
-      });
-    } catch (error) {
-      console.error("Error regenerating image:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate variation. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    try {
-      const response = await fetch(sculpture.image_url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sculpture-${sculpture.id}.png`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading image:", error);
-      toast({
-        title: "Error",
-        description: "Failed to download image. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (isLoadingSculpture) {
     return <div>Loading...</div>;
   }
@@ -151,51 +76,13 @@ export default function SculptureDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl p-6">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate("/")}
-        >
-          <ChevronLeftIcon className="w-4 h-4 mr-2" />
-          Back to Gallery
-        </Button>
-
-        <div className="grid grid-cols-3 gap-8">
-          <div className="col-span-2">
-            <SculptureImage
-              imageUrl={sculpture.image_url}
-              prompt={sculpture.prompt}
-              isRegenerating={isRegenerating}
-              onDelete={() => setSculptureToDelete(sculpture)}
-              onDownload={handleDownload}
-              onManageTags={() => setSculptureToManageTags(sculpture)}
-              onRegenerate={handleRegenerate}
-            />
-            
-            <SculptureVariations sculptureId={sculpture.id} />
-          </div>
-
-          <div className="col-span-1">
-            <SculptureAttributes
-              sculpture={sculpture}
-              originalSculpture={originalSculpture}
-              tags={tags || []}
-            />
-          </div>
-        </div>
+        <SculptureHeader />
+        <SculptureDetailContent
+          sculpture={sculpture}
+          originalSculpture={originalSculpture}
+          tags={tags || []}
+        />
       </div>
-
-      <DeleteSculptureDialog
-        sculpture={sculptureToDelete}
-        open={!!sculptureToDelete}
-        onOpenChange={(open) => !open && setSculptureToDelete(null)}
-      />
-
-      <ManageTagsDialog
-        sculpture={sculptureToManageTags}
-        open={!!sculptureToManageTags}
-        onOpenChange={(open) => !open && setSculptureToManageTags(null)}
-      />
     </div>
   );
 }
