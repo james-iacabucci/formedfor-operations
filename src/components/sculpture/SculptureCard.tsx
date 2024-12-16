@@ -59,7 +59,9 @@ export function SculptureCard({
 
       toast({
         title: "Success",
-        description: "New variation generated successfully.",
+        description: options.updateExisting 
+          ? "Existing sculpture updated successfully."
+          : "New variation generated successfully.",
       });
     } catch (error) {
       console.error("Error regenerating image:", error);
