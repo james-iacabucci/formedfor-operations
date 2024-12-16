@@ -23,7 +23,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -37,25 +37,27 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      console.error('OpenAI API error:', await response.text());
+      throw new Error('Failed to generate metadata: OpenAI API error');
+    }
+
     const aiResponse = await response.json();
     console.log('OpenAI response:', aiResponse);
 
-    if (aiResponse.error) {
-      console.error('OpenAI API error:', aiResponse.error);
-      throw new Error('Failed to generate metadata');
+    if (!aiResponse.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response from OpenAI');
     }
 
     let metadata;
     try {
-      if (aiResponse.choices?.[0]?.message?.content) {
-        metadata = JSON.parse(aiResponse.choices[0].message.content);
-        if (!metadata?.name || !metadata?.description) {
-          console.warn('Invalid metadata format, using fallback');
-          metadata = {
-            name: 'Untitled Sculpture',
-            description: 'A unique sculptural interpretation.',
-          };
-        }
+      metadata = JSON.parse(aiResponse.choices[0].message.content);
+      if (!metadata?.name || !metadata?.description) {
+        console.warn('Invalid metadata format, using fallback');
+        metadata = {
+          name: 'Untitled Sculpture',
+          description: 'A unique sculptural interpretation.',
+        };
       }
     } catch (error) {
       console.error('Error parsing AI response:', error);
@@ -86,7 +88,7 @@ serve(async (req) => {
 
       if (updateError) {
         console.error('Error updating sculpture metadata:', updateError);
-        throw new Error('Failed to update sculpture metadata');
+        throw new Error('Failed to update sculpture metadata in database');
       }
     }
 
