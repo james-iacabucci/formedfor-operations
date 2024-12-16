@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,7 +47,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-1106-preview',
         messages: [
           {
             role: 'system',
@@ -64,10 +63,16 @@ serve(async (req) => {
       }),
     });
 
+    if (!openAIResponse.ok) {
+      const errorData = await openAIResponse.text();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData}`);
+    }
+
     const data = await openAIResponse.json();
     console.log('OpenAI API response:', data);
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (!data.choices?.[0]?.message?.content) {
       console.error('Invalid OpenAI API response:', data);
       throw new Error('Invalid response from OpenAI API');
     }
