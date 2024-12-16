@@ -40,7 +40,7 @@ export function SculptureCard({
 
     setIsRegenerating(true);
     try {
-      const { error } = await supabase.functions.invoke("regenerate-image", {
+      const { data, error } = await supabase.functions.invoke("regenerate-image", {
         body: {
           prompt: sculpture.prompt + (options.changes ? `. Changes: ${options.changes}` : ""),
           sculptureId: sculpture.id,
@@ -60,7 +60,7 @@ export function SculptureCard({
       toast({
         title: "Success",
         description: options.updateExisting 
-          ? "Existing sculpture updated successfully."
+          ? "Updates to the existing sculpture generated successfully."
           : "New variation generated successfully.",
       });
     } catch (error) {

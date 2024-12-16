@@ -114,7 +114,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini",
+            model: "gpt-4",
             messages: [
               {
                 role: "system",
@@ -133,36 +133,34 @@ serve(async (req) => {
 
         if (aiResponse.error) {
           console.error('OpenAI API error:', aiResponse.error);
-          // Don't throw, just continue without metadata
-          console.log('Continuing without metadata due to OpenAI API error');
-        } else {
-          try {
-            if (aiResponse.choices?.[0]?.message?.content) {
-              newMetadata = JSON.parse(aiResponse.choices[0].message.content);
-              if (!newMetadata?.name || !newMetadata?.description) {
-                console.warn('Invalid metadata format, using fallback');
-                newMetadata = {
-                  name: 'Untitled Sculpture',
-                  description: 'A unique sculptural interpretation.',
-                };
-              }
+          throw new Error('Failed to generate metadata');
+        }
+
+        try {
+          if (aiResponse.choices?.[0]?.message?.content) {
+            newMetadata = JSON.parse(aiResponse.choices[0].message.content);
+            if (!newMetadata?.name || !newMetadata?.description) {
+              console.warn('Invalid metadata format, using fallback');
+              newMetadata = {
+                name: 'Untitled Sculpture',
+                description: 'A unique sculptural interpretation.',
+              };
             }
-          } catch (error) {
-            console.error('Error parsing AI response:', error);
-            // Use regex fallback
-            const content = aiResponse.choices[0].message.content;
-            const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
-            const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
-            newMetadata = {
-              name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
-              description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
-            };
           }
+        } catch (error) {
+          console.error('Error parsing AI response:', error);
+          // Use regex fallback
+          const content = aiResponse.choices[0].message.content;
+          const nameMatch = content.match(/name["']?\s*:\s*["']([^"']+)["']/i);
+          const descriptionMatch = content.match(/description["']?\s*:\s*["']([^"']+)["']/i);
+          newMetadata = {
+            name: nameMatch ? nameMatch[1] : 'Untitled Sculpture',
+            description: descriptionMatch ? descriptionMatch[1] : 'A unique sculptural interpretation.',
+          };
         }
       } catch (error) {
         console.error('Error in metadata generation:', error);
-        // Don't throw, just continue without metadata
-        console.log('Continuing without metadata due to error');
+        throw new Error('Failed to generate metadata');
       }
     }
 
@@ -180,6 +178,8 @@ serve(async (req) => {
       if (creativity) {
         updateData.creativity_level = creativity;
       }
+
+      console.log('Update data:', updateData);
 
       const { error: updateError } = await supabaseAdmin
         .from('sculptures')
@@ -219,7 +219,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         imageUrl: newImageUrl,
-        metadata: newMetadata 
+        metadata: newMetadata,
+        updateExisting 
       }),
       { 
         headers: { 
