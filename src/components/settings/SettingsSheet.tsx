@@ -4,15 +4,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Settings2, Plus } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Settings2 } from "lucide-react";
 import { ManageTagsSection } from "./ManageTagsSection";
 import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { AppearanceSection } from "./AppearanceSection";
+import { AIContextSection } from "./AIContextSection";
+import { TagsManagementHeader } from "./TagsManagementHeader";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -46,51 +45,11 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
         
         <div className="flex-1 overflow-y-auto px-6">
           <div className="py-6 space-y-8">
-            {/* Appearance Section */}
+            <AppearanceSection />
+            <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
+            
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Appearance</h3>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Choose light or dark mode theme</Label>
-                </div>
-                <ThemeToggle />
-              </div>
-            </div>
-
-            {/* AI Context Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">AI Generation</h3>
-              <Separator />
-              <div className="space-y-2">
-                <Label htmlFor="ai-context">Default AI Context</Label>
-                <p className="text-xs italic text-muted-foreground">
-                  This context will be automatically included in all your AI image generation prompts
-                </p>
-                <Textarea
-                  id="ai-context"
-                  value={aiContext}
-                  onChange={(e) => setAiContext(e.target.value)}
-                  placeholder="Enter your default AI image generation context..."
-                  className="min-h-[120px]"
-                />
-              </div>
-            </div>
-
-            {/* Tags Management Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Manage Sculpture Tags</h3>
-                <Button 
-                  onClick={() => setShowCreateForm(true)} 
-                  size="sm"
-                  className="h-8"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Tag
-                </Button>
-              </div>
-              <Separator />
+              <TagsManagementHeader onCreateTag={() => setShowCreateForm(true)} />
               <ManageTagsSection />
             </div>
           </div>
