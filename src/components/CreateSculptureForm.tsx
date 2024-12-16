@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FormData {
   prompt: string;
@@ -14,6 +15,7 @@ interface FormData {
 export function CreateSculptureForm() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
 
@@ -22,17 +24,17 @@ export function CreateSculptureForm() {
     
     setIsLoading(true);
     try {
-      // Try to create the sculpture directly with the user's ID
-      // Since we now have a trigger that creates profiles automatically,
-      // the user_id (which references profiles.id) should exist
-      const { error } = await supabase
+      // Create the sculpture
+      const { data: sculpture, error } = await supabase
         .from('sculptures')
         .insert([
           {
             prompt: data.prompt,
             user_id: user.id
           }
-        ]);
+        ])
+        .select()
+        .single();
 
       if (error) {
         console.error('Error creating sculpture:', error);
@@ -43,13 +45,29 @@ export function CreateSculptureForm() {
         });
         return;
       }
+
+      // Trigger image generation
+      const { error: generateError } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: data.prompt, sculptureId: sculpture.id }
+      });
+
+      if (generateError) {
+        console.error('Error generating image:', generateError);
+        toast({
+          title: "Warning",
+          description: "Sculpture created, but image generation failed. Please try again later.",
+        });
+      }
       
       reset();
       toast({
         title: "Success",
-        description: "Sculpture created successfully",
+        description: "Sculpture created successfully. Image generation in progress...",
       });
-      console.log('Sculpture created successfully');
+      
+      // Refresh the sculptures list
+      queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      
     } catch (error) {
       console.error('Error creating sculpture:', error);
       toast({
