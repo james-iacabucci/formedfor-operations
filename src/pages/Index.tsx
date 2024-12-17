@@ -18,7 +18,7 @@ const Index = () => {
         {/* Header content */}
         <div className="mx-auto max-w-7xl p-6 pb-0">
           <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-2xl font-bold shrink-0">Formed For</h1>
+            <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
             <TagsSelect 
               selectedTags={selectedTags} 
               onTagsChange={setSelectedTags}
