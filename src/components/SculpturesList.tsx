@@ -47,8 +47,8 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
     },
   });
 
-  // Query to fetch sculpture tags
-  const { data: sculptureTags } = useQuery({
+  // Query to fetch sculpture-tag relationships
+  const { data: sculptureTagRelations } = useQuery({
     queryKey: ["sculpture_tags"],
     queryFn: async () => {
       console.log("Fetching sculpture tags...");
@@ -94,9 +94,9 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sculptures.map((sculpture) => {
           // Filter tags for this specific sculpture
-          const sculptureTags = tags?.filter(tag => 
-            sculptureTags?.some(st => 
-              st.sculpture_id === sculpture.id && st.tag_id === tag.id
+          const sculptureSpecificTags = tags?.filter(tag => 
+            sculptureTagRelations?.some(relation => 
+              relation.sculpture_id === sculpture.id && relation.tag_id === tag.id
             )
           ) || [];
 
@@ -104,7 +104,7 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
             <SculptureCard 
               key={sculpture.id} 
               sculpture={sculpture}
-              tags={sculptureTags}
+              tags={sculptureSpecificTags}
               onDelete={setSculptureToDelete}
               onManageTags={setSculptureToManageTags}
             />
