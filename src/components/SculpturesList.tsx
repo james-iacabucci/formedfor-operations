@@ -47,7 +47,22 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
     },
   });
 
-  // Query to fetch tags
+  // Query to fetch sculpture tags
+  const { data: sculptureTags } = useQuery({
+    queryKey: ["sculpture_tags"],
+    queryFn: async () => {
+      console.log("Fetching sculpture tags...");
+      const { data, error } = await supabase
+        .from("sculpture_tags")
+        .select("sculpture_id, tag_id");
+
+      if (error) throw error;
+      console.log("Fetched sculpture tags:", data);
+      return data;
+    },
+  });
+
+  // Query to fetch all tags
   const { data: tags } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
@@ -77,15 +92,24 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sculptures.map((sculpture) => (
-          <SculptureCard 
-            key={sculpture.id} 
-            sculpture={sculpture}
-            tags={tags || []}
-            onDelete={setSculptureToDelete}
-            onManageTags={setSculptureToManageTags}
-          />
-        ))}
+        {sculptures.map((sculpture) => {
+          // Filter tags for this specific sculpture
+          const sculptureTags = tags?.filter(tag => 
+            sculptureTags?.some(st => 
+              st.sculpture_id === sculpture.id && st.tag_id === tag.id
+            )
+          ) || [];
+
+          return (
+            <SculptureCard 
+              key={sculpture.id} 
+              sculpture={sculpture}
+              tags={sculptureTags}
+              onDelete={setSculptureToDelete}
+              onManageTags={setSculptureToManageTags}
+            />
+          );
+        })}
       </div>
 
       <DeleteSculptureDialog
