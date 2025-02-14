@@ -5,7 +5,8 @@ import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 import { ManageTagsDialog } from "./tags/ManageTagsDialog";
 import { useSculpturesData } from "@/hooks/useSculpturesData";
 import { SculpturesGrid } from "./sculpture/SculpturesGrid";
-import { BoxIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PlusIcon, UploadIcon } from "lucide-react";
 
 interface SculpturesListProps {
   selectedTags: string[];
@@ -14,6 +15,8 @@ interface SculpturesListProps {
 export function SculpturesList({ selectedTags }: SculpturesListProps) {
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
   const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(selectedTags);
 
@@ -27,18 +30,27 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
   if (!sculptures?.length) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="relative w-64 h-64 mb-6">
-          <img
-            src="https://images.unsplash.com/photo-1535268647677-300dbf3d78d1"
-            alt="No sculptures found"
-            className="w-full h-full object-cover rounded-lg opacity-50"
-          />
-          <BoxIcon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 text-muted-foreground" />
-        </div>
         <h3 className="text-xl font-semibold mb-2">No sculptures yet</h3>
-        <p className="text-muted-foreground max-w-sm">
-          Start by creating a new sculpture or upload an existing one using the buttons above.
+        <p className="text-muted-foreground max-w-sm mb-8">
+          Start by creating a new sculpture or upload an existing one using the buttons below.
         </p>
+        <div className="flex gap-4">
+          <Button 
+            onClick={() => setIsAddSheetOpen(true)}
+            variant="outline"
+            className="gap-2"
+          >
+            <UploadIcon className="h-4 w-4" />
+            Add
+          </Button>
+          <Button 
+            onClick={() => setIsCreateSheetOpen(true)}
+            className="gap-2"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Create
+          </Button>
+        </div>
       </div>
     );
   }
