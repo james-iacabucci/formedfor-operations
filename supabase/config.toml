@@ -4,9 +4,6 @@ project_id = "lkgomkokczyvftjrbejq"
 [functions.generate-image]
 verify_jwt = false
 
-[functions.generate-image-runway]
-verify_jwt = false
-
 [functions.generate-metadata]
 verify_jwt = false
 
