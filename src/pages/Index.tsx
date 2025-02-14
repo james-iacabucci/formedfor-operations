@@ -2,14 +2,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
+import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { TagsSelect } from "@/components/tags/TagsSelect";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, UploadIcon } from "lucide-react";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   return (
@@ -26,6 +28,14 @@ const Index = () => {
               className="!mb-0" 
             />
             <div className="flex items-center gap-4 ml-auto">
+              <Button 
+                onClick={() => setIsAddSheetOpen(true)}
+                variant="outline"
+                className="gap-2 shrink-0"
+              >
+                <UploadIcon className="h-4 w-4" />
+                Add
+              </Button>
               <Button 
                 onClick={() => setIsCreateSheetOpen(true)}
                 className="gap-2 shrink-0"
@@ -61,6 +71,10 @@ const Index = () => {
       <CreateSculptureSheet 
         open={isCreateSheetOpen} 
         onOpenChange={setIsCreateSheetOpen}
+      />
+      <AddSculptureSheet
+        open={isAddSheetOpen}
+        onOpenChange={setIsAddSheetOpen}
       />
     </div>
   );

@@ -72,6 +72,9 @@ export type Database = {
           creativity_level: string | null
           id: string
           image_url: string | null
+          is_manual: boolean | null
+          manual_description: string | null
+          manual_name: string | null
           original_sculpture_id: string | null
           prompt: string
           user_id: string
@@ -84,6 +87,9 @@ export type Database = {
           creativity_level?: string | null
           id?: string
           image_url?: string | null
+          is_manual?: boolean | null
+          manual_description?: string | null
+          manual_name?: string | null
           original_sculpture_id?: string | null
           prompt: string
           user_id: string
@@ -96,6 +102,9 @@ export type Database = {
           creativity_level?: string | null
           id?: string
           image_url?: string | null
+          is_manual?: boolean | null
+          manual_description?: string | null
+          manual_name?: string | null
           original_sculpture_id?: string | null
           prompt?: string
           user_id?: string
