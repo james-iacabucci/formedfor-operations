@@ -41,47 +41,64 @@ export function DeleteSculptureDialog({
       
       console.log("[DeleteSculptureDialog] Starting deletion for sculpture:", sculpture.id);
 
-      // First, fetch any variations of this sculpture
-      const { data: variations, error: variationsError } = await supabase
-        .from("sculptures")
-        .select("id")
-        .eq("original_sculpture_id", sculpture.id);
+      // Helper function to recursively get all variations
+      const getAllVariationIds = async (sculptureId: string): Promise<string[]> => {
+        const { data: directVariations, error: variationsError } = await supabase
+          .from("sculptures")
+          .select("id")
+          .eq("original_sculpture_id", sculptureId);
 
-      if (variationsError) {
-        console.error("[DeleteSculptureDialog] Error fetching variations:", variationsError);
-        throw variationsError;
-      }
+        if (variationsError) {
+          console.error("[DeleteSculptureDialog] Error fetching variations:", variationsError);
+          throw variationsError;
+        }
 
-      console.log("[DeleteSculptureDialog] Found variations:", variations);
+        if (!directVariations || directVariations.length === 0) {
+          return [];
+        }
 
-      // Delete tags for variations first
-      if (variations && variations.length > 0) {
-        const variationIds = variations.map(v => v.id);
+        const directVariationIds = directVariations.map(v => v.id);
+        const nestedVariationIds = await Promise.all(
+          directVariationIds.map(id => getAllVariationIds(id))
+        );
+
+        return [...directVariationIds, ...nestedVariationIds.flat()];
+      };
+
+      // Get all variations recursively
+      const allVariationIds = await getAllVariationIds(sculpture.id);
+      console.log("[DeleteSculptureDialog] Found all variations:", allVariationIds);
+
+      // If there are any variations, delete their tags and then the variations themselves
+      if (allVariationIds.length > 0) {
+        // Delete tags for all variations
         const { error: variationTagsError } = await supabase
           .from("sculpture_tags")
           .delete()
-          .in("sculpture_id", variationIds);
+          .in("sculpture_id", allVariationIds);
 
         if (variationTagsError) {
           console.error("[DeleteSculptureDialog] Error deleting variation tags:", variationTagsError);
           throw variationTagsError;
         }
 
-        // Then delete the variations themselves
-        const { error: variationsDeleteError } = await supabase
-          .from("sculptures")
-          .delete()
-          .in("id", variationIds);
+        // Delete variations in reverse order (most nested first)
+        for (const variationId of allVariationIds.reverse()) {
+          const { error: variationDeleteError } = await supabase
+            .from("sculptures")
+            .delete()
+            .eq("id", variationId);
 
-        if (variationsDeleteError) {
-          console.error("[DeleteSculptureDialog] Error deleting variations:", variationsDeleteError);
-          throw variationsDeleteError;
+          if (variationDeleteError) {
+            console.error(`[DeleteSculptureDialog] Error deleting variation ${variationId}:`, variationDeleteError);
+            throw variationDeleteError;
+          }
         }
 
-        console.log("[DeleteSculptureDialog] Successfully deleted variations");
+        console.log("[DeleteSculptureDialog] Successfully deleted all variations");
       }
 
-      // Delete any sculpture tags for the main sculpture
+      // Delete tags for the main sculpture
       const { error: tagError } = await supabase
         .from("sculpture_tags")
         .delete()
@@ -113,7 +130,7 @@ export function DeleteSculptureDialog({
       onOpenChange(false);
       toast({
         title: "Success",
-        description: "Sculpture and its variations deleted successfully.",
+        description: "Sculpture and all its variations deleted successfully.",
       });
     },
     onError: (error) => {
