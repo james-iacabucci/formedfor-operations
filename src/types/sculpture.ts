@@ -9,5 +9,5 @@ export type Sculpture = {
   ai_generated_name?: string | null;
   ai_description?: string | null;
   user_id: string;
-  ai_engine: "runware" | "runway";
+  ai_engine: "runware" | "manual";
 };
