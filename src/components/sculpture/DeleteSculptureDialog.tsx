@@ -41,7 +41,47 @@ export function DeleteSculptureDialog({
       
       console.log("[DeleteSculptureDialog] Starting deletion for sculpture:", sculpture.id);
 
-      // First delete any sculpture tags
+      // First, fetch any variations of this sculpture
+      const { data: variations, error: variationsError } = await supabase
+        .from("sculptures")
+        .select("id")
+        .eq("original_sculpture_id", sculpture.id);
+
+      if (variationsError) {
+        console.error("[DeleteSculptureDialog] Error fetching variations:", variationsError);
+        throw variationsError;
+      }
+
+      console.log("[DeleteSculptureDialog] Found variations:", variations);
+
+      // Delete tags for variations first
+      if (variations && variations.length > 0) {
+        const variationIds = variations.map(v => v.id);
+        const { error: variationTagsError } = await supabase
+          .from("sculpture_tags")
+          .delete()
+          .in("sculpture_id", variationIds);
+
+        if (variationTagsError) {
+          console.error("[DeleteSculptureDialog] Error deleting variation tags:", variationTagsError);
+          throw variationTagsError;
+        }
+
+        // Then delete the variations themselves
+        const { error: variationsDeleteError } = await supabase
+          .from("sculptures")
+          .delete()
+          .in("id", variationIds);
+
+        if (variationsDeleteError) {
+          console.error("[DeleteSculptureDialog] Error deleting variations:", variationsDeleteError);
+          throw variationsDeleteError;
+        }
+
+        console.log("[DeleteSculptureDialog] Successfully deleted variations");
+      }
+
+      // Delete any sculpture tags for the main sculpture
       const { error: tagError } = await supabase
         .from("sculpture_tags")
         .delete()
@@ -54,7 +94,7 @@ export function DeleteSculptureDialog({
 
       console.log("[DeleteSculptureDialog] Successfully deleted sculpture tags");
 
-      // Then delete the sculpture
+      // Finally delete the main sculpture
       const { error } = await supabase
         .from("sculptures")
         .delete()
@@ -73,7 +113,7 @@ export function DeleteSculptureDialog({
       onOpenChange(false);
       toast({
         title: "Success",
-        description: "Sculpture deleted successfully.",
+        description: "Sculpture and its variations deleted successfully.",
       });
     },
     onError: (error) => {
@@ -98,7 +138,7 @@ export function DeleteSculptureDialog({
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your
-            sculpture.
+            sculpture and all its variations.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
