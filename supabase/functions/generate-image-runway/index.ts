@@ -14,15 +14,16 @@ serve(async (req) => {
 
   try {
     const { prompt, sculptureId } = await req.json()
-    console.log('Generating image with Runway for prompt:', prompt, 'sculptureId:', sculptureId)
+    console.log('Input received:', { prompt, sculptureId })
 
     const RUNWAY_API_KEY = Deno.env.get('RUNWAY_API_KEY')
     if (!RUNWAY_API_KEY) {
       throw new Error('RUNWAY_API_KEY is not set')
     }
+    console.log('RUNWAY_API_KEY found:', RUNWAY_API_KEY.substring(0, 5) + '...')
 
     // Call Runway API
-    console.log('Calling Runway API...')
+    console.log('Preparing Runway API call...')
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -30,37 +31,50 @@ serve(async (req) => {
       'X-Runway-Version': '1.0.0'
     }
     
-    console.log('Request headers:', headers)
+    console.log('Request headers:', JSON.stringify(headers, null, 2))
     
+    const requestBody = {
+      prompt,
+      cfg_scale: 7.5,
+      height: 1024,
+      width: 1024,
+      numOutputs: 1,
+      seed: Math.floor(Math.random() * 1000000)
+    }
+    console.log('Request body:', JSON.stringify(requestBody, null, 2))
+    
+    console.log('Sending request to Runway API...')
     const runwayResponse = await fetch('https://api.dev.runwayml.com/v1/text-to-image', {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        prompt,
-        cfg_scale: 7.5,
-        height: 1024,
-        width: 1024,
-        numOutputs: 1,
-        seed: Math.floor(Math.random() * 1000000)
-      })
+      body: JSON.stringify(requestBody)
+    })
+
+    console.log('Runway response received:', {
+      status: runwayResponse.status,
+      statusText: runwayResponse.statusText,
+      headers: Object.fromEntries(runwayResponse.headers.entries())
     })
 
     if (!runwayResponse.ok) {
       const errorText = await runwayResponse.text()
-      console.error('Runway API error:', {
+      const errorDetails = {
         status: runwayResponse.status,
         statusText: runwayResponse.statusText,
+        headers: Object.fromEntries(runwayResponse.headers.entries()),
         body: errorText,
-        headers: Object.fromEntries(runwayResponse.headers.entries())
-      })
+        requestHeaders: headers,
+        requestBody: requestBody
+      }
+      console.error('Runway API error details:', JSON.stringify(errorDetails, null, 2))
       throw new Error(`Runway API error: ${runwayResponse.status} ${runwayResponse.statusText} - ${errorText}`)
     }
 
     const data = await runwayResponse.json()
-    console.log('Runway API response:', JSON.stringify(data, null, 2))
+    console.log('Runway API response data:', JSON.stringify(data, null, 2))
 
     if (!data.artifacts?.[0]?.uri) {
-      console.error('Unexpected Runway API response format:', data)
+      console.error('Unexpected Runway API response format:', JSON.stringify(data, null, 2))
       throw new Error('Invalid response format from Runway API')
     }
 
@@ -73,21 +87,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    console.log('Updating sculpture in database...')
     const { error: updateError } = await supabase
       .from('sculptures')
       .update({ image_url: imageUrl })
       .eq('id', sculptureId)
 
     if (updateError) {
+      console.error('Database update error:', updateError)
       throw new Error(`Failed to update sculpture: ${updateError.message}`)
     }
 
+    console.log('Successfully completed all operations')
     return new Response(
       JSON.stringify({ imageUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    })
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
