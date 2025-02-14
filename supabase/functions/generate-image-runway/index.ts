@@ -23,13 +23,12 @@ serve(async (req) => {
 
     // Call Runway API
     console.log('Calling Runway API...')
-    const runwayResponse = await fetch('https://api.runwayml.com/v1/text-to-image', {
+    const runwayResponse = await fetch('https://api.dev.runwayml.com/v1/text-to-image', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'X-Runway-API-Version': 'v1'
       },
       body: JSON.stringify({
         prompt,
