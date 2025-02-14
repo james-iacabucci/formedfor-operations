@@ -23,9 +23,10 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       
-      // Ensure the creativity_level is one of the allowed values
-      const validatedData = {
+      // Validate ai_engine value
+      const validatedData: Sculpture = {
         ...data,
+        ai_engine: data.ai_engine as "runware" | "runway",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
       
@@ -47,9 +48,10 @@ export default function SculptureDetail() {
 
       if (error) throw error;
 
-      // Ensure the creativity_level is one of the allowed values
-      const validatedData = {
+      // Validate ai_engine value
+      const validatedData: Sculpture = {
         ...data,
+        ai_engine: data.ai_engine as "runware" | "runway",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
       

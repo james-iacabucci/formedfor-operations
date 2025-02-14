@@ -23,23 +23,20 @@ serve(async (req) => {
 
     // Call Runway API
     console.log('Calling Runway API...')
-    const runwayResponse = await fetch('https://api.runwayml.com/v1/inference', {
+    const runwayResponse = await fetch('https://api.runwayml.com/v1/text-to-image', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RUNWAY_API_KEY}`
       },
       body: JSON.stringify({
         prompt,
-        model: "stable-diffusion-xl",
-        mode: "generate",
-        parameters: {
-          image_strength: 1.0,
-          guidance_scale: 7.5,
-          num_outputs: 1,
-          width: 1024,
-          height: 1024
-        }
+        cfg_scale: 7.5,
+        height: 1024,
+        width: 1024,
+        numOutputs: 1,
+        seed: Math.floor(Math.random() * 1000000)
       })
     })
 
@@ -56,12 +53,12 @@ serve(async (req) => {
     const data = await runwayResponse.json()
     console.log('Runway API response:', JSON.stringify(data, null, 2))
 
-    if (!data.output) {
+    if (!data.artifacts?.[0]?.uri) {
       console.error('Unexpected Runway API response format:', data)
       throw new Error('Invalid response format from Runway API')
     }
 
-    const imageUrl = data.output
+    const imageUrl = data.artifacts[0].uri
     console.log('Generated image URL:', imageUrl)
 
     // Update the sculpture with the generated image URL
