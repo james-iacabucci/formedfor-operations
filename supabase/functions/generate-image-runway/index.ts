@@ -28,7 +28,7 @@ serve(async (req) => {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-      'X-Runway-Version': '2024-01-01'  // Changed to use date format as per API requirements
+      'X-Runway-Version': '2024-11-06'  // Updated to match documentation example
     }
     
     console.log('Request headers:', JSON.stringify(headers, null, 2))
@@ -44,7 +44,7 @@ serve(async (req) => {
     console.log('Request body:', JSON.stringify(requestBody, null, 2))
     
     console.log('Sending request to Runway API...')
-    const runwayResponse = await fetch('https://api.dev.runwayml.com/v1/text-to-image', {
+    const runwayResponse = await fetch('https://api.runwayml.com/v1/text-to-image', {  // Removed .dev subdomain
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody)
