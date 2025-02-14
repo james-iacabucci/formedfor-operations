@@ -15,6 +15,7 @@ serve(async (req) => {
 
   try {
     const { imageUrl, type } = await req.json()
+    console.log(`Processing request for type: ${type}, imageUrl: ${imageUrl}`)
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openAIApiKey) {
@@ -26,6 +27,7 @@ serve(async (req) => {
       ? "You are an art curator responsible for naming sculptures. Create a short, creative name for the sculpture in the image. The name should be brief (2-4 words) and capture the essence of the piece."
       : "You are an art curator describing how sculptures enhance spaces. Create a 2-3 sentence description of how this sculpture would enhance the space it's placed in. Focus on its visual impact, mood, and spatial interaction.";
 
+    console.log('Making request to OpenAI API...')
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -33,7 +35,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-vision-preview',
+        max_tokens: 150,
         messages: [
           { 
             role: 'system', 
@@ -52,8 +55,22 @@ serve(async (req) => {
       }),
     })
 
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('OpenAI API error:', errorData)
+      throw new Error(`OpenAI API error: ${errorData}`)
+    }
+
     const data = await response.json()
+    console.log('OpenAI API response:', data)
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from OpenAI API')
+    }
+
     const generatedContent = data.choices[0].message.content
+
+    console.log(`Generated ${type}:`, generatedContent)
 
     return new Response(
       JSON.stringify({ 
@@ -65,8 +82,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     )
   }
 })
