@@ -28,7 +28,7 @@ serve(async (req) => {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-      'X-Runway-Version': '2024-11-06'  // Changed back to the correct API version
+      'X-Runway-Version': '2024-11-06'
     }
     
     console.log('Request headers:', JSON.stringify(headers, null, 2))
@@ -50,27 +50,27 @@ serve(async (req) => {
       body: JSON.stringify(requestBody)
     })
 
-    console.log('Runway response received:', {
-      status: runwayResponse.status,
-      statusText: runwayResponse.statusText,
-      headers: Object.fromEntries(runwayResponse.headers.entries())
-    })
+    console.log('Runway response status:', runwayResponse.status)
+    console.log('Runway response status text:', runwayResponse.statusText)
+
+    const responseText = await runwayResponse.text()
+    console.log('Raw response text:', responseText)
 
     if (!runwayResponse.ok) {
-      const errorText = await runwayResponse.text()
       const errorDetails = {
         status: runwayResponse.status,
         statusText: runwayResponse.statusText,
         headers: Object.fromEntries(runwayResponse.headers.entries()),
-        body: errorText,
+        responseText,
         requestHeaders: headers,
-        requestBody: requestBody
+        requestBody
       }
       console.error('Runway API error details:', JSON.stringify(errorDetails, null, 2))
-      throw new Error(`Runway API error: ${runwayResponse.status} ${runwayResponse.statusText} - ${errorText}`)
+      throw new Error(`Runway API error: ${runwayResponse.status} ${runwayResponse.statusText} - ${responseText}`)
     }
 
-    const data = await runwayResponse.json()
+    // Parse the response text as JSON after we know it's OK
+    const data = JSON.parse(responseText)
     console.log('Runway API response data:', JSON.stringify(data, null, 2))
 
     if (!data.artifacts?.[0]?.uri) {
