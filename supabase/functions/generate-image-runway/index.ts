@@ -23,14 +23,18 @@ serve(async (req) => {
 
     // Call Runway API
     console.log('Calling Runway API...')
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${RUNWAY_API_KEY}`,
+      'X-Runway-Version': '1.0.0'
+    }
+    
+    console.log('Request headers:', headers)
+    
     const runwayResponse = await fetch('https://api.dev.runwayml.com/v1/text-to-image', {
       method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'X-Runway-Version': '1.0.0'
-      },
+      headers,
       body: JSON.stringify({
         prompt,
         cfg_scale: 7.5,
@@ -46,7 +50,8 @@ serve(async (req) => {
       console.error('Runway API error:', {
         status: runwayResponse.status,
         statusText: runwayResponse.statusText,
-        body: errorText
+        body: errorText,
+        headers: Object.fromEntries(runwayResponse.headers.entries())
       })
       throw new Error(`Runway API error: ${runwayResponse.status} ${runwayResponse.statusText} - ${errorText}`)
     }
