@@ -22,7 +22,8 @@ serve(async (req) => {
     }
 
     // Call Runway API
-    const response = await fetch('https://api.runwayml.com/v1/generate', {
+    console.log('Calling Runway API...')
+    const runwayResponse = await fetch('https://api.runwayml.com/v1/inference', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,22 +31,38 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         prompt,
-        model: "stable-diffusion-v1-5",
-        params: {
-          width: 1024,
-          height: 1024,
+        model: "stable-diffusion-xl",
+        mode: "generate",
+        parameters: {
+          image_strength: 1.0,
+          guidance_scale: 7.5,
           num_outputs: 1,
-          guidance_scale: 7.5
+          width: 1024,
+          height: 1024
         }
       })
     })
 
-    const data = await response.json()
-    console.log('Runway API response:', data)
-
-    if (!data.artifacts?.[0]?.uri) {
-      throw new Error('No image URL in response')
+    if (!runwayResponse.ok) {
+      const errorText = await runwayResponse.text()
+      console.error('Runway API error:', {
+        status: runwayResponse.status,
+        statusText: runwayResponse.statusText,
+        body: errorText
+      })
+      throw new Error(`Runway API error: ${runwayResponse.status} ${runwayResponse.statusText} - ${errorText}`)
     }
+
+    const data = await runwayResponse.json()
+    console.log('Runway API response:', JSON.stringify(data, null, 2))
+
+    if (!data.output) {
+      console.error('Unexpected Runway API response format:', data)
+      throw new Error('Invalid response format from Runway API')
+    }
+
+    const imageUrl = data.output
+    console.log('Generated image URL:', imageUrl)
 
     // Update the sculpture with the generated image URL
     const supabase = createClient(
@@ -55,7 +72,7 @@ serve(async (req) => {
 
     const { error: updateError } = await supabase
       .from('sculptures')
-      .update({ image_url: data.artifacts[0].uri })
+      .update({ image_url: imageUrl })
       .eq('id', sculptureId)
 
     if (updateError) {
@@ -63,7 +80,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ imageUrl: data.artifacts[0].uri }),
+      JSON.stringify({ imageUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
