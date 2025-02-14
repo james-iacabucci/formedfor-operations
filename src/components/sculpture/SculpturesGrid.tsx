@@ -32,7 +32,10 @@ export function SculpturesGrid({
             key={sculpture.id} 
             sculpture={sculpture}
             tags={sculptureSpecificTags}
-            onDelete={() => onDelete(sculpture)}
+            onDelete={() => {
+              console.log("[SculpturesGrid] Deleting sculpture:", sculpture);
+              onDelete(sculpture);
+            }}
             onManageTags={() => onManageTags(sculpture)}
           />
         );
