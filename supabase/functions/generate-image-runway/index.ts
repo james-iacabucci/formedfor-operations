@@ -29,6 +29,7 @@ serve(async (req) => {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RUNWAY_API_KEY}`,
+        'X-Runway-Version': '1.0.0'
       },
       body: JSON.stringify({
         prompt,
