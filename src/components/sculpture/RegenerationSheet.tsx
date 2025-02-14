@@ -1,12 +1,19 @@
+
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RegenerationOptions {
   creativity: "none" | "small" | "medium" | "large";
   changes?: string;
+  updateExisting?: boolean;
+  regenerateImage?: boolean;
+  regenerateMetadata?: boolean;
 }
 
 interface RegenerationSheetProps {
@@ -24,15 +31,39 @@ export function RegenerationSheet({
 }: RegenerationSheetProps) {
   const [changes, setChanges] = useState("");
   const [creativity, setCreativity] = useState<"none" | "small" | "medium" | "large">("medium");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onRegenerate({
-      creativity,
-      changes: changes.trim(),
-    });
-    onOpenChange(false);
-    setChanges("");
+    try {
+      await onRegenerate({
+        creativity,
+        changes: changes.trim(),
+        updateExisting: false, // Always create a new variation
+        regenerateImage: true,
+        regenerateMetadata: true
+      });
+      
+      // Invalidate relevant queries
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      
+      // Clear form and close sheet
+      setChanges("");
+      onOpenChange(false);
+      
+      toast({
+        title: "Success",
+        description: "Variation created successfully. Image generation in progress...",
+      });
+    } catch (error) {
+      console.error("Error generating variation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create variation. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
