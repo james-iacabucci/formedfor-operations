@@ -1,19 +1,14 @@
+
 project_id = "lkgomkokczyvftjrbejq"
 
-[api]
-enabled = true
-port = 54321
-hostname = "127.0.0.1"
+[functions.generate-image]
+verify_jwt = false
 
-[db]
-port = 54322
-shadow_port = 54320
+[functions.generate-image-runway]
+verify_jwt = false
 
-[studio]
-enabled = true
-port = 54323
-hostname = "127.0.0.1"
+[functions.generate-metadata]
+verify_jwt = false
 
-[[functions]]
-name = "generate-image"
-verify_jwt = true
+[functions.regenerate-image]
+verify_jwt = false

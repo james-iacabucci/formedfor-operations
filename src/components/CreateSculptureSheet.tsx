@@ -1,7 +1,15 @@
+
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -16,6 +24,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
+  const [aiEngine, setAiEngine] = useState<"runware" | "runway">("runware");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +38,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         .insert([
           {
             prompt: prompt.trim(),
-            user_id: user.id
+            user_id: user.id,
+            ai_engine: aiEngine
           }
         ])
         .select()
@@ -45,8 +55,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         return;
       }
 
-      // Trigger image generation
-      const { error: generateError } = await supabase.functions.invoke('generate-image', {
+      // Call the appropriate AI service based on the selected engine
+      const functionName = aiEngine === 'runway' ? 'generate-image-runway' : 'generate-image';
+      const { error: generateError } = await supabase.functions.invoke(functionName, {
         body: { prompt: prompt.trim(), sculptureId: sculpture.id }
       });
 
@@ -87,7 +98,24 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           <SheetTitle>Create New Sculpture</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="aiEngine" className="block text-sm font-medium mb-2">
+                AI Engine
+              </label>
+              <Select
+                value={aiEngine}
+                onValueChange={(value: "runware" | "runway") => setAiEngine(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select AI Engine" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="runware">Runware AI</SelectItem>
+                  <SelectItem value="runway">Runway ML</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Textarea
               placeholder="Describe your sculpture..."
               value={prompt}

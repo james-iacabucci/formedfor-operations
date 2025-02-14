@@ -1,3 +1,4 @@
+
 export type Sculpture = {
   id: string;
   prompt: string;
@@ -8,4 +9,5 @@ export type Sculpture = {
   ai_generated_name?: string | null;
   ai_description?: string | null;
   user_id: string;
+  ai_engine: "runware" | "runway";
 };

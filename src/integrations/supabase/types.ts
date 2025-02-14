@@ -66,6 +66,7 @@ export type Database = {
       sculptures: {
         Row: {
           ai_description: string | null
+          ai_engine: string
           ai_generated_name: string | null
           created_at: string
           creativity_level: string | null
@@ -77,6 +78,7 @@ export type Database = {
         }
         Insert: {
           ai_description?: string | null
+          ai_engine?: string
           ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
@@ -88,6 +90,7 @@ export type Database = {
         }
         Update: {
           ai_description?: string | null
+          ai_engine?: string
           ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
