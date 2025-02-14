@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -30,7 +31,7 @@ const Index = () => {
                 className="gap-2 shrink-0"
               >
                 <PlusIcon className="h-4 w-4" />
-                Create Sculpture
+                Create
               </Button>
               <UserMenu />
             </div>
