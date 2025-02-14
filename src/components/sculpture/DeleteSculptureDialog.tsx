@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -30,15 +31,34 @@ export function DeleteSculptureDialog({
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      console.log("Deleting sculpture:", sculpture?.id);
-      if (!sculpture?.id) throw new Error("No sculpture ID provided");
+      if (!sculpture?.id) {
+        console.error("No sculpture ID provided for deletion:", sculpture);
+        throw new Error("No sculpture ID provided");
+      }
+      
+      console.log("Deleting sculpture:", sculpture.id);
 
+      // First delete any sculpture tags
+      const { error: tagError } = await supabase
+        .from("sculpture_tags")
+        .delete()
+        .eq("sculpture_id", sculpture.id);
+
+      if (tagError) {
+        console.error("Error deleting sculpture tags:", tagError);
+        throw tagError;
+      }
+
+      // Then delete the sculpture
       const { error } = await supabase
         .from("sculptures")
         .delete()
         .eq("id", sculpture.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting sculpture:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       console.log("Successfully deleted sculpture");
