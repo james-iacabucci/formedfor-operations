@@ -28,7 +28,7 @@ serve(async (req) => {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-      'X-Runway-Version': '2024-01-01'  // Using the correct date-based version format
+      'x-api-version': '2024-01-01'  // Changed header name from X-Runway-Version to x-api-version
     }
     
     console.log('Request headers:', JSON.stringify(headers, null, 2))
