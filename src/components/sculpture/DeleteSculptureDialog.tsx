@@ -29,14 +29,17 @@ export function DeleteSculptureDialog({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  console.log("[DeleteSculptureDialog] Current sculpture:", sculpture);
+  console.log("[DeleteSculptureDialog] Dialog open:", open);
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!sculpture?.id) {
-        console.error("No sculpture ID provided for deletion:", sculpture);
+        console.error("[DeleteSculptureDialog] No sculpture ID provided for deletion:", sculpture);
         throw new Error("No sculpture ID provided");
       }
       
-      console.log("Deleting sculpture:", sculpture.id);
+      console.log("[DeleteSculptureDialog] Starting deletion for sculpture:", sculpture.id);
 
       // First delete any sculpture tags
       const { error: tagError } = await supabase
@@ -45,9 +48,11 @@ export function DeleteSculptureDialog({
         .eq("sculpture_id", sculpture.id);
 
       if (tagError) {
-        console.error("Error deleting sculpture tags:", tagError);
+        console.error("[DeleteSculptureDialog] Error deleting sculpture tags:", tagError);
         throw tagError;
       }
+
+      console.log("[DeleteSculptureDialog] Successfully deleted sculpture tags");
 
       // Then delete the sculpture
       const { error } = await supabase
@@ -56,12 +61,14 @@ export function DeleteSculptureDialog({
         .eq("id", sculpture.id);
 
       if (error) {
-        console.error("Error deleting sculpture:", error);
+        console.error("[DeleteSculptureDialog] Error deleting sculpture:", error);
         throw error;
       }
+
+      console.log("[DeleteSculptureDialog] Successfully deleted sculpture");
     },
     onSuccess: () => {
-      console.log("Successfully deleted sculpture");
+      console.log("[DeleteSculptureDialog] Mutation successful");
       queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       onOpenChange(false);
       toast({
@@ -70,7 +77,7 @@ export function DeleteSculptureDialog({
       });
     },
     onError: (error) => {
-      console.error("Error deleting sculpture:", error);
+      console.error("[DeleteSculptureDialog] Mutation error:", error);
       toast({
         title: "Error",
         description: "Failed to delete sculpture. Please try again.",
@@ -80,6 +87,7 @@ export function DeleteSculptureDialog({
   });
 
   const handleDelete = () => {
+    console.log("[DeleteSculptureDialog] Delete button clicked");
     deleteMutation.mutate();
   };
 

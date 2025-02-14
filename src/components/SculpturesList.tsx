@@ -16,6 +16,9 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
   const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(selectedTags);
 
+  console.log("[SculpturesList] Current sculptures:", sculptures);
+  console.log("[SculpturesList] Current sculptureToDelete:", sculptureToDelete);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -30,14 +33,20 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
         sculptures={sculptures}
         tags={tags}
         sculptureTagRelations={sculptureTagRelations}
-        onDelete={(sculpture) => setSculptureToDelete(sculpture)}
+        onDelete={(sculpture) => {
+          console.log("[SculpturesList] Setting sculpture to delete:", sculpture);
+          setSculptureToDelete(sculpture);
+        }}
         onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
       />
 
       <DeleteSculptureDialog
         sculpture={sculptureToDelete}
         open={!!sculptureToDelete}
-        onOpenChange={(open) => !open && setSculptureToDelete(null)}
+        onOpenChange={(open) => {
+          console.log("[SculpturesList] Dialog open change:", open);
+          if (!open) setSculptureToDelete(null);
+        }}
       />
 
       <ManageTagsDialog

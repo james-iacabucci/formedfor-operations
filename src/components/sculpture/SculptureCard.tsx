@@ -23,6 +23,8 @@ export function SculptureCard({
 }: SculptureCardProps) {
   const navigate = useNavigate();
 
+  console.log("[SculptureCard] Rendering card for sculpture:", sculpture);
+
   return (
     <Card
       className={`group relative ${sculpture.image_url ? "cursor-pointer" : ""}`}
@@ -48,7 +50,10 @@ export function SculptureCard({
               sculptureId={sculpture.id}
               prompt={sculpture.prompt}
               imageUrl={sculpture.image_url}
-              onDelete={onDelete}
+              onDelete={() => {
+                console.log("[SculptureCard] Delete clicked for sculpture:", sculpture);
+                onDelete();
+              }}
               onManageTags={onManageTags}
             />
           )}
