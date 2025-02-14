@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Sculpture } from "@/types/sculpture";
 import { SculptureImage } from "./SculptureImage";
@@ -8,8 +9,8 @@ import { SculptureCardActions } from "./SculptureCardActions";
 interface SculptureCardProps {
   sculpture: Sculpture;
   tags: Array<{ id: string; name: string }>;
-  onDelete: (sculpture: Sculpture) => void;
-  onManageTags: (sculpture: Sculpture) => void;
+  onDelete: () => void;
+  onManageTags: () => void;
   showAIContent?: boolean;
 }
 
@@ -47,8 +48,8 @@ export function SculptureCard({
               sculptureId={sculpture.id}
               prompt={sculpture.prompt}
               imageUrl={sculpture.image_url}
-              onDelete={() => onDelete(sculpture)}
-              onManageTags={() => onManageTags(sculpture)}
+              onDelete={onDelete}
+              onManageTags={onManageTags}
             />
           )}
         </div>

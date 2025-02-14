@@ -1,3 +1,4 @@
+
 import { Sculpture } from "@/types/sculpture";
 import { SculptureCard } from "./SculptureCard";
 
@@ -31,8 +32,8 @@ export function SculpturesGrid({
             key={sculpture.id} 
             sculpture={sculpture}
             tags={sculptureSpecificTags}
-            onDelete={onDelete}
-            onManageTags={onManageTags}
+            onDelete={() => onDelete(sculpture)}
+            onManageTags={() => onManageTags(sculpture)}
           />
         );
       })}

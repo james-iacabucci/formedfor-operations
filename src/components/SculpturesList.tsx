@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Sculpture } from "@/types/sculpture";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
@@ -29,8 +30,8 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
         sculptures={sculptures}
         tags={tags}
         sculptureTagRelations={sculptureTagRelations}
-        onDelete={setSculptureToDelete}
-        onManageTags={setSculptureToManageTags}
+        onDelete={(sculpture) => setSculptureToDelete(sculpture)}
+        onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
       />
 
       <DeleteSculptureDialog
