@@ -34,20 +34,22 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
         tags={tags}
         sculptureTagRelations={sculptureTagRelations}
         onDelete={(sculpture) => {
-          console.log("[SculpturesList] Setting sculpture to delete:", sculpture);
+          console.log("[SculpturesList] Setting sculpture to delete:", sculpture.id);
           setSculptureToDelete(sculpture);
         }}
         onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
       />
 
-      <DeleteSculptureDialog
-        sculpture={sculptureToDelete}
-        open={!!sculptureToDelete}
-        onOpenChange={(open) => {
-          console.log("[SculpturesList] Dialog open change:", open);
-          if (!open) setSculptureToDelete(null);
-        }}
-      />
+      {sculptureToDelete && (
+        <DeleteSculptureDialog
+          sculpture={sculptureToDelete}
+          open={!!sculptureToDelete}
+          onOpenChange={(open) => {
+            console.log("[SculpturesList] Dialog open change:", open);
+            if (!open) setSculptureToDelete(null);
+          }}
+        />
+      )}
 
       <ManageTagsDialog
         sculpture={sculptureToManageTags}

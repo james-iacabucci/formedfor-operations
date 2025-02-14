@@ -20,6 +20,8 @@ export function SculpturesGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {sculptures.map((sculpture) => {
+        console.log("[SculpturesGrid] Processing sculpture:", sculpture.id);
+        
         // Filter tags for this specific sculpture
         const sculptureSpecificTags = tags?.filter(tag => 
           sculptureTagRelations?.some(relation => 
@@ -33,7 +35,7 @@ export function SculpturesGrid({
             sculpture={sculpture}
             tags={sculptureSpecificTags}
             onDelete={() => {
-              console.log("[SculpturesGrid] Deleting sculpture:", sculpture);
+              console.log("[SculpturesGrid] Deleting sculpture:", sculpture.id);
               onDelete(sculpture);
             }}
             onManageTags={() => onManageTags(sculpture)}
