@@ -25,6 +25,8 @@ export function SculptureCardActions({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  console.log("[SculptureCardActions] Rendering with sculptureId:", sculptureId);
+
   const handleRegenerate = async (options: {
     creativity: "none" | "small" | "medium" | "large";
     changes?: string;

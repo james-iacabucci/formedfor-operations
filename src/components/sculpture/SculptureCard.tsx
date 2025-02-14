@@ -45,18 +45,16 @@ export function SculptureCard({
             isRegenerating={false}
             onImageClick={() => navigate(`/sculpture/${sculpture.id}`)}
           />
-          {sculpture.image_url && (
-            <SculptureCardActions
-              sculptureId={sculpture.id}
-              prompt={sculpture.prompt}
-              imageUrl={sculpture.image_url}
-              onDelete={() => {
-                console.log("[SculptureCard] Delete clicked for sculpture:", sculpture);
-                onDelete();
-              }}
-              onManageTags={onManageTags}
-            />
-          )}
+          <SculptureCardActions
+            sculptureId={sculpture.id}
+            prompt={sculpture.prompt}
+            imageUrl={sculpture.image_url}
+            onDelete={() => {
+              console.log("[SculptureCard] Delete clicked for sculpture:", sculpture);
+              onDelete();
+            }}
+            onManageTags={onManageTags}
+          />
         </div>
         <div className="px-4 pb-4">
           <SculptureInfo 
