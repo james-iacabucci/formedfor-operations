@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +27,7 @@ export default function SculptureDetail() {
       // Validate ai_engine value
       const validatedData: Sculpture = {
         ...data,
-        ai_engine: data.ai_engine as "runware" | "runway",
+        ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
       
@@ -51,7 +52,7 @@ export default function SculptureDetail() {
       // Validate ai_engine value
       const validatedData: Sculpture = {
         ...data,
-        ai_engine: data.ai_engine as "runware" | "runway",
+        ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
       
