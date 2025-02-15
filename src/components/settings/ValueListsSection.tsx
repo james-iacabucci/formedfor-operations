@@ -1,5 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react"; // Added this import
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import { 
