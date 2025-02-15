@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Plus, Image } from "lucide-react";
 import { Label } from "./ui/label";
 
 interface AddSculptureSheetProps {
@@ -23,12 +23,16 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isGeneratingName, setIsGeneratingName] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
     }
   };
 
@@ -70,9 +74,14 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
       if (error) throw error;
 
       if (type === 'name') {
-        setName(data.name);
+        // Remove any quotes from the name
+        setName(data.name.replace(/['"]/g, ''));
       } else {
-        setDescription(data.description);
+        // Replace generic references with the sculpture name
+        const sculptureDescription = name 
+          ? data.description.replace(/\b(this sculpture|the sculpture|it)\b/gi, name)
+          : data.description;
+        setDescription(sculptureDescription);
       }
 
       // Clean up temporary file
@@ -137,6 +146,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
       setName("");
       setDescription("");
       setFile(null);
+      setPreviewUrl(null);
       onOpenChange(false);
       toast({
         title: "Success",
@@ -167,13 +177,27 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="space-y-2">
             <Label htmlFor="image">Image</Label>
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              required
-            />
+            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Selected sculpture"
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <Plus className="w-12 h-12 text-muted-foreground" />
+                </div>
+              )}
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                required
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -218,7 +242,8 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe how this sculpture enhances its space..."
-              className="min-h-[100px] resize-y"
+              className="min-h-[250px] resize-y"
+              rows={10}
               required
             />
           </div>
@@ -231,3 +256,4 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
     </Sheet>
   );
 }
+
