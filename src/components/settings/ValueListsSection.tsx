@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react"; // Added this import
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -25,7 +25,7 @@ import { toast } from "sonner";
 
 interface ValueList {
   id: string;
-  type: 'finish' | 'material';
+  type: 'finish' | 'material' | 'fabricator' | 'texture';
   code: string | null;
   name: string;
   created_at: string;
@@ -40,6 +40,8 @@ type ValueListType = {
 const VALUE_LIST_TYPES: ValueListType[] = [
   { value: 'material', label: 'Materials', showCode: true },
   { value: 'finish', label: 'Finishes', showCode: false },
+  { value: 'fabricator', label: 'Fabricators', showCode: false },
+  { value: 'texture', label: 'Textures', showCode: false },
 ];
 
 export function ValueListsSection() {
@@ -87,7 +89,7 @@ export function ValueListsSection() {
       <div>
         <h3 className="text-lg font-medium">Value Lists</h3>
         <p className="text-sm text-muted-foreground">
-          Manage materials and finishes available for sculptures
+          Manage materials, finishes, fabricators, and textures for sculptures
         </p>
       </div>
       <Separator />
