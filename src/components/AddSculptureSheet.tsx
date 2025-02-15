@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Plus, Image } from "lucide-react";
+import { Sparkles, Plus, Image, Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
 
 interface AddSculptureSheetProps {
@@ -211,7 +211,11 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
                 disabled={isGeneratingName || !file}
                 onClick={() => generateAIContent('name')}
               >
-                <Sparkles className="h-4 w-4" />
+                {isGeneratingName ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <Input
@@ -234,7 +238,11 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
                 disabled={isGeneratingDescription || !file}
                 onClick={() => generateAIContent('description')}
               >
-                <Sparkles className="h-4 w-4" />
+                {isGeneratingDescription ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <Textarea
