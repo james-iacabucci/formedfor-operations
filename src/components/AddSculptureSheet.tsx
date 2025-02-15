@@ -8,8 +8,9 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Plus, Image, Loader2 } from "lucide-react";
-import { Label } from "./ui/label";
+import { ImageUpload } from "./sculpture/ImageUpload";
+import { AIField } from "./sculpture/AIField";
+import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 interface AddSculptureSheetProps {
   open: boolean;
@@ -24,8 +25,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isGeneratingName, setIsGeneratingName] = useState(false);
-  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const { isGeneratingName, isGeneratingDescription, generateAIContent } = useAIGeneration();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -33,75 +33,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
       setFile(selectedFile);
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
-    }
-  };
-
-  const generateAIContent = async (type: 'name' | 'description') => {
-    if (!file) {
-      toast({
-        title: "Error",
-        description: "Please upload an image first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (type === 'name') {
-        setIsGeneratingName(true);
-      } else {
-        setIsGeneratingDescription(true);
-      }
-
-      // Upload image to get a temporary URL
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('sculptures')
-        .upload(`temp/${fileName}`, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('sculptures')
-        .getPublicUrl(`temp/${fileName}`);
-
-      // Generate AI content
-      const { data, error } = await supabase.functions.invoke('generate-sculpture-metadata', {
-        body: { imageUrl: publicUrl, type }
-      });
-
-      if (error) throw error;
-
-      if (type === 'name') {
-        // Remove any quotes from the name
-        setName(data.name.replace(/['"]/g, ''));
-      } else {
-        // Replace generic references with the sculpture name
-        const sculptureDescription = name 
-          ? data.description.replace(/\b(this sculpture|the sculpture|it)\b/gi, name)
-          : data.description;
-        setDescription(sculptureDescription);
-      }
-
-      // Clean up temporary file
-      await supabase.storage
-        .from('sculptures')
-        .remove([`temp/${fileName}`]);
-
-    } catch (error) {
-      console.error(`Error generating ${type}:`, error);
-      toast({
-        title: "Error",
-        description: `Could not generate ${type}. Please try again.`,
-        variant: "destructive",
-      });
-    } finally {
-      if (type === 'name') {
-        setIsGeneratingName(false);
-      } else {
-        setIsGeneratingDescription(false);
-      }
     }
   };
 
@@ -175,49 +106,18 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
           <SheetTitle>Add New Sculpture</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="image">Image</Label>
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Selected sculpture"
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Plus className="w-12 h-12 text-muted-foreground" />
-                </div>
-              )}
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                required
-                className="absolute inset-0 opacity-0 cursor-pointer"
-              />
-            </div>
-          </div>
+          <ImageUpload previewUrl={previewUrl} onFileChange={handleFileChange} />
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-                disabled={isGeneratingName || !file}
-                onClick={() => generateAIContent('name')}
-              >
-                {isGeneratingName ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+          <AIField
+            label="Name"
+            isGenerating={isGeneratingName}
+            disabled={isGeneratingName || !file}
+            onGenerate={() => {
+              if (file) {
+                generateAIContent('name', file, name, setName);
+              }
+            }}
+          >
             <Input
               id="name"
               value={name}
@@ -225,26 +125,18 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
               placeholder="Enter sculpture name"
               required
             />
-          </div>
+          </AIField>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-                disabled={isGeneratingDescription || !file}
-                onClick={() => generateAIContent('description')}
-              >
-                {isGeneratingDescription ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+          <AIField
+            label="Description"
+            isGenerating={isGeneratingDescription}
+            disabled={isGeneratingDescription || !file}
+            onGenerate={() => {
+              if (file) {
+                generateAIContent('description', file, name, setDescription);
+              }
+            }}
+          >
             <Textarea
               id="description"
               value={description}
@@ -254,7 +146,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
               rows={10}
               required
             />
-          </div>
+          </AIField>
 
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "Adding..." : "Add Sculpture"}
@@ -264,4 +156,3 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
     </Sheet>
   );
 }
-
