@@ -187,7 +187,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      value_list_type: "finish" | "material"
+      value_list_type: "finish" | "material" | "fabricator" | "texture"
     }
     CompositeTypes: {
       [_ in never]: never
