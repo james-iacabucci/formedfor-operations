@@ -35,7 +35,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4v',
+        model: 'gpt-4o',
         max_tokens: 150,
         messages: [
           { 
