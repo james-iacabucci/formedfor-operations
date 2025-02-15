@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,14 @@ export function ValueListForm({
   const [code, setCode] = useState(initialData?.code || "");
   const [name, setName] = useState(initialData?.name || "");
 
+  // Reset form state when dialog opens/closes or initialData changes
+  useEffect(() => {
+    if (open) {
+      setCode(initialData?.code || "");
+      setName(initialData?.name || "");
+    }
+  }, [open, initialData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -45,8 +53,13 @@ export function ValueListForm({
     }
   };
 
+  const handleClose = () => {
+    setIsSubmitting(false);
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -77,7 +90,7 @@ export function ValueListForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
             >
               Cancel
             </Button>
