@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +77,10 @@ export function ValueListsSection() {
       return data as ValueList[];
     }
   });
+
+  const getCountForType = (type: ValueList['type']) => {
+    return valueLists?.filter(item => item.type === type).length || 0;
+  };
 
   const addMutation = useMutation({
     mutationFn: async (values: { code?: string; name: string }) => {
@@ -178,7 +181,7 @@ export function ValueListsSection() {
           <SelectContent>
             {VALUE_LIST_TYPES.map(type => (
               <SelectItem key={type.value} value={type.value}>
-                {type.label} ({filteredItems.length})
+                {type.label} ({getCountForType(type.value)})
               </SelectItem>
             ))}
           </SelectContent>
