@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import { AppearanceSection } from "./AppearanceSection";
 import { AIContextSection } from "./AIContextSection";
 import { TagsManagementHeader } from "./TagsManagementHeader";
+import { ValueListsSection } from "./ValueListsSection";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -47,6 +49,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           <div className="py-6 space-y-8">
             <AppearanceSection />
             <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
+            <ValueListsSection />
             
             <div className="space-y-4">
               <TagsManagementHeader onCreateTag={() => setShowCreateForm(true)} />

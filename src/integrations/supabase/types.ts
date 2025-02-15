@@ -155,6 +155,30 @@ export type Database = {
           },
         ]
       }
+      value_lists: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["value_list_type"]
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["value_list_type"]
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["value_list_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -163,7 +187,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      value_list_type: "finish" | "material"
     }
     CompositeTypes: {
       [_ in never]: never
