@@ -1,8 +1,6 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { SculptureHeader } from "@/components/sculpture/detail/SculptureHeader";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
 import { Sculpture, FileUpload } from "@/types/sculpture";
 
@@ -102,7 +100,6 @@ export default function SculptureDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl p-6">
-        <SculptureHeader sculpture={sculpture} />
         <SculptureDetailContent
           sculpture={sculpture}
           originalSculpture={originalSculpture}
