@@ -31,6 +31,21 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!open) {
       setShowCreateForm(false);
     }
+
+    // Cleanup function that only targets potential stray settings sheet portals
+    return () => {
+      const portals = document.querySelectorAll('[data-state="closed"][role="dialog"]');
+      portals.forEach(portal => {
+        // Only remove if it's likely a settings sheet portal (check for settings-related content)
+        if (portal.innerHTML.includes('Settings') && portal.parentNode) {
+          try {
+            portal.parentNode.removeChild(portal);
+          } catch (error) {
+            console.debug('Portal already removed:', error);
+          }
+        }
+      });
+    };
   }, [open]);
 
   const handleApply = async () => {
