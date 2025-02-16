@@ -3,7 +3,7 @@ import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
-import { Toggle } from "@/components/ui/toggle";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 
 interface SculptureInfoProps {
@@ -13,7 +13,7 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
-  const [showMetric, setShowMetric] = useState(false);
+  const [unit, setUnit] = useState<"inches" | "centimeters">("inches");
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
@@ -30,12 +30,12 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     }
   };
 
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: 'in' | 'cm') => {
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: 'inches' | 'centimeters') => {
     if (!h && !w && !d) return "No dimensions set";
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return unit === 'cm' ? (val * 2.54).toFixed(1) : val;
+      return unit === 'centimeters' ? (val * 2.54).toFixed(1) : val;
     };
     
     const h_val = formatValue(h);
@@ -75,23 +75,25 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <div>
           {getMaterialName()}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <span>
             {formatDimensionString(
               sculpture.height_in,
               sculpture.width_in,
               sculpture.depth_in,
-              showMetric ? 'cm' : 'in'
-            )} ({showMetric ? 'cm' : 'in'})
+              unit
+            )}
           </span>
-          <Toggle
-            size="sm"
-            pressed={showMetric}
-            onPressedChange={setShowMetric}
-            className="h-6 px-2 text-xs"
+          <Tabs
+            value={unit}
+            onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
+            className="w-[200px]"
           >
-            {showMetric ? 'in' : 'cm'}
-          </Toggle>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="inches">inches</TabsTrigger>
+              <TabsTrigger value="centimeters">centimeters</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
