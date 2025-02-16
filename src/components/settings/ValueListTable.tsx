@@ -32,10 +32,10 @@ export function ValueListTable({
           <TableHeader>
             <TableRow>
               {showCode && (
-                <TableHead className="w-[100px]">Code</TableHead>
+                <TableHead className="w-[80px]">Code</TableHead>
               )}
-              <TableHead>Name</TableHead>
-              <TableHead className="w-[150px]">Actions</TableHead>
+              <TableHead className="w-[300px]">Name</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,17 +46,19 @@ export function ValueListTable({
                 )}
                 <TableCell>{item.name}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
+                      className="h-8 w-8"
                       onClick={() => onEdit(item)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
+                      className="h-8 w-8"
                       onClick={() => onDelete(item)}
                     >
                       <Trash2 className="h-4 w-4" />
