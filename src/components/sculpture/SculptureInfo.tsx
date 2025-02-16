@@ -75,7 +75,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <div>
           {getMaterialName()}
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-4">
           <span>
             {formatDimensionString(
               sculpture.height_in,
@@ -87,11 +87,11 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           <Tabs
             value={unit}
             onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
-            className="w-[200px]"
+            className="h-6"
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="inches">inches</TabsTrigger>
-              <TabsTrigger value="centimeters">centimeters</TabsTrigger>
+            <TabsList className="h-6 p-0.5">
+              <TabsTrigger value="inches" className="h-5 px-2 text-xs">in</TabsTrigger>
+              <TabsTrigger value="centimeters" className="h-5 px-2 text-xs">cm</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
