@@ -13,7 +13,11 @@ interface SculptureInfoProps {
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
   return (
     <div className="mt-4">
-      <div className="flex items-center justify-between">
+      <h3 className="font-semibold line-clamp-1">
+        {sculpture.prompt || "Untitled Sculpture"}
+      </h3>
+
+      <div className="mt-2 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {format(new Date(sculpture.created_at), "MMM d, yyyy")}
         </p>
@@ -24,10 +28,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           </div>
         )}
       </div>
-
-      <h3 className="mt-2 font-semibold line-clamp-1">
-        {sculpture.name || "Untitled Sculpture"}
-      </h3>
       
       {showAIContent && sculpture.ai_generated_name ? (
         <>
