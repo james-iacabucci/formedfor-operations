@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sculpture, FileUpload } from "@/types/sculpture";
@@ -7,7 +8,6 @@ export function useSculpturesData(selectedTags: string[]) {
   const { data: sculptures, isLoading } = useQuery({
     queryKey: ["sculptures", selectedTags],
     queryFn: async () => {
-      console.log("Fetching sculptures with selected tags:", selectedTags);
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
 
@@ -40,7 +40,6 @@ export function useSculpturesData(selectedTags: string[]) {
         creativity_level: item.creativity_level as "none" | "small" | "medium" | "large" | null,
       }));
 
-      console.log("Fetched sculptures:", transformedData);
       return transformedData;
     },
   });
@@ -49,13 +48,11 @@ export function useSculpturesData(selectedTags: string[]) {
   const { data: sculptureTagRelations } = useQuery({
     queryKey: ["sculpture_tags"],
     queryFn: async () => {
-      console.log("Fetching sculpture tags...");
       const { data, error } = await supabase
         .from("sculpture_tags")
         .select("sculpture_id, tag_id");
 
       if (error) throw error;
-      console.log("Fetched sculpture tags:", data);
       return data;
     },
   });
@@ -64,7 +61,6 @@ export function useSculpturesData(selectedTags: string[]) {
   const { data: tags } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
-      console.log("Fetching tags...");
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
 
@@ -74,7 +70,6 @@ export function useSculpturesData(selectedTags: string[]) {
         .eq("user_id", user.user.id);
 
       if (error) throw error;
-      console.log("Fetched tags:", data);
       return data;
     },
   });
