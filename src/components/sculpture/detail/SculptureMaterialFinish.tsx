@@ -37,8 +37,8 @@ export function SculptureMaterialFinish({
     },
   });
 
-  // Fetch finishes from value_lists
-  const { data: finishes } = useQuery({
+  // Fetch all finishes from value_lists
+  const { data: allFinishes } = useQuery({
     queryKey: ["value_lists", "finish"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,10 +51,35 @@ export function SculptureMaterialFinish({
     },
   });
 
+  // Fetch material-finish associations
+  const { data: materialFinishes } = useQuery({
+    queryKey: ["material-finishes", materialId],
+    enabled: !!materialId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("material_finishes")
+        .select("finish_id")
+        .eq("material_id", materialId);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Filter finishes based on material selection
+  const validFinishIds = materialFinishes?.map(mf => mf.finish_id) || [];
+  const finishes = allFinishes?.filter(finish => 
+    !materialId || validFinishIds.includes(finish.id)
+  );
+
   const handleMaterialChange = async (newMaterialId: string) => {
     const { error } = await supabase
       .from("sculptures")
-      .update({ material_id: newMaterialId })
+      .update({ 
+        material_id: newMaterialId,
+        finish_id: null, // Reset finish when material changes
+        color_code: null // Reset color when material changes
+      })
       .eq("id", sculptureId);
 
     if (error) {
@@ -131,7 +156,6 @@ export function SculptureMaterialFinish({
     { code: 'H-151', name: 'Satin Aluminum' },
     { code: 'H-237', name: 'Tungsten' },
     { code: 'H-190', name: 'Armor Black' },
-    // Add more Cerakote colors as needed
   ];
 
   const ralColors = [
@@ -140,7 +164,6 @@ export function SculptureMaterialFinish({
     { code: 'RAL9007', name: 'Grey Aluminium' },
     { code: 'RAL7016', name: 'Anthracite Grey' },
     { code: 'RAL9016', name: 'Traffic White' },
-    // Add more RAL colors as needed
   ];
 
   return (
@@ -166,9 +189,19 @@ export function SculptureMaterialFinish({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Finish</label>
-            <Select value={finishId || ''} onValueChange={handleFinishChange}>
+            <Select 
+              value={finishId || ''} 
+              onValueChange={handleFinishChange}
+              disabled={!materialId || finishes?.length === 0}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select finish" />
+                <SelectValue placeholder={
+                  !materialId 
+                    ? "Select a material first" 
+                    : finishes?.length === 0 
+                      ? "No finishes available" 
+                      : "Select finish"
+                } />
               </SelectTrigger>
               <SelectContent>
                 {finishes?.map((finish) => (

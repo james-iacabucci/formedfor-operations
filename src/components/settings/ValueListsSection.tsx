@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, Link } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -32,6 +33,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ValueListForm } from "./ValueListForm";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ValueList {
   id: string;
@@ -39,6 +47,11 @@ interface ValueList {
   code: string | null;
   name: string;
   created_at: string;
+}
+
+interface MaterialFinish {
+  material_id: string;
+  finish_id: string;
 }
 
 type ValueListType = {
@@ -60,6 +73,8 @@ export function ValueListsSection() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<ValueList | null>(null);
   const [deleteItem, setDeleteItem] = useState<ValueList | null>(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<ValueList | null>(null);
+  const [isFinishesDialogOpen, setIsFinishesDialogOpen] = useState(false);
   
   const currentTypeConfig = VALUE_LIST_TYPES.find(t => t.value === selectedType)!;
 
@@ -75,6 +90,18 @@ export function ValueListsSection() {
       
       if (error) throw error;
       return data as ValueList[];
+    }
+  });
+
+  const { data: materialFinishes } = useQuery({
+    queryKey: ['material-finishes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('material_finishes')
+        .select('*');
+      
+      if (error) throw error;
+      return data as MaterialFinish[];
     }
   });
 
@@ -138,7 +165,45 @@ export function ValueListsSection() {
     }
   });
 
+  const updateMaterialFinishes = useMutation({
+    mutationFn: async ({ materialId, finishIds }: { materialId: string; finishIds: string[] }) => {
+      // First, delete all existing associations for this material
+      const { error: deleteError } = await supabase
+        .from('material_finishes')
+        .delete()
+        .eq('material_id', materialId);
+      
+      if (deleteError) throw deleteError;
+
+      // Then, insert the new associations
+      if (finishIds.length > 0) {
+        const { error: insertError } = await supabase
+          .from('material_finishes')
+          .insert(
+            finishIds.map(finishId => ({
+              material_id: materialId,
+              finish_id: finishId
+            }))
+          );
+        
+        if (insertError) throw insertError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['material-finishes'] });
+      toast.success("Material finishes updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating material finishes:", error);
+      toast.error("Failed to update material finishes");
+    }
+  });
+
   const filteredItems = valueLists?.filter(item => item.type === selectedType) || [];
+  const finishes = valueLists?.filter(item => item.type === 'finish') || [];
+  const selectedMaterialFinishes = materialFinishes?.filter(
+    mf => mf.material_id === selectedMaterial?.id
+  ).map(mf => mf.finish_id) || [];
 
   const handleAdd = async (values: { code?: string; name: string }) => {
     await addMutation.mutateAsync(values);
@@ -154,6 +219,15 @@ export function ValueListsSection() {
     if (!deleteItem) return;
     await deleteMutation.mutateAsync(deleteItem.id);
     setDeleteItem(null);
+  };
+
+  const handleFinishesUpdate = async (selectedFinishIds: string[]) => {
+    if (!selectedMaterial) return;
+    await updateMaterialFinishes.mutateAsync({
+      materialId: selectedMaterial.id,
+      finishIds: selectedFinishIds
+    });
+    setIsFinishesDialogOpen(false);
   };
 
   if (isLoading) {
@@ -202,7 +276,7 @@ export function ValueListsSection() {
                   <TableHead className="w-[100px]">Code</TableHead>
                 )}
                 <TableHead>Name</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead className="w-[150px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,6 +302,18 @@ export function ValueListsSection() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                      {item.type === 'material' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedMaterial(item);
+                            setIsFinishesDialogOpen(true);
+                          }}
+                        >
+                          <Link className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -270,6 +356,38 @@ export function ValueListsSection() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isFinishesDialogOpen} onOpenChange={setIsFinishesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Select Valid Finishes for {selectedMaterial?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {finishes.map((finish) => (
+              <div key={finish.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={finish.id}
+                  checked={selectedMaterialFinishes.includes(finish.id)}
+                  onCheckedChange={(checked) => {
+                    const newSelectedFinishes = checked
+                      ? [...selectedMaterialFinishes, finish.id]
+                      : selectedMaterialFinishes.filter(id => id !== finish.id);
+                    handleFinishesUpdate(newSelectedFinishes);
+                  }}
+                />
+                <label
+                  htmlFor={finish.id}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {finish.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
