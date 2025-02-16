@@ -36,7 +36,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       return unit === 'cm' ? val.toFixed(2) : val;
     };
     
-    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d ${unit}`;
+    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d`;
   };
 
   const handleDimensionsUpdate = async () => {
@@ -131,17 +131,20 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
           <div className="space-y-2">
             <div className="flex items-center justify-between border rounded-md p-2">
               <div className="flex items-center gap-4">
-                <span className="text-sm">
-                  {formatDimensionString(height, width, depth, "in")}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  ({formatDimensionString(
-                    height ? calculateCm(height) : null,
-                    width ? calculateCm(width) : null,
-                    depth ? calculateCm(depth) : null,
-                    "cm"
-                  )})
-                </span>
+                <div className="text-sm space-x-3">
+                  <span>
+                    {formatDimensionString(height, width, depth, "in")} (in)
+                  </span>
+                  <span className="text-muted-foreground">|</span>
+                  <span className="text-muted-foreground">
+                    {formatDimensionString(
+                      height ? calculateCm(height) : null,
+                      width ? calculateCm(width) : null,
+                      depth ? calculateCm(depth) : null,
+                      "cm"
+                    )} (cm)
+                  </span>
+                </div>
               </div>
               <Button
                 variant="ghost"
