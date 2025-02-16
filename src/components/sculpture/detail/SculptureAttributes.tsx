@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
@@ -9,6 +8,7 @@ import { EditableField } from "./EditableField";
 import { FileUploadField } from "../FileUploadField";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
