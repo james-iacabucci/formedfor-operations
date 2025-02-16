@@ -6,6 +6,7 @@ import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureD
 import { Sculpture, FileUpload } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { UserMenu } from "@/components/UserMenu";
 
 export default function SculptureDetail() {
   const { id } = useParams();
@@ -103,18 +104,28 @@ export default function SculptureDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sculptures
-          </Button>
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="mx-auto max-w-7xl p-6 pb-0">
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
+            <div className="flex items-center gap-4 ml-auto">
+              <UserMenu />
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
+      
+      <div className="mx-auto max-w-7xl px-6 py-4">
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Sculptures
+        </Button>
+      </div>
+
       <div className="mx-auto max-w-7xl p-6">
         <SculptureDetailContent
           sculpture={sculpture}
