@@ -129,7 +129,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex items-center justify-between border rounded-md p-2">
+            <div className="flex items-center justify-between border rounded-md p-2 group">
               <div className="flex items-center gap-4">
                 <div className="text-sm space-x-3">
                   <span>
@@ -150,6 +150,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsEditingDimensions(true)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <PenIcon className="h-4 w-4" />
               </Button>
