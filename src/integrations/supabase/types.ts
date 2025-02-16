@@ -68,11 +68,13 @@ export type Database = {
           ai_description: string | null
           ai_engine: string
           ai_generated_name: string | null
+          color_code: string | null
           created_at: string
           creativity_level: string | null
           depth_cm: number | null
           depth_in: number | null
           dimensions: Json | null
+          finish_id: string | null
           height_cm: number | null
           height_in: number | null
           id: string
@@ -80,6 +82,7 @@ export type Database = {
           is_manual: boolean | null
           manual_description: string | null
           manual_name: string | null
+          material_id: string | null
           models: Json | null
           original_sculpture_id: string | null
           product_line: string | null
@@ -94,11 +97,13 @@ export type Database = {
           ai_description?: string | null
           ai_engine?: string
           ai_generated_name?: string | null
+          color_code?: string | null
           created_at?: string
           creativity_level?: string | null
           depth_cm?: number | null
           depth_in?: number | null
           dimensions?: Json | null
+          finish_id?: string | null
           height_cm?: number | null
           height_in?: number | null
           id?: string
@@ -106,6 +111,7 @@ export type Database = {
           is_manual?: boolean | null
           manual_description?: string | null
           manual_name?: string | null
+          material_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
           product_line?: string | null
@@ -120,11 +126,13 @@ export type Database = {
           ai_description?: string | null
           ai_engine?: string
           ai_generated_name?: string | null
+          color_code?: string | null
           created_at?: string
           creativity_level?: string | null
           depth_cm?: number | null
           depth_in?: number | null
           dimensions?: Json | null
+          finish_id?: string | null
           height_cm?: number | null
           height_in?: number | null
           id?: string
@@ -132,6 +140,7 @@ export type Database = {
           is_manual?: boolean | null
           manual_description?: string | null
           manual_name?: string | null
+          material_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
           product_line?: string | null
@@ -143,6 +152,20 @@ export type Database = {
           width_in?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sculptures_finish_id_fkey"
+            columns: ["finish_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculptures_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sculptures_original_sculpture_id_fkey"
             columns: ["original_sculpture_id"]

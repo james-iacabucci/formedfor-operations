@@ -28,4 +28,7 @@ export type Sculpture = {
   width_cm: number | null;
   depth_cm: number | null;
   product_line: "formed_for" | "brodin";
+  material_id: string | null;
+  finish_id: string | null;
+  color_code: string | null;
 };

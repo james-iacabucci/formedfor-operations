@@ -10,6 +10,7 @@ import { SculpturePrompt } from "./SculpturePrompt";
 import { SculptureStatus } from "./SculptureStatus";
 import { SculptureDimensions } from "./SculptureDimensions";
 import { SculptureFiles } from "./SculptureFiles";
+import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
@@ -62,6 +63,13 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
             )}
           </dl>
         </div>
+
+        <SculptureMaterialFinish
+          sculptureId={sculpture.id}
+          materialId={sculpture.material_id}
+          finishId={sculpture.finish_id}
+          colorCode={sculpture.color_code}
+        />
 
         <SculptureDimensions
           sculptureId={sculpture.id}
