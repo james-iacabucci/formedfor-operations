@@ -27,12 +27,12 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     }
   };
 
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: 'in' | 'cm') => {
     if (!h && !w && !d) return "No dimensions set";
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return val;
+      return unit === 'cm' ? (val * 2.54).toFixed(2) : val;
     };
     
     return `${formatValue(h)}h × ${formatValue(w)}w × ${formatValue(d)}d`;
@@ -65,13 +65,17 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       </div>
 
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Material:</span>
-          <span>{getMaterialName()}</span>
+        <div>
+          {getMaterialName()}
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Dimensions:</span>
-          <span>{formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in)} in</span>
+        <div className="flex items-center gap-3">
+          <span>
+            {formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in, 'in')} in
+          </span>
+          <span className="text-muted-foreground">|</span>
+          <span className="text-muted-foreground">
+            {formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in, 'cm')} cm
+          </span>
         </div>
       </div>
 
