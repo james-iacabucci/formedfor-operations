@@ -72,7 +72,8 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
         <div>
           <h2 className="text-lg font-semibold mb-2">AI Generation</h2>
-          <dl className="grid grid-cols-1 gap-2 text-sm mb-4">
+          <SculpturePrompt prompt={sculpture.prompt} />
+          <dl className="grid grid-cols-1 gap-2 text-sm mt-4">
             {sculpture.creativity_level && (
               <div className="flex justify-between py-2 border-b">
                 <dt className="font-medium">Variation Type</dt>
@@ -82,7 +83,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               </div>
             )}
           </dl>
-          <SculpturePrompt prompt={sculpture.prompt} />
         </div>
 
         <SculptureFiles
