@@ -70,14 +70,24 @@ export type Database = {
           ai_generated_name: string | null
           created_at: string
           creativity_level: string | null
+          depth_cm: number | null
+          depth_in: number | null
+          dimensions: Json | null
+          height_cm: number | null
+          height_in: number | null
           id: string
           image_url: string | null
           is_manual: boolean | null
           manual_description: string | null
           manual_name: string | null
+          models: Json | null
           original_sculpture_id: string | null
           prompt: string
+          renderings: Json | null
+          status: string | null
           user_id: string
+          width_cm: number | null
+          width_in: number | null
         }
         Insert: {
           ai_description?: string | null
@@ -85,14 +95,24 @@ export type Database = {
           ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
+          depth_cm?: number | null
+          depth_in?: number | null
+          dimensions?: Json | null
+          height_cm?: number | null
+          height_in?: number | null
           id?: string
           image_url?: string | null
           is_manual?: boolean | null
           manual_description?: string | null
           manual_name?: string | null
+          models?: Json | null
           original_sculpture_id?: string | null
           prompt: string
+          renderings?: Json | null
+          status?: string | null
           user_id: string
+          width_cm?: number | null
+          width_in?: number | null
         }
         Update: {
           ai_description?: string | null
@@ -100,14 +120,24 @@ export type Database = {
           ai_generated_name?: string | null
           created_at?: string
           creativity_level?: string | null
+          depth_cm?: number | null
+          depth_in?: number | null
+          dimensions?: Json | null
+          height_cm?: number | null
+          height_in?: number | null
           id?: string
           image_url?: string | null
           is_manual?: boolean | null
           manual_description?: string | null
           manual_name?: string | null
+          models?: Json | null
           original_sculpture_id?: string | null
           prompt?: string
+          renderings?: Json | null
+          status?: string | null
           user_id?: string
+          width_cm?: number | null
+          width_in?: number | null
         }
         Relationships: [
           {

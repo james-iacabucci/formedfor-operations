@@ -1,4 +1,11 @@
 
+export type FileUpload = {
+  id: string;
+  name: string;
+  url: string;
+  created_at: string;
+};
+
 export type Sculpture = {
   id: string;
   prompt: string;
@@ -10,4 +17,14 @@ export type Sculpture = {
   ai_description?: string | null;
   user_id: string;
   ai_engine: "runware" | "manual";
+  status: "ideas" | "pending_additions" | "approved";
+  models: FileUpload[];
+  renderings: FileUpload[];
+  dimensions: FileUpload[];
+  height_in: number | null;
+  width_in: number | null;
+  depth_in: number | null;
+  height_cm: number | null;
+  width_cm: number | null;
+  depth_cm: number | null;
 };

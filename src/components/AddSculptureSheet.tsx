@@ -11,6 +11,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ImageUpload } from "./sculpture/ImageUpload";
 import { AIField } from "./sculpture/AIField";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
+import { FileUploadField } from "./sculpture/FileUploadField";
+import { FileUpload } from "@/types/sculpture";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AddSculptureSheetProps {
   open: boolean;
@@ -26,6 +29,25 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { isGeneratingName, isGeneratingDescription, generateAIContent } = useAIGeneration();
+
+  // New state for additional fields
+  const [status, setStatus] = useState<"ideas" | "pending_additions" | "approved">("ideas");
+  const [models, setModels] = useState<FileUpload[]>([]);
+  const [renderings, setRenderings] = useState<FileUpload[]>([]);
+  const [dimensions, setDimensions] = useState<FileUpload[]>([]);
+  const [heightIn, setHeightIn] = useState<string>("");
+  const [widthIn, setWidthIn] = useState<string>("");
+  const [depthIn, setDepthIn] = useState<string>("");
+
+  const handleDimensionChange = (value: string, setter: (value: string) => void) => {
+    // Only allow numbers and decimal points
+    const sanitizedValue = value.replace(/[^0-9.]/g, '');
+    setter(sanitizedValue);
+  };
+
+  const calculateCm = (inches: string): number => {
+    return parseFloat(inches) * 2.54;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -55,7 +77,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
         .from('sculptures')
         .getPublicUrl(fileName);
 
-      // Create sculpture record
+      // Create sculpture record with new fields
       const { data: sculpture, error } = await supabase
         .from('sculptures')
         .insert([
@@ -66,7 +88,14 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             manual_description: description,
             image_url: publicUrl,
             prompt: "Manually added sculpture",
-            ai_engine: "manual"
+            ai_engine: "manual",
+            status,
+            models,
+            renderings,
+            dimensions,
+            height_in: heightIn ? parseFloat(heightIn) : null,
+            width_in: widthIn ? parseFloat(widthIn) : null,
+            depth_in: depthIn ? parseFloat(depthIn) : null,
           }
         ])
         .select()
@@ -74,10 +103,19 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
 
       if (error) throw error;
 
+      // Reset form
       setName("");
       setDescription("");
       setFile(null);
       setPreviewUrl(null);
+      setStatus("ideas");
+      setModels([]);
+      setRenderings([]);
+      setDimensions([]);
+      setHeightIn("");
+      setWidthIn("");
+      setDepthIn("");
+      
       onOpenChange(false);
       toast({
         title: "Success",
@@ -101,7 +139,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Add New Sculpture</SheetTitle>
         </SheetHeader>
@@ -142,11 +180,91 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe how this sculpture enhances its space..."
-              className="min-h-[250px] resize-y"
-              rows={10}
+              className="min-h-[100px] resize-y"
               required
             />
           </AIField>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={status} onValueChange={(value: "ideas" | "pending_additions" | "approved") => setStatus(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ideas">Ideas</SelectItem>
+                  <SelectItem value="pending_additions">Pending Additions</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <FileUploadField
+              label="Models"
+              files={models}
+              onFilesChange={setModels}
+            />
+
+            <FileUploadField
+              label="Renderings"
+              files={renderings}
+              onFilesChange={setRenderings}
+            />
+
+            <FileUploadField
+              label="Dimensions"
+              files={dimensions}
+              onFilesChange={setDimensions}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Dimensions (inches)</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    placeholder="Height"
+                    value={heightIn}
+                    onChange={(e) => handleDimensionChange(e.target.value, setHeightIn)}
+                  />
+                  <Input
+                    placeholder="Width"
+                    value={widthIn}
+                    onChange={(e) => handleDimensionChange(e.target.value, setWidthIn)}
+                  />
+                  <Input
+                    placeholder="Depth"
+                    value={depthIn}
+                    onChange={(e) => handleDimensionChange(e.target.value, setDepthIn)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Dimensions (cm)</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    value={heightIn ? calculateCm(heightIn).toFixed(2) : ""}
+                    readOnly
+                    disabled
+                    placeholder="Height"
+                  />
+                  <Input
+                    value={widthIn ? calculateCm(widthIn).toFixed(2) : ""}
+                    readOnly
+                    disabled
+                    placeholder="Width"
+                  />
+                  <Input
+                    value={depthIn ? calculateCm(depthIn).toFixed(2) : ""}
+                    readOnly
+                    disabled
+                    placeholder="Depth"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "Adding..." : "Add Sculpture"}
