@@ -32,20 +32,17 @@ export function SculptureCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
-        sculpture.image_url ? "cursor-pointer" : ""
-      }`}
-      onClick={(e) => {
-        if (
-          sculpture.image_url &&
-          !(e.target as HTMLElement).closest("button")
-        ) {
-          navigate(`/sculpture/${sculpture.id}`);
-        }
-      }}
+      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
     >
       <CardContent className="p-0">
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
+        <div 
+          className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted cursor-pointer"
+          onClick={() => {
+            if (sculpture.image_url) {
+              navigate(`/sculpture/${sculpture.id}`);
+            }
+          }}
+        >
           <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
           <SculptureImage
             imageUrl={sculpture.image_url}
