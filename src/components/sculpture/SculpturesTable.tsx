@@ -20,6 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculpturesTableProps {
   sculptures: Sculpture[];
@@ -38,12 +42,41 @@ export function SculpturesTable({
 }: SculpturesTableProps) {
   const navigate = useNavigate();
   const [previewSculpture, setPreviewSculpture] = useState<Sculpture | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const formatDimensions = (sculpture: Sculpture) => {
     if (!sculpture.height_in && !sculpture.width_in && !sculpture.depth_in) {
       return "Not specified";
     }
     return `${sculpture.height_in || 0}h - ${sculpture.width_in || 0}w - ${sculpture.depth_in || 0}d (in)`;
+  };
+
+  const handleProductLineChange = async (sculptureId: string, value: string) => {
+    const productLine = value as "formed_for" | "brodin";
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ product_line: productLine })
+        .eq('id', sculptureId);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh the data
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+
+      toast({
+        title: "Success",
+        description: "Product line updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating product line:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update product line",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -55,6 +88,7 @@ export function SculpturesTable({
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Dimensions</TableHead>
+            <TableHead>Product Line</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -98,6 +132,31 @@ export function SculpturesTable({
               </TableCell>
               <TableCell className="font-mono text-sm">
                 {formatDimensions(sculpture)}
+              </TableCell>
+              <TableCell>
+                <ToggleGroup
+                  type="single"
+                  value={sculpture.product_line}
+                  onValueChange={(value) => {
+                    if (value) handleProductLineChange(sculpture.id, value);
+                  }}
+                  className="flex gap-1"
+                >
+                  <ToggleGroupItem 
+                    value="formed_for"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Formed For
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="brodin"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Brodin
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </TableCell>
               <TableCell>
                 <DropdownMenu>

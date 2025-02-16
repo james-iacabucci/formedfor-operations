@@ -82,6 +82,7 @@ export type Database = {
           manual_name: string | null
           models: Json | null
           original_sculpture_id: string | null
+          product_line: string | null
           prompt: string
           renderings: Json | null
           status: string | null
@@ -107,6 +108,7 @@ export type Database = {
           manual_name?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
+          product_line?: string | null
           prompt: string
           renderings?: Json | null
           status?: string | null
@@ -132,6 +134,7 @@ export type Database = {
           manual_name?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
+          product_line?: string | null
           prompt?: string
           renderings?: Json | null
           status?: string | null
