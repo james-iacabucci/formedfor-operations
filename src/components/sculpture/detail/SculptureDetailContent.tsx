@@ -52,13 +52,16 @@ export function SculptureDetailContent({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="w-1/2 mx-auto">
+      <div className="w-full">
         <AspectRatio ratio={1}>
           <SculptureImage
             imageUrl={sculpture.image_url || ""}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
-            onImageClick={() => {}}
+            onDelete={() => setIsDeleteDialogOpen(true)}
+            onDownload={handleDownload}
+            onManageTags={() => setIsManageTagsOpen(true)}
+            onRegenerate={() => setIsRegenerationSheetOpen(true)}
           />
         </AspectRatio>
       </div>
@@ -70,7 +73,6 @@ export function SculptureDetailContent({
       <RegenerationSheet
         open={isRegenerationSheetOpen}
         onOpenChange={setIsRegenerationSheetOpen}
-        sculpture={sculpture}
         onRegenerationStart={() => setIsRegenerating(true)}
         onRegenerationComplete={() => {
           setIsRegenerating(false);
@@ -81,7 +83,7 @@ export function SculptureDetailContent({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         sculpture={sculpture}
-        onDelete={handleDelete}
+        onOpenChange={setIsDeleteDialogOpen}
       />
       <ManageTagsDialog
         open={isManageTagsOpen}
