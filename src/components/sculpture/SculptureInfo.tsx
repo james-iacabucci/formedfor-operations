@@ -2,6 +2,7 @@
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
+import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -11,6 +12,7 @@ interface SculptureInfoProps {
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
+  const { materials } = useMaterialFinishData(sculpture.material_id);
 
   const getDisplayStatus = (status: string) => {
     switch (status) {
@@ -25,8 +27,25 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     }
   };
 
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
+    if (!h && !w && !d) return "No dimensions set";
+    
+    const formatValue = (val: number | null) => {
+      if (val === null) return '-';
+      return val;
+    };
+    
+    return `${formatValue(h)}h × ${formatValue(w)}w × ${formatValue(d)}d`;
+  };
+
+  const getMaterialName = () => {
+    if (!sculpture.material_id || !materials) return "Not specified";
+    const material = materials.find(m => m.id === sculpture.material_id);
+    return material ? material.name : "Not specified";
+  };
+
   return (
-    <div className="mt-4">
+    <div className="mt-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold line-clamp-1">
           {sculptureName}
@@ -36,7 +55,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         </span>
       </div>
 
-      <div className="mt-2 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         {sculpture.original_sculpture_id && (
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <LinkIcon className="w-4 h-4" />
@@ -44,19 +63,20 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           </div>
         )}
       </div>
-      
-      {showAIContent && sculpture.ai_generated_name && sculpture.ai_description && (
-        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-          {sculpture.ai_description}
-        </p>
-      )}
 
-      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-        {sculpture.prompt}
-      </p>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Material:</span>
+          <span>{getMaterialName()}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Dimensions:</span>
+          <span>{formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in)} in</span>
+        </div>
+      </div>
 
       {tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {tags.map(tag => (
             <Badge
               key={tag.id}
