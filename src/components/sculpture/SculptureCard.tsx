@@ -32,7 +32,9 @@ export function SculptureCard({
 
   return (
     <Card
-      className={`group relative ${sculpture.image_url ? "cursor-pointer" : ""}`}
+      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
+        sculpture.image_url ? "cursor-pointer" : ""
+      }`}
       onClick={(e) => {
         if (
           sculpture.image_url &&
@@ -43,7 +45,8 @@ export function SculptureCard({
       }}
     >
       <CardContent className="p-0">
-        <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
+          <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
           <SculptureImage
             imageUrl={sculpture.image_url}
             prompt={sculpture.prompt}
@@ -61,7 +64,7 @@ export function SculptureCard({
             onManageTags={onManageTags}
           />
         </div>
-        <div className="px-4 pb-4">
+        <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
           <SculptureInfo 
             sculpture={sculpture}
             tags={tags}

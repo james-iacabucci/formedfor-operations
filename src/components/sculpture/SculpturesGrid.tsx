@@ -18,11 +18,10 @@ export function SculpturesGrid({
   onManageTags 
 }: SculpturesGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid animate-fade-in grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {sculptures.map((sculpture) => {
         console.log("[SculpturesGrid] Processing sculpture:", sculpture.id);
         
-        // Filter tags for this specific sculpture
         const sculptureSpecificTags = tags?.filter(tag => 
           sculptureTagRelations?.some(relation => 
             relation.sculpture_id === sculpture.id && relation.tag_id === tag.id

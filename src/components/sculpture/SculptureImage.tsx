@@ -1,3 +1,4 @@
+
 import { ImageIcon } from "lucide-react";
 
 interface SculptureImageProps {
@@ -13,16 +14,16 @@ export function SculptureImage({ imageUrl, prompt, isRegenerating, onImageClick 
       <img
         src={imageUrl}
         alt={prompt}
-        className="object-cover w-full h-full transition-transform group-hover:scale-105"
+        className="h-full w-full object-cover transition-all duration-300 will-change-transform group-hover:scale-105"
         onClick={onImageClick}
       />
     );
   }
 
   return (
-    <div className="flex items-center justify-center h-full">
+    <div className="flex h-full items-center justify-center">
       <div className="flex flex-col items-center text-muted-foreground">
-        <ImageIcon className="w-12 h-12 mb-2" />
+        <ImageIcon className="mb-2 h-12 w-12 animate-pulse" />
         <span>{isRegenerating ? "Regenerating..." : "Generating..."}</span>
       </div>
     </div>
