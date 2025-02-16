@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
@@ -110,9 +111,9 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
         {/* Dimensions Section */}
         <div>
           <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Inches</label>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Inches</label>
               <div className="grid grid-cols-3 gap-2">
                 <EditableField
                   value={sculpture.height_in?.toString() || ""}
@@ -138,8 +139,8 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Centimeters</label>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Centimeters</label>
               <div className="grid grid-cols-3 gap-2">
                 <Input
                   value={sculpture.height_in ? calculateCm(sculpture.height_in).toFixed(2) : ""}
