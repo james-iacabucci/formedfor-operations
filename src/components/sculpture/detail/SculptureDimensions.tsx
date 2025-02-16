@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PenIcon, CheckIcon, XIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculptureDimensionsProps {
   sculptureId: string;
@@ -19,26 +21,46 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     width: width?.toString() || "",
     depth: depth?.toString() || ""
   });
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const calculateCm = (inches: number): number => {
     return inches * 2.54;
   };
 
   const handleDimensionsUpdate = async () => {
+    const updatedDimensions = {
+      height_in: dimensions.height ? parseFloat(dimensions.height) : null,
+      width_in: dimensions.width ? parseFloat(dimensions.width) : null,
+      depth_in: dimensions.depth ? parseFloat(dimensions.depth) : null,
+      height_cm: dimensions.height ? calculateCm(parseFloat(dimensions.height)) : null,
+      width_cm: dimensions.width ? calculateCm(parseFloat(dimensions.width)) : null,
+      depth_cm: dimensions.depth ? calculateCm(parseFloat(dimensions.depth)) : null,
+    };
+
     const { error } = await supabase
       .from('sculptures')
-      .update({
-        height_in: dimensions.height ? parseFloat(dimensions.height) : null,
-        width_in: dimensions.width ? parseFloat(dimensions.width) : null,
-        depth_in: dimensions.depth ? parseFloat(dimensions.depth) : null
-      })
+      .update(updatedDimensions)
       .eq('id', sculptureId);
 
     if (error) {
       console.error('Error updating dimensions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update dimensions",
+        variant: "destructive",
+      });
       return;
     }
 
+    // Invalidate the sculpture query to refresh the data
+    await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+    
+    toast({
+      title: "Success",
+      description: "Dimensions updated successfully",
+    });
+    
     setIsEditingDimensions(false);
   };
 
