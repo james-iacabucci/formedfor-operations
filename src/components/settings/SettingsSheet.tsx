@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Settings2 } from "lucide-react";
 import { ManageTagsSection } from "./ManageTagsSection";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { AppearanceSection } from "./AppearanceSection";
@@ -25,6 +25,14 @@ interface SettingsSheetProps {
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Cleanup effect
+  useEffect(() => {
+    if (!open) {
+      // Reset any state when sheet closes
+      setShowCreateForm(false);
+    }
+  }, [open]);
 
   const handleApply = async () => {
     try {
@@ -48,14 +56,8 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   };
 
   return (
-    <Sheet 
-      open={open} 
-      onOpenChange={onOpenChange}
-    >
-      <SheetContent 
-        className="sm:max-w-2xl flex flex-col p-0"
-        onKeyDown={handleEscapeKeyPress}
-      >
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="sm:max-w-2xl flex flex-col p-0">
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
@@ -85,7 +87,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           >
             Cancel
           </Button>
-          <Button onClick={handleApply}>
+          <Button onClick={handleApply} type="button">
             Apply Changes
           </Button>
         </div>
