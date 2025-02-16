@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
@@ -34,12 +35,12 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       )}
 
       {tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {tags.map(tag => (
             <Badge
               key={tag.id}
               variant="secondary"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 text-xs px-2 py-0.5"
             >
               <TagIcon className="w-3 h-3" />
               <span>{tag.name}</span>
