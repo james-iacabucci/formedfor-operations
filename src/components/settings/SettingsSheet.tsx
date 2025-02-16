@@ -37,7 +37,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md flex flex-col p-0">
+      <SheetContent className="sm:max-w-2xl flex flex-col p-0">
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
