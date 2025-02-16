@@ -56,7 +56,7 @@ export function ValueListsSection() {
         .from('value_lists')
         .select('*')
         .order('type')
-        .order('code', { nullsFirst: false })
+        .order('code', { nullsLast: true })
         .order('name');
       
       if (error) throw error;

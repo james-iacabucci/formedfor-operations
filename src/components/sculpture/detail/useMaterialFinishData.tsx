@@ -9,7 +9,9 @@ export function useMaterialFinishData(materialId: string | null) {
       const { data, error } = await supabase
         .from("value_lists")
         .select("*")
-        .eq("type", "material");
+        .eq("type", "material")
+        .order('code', { nullsLast: true })  // Added sorting by code
+        .order('name');
 
       if (error) throw error;
       return data;
@@ -22,7 +24,8 @@ export function useMaterialFinishData(materialId: string | null) {
       const { data, error } = await supabase
         .from("value_lists")
         .select("*")
-        .eq("type", "finish");
+        .eq("type", "finish")
+        .order('name');
 
       if (error) throw error;
       return data;
