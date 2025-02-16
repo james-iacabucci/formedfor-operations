@@ -15,6 +15,7 @@ import { AIContextSection } from "./AIContextSection";
 import { TagsManagementHeader } from "./TagsManagementHeader";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
+import { KeyboardEvent } from "react";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -36,7 +37,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   };
 
-  const handleEscapeKeyPress = (event: KeyboardEvent) => {
+  const handleEscapeKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       onOpenChange(false);
     }
