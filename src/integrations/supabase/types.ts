@@ -81,6 +81,7 @@ export type Database = {
           manual_description: string | null
           manual_name: string | null
           material_id: string | null
+          method_id: string | null
           models: Json | null
           original_sculpture_id: string | null
           product_line: string | null
@@ -88,6 +89,8 @@ export type Database = {
           renderings: Json | null
           status: string | null
           user_id: string
+          weight_kg: number | null
+          weight_lbs: number | null
           width_cm: number | null
           width_in: number | null
         }
@@ -108,6 +111,7 @@ export type Database = {
           manual_description?: string | null
           manual_name?: string | null
           material_id?: string | null
+          method_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
           product_line?: string | null
@@ -115,6 +119,8 @@ export type Database = {
           renderings?: Json | null
           status?: string | null
           user_id: string
+          weight_kg?: number | null
+          weight_lbs?: number | null
           width_cm?: number | null
           width_in?: number | null
         }
@@ -135,6 +141,7 @@ export type Database = {
           manual_description?: string | null
           manual_name?: string | null
           material_id?: string | null
+          method_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
           product_line?: string | null
@@ -142,6 +149,8 @@ export type Database = {
           renderings?: Json | null
           status?: string | null
           user_id?: string
+          weight_kg?: number | null
+          weight_lbs?: number | null
           width_cm?: number | null
           width_in?: number | null
         }
@@ -149,6 +158,13 @@ export type Database = {
           {
             foreignKeyName: "sculptures_material_id_fkey"
             columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculptures_method_id_fkey"
+            columns: ["method_id"]
             isOneToOne: false
             referencedRelation: "value_lists"
             referencedColumns: ["id"]

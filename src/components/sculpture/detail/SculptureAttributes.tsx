@@ -11,6 +11,8 @@ import { SculptureStatus } from "./SculptureStatus";
 import { SculptureDimensions } from "./SculptureDimensions";
 import { SculptureFiles } from "./SculptureFiles";
 import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
+import { SculptureMethod } from "./SculptureMethod";
+import { SculptureWeight } from "./SculptureWeight";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
@@ -36,6 +38,11 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               />
             </div>
 
+            <SculptureMethod
+              sculptureId={sculpture.id}
+              methodId={sculpture.method_id}
+            />
+
             <SculptureDimensions
               sculptureId={sculpture.id}
               height={sculpture.height_in}
@@ -43,10 +50,11 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               depth={sculpture.depth_in}
             />
 
-            <div>
-              <h3 className="text-sm font-medium mb-2">Weight</h3>
-              <p className="text-sm text-muted-foreground">Not specified</p>
-            </div>
+            <SculptureWeight
+              sculptureId={sculpture.id}
+              weightKg={sculpture.weight_kg}
+              weightLbs={sculpture.weight_lbs}
+            />
           </div>
         </div>
 
