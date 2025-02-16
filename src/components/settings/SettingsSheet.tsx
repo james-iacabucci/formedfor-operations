@@ -50,20 +50,15 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   return (
     <Sheet 
       open={open} 
-      onOpenChange={(isOpen) => {
-        // Only allow closing through buttons, not by clicking outside
-        if (isOpen === false) {
-          return;
-        }
-        onOpenChange(isOpen);
-      }}
+      onOpenChange={onOpenChange}
     >
       <SheetContent 
         className="sm:max-w-2xl flex flex-col p-0"
         onKeyDown={handleEscapeKeyPress}
         onInteractOutside={(e) => {
-          // Prevent closing when clicking outside
-          e.preventDefault();
+          if (open) {
+            e.preventDefault();
+          }
         }}
       >
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
