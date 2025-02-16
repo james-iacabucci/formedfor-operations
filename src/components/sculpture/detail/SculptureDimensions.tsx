@@ -28,8 +28,12 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     return inches * 2.54;
   };
 
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: string) => {
+    if (!h && !w && !d) return "No dimensions set";
+    return `${h || '-'}h - ${w || '-'}w - ${d || '-'}d (${unit})`;
+  };
+
   const handleDimensionsUpdate = async () => {
-    // Only update the inch values, let the database handle centimeter calculations
     const updatedDimensions = {
       height_in: dimensions.height ? parseFloat(dimensions.height) : null,
       width_in: dimensions.width ? parseFloat(dimensions.width) : null,
@@ -51,7 +55,6 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       return;
     }
 
-    // Invalidate the sculpture query to refresh the data
     await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
     
     toast({
@@ -66,46 +69,11 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     <div>
       <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
       <div className="space-y-4">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium">Inches</label>
-            {isEditingDimensions ? (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleDimensionsUpdate}
-                  size="sm"
-                  variant="ghost"
-                >
-                  <CheckIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setDimensions({
-                      height: height?.toString() || "",
-                      width: width?.toString() || "",
-                      depth: depth?.toString() || ""
-                    });
-                    setIsEditingDimensions(false);
-                  }}
-                >
-                  <XIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingDimensions(true)}
-              >
-                <PenIcon className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {isEditingDimensions ? (
-              <>
+        {isEditingDimensions ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Inches</label>
+              <div className="grid grid-cols-3 gap-2">
                 <Input
                   type="number"
                   value={dimensions.height}
@@ -127,58 +95,56 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
                   placeholder="Depth"
                   className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-              </>
-            ) : (
-              <>
-                <Input
-                  value={height?.toString() || ""}
-                  readOnly
-                  placeholder="Height"
-                  className="cursor-pointer"
-                  onClick={() => setIsEditingDimensions(true)}
-                />
-                <Input
-                  value={width?.toString() || ""}
-                  readOnly
-                  placeholder="Width"
-                  className="cursor-pointer"
-                  onClick={() => setIsEditingDimensions(true)}
-                />
-                <Input
-                  value={depth?.toString() || ""}
-                  readOnly
-                  placeholder="Depth"
-                  className="cursor-pointer"
-                  onClick={() => setIsEditingDimensions(true)}
-                />
-              </>
-            )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                onClick={handleDimensionsUpdate}
+                size="sm"
+                variant="ghost"
+              >
+                <CheckIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setDimensions({
+                    height: height?.toString() || "",
+                    width: width?.toString() || "",
+                    depth: depth?.toString() || ""
+                  });
+                  setIsEditingDimensions(false);
+                }}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium mb-2 block">Centimeters</label>
-          <div className="grid grid-cols-3 gap-2">
-            <Input
-              value={height ? calculateCm(height).toFixed(2) : ""}
-              readOnly
-              disabled
-              placeholder="Height"
-            />
-            <Input
-              value={width ? calculateCm(width).toFixed(2) : ""}
-              readOnly
-              disabled
-              placeholder="Width"
-            />
-            <Input
-              value={depth ? calculateCm(depth).toFixed(2) : ""}
-              readOnly
-              disabled
-              placeholder="Depth"
-            />
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">
+                {formatDimensionString(height, width, depth, "inches")}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditingDimensions(true)}
+              >
+                <PenIcon className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {formatDimensionString(
+                height ? calculateCm(height) : null,
+                width ? calculateCm(width) : null,
+                depth ? calculateCm(depth) : null,
+                "centimeters"
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
