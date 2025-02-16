@@ -29,17 +29,26 @@ export function ProductLineForm({
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [name, setName] = useState(initialData?.name || "");
-  const [contactEmail, setContactEmail] = useState(initialData?.contact_email || "");
-  const [address, setAddress] = useState(initialData?.address || "");
-  const [logoUrl, setLogoUrl] = useState(initialData?.logo_url || "");
+  const [name, setName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
-    if (open && initialData) {
-      setName(initialData.name);
-      setContactEmail(initialData.contact_email || "");
-      setAddress(initialData.address || "");
-      setLogoUrl(initialData.logo_url || "");
+    if (open) {
+      if (initialData) {
+        // If editing, set the initial values from the provided data
+        setName(initialData.name);
+        setContactEmail(initialData.contact_email || "");
+        setAddress(initialData.address || "");
+        setLogoUrl(initialData.logo_url || "");
+      } else {
+        // If adding new, reset all fields
+        setName("");
+        setContactEmail("");
+        setAddress("");
+        setLogoUrl("");
+      }
     }
   }, [open, initialData]);
 
