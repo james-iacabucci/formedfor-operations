@@ -1,26 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Pencil, Trash2, Link } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -33,13 +13,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ValueListForm } from "./ValueListForm";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ValueListsHeader } from "./ValueListsHeader";
+import { ValueListTypeSelector } from "./ValueListTypeSelector";
+import { ValueListTable } from "./ValueListTable";
+import { MaterialFinishesDialog } from "./MaterialFinishesDialog";
 
 interface ValueList {
   id: string;
@@ -54,18 +31,12 @@ interface MaterialFinish {
   finish_id: string;
 }
 
-type ValueListType = {
-  value: ValueList['type'];
-  label: string;
-  showCode: boolean;
-};
-
-const VALUE_LIST_TYPES: ValueListType[] = [
+const VALUE_LIST_TYPES = [
   { value: 'material', label: 'Materials', showCode: true },
   { value: 'finish', label: 'Finishes', showCode: false },
   { value: 'fabricator', label: 'Fabricators', showCode: false },
   { value: 'texture', label: 'Textures', showCode: false },
-];
+] as const;
 
 export function ValueListsSection() {
   const queryClient = useQueryClient();
@@ -167,7 +138,6 @@ export function ValueListsSection() {
 
   const updateMaterialFinishes = useMutation({
     mutationFn: async ({ materialId, finishIds }: { materialId: string; finishIds: string[] }) => {
-      // First, delete all existing associations for this material
       const { error: deleteError } = await supabase
         .from('material_finishes')
         .delete()
@@ -175,7 +145,6 @@ export function ValueListsSection() {
       
       if (deleteError) throw deleteError;
 
-      // Then, insert the new associations
       if (finishIds.length > 0) {
         const { error: insertError } = await supabase
           .from('material_finishes')
@@ -236,92 +205,26 @@ export function ValueListsSection() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium">Value Lists</h3>
-        <p className="text-sm text-muted-foreground">
-          Manage materials, finishes, fabricators, and textures for sculptures
-        </p>
-      </div>
-      <Separator />
+      <ValueListsHeader />
+      
+      <ValueListTypeSelector
+        types={VALUE_LIST_TYPES}
+        selectedType={selectedType}
+        onTypeChange={(type) => setSelectedType(type)}
+        onAddClick={() => setIsAddDialogOpen(true)}
+        getCountForType={(type) => valueLists?.filter(item => item.type === type).length || 0}
+      />
 
-      <div className="flex items-center justify-between">
-        <Select
-          value={selectedType}
-          onValueChange={(value: ValueList['type']) => setSelectedType(value)}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select list type" />
-          </SelectTrigger>
-          <SelectContent>
-            {VALUE_LIST_TYPES.map(type => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label} ({getCountForType(type.value)})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button onClick={() => setIsAddDialogOpen(true)} size="sm" className="gap-2">
-          <PlusCircle className="h-4 w-4" />
-          Add {currentTypeConfig.label.slice(0, -1)}
-        </Button>
-      </div>
-
-      <div className="border rounded-md">
-        <ScrollArea className="h-[400px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {currentTypeConfig.showCode && (
-                  <TableHead className="w-[100px]">Code</TableHead>
-                )}
-                <TableHead>Name</TableHead>
-                <TableHead className="w-[150px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredItems.map((item) => (
-                <TableRow key={item.id}>
-                  {currentTypeConfig.showCode && (
-                    <TableCell className="font-mono">{item.code}</TableCell>
-                  )}
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditItem(item)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteItem(item)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      {item.type === 'material' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedMaterial(item);
-                            setIsFinishesDialogOpen(true);
-                          }}
-                        >
-                          <Link className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </div>
+      <ValueListTable
+        items={filteredItems}
+        showCode={currentTypeConfig.showCode}
+        onEdit={setEditItem}
+        onDelete={setDeleteItem}
+        onManageFinishes={(item) => {
+          setSelectedMaterial(item);
+          setIsFinishesDialogOpen(true);
+        }}
+      />
 
       <ValueListForm
         open={isAddDialogOpen}
@@ -357,37 +260,14 @@ export function ValueListsSection() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={isFinishesDialogOpen} onOpenChange={setIsFinishesDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Select Valid Finishes for {selectedMaterial?.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {finishes.map((finish) => (
-              <div key={finish.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={finish.id}
-                  checked={selectedMaterialFinishes.includes(finish.id)}
-                  onCheckedChange={(checked) => {
-                    const newSelectedFinishes = checked
-                      ? [...selectedMaterialFinishes, finish.id]
-                      : selectedMaterialFinishes.filter(id => id !== finish.id);
-                    handleFinishesUpdate(newSelectedFinishes);
-                  }}
-                />
-                <label
-                  htmlFor={finish.id}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {finish.name}
-                </label>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MaterialFinishesDialog
+        open={isFinishesDialogOpen}
+        onOpenChange={setIsFinishesDialogOpen}
+        material={selectedMaterial}
+        finishes={finishes}
+        selectedFinishIds={selectedMaterialFinishes}
+        onFinishesUpdate={handleFinishesUpdate}
+      />
     </div>
   );
 }
