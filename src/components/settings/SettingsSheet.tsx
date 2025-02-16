@@ -31,16 +31,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!open) {
       setShowCreateForm(false);
     }
-
-    // Force cleanup of any stray portals when component unmounts
-    return () => {
-      const portals = document.querySelectorAll('[role="dialog"]');
-      portals.forEach(portal => {
-        if (portal.parentNode) {
-          portal.parentNode.removeChild(portal);
-        }
-      });
-    };
   }, [open]);
 
   const handleApply = async () => {
