@@ -4,6 +4,8 @@ import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -14,6 +16,23 @@ interface SculptureInfoProps {
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
+
+  // Fetch product line data
+  const { data: productLine } = useQuery({
+    queryKey: ["product_line", sculpture.product_line_id],
+    queryFn: async () => {
+      if (!sculpture.product_line_id) return null;
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("id", sculpture.product_line_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!sculpture.product_line_id
+  });
 
   const getDisplayStatus = (status: string) => {
     switch (status) {
@@ -41,7 +60,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           {sculptureName}
         </h3>
         <span className="text-sm text-muted-foreground">
-          {getDisplayStatus(sculpture.status)}
+          {productLine?.name || "No Product Line"} ({getDisplayStatus(sculpture.status)})
         </span>
       </div>
 
