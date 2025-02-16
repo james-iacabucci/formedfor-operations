@@ -24,14 +24,18 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           </div>
         )}
       </div>
+
+      <h3 className="mt-2 font-semibold line-clamp-1">
+        {sculpture.name || "Untitled Sculpture"}
+      </h3>
       
       {showAIContent && sculpture.ai_generated_name ? (
         <>
-          <h3 className="mt-2 font-semibold">{sculpture.ai_generated_name}</h3>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{sculpture.ai_description}</p>
+          <h4 className="mt-1 font-medium text-sm">{sculpture.ai_generated_name}</h4>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{sculpture.ai_description}</p>
         </>
       ) : (
-        <p className="mt-1 font-medium line-clamp-2">{sculpture.prompt}</p>
+        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{sculpture.prompt}</p>
       )}
 
       {tags.length > 0 && (
