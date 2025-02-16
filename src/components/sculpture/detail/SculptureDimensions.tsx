@@ -129,7 +129,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border rounded-md p-2">
               <div className="flex items-center gap-4">
                 <span className="text-sm">
                   {formatDimensionString(height, width, depth, "in")}
