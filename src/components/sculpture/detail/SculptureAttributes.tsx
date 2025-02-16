@@ -1,7 +1,6 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { LinkIcon, TagIcon } from "lucide-react";
+import { LinkIcon, TagIcon, PenIcon, CheckIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
@@ -10,6 +9,7 @@ import { FileUploadField } from "../FileUploadField";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
@@ -19,9 +19,33 @@ interface SculptureAttributesProps {
 
 export function SculptureAttributes({ sculpture, originalSculpture, tags }: SculptureAttributesProps) {
   const navigate = useNavigate();
+  const [isEditingDimensions, setIsEditingDimensions] = useState(false);
+  const [dimensions, setDimensions] = useState({
+    height: sculpture.height_in?.toString() || "",
+    width: sculpture.width_in?.toString() || "",
+    depth: sculpture.depth_in?.toString() || ""
+  });
 
   const calculateCm = (inches: number): number => {
     return inches * 2.54;
+  };
+
+  const handleDimensionsUpdate = async () => {
+    const { error } = await supabase
+      .from('sculptures')
+      .update({
+        height_in: dimensions.height ? parseFloat(dimensions.height) : null,
+        width_in: dimensions.width ? parseFloat(dimensions.width) : null,
+        depth_in: dimensions.depth ? parseFloat(dimensions.depth) : null
+      })
+      .eq('id', sculpture.id);
+
+    if (error) {
+      console.error('Error updating dimensions:', error);
+      return;
+    }
+
+    setIsEditingDimensions(false);
   };
 
   return (
@@ -113,29 +137,92 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Inches</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">Inches</label>
+                {isEditingDimensions ? (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleDimensionsUpdate}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <CheckIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setDimensions({
+                          height: sculpture.height_in?.toString() || "",
+                          width: sculpture.width_in?.toString() || "",
+                          depth: sculpture.depth_in?.toString() || ""
+                        });
+                        setIsEditingDimensions(false);
+                      }}
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingDimensions(true)}
+                  >
+                    <PenIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-2">
-                <EditableField
-                  value={sculpture.height_in?.toString() || ""}
-                  type="number"
-                  sculptureId={sculpture.id}
-                  field="height_in"
-                  label="Height"
-                />
-                <EditableField
-                  value={sculpture.width_in?.toString() || ""}
-                  type="number"
-                  sculptureId={sculpture.id}
-                  field="width_in"
-                  label="Width"
-                />
-                <EditableField
-                  value={sculpture.depth_in?.toString() || ""}
-                  type="number"
-                  sculptureId={sculpture.id}
-                  field="depth_in"
-                  label="Depth"
-                />
+                {isEditingDimensions ? (
+                  <>
+                    <Input
+                      type="number"
+                      value={dimensions.height}
+                      onChange={(e) => setDimensions(prev => ({ ...prev, height: e.target.value }))}
+                      placeholder="Height"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <Input
+                      type="number"
+                      value={dimensions.width}
+                      onChange={(e) => setDimensions(prev => ({ ...prev, width: e.target.value }))}
+                      placeholder="Width"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <Input
+                      type="number"
+                      value={dimensions.depth}
+                      onChange={(e) => setDimensions(prev => ({ ...prev, depth: e.target.value }))}
+                      placeholder="Depth"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      value={sculpture.height_in?.toString() || ""}
+                      readOnly
+                      placeholder="Height"
+                      className="cursor-pointer"
+                      onClick={() => setIsEditingDimensions(true)}
+                    />
+                    <Input
+                      value={sculpture.width_in?.toString() || ""}
+                      readOnly
+                      placeholder="Width"
+                      className="cursor-pointer"
+                      onClick={() => setIsEditingDimensions(true)}
+                    />
+                    <Input
+                      value={sculpture.depth_in?.toString() || ""}
+                      readOnly
+                      placeholder="Depth"
+                      className="cursor-pointer"
+                      onClick={() => setIsEditingDimensions(true)}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
@@ -177,7 +264,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
                   .from('sculptures')
                   .update({ models: files })
                   .eq('id', sculpture.id);
-                
+
                 if (error) {
                   console.error('Error updating models:', error);
                   return;
@@ -193,7 +280,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
                   .from('sculptures')
                   .update({ renderings: files })
                   .eq('id', sculpture.id);
-                
+
                 if (error) {
                   console.error('Error updating renderings:', error);
                   return;
@@ -209,7 +296,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
                   .from('sculptures')
                   .update({ dimensions: files })
                   .eq('id', sculpture.id);
-                
+
                 if (error) {
                   console.error('Error updating dimensions:', error);
                   return;
