@@ -33,7 +33,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return unit === 'centimeters' ? val.toFixed(2) : val;
+      return unit === 'cm' ? val.toFixed(2) : val;
     };
     
     return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d (${unit})`;
@@ -131,7 +131,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm">
-                {formatDimensionString(height, width, depth, "inches")}
+                {formatDimensionString(height, width, depth, "in")}
               </span>
               <Button
                 variant="ghost"
@@ -146,7 +146,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
                 height ? calculateCm(height) : null,
                 width ? calculateCm(width) : null,
                 depth ? calculateCm(depth) : null,
-                "centimeters"
+                "cm"
               )}
             </div>
           </div>
