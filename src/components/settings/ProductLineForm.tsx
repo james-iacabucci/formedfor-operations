@@ -26,6 +26,7 @@ export function ProductLineForm({
   title,
 }: ProductLineFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [name, setName] = useState(initialData?.name || "");
   const [contactEmail, setContactEmail] = useState(initialData?.contact_email || "");
   const [address, setAddress] = useState(initialData?.address || "");
@@ -44,15 +45,27 @@ export function ProductLineForm({
     if (!e.target.files || e.target.files.length === 0) return;
 
     try {
+      setIsUploading(true);
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Add file size check
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+
+      const { error: uploadError, data } = await supabase.storage
         .from('product_line_logos')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        toast.error("Failed to upload logo. Please try again.");
+        return;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('product_line_logos')
@@ -63,6 +76,8 @@ export function ProductLineForm({
     } catch (error) {
       console.error('Error uploading logo:', error);
       toast.error("Failed to upload logo");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -83,6 +98,7 @@ export function ProductLineForm({
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("Failed to save product line");
     } finally {
       setIsSubmitting(false);
     }
@@ -137,6 +153,7 @@ export function ProductLineForm({
                   type="file"
                   accept="image/*"
                   onChange={handleLogoUpload}
+                  disabled={isUploading}
                   className="w-full"
                 />
               </div>
