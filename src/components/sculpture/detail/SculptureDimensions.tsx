@@ -29,13 +29,11 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
   };
 
   const handleDimensionsUpdate = async () => {
+    // Only update the inch values, let the database handle centimeter calculations
     const updatedDimensions = {
       height_in: dimensions.height ? parseFloat(dimensions.height) : null,
       width_in: dimensions.width ? parseFloat(dimensions.width) : null,
       depth_in: dimensions.depth ? parseFloat(dimensions.depth) : null,
-      height_cm: dimensions.height ? calculateCm(parseFloat(dimensions.height)) : null,
-      width_cm: dimensions.width ? calculateCm(parseFloat(dimensions.width)) : null,
-      depth_cm: dimensions.depth ? calculateCm(parseFloat(dimensions.depth)) : null,
     };
 
     const { error } = await supabase
