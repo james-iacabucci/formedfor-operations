@@ -34,7 +34,13 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       return val.toFixed(2);
     };
     
-    return `${formatValue(lbs)} lbs  |  ${formatValue(kg)} kg`;
+    return (
+      <>
+        <span>{formatValue(lbs)} lbs</span>
+        <span className="text-muted-foreground mx-3">|</span>
+        <span className="text-muted-foreground">{formatValue(kg)} kg</span>
+      </>
+    );
   };
 
   const handleWeightUpdate = async () => {
@@ -135,7 +141,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
           <div>
             <div className="flex items-center justify-between border rounded-md py-0 px-3">
               <div className="flex items-center gap-4">
-                <div className="text-sm py-2">
+                <div className="text-sm py-2 flex items-center">
                   {formatWeightString(weightKg, weightLbs)}
                 </div>
               </div>
