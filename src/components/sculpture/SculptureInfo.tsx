@@ -17,8 +17,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
-  // Fetch product line data
-  const { data: productLine } = useQuery({
+  // Fetch product line data with proper error handling
+  const { data: productLine, isError } = useQuery({
     queryKey: ["product_line", sculpture.product_line_id],
     queryFn: async () => {
       if (!sculpture.product_line_id) return null;
@@ -31,7 +31,10 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       if (error) throw error;
       return data;
     },
-    enabled: !!sculpture.product_line_id
+    enabled: !!sculpture.product_line_id,
+    retry: false,
+    staleTime: 30000, // Cache the result for 30 seconds
+    gcTime: 300000, // Keep unused data in cache for 5 minutes
   });
 
   const getDisplayStatus = (status: string) => {
@@ -53,6 +56,9 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     return material ? material.name : "Not specified";
   };
 
+  // Memoize the product line display text to prevent unnecessary re-renders
+  const productLineDisplay = isError ? "Error loading product line" : (productLine?.name || "No Product Line");
+
   return (
     <div className="mt-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -60,7 +66,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           {sculptureName}
         </h3>
         <span className="text-sm text-muted-foreground">
-          {productLine?.name || "No Product Line"} ({getDisplayStatus(sculpture.status)})
+          {productLineDisplay} ({getDisplayStatus(sculpture.status)})
         </span>
       </div>
 
