@@ -27,6 +27,9 @@ export type Sculpture = {
   height_cm: number | null;
   width_cm: number | null;
   depth_cm: number | null;
-  product_line: "formed_for" | "brodin";
+  weight_kg: number | null;
+  weight_lbs: number | null;
+  method_id: string | null;
   material_id: string | null;
+  product_line: "formed_for" | "brodin";
 };
