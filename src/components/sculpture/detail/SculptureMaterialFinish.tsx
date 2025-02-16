@@ -1,11 +1,10 @@
 
-import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMaterialFinishData } from "./useMaterialFinishData";
+import { SculptureColorSelect } from "./SculptureColorSelect";
 
 interface SculptureMaterialFinishProps {
   sculptureId: string;
@@ -22,63 +21,15 @@ export function SculptureMaterialFinish({
 }: SculptureMaterialFinishProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Fetch materials from value_lists
-  const { data: materials } = useQuery({
-    queryKey: ["value_lists", "material"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("value_lists")
-        .select("*")
-        .eq("type", "material");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch all finishes from value_lists
-  const { data: allFinishes } = useQuery({
-    queryKey: ["value_lists", "finish"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("value_lists")
-        .select("*")
-        .eq("type", "finish");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch material-finish associations
-  const { data: materialFinishes } = useQuery({
-    queryKey: ["material-finishes", materialId],
-    enabled: !!materialId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("material_finishes")
-        .select("finish_id")
-        .eq("material_id", materialId);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Filter finishes based on material selection
-  const validFinishIds = materialFinishes?.map(mf => mf.finish_id) || [];
-  const finishes = allFinishes?.filter(finish => 
-    !materialId || validFinishIds.includes(finish.id)
-  );
+  const { materials, finishes } = useMaterialFinishData(materialId);
 
   const handleMaterialChange = async (newMaterialId: string) => {
     const { error } = await supabase
       .from("sculptures")
       .update({ 
         material_id: newMaterialId,
-        finish_id: null, // Reset finish when material changes
-        color_code: null // Reset color when material changes
+        finish_id: null,
+        color_code: null
       })
       .eq("id", sculptureId);
 
@@ -103,7 +54,7 @@ export function SculptureMaterialFinish({
       .from("sculptures")
       .update({ 
         finish_id: newFinishId,
-        color_code: null // Reset color when finish changes
+        color_code: null
       })
       .eq("id", sculptureId);
 
@@ -145,26 +96,9 @@ export function SculptureMaterialFinish({
     });
   };
 
-  // Get the current finish type
   const currentFinish = finishes?.find(f => f.id === finishId);
-  const showCerakoteColors = currentFinish?.code === 'cerakote';
-  const showRALColors = currentFinish?.code === 'automotive';
-
-  const cerakoteColors = [
-    { code: 'H-146', name: 'Graphite Black' },
-    { code: 'H-227', name: 'Tactical Grey' },
-    { code: 'H-151', name: 'Satin Aluminum' },
-    { code: 'H-237', name: 'Tungsten' },
-    { code: 'H-190', name: 'Armor Black' },
-  ];
-
-  const ralColors = [
-    { code: 'RAL9005', name: 'Jet Black' },
-    { code: 'RAL9006', name: 'White Aluminium' },
-    { code: 'RAL9007', name: 'Grey Aluminium' },
-    { code: 'RAL7016', name: 'Anthracite Grey' },
-    { code: 'RAL9016', name: 'Traffic White' },
-  ];
+  const finishType = currentFinish?.code === 'cerakote' ? 'cerakote' : 
+                     currentFinish?.code === 'automotive' ? 'automotive' : null;
 
   return (
     <div className="space-y-4">
@@ -215,30 +149,11 @@ export function SculptureMaterialFinish({
         </div>
       </div>
 
-      {(showCerakoteColors || showRALColors) && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Color</label>
-          <Select value={colorCode || ''} onValueChange={handleColorChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select color" />
-            </SelectTrigger>
-            <SelectContent>
-              <ScrollArea className="h-[200px]">
-                {showCerakoteColors && cerakoteColors.map((color) => (
-                  <SelectItem key={color.code} value={color.code}>
-                    {color.name} ({color.code})
-                  </SelectItem>
-                ))}
-                {showRALColors && ralColors.map((color) => (
-                  <SelectItem key={color.code} value={color.code}>
-                    {color.name} ({color.code})
-                  </SelectItem>
-                ))}
-              </ScrollArea>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <SculptureColorSelect
+        colorCode={colorCode}
+        onColorChange={handleColorChange}
+        finishType={finishType}
+      />
     </div>
   );
 }
