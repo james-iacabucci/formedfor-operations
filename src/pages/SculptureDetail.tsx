@@ -137,7 +137,7 @@ export default function SculptureDetail() {
         </div>
       </div>
       
-      <div className="mx-auto max-w-7xl px-4 py-4">
+      <div className="mx-auto max-w-7xl px-6 py-4">
         <Button
           variant="ghost"
           className="flex items-center gap-2"
@@ -148,7 +148,7 @@ export default function SculptureDetail() {
         </Button>
       </div>
 
-      <div className="mx-auto max-w-7xl px-[16.8px] py-6">
+      <div className="mx-auto max-w-7xl p-6">
         <SculptureDetailContent
           sculpture={sculpture}
           originalSculpture={originalSculpture}
