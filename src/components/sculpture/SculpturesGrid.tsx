@@ -20,8 +20,6 @@ export function SculpturesGrid({
   return (
     <div className="grid animate-fade-in grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {sculptures.map((sculpture) => {
-        console.log("[SculpturesGrid] Processing sculpture:", sculpture.id);
-        
         const sculptureSpecificTags = tags?.filter(tag => 
           sculptureTagRelations?.some(relation => 
             relation.sculpture_id === sculpture.id && relation.tag_id === tag.id
@@ -33,10 +31,7 @@ export function SculpturesGrid({
             key={sculpture.id} 
             sculpture={sculpture}
             tags={sculptureSpecificTags}
-            onDelete={() => {
-              console.log("[SculpturesGrid] Deleting sculpture:", sculpture.id);
-              onDelete(sculpture);
-            }}
+            onDelete={() => onDelete(sculpture)}
             onManageTags={() => onManageTags(sculpture)}
           />
         );

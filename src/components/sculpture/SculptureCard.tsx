@@ -23,10 +23,7 @@ export function SculptureCard({
 }: SculptureCardProps) {
   const navigate = useNavigate();
 
-  console.log("[SculptureCard] Rendering card for sculpture:", sculpture.id);
-
   if (!sculpture?.id) {
-    console.error("[SculptureCard] Sculpture ID is missing:", sculpture);
     return null;
   }
 
@@ -54,10 +51,7 @@ export function SculptureCard({
             sculptureId={sculpture.id}
             prompt={sculpture.prompt}
             imageUrl={sculpture.image_url}
-            onDelete={() => {
-              console.log("[SculptureCard] Delete clicked for sculpture:", sculpture.id);
-              onDelete();
-            }}
+            onDelete={onDelete}
             onManageTags={onManageTags}
           />
         </div>
