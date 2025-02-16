@@ -1,5 +1,4 @@
 
-import { format } from "date-fns";
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,7 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
-  const sculptureName = sculpture.ai_generated_name || sculpture.manual_name || "Untitled Sculpture";
+  const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
 
   return (
     <div className="mt-4">
@@ -20,9 +19,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       </h3>
 
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {format(new Date(sculpture.created_at), "MMM d, yyyy")}
-        </p>
         {sculpture.original_sculpture_id && (
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <LinkIcon className="w-4 h-4" />
@@ -31,14 +27,15 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         )}
       </div>
       
-      {showAIContent && sculpture.ai_generated_name ? (
-        <>
-          <h4 className="mt-1 font-medium text-sm">{sculpture.ai_generated_name}</h4>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{sculpture.ai_description}</p>
-        </>
-      ) : (
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{sculpture.prompt}</p>
+      {showAIContent && sculpture.ai_generated_name && sculpture.ai_description && (
+        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+          {sculpture.ai_description}
+        </p>
       )}
+
+      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+        {sculpture.prompt}
+      </p>
 
       {tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
