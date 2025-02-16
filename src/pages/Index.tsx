@@ -16,17 +16,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with sticky toolbar */}
       <div className="sticky top-0 z-10 bg-background border-b">
-        {/* Header content */}
-        <div className="mx-auto max-w-7xl p-6 pb-0">
+        <div className="mx-auto max-w-7xl p-6">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
-            <TagsSelect 
-              selectedTags={selectedTags} 
-              onTagsChange={setSelectedTags}
-              className="!mb-0" 
-            />
             <div className="flex items-center gap-4 ml-auto">
               <Button 
                 onClick={() => setIsAddSheetOpen(true)}
@@ -47,19 +40,8 @@ const Index = () => {
             </div>
           </div>
         </div>
-
-        {/* Sticky toolbar */}
-        <div className="mx-auto max-w-7xl px-6">
-          <Card className="border-0 shadow-none">
-            <div className="border-b border-border p-4">
-              <div className="flex justify-end">
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
 
-      {/* Main Content */}
       <div className="mx-auto max-w-7xl p-6 pt-6">
         <Card className="border-0 shadow-none">
           <CardContent className="pt-6">

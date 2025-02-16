@@ -7,6 +7,7 @@ import { useSculpturesData } from "@/hooks/useSculpturesData";
 import { SculpturesGrid } from "./sculpture/SculpturesGrid";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, UploadIcon } from "lucide-react";
+import { TagsSelect } from "@/components/tags/TagsSelect";
 
 interface SculpturesListProps {
   selectedTags: string[];
@@ -57,6 +58,16 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
   return (
     <>
+      <div className="mb-6">
+        <TagsSelect 
+          selectedTags={selectedTags} 
+          onTagsChange={(tags) => {
+            const event = new CustomEvent('tagsChange', { detail: tags });
+            window.dispatchEvent(event);
+          }}
+        />
+      </div>
+
       <SculpturesGrid 
         sculptures={sculptures}
         tags={tags}
