@@ -72,8 +72,8 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
   };
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
+    <div className="space-y-2">
+      <label className="text-sm font-medium">Dimensions</label>
       <div className="space-y-4">
         {isEditingDimensions ? (
           <div className="space-y-4">
@@ -128,8 +128,8 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border rounded-md p-2 group">
+          <div>
+            <div className="flex items-center justify-between border rounded-md p-3">
               <div className="flex items-center gap-4">
                 <div className="text-sm space-x-3">
                   <span>
