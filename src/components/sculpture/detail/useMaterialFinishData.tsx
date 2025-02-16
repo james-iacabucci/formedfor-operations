@@ -18,22 +18,7 @@ export function useMaterialFinishData(materialId: string | null) {
     },
   });
 
-  const { data: finishes } = useQuery({
-    queryKey: ["value_lists", "finish"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("value_lists")
-        .select("*")
-        .eq("type", "finish")
-        .order('name');
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   return {
     materials,
-    finishes,
   };
 }
