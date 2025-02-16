@@ -36,16 +36,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               </dd>
             </div>
 
-            <div className="flex justify-between items-center py-2 border-b">
-              <dt className="font-medium">Status</dt>
-              <dd>
-                <SculptureStatus
-                  sculptureId={sculpture.id}
-                  status={sculpture.status}
-                />
-              </dd>
-            </div>
-
             {originalSculpture && (
               <div className="flex justify-between py-2 border-b">
                 <dt className="font-medium">Original Sculpture</dt>
@@ -67,8 +57,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
         <SculptureMaterialFinish
           sculptureId={sculpture.id}
           materialId={sculpture.material_id}
-          finishId={sculpture.finish_id}
-          colorCode={sculpture.color_code}
         />
 
         <SculptureDimensions
