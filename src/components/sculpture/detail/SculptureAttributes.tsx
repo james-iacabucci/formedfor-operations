@@ -29,10 +29,12 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
         <div>
           <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
           <div className="space-y-6 pl-4">
-            <SculptureMaterialFinish
-              sculptureId={sculpture.id}
-              materialId={sculpture.material_id}
-            />
+            <div>
+              <SculptureMaterialFinish
+                sculptureId={sculpture.id}
+                materialId={sculpture.material_id}
+              />
+            </div>
 
             <SculptureDimensions
               sculptureId={sculpture.id}
@@ -106,9 +108,9 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
         <div className="space-y-4">
           <dl className="grid grid-cols-1 gap-2 text-sm">
             {originalSculpture && (
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex py-2 border-b">
                 <dt className="font-medium">Original Sculpture</dt>
-                <dd>
+                <dd className="ml-4">
                   <Button
                     variant="link"
                     className="h-auto p-0"
@@ -121,9 +123,9 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               </div>
             )}
             
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex py-2 border-b">
               <dt className="font-medium">Created</dt>
-              <dd className="text-muted-foreground">
+              <dd className="ml-4 text-muted-foreground">
                 {format(new Date(sculpture.created_at), "PPP")}
               </dd>
             </div>
