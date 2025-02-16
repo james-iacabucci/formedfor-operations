@@ -16,7 +16,6 @@ import { AIContextSection } from "./AIContextSection";
 import { TagsManagementHeader } from "./TagsManagementHeader";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
-import { KeyboardEvent } from "react";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -27,15 +26,25 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  // Reset state when sheet closes
   useEffect(() => {
     if (!open) {
       setShowCreateForm(false);
     }
+
+    // Force cleanup of any stray portals when component unmounts
+    return () => {
+      const portals = document.querySelectorAll('[role="dialog"]');
+      portals.forEach(portal => {
+        if (portal.parentNode) {
+          portal.parentNode.removeChild(portal);
+        }
+      });
+    };
   }, [open]);
 
   const handleApply = async () => {
     try {
-      // TODO: Implement other settings save logic
       toast.success("Settings saved successfully");
       onOpenChange(false);
     } catch (error) {
@@ -44,16 +53,20 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   };
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
   return (
     <Sheet 
       open={open} 
       onOpenChange={onOpenChange}
+      defaultOpen={false}
     >
-      <SheetContent className="sm:max-w-2xl flex flex-col p-0">
+      <SheetContent 
+        className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
+        onEscapeKeyDown={() => onOpenChange(false)}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+          onOpenChange(false);
+        }}
+      >
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
@@ -81,7 +94,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
         <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
           <Button
             variant="outline"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             type="button"
           >
             Cancel
