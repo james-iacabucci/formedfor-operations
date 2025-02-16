@@ -21,7 +21,7 @@ export function SculptureImage({
   onRegenerate,
 }: SculptureImageProps) {
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full rounded-lg overflow-hidden">
       <img
         src={imageUrl}
         alt={prompt}
