@@ -73,17 +73,13 @@ export function SculptureDetailContent({
       <RegenerationSheet
         open={isRegenerationSheetOpen}
         onOpenChange={setIsRegenerationSheetOpen}
-        onRegenerationStart={() => setIsRegenerating(true)}
-        onRegenerationComplete={() => {
-          setIsRegenerating(false);
-          queryClient.invalidateQueries({ queryKey: ["sculpture"] });
-        }}
+        sculpture={sculpture}
+        isRegenerating={isRegenerating}
       />
       <DeleteSculptureDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         sculpture={sculpture}
-        onOpenChange={setIsDeleteDialogOpen}
       />
       <ManageTagsDialog
         open={isManageTagsOpen}

@@ -33,12 +33,7 @@ export function SculptureImage({
           onDelete={onDelete}
           onDownload={onDownload}
           onManageTags={onManageTags}
-          onRegenerate={{
-            creativity: "medium",
-            updateExisting: true,
-            regenerateImage: true,
-            regenerateMetadata: false,
-          }}
+          onRegenerate={onRegenerate}
         />
       </div>
     </div>
