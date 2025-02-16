@@ -11,10 +11,12 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
+  const sculptureName = sculpture.ai_generated_name || sculpture.manual_name || "Untitled Sculpture";
+
   return (
     <div className="mt-4">
       <h3 className="font-semibold line-clamp-1">
-        {sculpture.prompt || "Untitled Sculpture"}
+        {sculptureName}
       </h3>
 
       <div className="mt-2 flex items-center justify-between">
