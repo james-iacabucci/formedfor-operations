@@ -1,11 +1,15 @@
-import { useParams } from "react-router-dom";
+
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
 import { Sculpture, FileUpload } from "@/types/sculpture";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function SculptureDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: sculpture, isLoading: isLoadingSculpture } = useQuery({
     queryKey: ["sculpture", id],
@@ -99,6 +103,18 @@ export default function SculptureDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="mx-auto max-w-7xl px-6 py-4">
+          <Button
+            variant="ghost"
+            className="flex items-center gap-2"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sculptures
+          </Button>
+        </div>
+      </header>
       <div className="mx-auto max-w-7xl p-6">
         <SculptureDetailContent
           sculpture={sculpture}
