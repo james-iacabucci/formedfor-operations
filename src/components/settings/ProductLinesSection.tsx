@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function ProductLinesSection() {
   const [selectedProductLine, setSelectedProductLine] = useState<ProductLine | null>(null);
@@ -82,6 +83,16 @@ export function ProductLinesSection() {
 
   const handleDelete = async (productLine: ProductLine) => {
     try {
+      // Delete the logo file if it exists
+      if (productLine.logo_url) {
+        const fileName = productLine.logo_url.split('/').pop();
+        if (fileName) {
+          await supabase.storage
+            .from('product_line_logos')
+            .remove([fileName]);
+        }
+      }
+
       const { error } = await supabase
         .from("product_lines")
         .delete()
@@ -118,6 +129,7 @@ export function ProductLinesSection() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Logo</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Contact Email</TableHead>
               <TableHead>Address</TableHead>
@@ -127,6 +139,12 @@ export function ProductLinesSection() {
           <TableBody>
             {productLines?.map((productLine) => (
               <TableRow key={productLine.id}>
+                <TableCell>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={productLine.logo_url || ''} alt={productLine.name} />
+                    <AvatarFallback>{productLine.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </TableCell>
                 <TableCell>{productLine.name}</TableCell>
                 <TableCell>{productLine.contact_email}</TableCell>
                 <TableCell>{productLine.address}</TableCell>

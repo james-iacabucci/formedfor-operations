@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProductLine } from "@/types/product-line";
+import { ImageUpload } from "@/components/sculpture/ImageUpload";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProductLineFormProps {
   open: boolean;
@@ -36,6 +39,32 @@ export function ProductLineForm({
       setLogoUrl(initialData.logo_url || "");
     }
   }, [open, initialData]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    try {
+      const file = e.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product_line_logos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product_line_logos')
+        .getPublicUrl(fileName);
+
+      setLogoUrl(publicUrl);
+      toast.success("Logo uploaded successfully");
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error("Failed to upload logo");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,12 +102,10 @@ export function ProductLineForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="logo">Logo URL</Label>
-            <Input
-              id="logo"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              placeholder="Enter logo URL"
+            <Label>Logo</Label>
+            <ImageUpload
+              previewUrl={logoUrl}
+              onFileChange={handleLogoUpload}
             />
           </div>
           <div className="space-y-2">
