@@ -25,8 +25,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
       <SculptureHeader sculpture={sculpture} />
 
       <div className="space-y-4">
-        <SculpturePrompt prompt={sculpture.prompt} />
-
         <div>
           <h2 className="text-lg font-semibold mb-2">Details</h2>
           <dl className="grid grid-cols-1 gap-2 text-sm">
@@ -46,15 +44,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
                 />
               </dd>
             </div>
-
-            {sculpture.creativity_level && (
-              <div className="flex justify-between py-2 border-b">
-                <dt className="font-medium">Variation Type</dt>
-                <dd className="text-muted-foreground capitalize">
-                  {sculpture.creativity_level}
-                </dd>
-              </div>
-            )}
 
             {originalSculpture && (
               <div className="flex justify-between py-2 border-b">
@@ -80,6 +69,21 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           width={sculpture.width_in}
           depth={sculpture.depth_in}
         />
+
+        <div>
+          <h2 className="text-lg font-semibold mb-2">AI Generation</h2>
+          <dl className="grid grid-cols-1 gap-2 text-sm mb-4">
+            {sculpture.creativity_level && (
+              <div className="flex justify-between py-2 border-b">
+                <dt className="font-medium">Variation Type</dt>
+                <dd className="text-muted-foreground capitalize">
+                  {sculpture.creativity_level}
+                </dd>
+              </div>
+            )}
+          </dl>
+          <SculpturePrompt prompt={sculpture.prompt} />
+        </div>
 
         <SculptureFiles
           sculptureId={sculpture.id}
