@@ -129,7 +129,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
           </div>
         ) : (
           <div>
-            <div className="flex items-center justify-between border rounded-md py-2 px-3">
+            <div className="flex items-center justify-between border rounded-md py-0 px-3">
               <div className="flex items-center gap-4">
                 <div className="text-sm space-x-3">
                   <span>
