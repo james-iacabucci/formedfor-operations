@@ -28,10 +28,15 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     return inches * 2.54;
   };
 
-  const formatDimensionString = (val: number | null, unit: string) => {
-    if (val === null) return '-';
-    if (unit === 'in') return val.toString();
-    return val.toFixed(2);
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: string) => {
+    if (!h && !w && !d) return "No dimensions set";
+    
+    const formatValue = (val: number | null) => {
+      if (val === null) return '-';
+      return unit === 'cm' ? val.toFixed(2) : val;
+    };
+    
+    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d (${unit})`;
   };
 
   const handleDimensionsUpdate = async () => {
@@ -123,19 +128,11 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
             </div>
           </div>
         ) : (
-          <div>
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-sm">
-                  <span>H: {formatDimensionString(height, 'in')}″ ({formatDimensionString(height ? calculateCm(height) : null, 'cm')}cm)</span>
-                </div>
-                <div className="text-sm">
-                  <span>W: {formatDimensionString(width, 'in')}″ ({formatDimensionString(width ? calculateCm(width) : null, 'cm')}cm)</span>
-                </div>
-                <div className="text-sm">
-                  <span>D: {formatDimensionString(depth, 'in')}″ ({formatDimensionString(depth ? calculateCm(depth) : null, 'cm')}cm)</span>
-                </div>
-              </div>
+              <span className="text-sm">
+                {formatDimensionString(height, width, depth, "in")}
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -143,6 +140,14 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
               >
                 <PenIcon className="h-4 w-4" />
               </Button>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {formatDimensionString(
+                height ? calculateCm(height) : null,
+                width ? calculateCm(width) : null,
+                depth ? calculateCm(depth) : null,
+                "cm"
+              )}
             </div>
           </div>
         )}
