@@ -50,6 +50,16 @@ export function SculptureDetailContent({
     navigate("/");
   };
 
+  const handleRegenerate = async (options: any) => {
+    setIsRegenerating(true);
+    try {
+      // Add your regeneration logic here
+      await queryClient.invalidateQueries({ queryKey: ["sculpture"] });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="w-full">
@@ -73,7 +83,7 @@ export function SculptureDetailContent({
       <RegenerationSheet
         open={isRegenerationSheetOpen}
         onOpenChange={setIsRegenerationSheetOpen}
-        sculpture={sculpture}
+        onRegenerate={handleRegenerate}
         isRegenerating={isRegenerating}
       />
       <DeleteSculptureDialog
