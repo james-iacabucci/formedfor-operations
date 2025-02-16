@@ -1,5 +1,5 @@
 
-import { SculptureImage } from "@/components/sculpture/SculptureImage";
+import { SculptureImage } from "../detail/SculptureImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
 import { RegenerationSheet } from "@/components/sculpture/RegenerationSheet";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -51,18 +52,15 @@ export function SculptureDetailContent({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="w-2/3 mx-auto">
-        <SculptureImage
-          imageUrl={sculpture.image_url || ""}
-          prompt={sculpture.prompt}
-          isRegenerating={isRegenerating}
-          onDelete={() => setIsDeleteDialogOpen(true)}
-          onDownload={handleDownload}
-          onManageTags={() => setIsManageTagsOpen(true)}
-          onRegenerate={(options) => {
-            setIsRegenerationSheetOpen(true);
-          }}
-        />
+      <div className="w-1/2 mx-auto">
+        <AspectRatio ratio={1}>
+          <SculptureImage
+            imageUrl={sculpture.image_url || ""}
+            prompt={sculpture.prompt}
+            isRegenerating={isRegenerating}
+            onImageClick={() => {}}
+          />
+        </AspectRatio>
       </div>
       <SculptureAttributes
         sculpture={sculpture}
@@ -72,7 +70,7 @@ export function SculptureDetailContent({
       <RegenerationSheet
         open={isRegenerationSheetOpen}
         onOpenChange={setIsRegenerationSheetOpen}
-        sculptureId={sculpture.id}
+        sculpture={sculpture}
         onRegenerationStart={() => setIsRegenerating(true)}
         onRegenerationComplete={() => {
           setIsRegenerating(false);
@@ -82,13 +80,13 @@ export function SculptureDetailContent({
       <DeleteSculptureDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        sculptureId={sculpture.id}
+        sculpture={sculpture}
         onDelete={handleDelete}
       />
       <ManageTagsDialog
         open={isManageTagsOpen}
         onOpenChange={setIsManageTagsOpen}
-        sculptureId={sculpture.id}
+        sculpture={sculpture}
       />
     </div>
   );
