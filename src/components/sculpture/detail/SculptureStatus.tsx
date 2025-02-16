@@ -25,6 +25,19 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
     await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
   };
 
+  const getDisplayName = (status: string) => {
+    switch (status) {
+      case "ideas":
+        return "Idea";
+      case "pending_additions":
+        return "Pending Addition";
+      case "approved":
+        return "Approved";
+      default:
+        return status;
+    }
+  };
+
   return (
     <ToggleGroup
       type="single"
@@ -34,24 +47,24 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
     >
       <ToggleGroupItem
         value="ideas"
-        className="text-xs capitalize"
-        aria-label="Set status to ideas"
+        className="text-xs capitalize whitespace-nowrap"
+        aria-label="Set status to idea"
       >
-        Ideas
+        {getDisplayName("ideas")}
       </ToggleGroupItem>
       <ToggleGroupItem
         value="pending_additions"
         className="text-xs capitalize whitespace-nowrap"
-        aria-label="Set status to pending additions"
+        aria-label="Set status to pending addition"
       >
-        Pending Additions
+        {getDisplayName("pending_additions")}
       </ToggleGroupItem>
       <ToggleGroupItem
         value="approved"
-        className="text-xs capitalize"
+        className="text-xs capitalize whitespace-nowrap"
         aria-label="Set status to approved"
       >
-        Approved
+        {getDisplayName("approved")}
       </ToggleGroupItem>
     </ToggleGroup>
   );
