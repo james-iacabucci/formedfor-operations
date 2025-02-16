@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
@@ -13,6 +12,9 @@ import { SculptureFiles } from "./SculptureFiles";
 import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
 import { SculptureMethod } from "./SculptureMethod";
 import { SculptureWeight } from "./SculptureWeight";
+import { SculpturePDF } from "./SculpturePDF";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureAttributesProps {
   sculpture: Sculpture;
@@ -23,9 +25,25 @@ interface SculptureAttributesProps {
 export function SculptureAttributes({ sculpture, originalSculpture, tags }: SculptureAttributesProps) {
   const navigate = useNavigate();
 
+  const { data: material } = useQuery({
+    queryKey: ["material", sculpture.material_id],
+    enabled: !!sculpture.material_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("value_lists")
+        .select("name")
+        .eq("id", sculpture.material_id)
+        .single();
+      return data;
+    },
+  });
+
   return (
     <div className="space-y-6">
-      <SculptureHeader sculpture={sculpture} />
+      <div className="flex justify-between items-start">
+        <SculptureHeader sculpture={sculpture} />
+        <SculpturePDF sculpture={sculpture} materialName={material?.name} />
+      </div>
 
       <div className="space-y-6">
         <div>
