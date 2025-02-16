@@ -5,12 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
 import { Sculpture, FileUpload } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PlusIcon, UploadIcon } from "lucide-react";
 import { UserMenu } from "@/components/UserMenu";
+import { useState } from "react";
+import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
+import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 
 export default function SculptureDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
   const { data: sculpture, isLoading: isLoadingSculpture } = useQuery({
     queryKey: ["sculpture", id],
@@ -105,10 +110,25 @@ export default function SculptureDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-background border-b">
-        <div className="mx-auto max-w-7xl p-6 pb-0">
+        <div className="mx-auto max-w-7xl p-6">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
             <div className="flex items-center gap-4 ml-auto">
+              <Button 
+                onClick={() => setIsAddSheetOpen(true)}
+                variant="outline"
+                className="gap-2 shrink-0"
+              >
+                <UploadIcon className="h-4 w-4" />
+                Add
+              </Button>
+              <Button 
+                onClick={() => setIsCreateSheetOpen(true)}
+                className="gap-2 shrink-0"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Create
+              </Button>
               <UserMenu />
             </div>
           </div>
@@ -133,6 +153,15 @@ export default function SculptureDetail() {
           tags={tags || []}
         />
       </div>
+
+      <CreateSculptureSheet 
+        open={isCreateSheetOpen} 
+        onOpenChange={setIsCreateSheetOpen}
+      />
+      <AddSculptureSheet
+        open={isAddSheetOpen}
+        onOpenChange={setIsAddSheetOpen}
+      />
     </div>
   );
 }
