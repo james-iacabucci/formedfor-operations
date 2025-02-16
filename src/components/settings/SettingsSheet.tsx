@@ -43,6 +43,10 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   };
 
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
     <Sheet 
       open={open} 
@@ -86,7 +90,8 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
         <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
+            type="button"
           >
             Cancel
           </Button>
