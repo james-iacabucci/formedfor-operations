@@ -3,8 +3,7 @@ import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { DimensionDisplay } from "./DimensionDisplay";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -13,7 +12,6 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
-  const [unit, setUnit] = useState<"inches" | "centimeters">("inches");
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
@@ -28,21 +26,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       default:
         return status;
     }
-  };
-
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: 'inches' | 'centimeters') => {
-    if (!h && !w && !d) return "No dimensions set";
-    
-    const formatValue = (val: number | null) => {
-      if (val === null) return '-';
-      return unit === 'centimeters' ? (val * 2.54).toFixed(1) : val;
-    };
-    
-    const h_val = formatValue(h);
-    const w_val = formatValue(w);
-    const d_val = formatValue(d);
-    
-    return `${h_val}h - ${w_val}w - ${d_val}d`;
   };
 
   const getMaterialName = () => {
@@ -75,26 +58,11 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <div>
           {getMaterialName()}
         </div>
-        <div className="flex items-center gap-4">
-          <span>
-            {formatDimensionString(
-              sculpture.height_in,
-              sculpture.width_in,
-              sculpture.depth_in,
-              unit
-            )}
-          </span>
-          <Tabs
-            value={unit}
-            onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
-            className="h-6"
-          >
-            <TabsList className="h-6 p-0.5">
-              <TabsTrigger value="inches" className="h-5 px-2 text-xs">in</TabsTrigger>
-              <TabsTrigger value="centimeters" className="h-5 px-2 text-xs">cm</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <DimensionDisplay
+          height={sculpture.height_in}
+          width={sculpture.width_in}
+          depth={sculpture.depth_in}
+        />
       </div>
 
       {tags.length > 0 && (
