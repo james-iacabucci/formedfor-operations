@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,14 +29,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Session check:", session ? "Active session" : "No session");
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     // Listen for changes on auth state (sign in, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state change:", _event, session ? "Session exists" : "No session");
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -44,30 +43,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    console.log("Attempting to sign out...");
-    
     try {
-      // First clear the local state
       setUser(null);
       
-      // Attempt to sign out from Supabase
       const { error } = await supabase.auth.signOut({
-        scope: 'local' // Only clear the current tab's session
+        scope: 'local'
       });
       
-      if (error) {
-        console.error("Sign out API error:", error);
-        // Even if API fails, we continue with local cleanup
-      }
+      if (error) throw error;
       
-      // Always navigate away and show success message
-      console.log("Sign out completed, redirecting to login");
       navigate('/login');
       toast.success("Signed out successfully");
       
     } catch (error) {
-      console.error("Unexpected error during sign out:", error);
-      // Still navigate away on error
       navigate('/login');
       toast.error("An error occurred, but you've been signed out locally");
     }
