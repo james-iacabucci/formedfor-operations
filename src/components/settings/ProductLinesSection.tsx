@@ -42,6 +42,11 @@ export function ProductLinesSection() {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
 
+      if (!data.name) {
+        toast.error("Name is required");
+        return;
+      }
+
       if (selectedProductLine) {
         const { error } = await supabase
           .from("product_lines")
@@ -52,7 +57,13 @@ export function ProductLinesSection() {
       } else {
         const { error } = await supabase
           .from("product_lines")
-          .insert([{ ...data, user_id: user.user.id }]);
+          .insert({
+            name: data.name,
+            contact_email: data.contact_email,
+            address: data.address,
+            logo_url: data.logo_url,
+            user_id: user.user.id
+          });
 
         if (error) throw error;
       }
