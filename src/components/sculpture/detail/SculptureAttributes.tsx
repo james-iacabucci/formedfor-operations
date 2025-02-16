@@ -7,8 +7,9 @@ import { Sculpture } from "@/types/sculpture";
 import { EditableField } from "./EditableField";
 import { FileUploadField } from "../FileUploadField";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 interface SculptureAttributesProps {
@@ -19,6 +20,7 @@ interface SculptureAttributesProps {
 
 export function SculptureAttributes({ sculpture, originalSculpture, tags }: SculptureAttributesProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isEditingDimensions, setIsEditingDimensions] = useState(false);
   const [dimensions, setDimensions] = useState({
     height: sculpture.height_in?.toString() || "",
@@ -46,6 +48,21 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
     }
 
     setIsEditingDimensions(false);
+  };
+
+  const handleStatusChange = async (status: string) => {
+    const { error } = await supabase
+      .from('sculptures')
+      .update({ status })
+      .eq('id', sculpture.id);
+
+    if (error) {
+      console.error('Error updating status:', error);
+      return;
+    }
+
+    // Invalidate the queries to refresh the data
+    await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
   };
 
   return (
@@ -88,20 +105,37 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
               </dd>
             </div>
 
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between items-center py-2 border-b">
               <dt className="font-medium">Status</dt>
               <dd>
-                <EditableField
+                <ToggleGroup
+                  type="single"
                   value={sculpture.status}
-                  type="select"
-                  options={[
-                    { value: "ideas", label: "Ideas" },
-                    { value: "pending_additions", label: "Pending Additions" },
-                    { value: "approved", label: "Approved" }
-                  ]}
-                  sculptureId={sculpture.id}
-                  field="status"
-                />
+                  onValueChange={handleStatusChange}
+                  className="flex gap-1"
+                >
+                  <ToggleGroupItem
+                    value="ideas"
+                    className="text-xs capitalize"
+                    aria-label="Set status to ideas"
+                  >
+                    Ideas
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="pending_additions"
+                    className="text-xs capitalize whitespace-nowrap"
+                    aria-label="Set status to pending additions"
+                  >
+                    Pending Additions
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="approved"
+                    className="text-xs capitalize"
+                    aria-label="Set status to approved"
+                  >
+                    Approved
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </dd>
             </div>
 
@@ -132,7 +166,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           </dl>
         </div>
 
-        {/* Dimensions Section */}
         <div>
           <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
           <div className="space-y-4">
@@ -252,7 +285,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           </div>
         </div>
 
-        {/* Files Sections */}
         <div>
           <h2 className="text-lg font-semibold mb-2">Files</h2>
           <div className="space-y-4">
