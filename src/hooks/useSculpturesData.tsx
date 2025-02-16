@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Sculpture } from "@/types/sculpture";
+import { Sculpture, FileUpload } from "@/types/sculpture";
 
 export function useSculpturesData(selectedTags: string[]) {
   // Query to fetch sculptures
@@ -29,8 +29,19 @@ export function useSculpturesData(selectedTags: string[]) {
       const { data, error } = await query;
       if (error) throw error;
 
-      console.log("Fetched sculptures:", data);
-      return data as Sculpture[];
+      // Transform the data to match the Sculpture type
+      const transformedData = data.map((item: any): Sculpture => ({
+        ...item,
+        models: Array.isArray(item.models) ? item.models as FileUpload[] : [],
+        renderings: Array.isArray(item.renderings) ? item.renderings as FileUpload[] : [],
+        dimensions: Array.isArray(item.dimensions) ? item.dimensions as FileUpload[] : [],
+        status: item.status as "ideas" | "pending_additions" | "approved",
+        ai_engine: item.ai_engine as "runware" | "manual",
+        creativity_level: item.creativity_level as "none" | "small" | "medium" | "large" | null,
+      }));
+
+      console.log("Fetched sculptures:", transformedData);
+      return transformedData;
     },
   });
 

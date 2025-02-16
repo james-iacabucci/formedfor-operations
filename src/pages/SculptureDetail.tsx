@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureHeader } from "@/components/sculpture/detail/SculptureHeader";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
-import { Sculpture } from "@/types/sculpture";
+import { Sculpture, FileUpload } from "@/types/sculpture";
 
 export default function SculptureDetail() {
   const { id } = useParams();
@@ -24,9 +24,13 @@ export default function SculptureDetail() {
 
       if (error) throw error;
       
-      // Validate ai_engine value
+      // Transform and validate the data
       const validatedData: Sculpture = {
         ...data,
+        models: Array.isArray(data.models) ? data.models as FileUpload[] : [],
+        renderings: Array.isArray(data.renderings) ? data.renderings as FileUpload[] : [],
+        dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
+        status: data.status as "ideas" | "pending_additions" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
@@ -49,9 +53,13 @@ export default function SculptureDetail() {
 
       if (error) throw error;
 
-      // Validate ai_engine value
+      // Transform and validate the data
       const validatedData: Sculpture = {
         ...data,
+        models: Array.isArray(data.models) ? data.models as FileUpload[] : [],
+        renderings: Array.isArray(data.renderings) ? data.renderings as FileUpload[] : [],
+        dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
+        status: data.status as "ideas" | "pending_additions" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"]
       };
