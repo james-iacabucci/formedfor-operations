@@ -22,8 +22,8 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const calculateLbs = (kg: number): number => {
-    return kg * 2.20462;
+  const calculateKg = (lbs: number): number => {
+    return lbs / 2.20462;
   };
 
   const formatWeightString = (kg: number | null, lbs: number | null) => {
@@ -34,7 +34,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       return val.toFixed(2);
     };
     
-    return `${formatValue(kg)} kg - ${formatValue(lbs)} lbs`;
+    return `${formatValue(lbs)} lbs  |  ${formatValue(kg)} kg`;
   };
 
   const handleWeightUpdate = async () => {
@@ -76,22 +76,6 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium mb-2 block">Kilograms</label>
-                <Input
-                  type="number"
-                  value={weight.kg}
-                  onChange={(e) => {
-                    const kgValue = e.target.value;
-                    setWeight(prev => ({
-                      kg: kgValue,
-                      lbs: kgValue ? calculateLbs(parseFloat(kgValue)).toFixed(2) : ""
-                    }));
-                  }}
-                  placeholder="Weight in kg"
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-              <div>
                 <label className="text-sm font-medium mb-2 block">Pounds</label>
                 <Input
                   type="number"
@@ -100,10 +84,26 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
                     const lbsValue = e.target.value;
                     setWeight(prev => ({
                       lbs: lbsValue,
-                      kg: lbsValue ? (parseFloat(lbsValue) / 2.20462).toFixed(2) : ""
+                      kg: lbsValue ? calculateKg(parseFloat(lbsValue)).toFixed(2) : ""
                     }));
                   }}
                   placeholder="Weight in lbs"
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Kilograms</label>
+                <Input
+                  type="number"
+                  value={weight.kg}
+                  onChange={(e) => {
+                    const kgValue = e.target.value;
+                    setWeight(prev => ({
+                      kg: kgValue,
+                      lbs: kgValue ? (parseFloat(kgValue) * 2.20462).toFixed(2) : ""
+                    }));
+                  }}
+                  placeholder="Weight in kg"
                   className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
@@ -134,8 +134,10 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
         ) : (
           <div>
             <div className="flex items-center justify-between border rounded-md py-0 px-3">
-              <div className="text-sm py-2">
-                {formatWeightString(weightKg, weightLbs)}
+              <div className="flex items-center gap-4">
+                <div className="text-sm py-2">
+                  {formatWeightString(weightKg, weightLbs)}
+                </div>
               </div>
               <Button
                 variant="ghost"
