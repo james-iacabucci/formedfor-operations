@@ -26,18 +26,30 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Cleanup effect
   useEffect(() => {
+    console.log("Sheet open state changed:", open);
+    
     if (!open) {
-      // Reset any state when sheet closes
+      console.log("Sheet is closing, cleaning up state");
       setShowCreateForm(false);
+      
+      // Log any potential event listeners or portal elements
+      const portals = document.querySelectorAll('[role="dialog"]');
+      console.log("Active dialog portals:", portals.length);
     }
+
+    // Cleanup function
+    return () => {
+      console.log("Sheet component cleanup running");
+    };
   }, [open]);
 
   const handleApply = async () => {
+    console.log("Apply button clicked");
     try {
       // TODO: Implement other settings save logic
       toast.success("Settings saved successfully");
+      console.log("Triggering sheet close");
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -45,19 +57,30 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   };
 
-  const handleEscapeKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
-      onOpenChange(false);
-    }
-  };
-
   const handleClose = () => {
+    console.log("Cancel button clicked");
+    console.log("Triggering sheet close");
     onOpenChange(false);
   };
 
+  console.log("Rendering SettingsSheet, open:", open);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-2xl flex flex-col p-0">
+    <Sheet 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        console.log("Sheet onOpenChange triggered:", newOpen);
+        onOpenChange(newOpen);
+      }}
+      modal={true}
+    >
+      <SheetContent 
+        className="sm:max-w-2xl flex flex-col p-0"
+        onPointerDownOutside={(e) => {
+          console.log("Pointer down outside sheet content");
+          e.preventDefault();
+        }}
+      >
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
@@ -87,7 +110,10 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           >
             Cancel
           </Button>
-          <Button onClick={handleApply} type="button">
+          <Button 
+            onClick={handleApply} 
+            type="button"
+          >
             Apply Changes
           </Button>
         </div>
