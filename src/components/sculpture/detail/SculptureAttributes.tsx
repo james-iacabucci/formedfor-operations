@@ -28,7 +28,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
-          <div className="space-y-6 pl-4">
+          <div className="space-y-6">
             <div>
               <SculptureMaterialFinish
                 sculptureId={sculpture.id}
@@ -52,7 +52,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
         <div>
           <h2 className="text-lg font-semibold mb-4">Base Details</h2>
-          <div className="space-y-6 pl-4">
+          <div className="space-y-6">
             <div>
               <h3 className="text-sm font-medium mb-2">Material</h3>
               <p className="text-sm text-muted-foreground">Not specified</p>
