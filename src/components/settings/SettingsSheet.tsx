@@ -36,9 +36,31 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   };
 
+  const handleEscapeKeyPress = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-2xl flex flex-col p-0">
+    <Sheet 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        // Only allow closing through buttons, not by clicking outside
+        if (isOpen === false) {
+          return;
+        }
+        onOpenChange(isOpen);
+      }}
+    >
+      <SheetContent 
+        className="sm:max-w-2xl flex flex-col p-0"
+        onKeyDown={handleEscapeKeyPress}
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking outside
+          e.preventDefault();
+        }}
+      >
         <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
