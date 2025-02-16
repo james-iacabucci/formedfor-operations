@@ -30,7 +30,13 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
 
   const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: string) => {
     if (!h && !w && !d) return "No dimensions set";
-    return `${h || '-'}h - ${w || '-'}w - ${d || '-'}d (${unit})`;
+    
+    const formatValue = (val: number | null) => {
+      if (val === null) return '-';
+      return unit === 'centimeters' ? val.toFixed(2) : val;
+    };
+    
+    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d (${unit})`;
   };
 
   const handleDimensionsUpdate = async () => {
