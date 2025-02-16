@@ -36,7 +36,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       return unit === 'cm' ? val.toFixed(2) : val;
     };
     
-    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d (${unit})`;
+    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d ${unit}`;
   };
 
   const handleDimensionsUpdate = async () => {
@@ -130,9 +130,19 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
         ) : (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">
-                {formatDimensionString(height, width, depth, "in")}
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm">
+                  {formatDimensionString(height, width, depth, "in")}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ({formatDimensionString(
+                    height ? calculateCm(height) : null,
+                    width ? calculateCm(width) : null,
+                    depth ? calculateCm(depth) : null,
+                    "cm"
+                  )})
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -140,14 +150,6 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
               >
                 <PenIcon className="h-4 w-4" />
               </Button>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {formatDimensionString(
-                height ? calculateCm(height) : null,
-                width ? calculateCm(width) : null,
-                depth ? calculateCm(depth) : null,
-                "cm"
-              )}
             </div>
           </div>
         )}
