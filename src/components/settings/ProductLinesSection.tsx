@@ -139,9 +139,15 @@ export function ProductLinesSection() {
             {productLines?.map((productLine) => (
               <TableRow key={productLine.id}>
                 <TableCell>
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={productLine.logo_url || ''} alt={productLine.name} />
-                    <AvatarFallback>{productLine.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <Avatar className="h-12 w-12 rounded-lg">
+                    <AvatarImage 
+                      src={productLine.logo_url || ''} 
+                      alt={productLine.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      {productLine.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                 </TableCell>
                 <TableCell>{productLine.name}</TableCell>
