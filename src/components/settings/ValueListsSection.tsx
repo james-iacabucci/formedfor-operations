@@ -32,10 +32,10 @@ interface MaterialFinish {
 }
 
 const VALUE_LIST_TYPES = [
-  { value: 'material', label: 'Materials', showCode: true },
-  { value: 'finish', label: 'Finishes', showCode: false },
-  { value: 'fabricator', label: 'Fabricators', showCode: false },
-  { value: 'texture', label: 'Textures', showCode: false },
+  { value: 'material' as const, label: 'Materials', showCode: true },
+  { value: 'finish' as const, label: 'Finishes', showCode: false },
+  { value: 'fabricator' as const, label: 'Fabricators', showCode: false },
+  { value: 'texture' as const, label: 'Textures', showCode: false },
 ] as const;
 
 export function ValueListsSection() {

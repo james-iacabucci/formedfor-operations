@@ -10,7 +10,7 @@ interface ValueListType {
 }
 
 interface ValueListTypeSelectorProps {
-  types: ValueListType[];
+  types: readonly ValueListType[];  // Changed to readonly array
   selectedType: ValueListType['value'];
   onTypeChange: (type: ValueListType['value']) => void;
   onAddClick: () => void;
