@@ -12,11 +12,29 @@ interface SculptureInfoProps {
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
 
+  const getDisplayStatus = (status: string) => {
+    switch (status) {
+      case "ideas":
+        return "Idea";
+      case "pending_additions":
+        return "Pending Addition";
+      case "approved":
+        return "Approved";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="mt-4">
-      <h3 className="font-semibold line-clamp-1">
-        {sculptureName}
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold line-clamp-1">
+          {sculptureName}
+        </h3>
+        <span className="text-sm text-muted-foreground">
+          {getDisplayStatus(sculpture.status)}
+        </span>
+      </div>
 
       <div className="mt-2 flex items-center justify-between">
         {sculpture.original_sculpture_id && (
