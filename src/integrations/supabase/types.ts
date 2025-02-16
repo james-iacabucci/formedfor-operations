@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      material_finishes: {
-        Row: {
-          created_at: string
-          finish_id: string
-          material_id: string
-        }
-        Insert: {
-          created_at?: string
-          finish_id: string
-          material_id: string
-        }
-        Update: {
-          created_at?: string
-          finish_id?: string
-          material_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "material_finishes_finish_id_fkey"
-            columns: ["finish_id"]
-            isOneToOne: false
-            referencedRelation: "value_lists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_finishes_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "value_lists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null

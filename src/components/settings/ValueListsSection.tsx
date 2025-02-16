@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +17,6 @@ import { ValueListForm } from "./ValueListForm";
 import { ValueListsHeader } from "./ValueListsHeader";
 import { ValueListTypeSelector } from "./ValueListTypeSelector";
 import { ValueListTable } from "./ValueListTable";
-import { MaterialFinishesDialog } from "./MaterialFinishesDialog";
 
 interface ValueList {
   id: string;
@@ -24,11 +24,6 @@ interface ValueList {
   code: string | null;
   name: string;
   created_at: string;
-}
-
-interface MaterialFinish {
-  material_id: string;
-  finish_id: string;
 }
 
 const VALUE_LIST_TYPES = [
@@ -44,8 +39,6 @@ export function ValueListsSection() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<ValueList | null>(null);
   const [deleteItem, setDeleteItem] = useState<ValueList | null>(null);
-  const [selectedMaterial, setSelectedMaterial] = useState<ValueList | null>(null);
-  const [isFinishesDialogOpen, setIsFinishesDialogOpen] = useState(false);
   
   const currentTypeConfig = VALUE_LIST_TYPES.find(t => t.value === selectedType)!;
 
@@ -63,22 +56,6 @@ export function ValueListsSection() {
       return data as ValueList[];
     }
   });
-
-  const { data: materialFinishes } = useQuery({
-    queryKey: ['material-finishes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('material_finishes')
-        .select('*');
-      
-      if (error) throw error;
-      return data as MaterialFinish[];
-    }
-  });
-
-  const getCountForType = (type: ValueList['type']) => {
-    return valueLists?.filter(item => item.type === type).length || 0;
-  };
 
   const addMutation = useMutation({
     mutationFn: async (values: { code?: string; name: string }) => {
@@ -136,43 +113,11 @@ export function ValueListsSection() {
     }
   });
 
-  const updateMaterialFinishes = useMutation({
-    mutationFn: async ({ materialId, finishIds }: { materialId: string; finishIds: string[] }) => {
-      const { error: deleteError } = await supabase
-        .from('material_finishes')
-        .delete()
-        .eq('material_id', materialId);
-      
-      if (deleteError) throw deleteError;
-
-      if (finishIds.length > 0) {
-        const { error: insertError } = await supabase
-          .from('material_finishes')
-          .insert(
-            finishIds.map(finishId => ({
-              material_id: materialId,
-              finish_id: finishId
-            }))
-          );
-        
-        if (insertError) throw insertError;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['material-finishes'] });
-      toast.success("Material finishes updated successfully");
-    },
-    onError: (error) => {
-      console.error("Error updating material finishes:", error);
-      toast.error("Failed to update material finishes");
-    }
-  });
+  const getCountForType = (type: ValueList['type']) => {
+    return valueLists?.filter(item => item.type === type).length || 0;
+  };
 
   const filteredItems = valueLists?.filter(item => item.type === selectedType) || [];
-  const finishes = valueLists?.filter(item => item.type === 'finish') || [];
-  const selectedMaterialFinishes = materialFinishes?.filter(
-    mf => mf.material_id === selectedMaterial?.id
-  ).map(mf => mf.finish_id) || [];
 
   const handleAdd = async (values: { code?: string; name: string }) => {
     await addMutation.mutateAsync(values);
@@ -190,15 +135,6 @@ export function ValueListsSection() {
     setDeleteItem(null);
   };
 
-  const handleFinishesUpdate = async (selectedFinishIds: string[]) => {
-    if (!selectedMaterial) return;
-    await updateMaterialFinishes.mutateAsync({
-      materialId: selectedMaterial.id,
-      finishIds: selectedFinishIds
-    });
-    setIsFinishesDialogOpen(false);
-  };
-
   if (isLoading) {
     return <div>Loading value lists...</div>;
   }
@@ -212,7 +148,7 @@ export function ValueListsSection() {
         selectedType={selectedType}
         onTypeChange={(type) => setSelectedType(type)}
         onAddClick={() => setIsAddDialogOpen(true)}
-        getCountForType={(type) => valueLists?.filter(item => item.type === type).length || 0}
+        getCountForType={getCountForType}
       />
 
       <ValueListTable
@@ -220,10 +156,6 @@ export function ValueListsSection() {
         showCode={currentTypeConfig.showCode}
         onEdit={setEditItem}
         onDelete={setDeleteItem}
-        onManageFinishes={(item) => {
-          setSelectedMaterial(item);
-          setIsFinishesDialogOpen(true);
-        }}
       />
 
       <ValueListForm
@@ -259,15 +191,6 @@ export function ValueListsSection() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <MaterialFinishesDialog
-        open={isFinishesDialogOpen}
-        onOpenChange={setIsFinishesDialogOpen}
-        material={selectedMaterial}
-        finishes={finishes}
-        selectedFinishIds={selectedMaterialFinishes}
-        onFinishesUpdate={handleFinishesUpdate}
-      />
     </div>
   );
 }

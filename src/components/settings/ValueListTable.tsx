@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Link } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface ValueList {
   id: string;
@@ -17,7 +17,6 @@ interface ValueListTableProps {
   showCode: boolean;
   onEdit: (item: ValueList) => void;
   onDelete: (item: ValueList) => void;
-  onManageFinishes?: (item: ValueList) => void;
 }
 
 export function ValueListTable({
@@ -25,7 +24,6 @@ export function ValueListTable({
   showCode,
   onEdit,
   onDelete,
-  onManageFinishes,
 }: ValueListTableProps) {
   return (
     <div className="border rounded-md">
@@ -63,15 +61,6 @@ export function ValueListTable({
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    {item.type === 'material' && onManageFinishes && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onManageFinishes(item)}
-                      >
-                        <Link className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
                 </TableCell>
               </TableRow>
