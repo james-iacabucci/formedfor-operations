@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProductLine } from "@/types/product-line";
-import { ImageUpload } from "@/components/sculpture/ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ImageIcon, X } from "lucide-react";
 
 interface ProductLineFormProps {
   open: boolean;
@@ -66,6 +66,10 @@ export function ProductLineForm({
     }
   };
 
+  const handleRemoveLogo = () => {
+    setLogoUrl("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -103,10 +107,40 @@ export function ProductLineForm({
           </div>
           <div className="space-y-2">
             <Label>Logo</Label>
-            <ImageUpload
-              previewUrl={logoUrl}
-              onFileChange={handleLogoUpload}
-            />
+            <div className="flex items-center gap-4">
+              <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-muted">
+                {logoUrl ? (
+                  <>
+                    <img
+                      src={logoUrl}
+                      alt="Product line logo"
+                      className="h-full w-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-6 w-6 rounded-bl bg-background/80 p-0.5"
+                      onClick={handleRemoveLogo}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Contact Email</Label>
