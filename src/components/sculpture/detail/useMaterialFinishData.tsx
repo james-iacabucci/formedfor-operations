@@ -10,7 +10,7 @@ export function useMaterialFinishData(materialId: string | null) {
         .from("value_lists")
         .select("*")
         .eq("type", "material")
-        .order('code', { nullsLast: true })  // Added sorting by code
+        .order('code', { nullsFirst: false })  // Changed to nullsFirst: false
         .order('name');
 
       if (error) throw error;
