@@ -31,5 +31,5 @@ export type Sculpture = {
   weight_lbs: number | null;
   method_id: string | null;
   material_id: string | null;
-  product_line: "formed_for" | "brodin";
+  product_line_id: string | null;
 };

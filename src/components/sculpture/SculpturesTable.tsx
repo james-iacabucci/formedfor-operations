@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { ProductLine } from "@/types/product-line";
 
 interface SculpturesTableProps {
   sculptures: Sculpture[];
@@ -45,6 +47,22 @@ export function SculpturesTable({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
   const formatDimensions = (sculpture: Sculpture) => {
     if (!sculpture.height_in && !sculpture.width_in && !sculpture.depth_in) {
       return "Not specified";
@@ -52,17 +70,15 @@ export function SculpturesTable({
     return `${sculpture.height_in || 0}h - ${sculpture.width_in || 0}w - ${sculpture.depth_in || 0}d (in)`;
   };
 
-  const handleProductLineChange = async (sculptureId: string, value: string) => {
-    const productLine = value as "formed_for" | "brodin";
+  const handleProductLineChange = async (sculptureId: string, productLineId: string) => {
     try {
       const { error } = await supabase
         .from('sculptures')
-        .update({ product_line: productLine })
+        .update({ product_line_id: productLineId })
         .eq('id', sculptureId);
 
       if (error) throw error;
 
-      // Invalidate queries to refresh the data
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
 
       toast({
@@ -134,29 +150,21 @@ export function SculpturesTable({
                 {formatDimensions(sculpture)}
               </TableCell>
               <TableCell>
-                <ToggleGroup
-                  type="single"
-                  value={sculpture.product_line}
-                  onValueChange={(value) => {
-                    if (value) handleProductLineChange(sculpture.id, value);
-                  }}
-                  className="flex gap-1"
+                <Select
+                  value={sculpture.product_line_id || undefined}
+                  onValueChange={(value) => handleProductLineChange(sculpture.id, value)}
                 >
-                  <ToggleGroupItem 
-                    value="formed_for"
-                    size="sm"
-                    className="text-xs"
-                  >
-                    Formed For
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="brodin"
-                    size="sm"
-                    className="text-xs"
-                  >
-                    Brodin
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select product line" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productLines?.map((productLine) => (
+                      <SelectItem key={productLine.id} value={productLine.id}>
+                        {productLine.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell>
                 <DropdownMenu>

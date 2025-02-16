@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      product_lines: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_lines_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -84,7 +122,7 @@ export type Database = {
           method_id: string | null
           models: Json | null
           original_sculpture_id: string | null
-          product_line: string | null
+          product_line_id: string | null
           prompt: string
           renderings: Json | null
           status: string | null
@@ -114,7 +152,7 @@ export type Database = {
           method_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
-          product_line?: string | null
+          product_line_id?: string | null
           prompt: string
           renderings?: Json | null
           status?: string | null
@@ -144,7 +182,7 @@ export type Database = {
           method_id?: string | null
           models?: Json | null
           original_sculpture_id?: string | null
-          product_line?: string | null
+          product_line_id?: string | null
           prompt?: string
           renderings?: Json | null
           status?: string | null
@@ -174,6 +212,13 @@ export type Database = {
             columns: ["original_sculpture_id"]
             isOneToOne: false
             referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculptures_product_line_id_fkey"
+            columns: ["product_line_id"]
+            isOneToOne: false
+            referencedRelation: "product_lines"
             referencedColumns: ["id"]
           },
           {

@@ -14,6 +14,7 @@ import { AppearanceSection } from "./AppearanceSection";
 import { AIContextSection } from "./AIContextSection";
 import { TagsManagementHeader } from "./TagsManagementHeader";
 import { ValueListsSection } from "./ValueListsSection";
+import { ProductLinesSection } from "./ProductLinesSection";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -50,6 +51,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
             <AppearanceSection />
             <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
             <ValueListsSection />
+            <ProductLinesSection />
             
             <div className="space-y-4">
               <TagsManagementHeader onCreateTag={() => setShowCreateForm(true)} />
