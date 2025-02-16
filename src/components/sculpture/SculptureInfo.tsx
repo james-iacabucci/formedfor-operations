@@ -3,6 +3,8 @@ import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
+import { Toggle } from "@/components/ui/toggle";
+import { useState } from "react";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -11,6 +13,7 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
+  const [showMetric, setShowMetric] = useState(false);
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
@@ -32,10 +35,14 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return unit === 'cm' ? (val * 2.54).toFixed(2) : val;
+      return unit === 'cm' ? (val * 2.54).toFixed(1) : val;
     };
     
-    return `${formatValue(h)}h × ${formatValue(w)}w × ${formatValue(d)}d`;
+    const h_val = formatValue(h);
+    const w_val = formatValue(w);
+    const d_val = formatValue(d);
+    
+    return `${h_val}h - ${w_val}w - ${d_val}d`;
   };
 
   const getMaterialName = () => {
@@ -68,14 +75,23 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <div>
           {getMaterialName()}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <span>
-            {formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in, 'in')} in
+            {formatDimensionString(
+              sculpture.height_in,
+              sculpture.width_in,
+              sculpture.depth_in,
+              showMetric ? 'cm' : 'in'
+            )} ({showMetric ? 'cm' : 'in'})
           </span>
-          <span className="text-muted-foreground">|</span>
-          <span className="text-muted-foreground">
-            {formatDimensionString(sculpture.height_in, sculpture.width_in, sculpture.depth_in, 'cm')} cm
-          </span>
+          <Toggle
+            size="sm"
+            pressed={showMetric}
+            onPressedChange={setShowMetric}
+            className="h-6 px-2 text-xs"
+          >
+            {showMetric ? 'in' : 'cm'}
+          </Toggle>
         </div>
       </div>
 
