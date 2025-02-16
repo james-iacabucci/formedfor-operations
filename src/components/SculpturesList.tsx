@@ -5,9 +5,11 @@ import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 import { ManageTagsDialog } from "./tags/ManageTagsDialog";
 import { useSculpturesData } from "@/hooks/useSculpturesData";
 import { SculpturesGrid } from "./sculpture/SculpturesGrid";
+import { SculpturesTable } from "./sculpture/SculpturesTable";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, UploadIcon } from "lucide-react";
+import { PlusIcon, UploadIcon, LayoutGrid, List } from "lucide-react";
 import { TagsSelect } from "@/components/tags/TagsSelect";
+import { Toggle } from "@/components/ui/toggle";
 
 interface SculpturesListProps {
   selectedTags: string[];
@@ -18,6 +20,7 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isGridView, setIsGridView] = useState(true);
 
   const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(selectedTags);
 
@@ -58,7 +61,7 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
   return (
     <>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
         <TagsSelect 
           selectedTags={selectedTags} 
           onTagsChange={(tags) => {
@@ -66,18 +69,49 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
             window.dispatchEvent(event);
           }}
         />
+        <div className="flex gap-2 border rounded-md p-0.5">
+          <Toggle
+            pressed={isGridView}
+            onPressedChange={() => setIsGridView(true)}
+            size="sm"
+            className="data-[state=on]:bg-muted"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            pressed={!isGridView}
+            onPressedChange={() => setIsGridView(false)}
+            size="sm"
+            className="data-[state=on]:bg-muted"
+          >
+            <List className="h-4 w-4" />
+          </Toggle>
+        </div>
       </div>
 
-      <SculpturesGrid 
-        sculptures={sculptures}
-        tags={tags}
-        sculptureTagRelations={sculptureTagRelations}
-        onDelete={(sculpture) => {
-          console.log("[SculpturesList] Setting sculpture to delete:", sculpture.id);
-          setSculptureToDelete(sculpture);
-        }}
-        onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
-      />
+      {isGridView ? (
+        <SculpturesGrid 
+          sculptures={sculptures}
+          tags={tags}
+          sculptureTagRelations={sculptureTagRelations}
+          onDelete={(sculpture) => {
+            console.log("[SculpturesList] Setting sculpture to delete:", sculpture.id);
+            setSculptureToDelete(sculpture);
+          }}
+          onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
+        />
+      ) : (
+        <SculpturesTable
+          sculptures={sculptures}
+          tags={tags}
+          sculptureTagRelations={sculptureTagRelations}
+          onDelete={(sculpture) => {
+            console.log("[SculpturesList] Setting sculpture to delete:", sculpture.id);
+            setSculptureToDelete(sculpture);
+          }}
+          onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
+        />
+      )}
 
       {sculptureToDelete && (
         <DeleteSculptureDialog
