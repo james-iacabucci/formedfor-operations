@@ -40,7 +40,8 @@ export default function SculptureDetail() {
         dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
         status: data.status as "ideas" | "pending_additions" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
-        creativity_level: data.creativity_level as Sculpture["creativity_level"]
+        creativity_level: data.creativity_level as Sculpture["creativity_level"],
+        product_line: (data.product_line || "formed_for") as "formed_for" | "brodin"
       };
       
       console.log("Fetched sculpture:", validatedData);
@@ -69,7 +70,8 @@ export default function SculptureDetail() {
         dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
         status: data.status as "ideas" | "pending_additions" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
-        creativity_level: data.creativity_level as Sculpture["creativity_level"]
+        creativity_level: data.creativity_level as Sculpture["creativity_level"],
+        product_line: (data.product_line || "formed_for") as "formed_for" | "brodin"
       };
       
       console.log("Fetched original sculpture:", validatedData);
