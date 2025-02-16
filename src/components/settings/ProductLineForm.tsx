@@ -9,6 +9,7 @@ import { ProductLine } from "@/types/product-line";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ImageIcon, X } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ProductLineFormProps {
   open: boolean;
@@ -25,6 +26,7 @@ export function ProductLineForm({
   initialData,
   title,
 }: ProductLineFormProps) {
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [name, setName] = useState(initialData?.name || "");
@@ -43,6 +45,10 @@ export function ProductLineForm({
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
+    if (!user) {
+      toast.error("You must be logged in to upload files");
+      return;
+    }
 
     try {
       setIsUploading(true);
@@ -59,7 +65,7 @@ export function ProductLineForm({
 
       const { error: uploadError, data } = await supabase.storage
         .from('product_line_logos')
-        .upload(fileName, file);
+        .upload(`${user.id}/${fileName}`, file);
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -69,7 +75,7 @@ export function ProductLineForm({
 
       const { data: { publicUrl } } = supabase.storage
         .from('product_line_logos')
-        .getPublicUrl(fileName);
+        .getPublicUrl(`${user.id}/${fileName}`);
 
       setLogoUrl(publicUrl);
       toast.success("Logo uploaded successfully");
@@ -87,6 +93,11 @@ export function ProductLineForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("You must be logged in to save changes");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       await onSubmit({
