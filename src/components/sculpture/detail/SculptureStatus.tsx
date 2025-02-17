@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureStatusProps {
   sculptureId: string;
-  status: "idea" | "pending" | "approved";
+  status: "idea" | "pending" | "approved" | "archived";
 }
 
 export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
@@ -33,6 +33,8 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
         return "Pending";
       case "approved":
         return "Approved";
+      case "archived":
+        return "Archived";
       default:
         return status;
     }
@@ -65,6 +67,13 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
         aria-label="Set status to approved"
       >
         {getDisplayName("approved")}
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="archived"
+        className="text-xs capitalize whitespace-nowrap"
+        aria-label="Set status to archived"
+      >
+        {getDisplayName("archived")}
       </ToggleGroupItem>
     </ToggleGroup>
   );

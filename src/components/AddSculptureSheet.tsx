@@ -29,7 +29,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { isGeneratingName, isGeneratingDescription, generateAIContent } = useAIGeneration();
 
-  const [status, setStatus] = useState<"idea" | "pending" | "approved">("idea");
+  const [status, setStatus] = useState<"idea" | "pending" | "approved" | "archived">("idea");
   const [models, setModels] = useState<FileUpload[]>([]);
   const [renderings, setRenderings] = useState<FileUpload[]>([]);
   const [dimensions, setDimensions] = useState<FileUpload[]>([]);
@@ -84,7 +84,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             image_url: publicUrl,
             prompt: "Manually added sculpture",
             ai_engine: "manual",
-            status: status as "idea" | "pending" | "approved",
+            status: status as "idea" | "pending" | "approved" | "archived",
             models,
             renderings,
             dimensions,
@@ -181,7 +181,10 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={status} onValueChange={(value: "idea" | "pending" | "approved") => setStatus(value)}>
+              <Select 
+                value={status} 
+                onValueChange={(value: "idea" | "pending" | "approved" | "archived") => setStatus(value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -189,6 +192,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
                   <SelectItem value="idea">Idea</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
