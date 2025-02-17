@@ -42,18 +42,18 @@ export function ProductLineTableRow({
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => onEdit(productLine)}
-            className="h-7 w-7 p-0"
+            className="h-7 w-7 p-0 hover:bg-muted/50"
           >
             <Pencil className="h-4 w-4" />
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => onDelete(productLine)}
-            className="h-7 w-7 p-0"
+            className="h-7 w-7 p-0 hover:bg-muted/50"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
