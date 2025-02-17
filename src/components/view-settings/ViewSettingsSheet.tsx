@@ -17,10 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useTagsManagement } from "@/components/tags/useTagsManagement";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -97,6 +95,34 @@ export function ViewSettingsSheet({
     }
   };
 
+  const handleProductLineSelection = (productLineId: string, checked: boolean) => {
+    if (productLineId === 'all') {
+      setSettings(prev => ({
+        ...prev,
+        productLineId: checked ? null : undefined
+      }));
+    } else {
+      setSettings(prev => ({
+        ...prev,
+        productLineId: checked ? productLineId : null
+      }));
+    }
+  };
+
+  const handleStatusSelection = (status: string, checked: boolean) => {
+    if (status === 'all') {
+      setSettings(prev => ({
+        ...prev,
+        status: checked ? null : undefined
+      }));
+    } else {
+      setSettings(prev => ({
+        ...prev,
+        status: checked ? status : null
+      }));
+    }
+  };
+
   const handleApply = () => {
     onApply(settings);
     onOpenChange(false);
@@ -112,6 +138,19 @@ export function ViewSettingsSheet({
     ...(tags || [])
   ];
 
+  const allProductLines = [
+    { id: 'all', name: 'All Product Lines' },
+    ...(productLines || [])
+  ];
+
+  const allStatuses = [
+    { id: 'all', name: 'All Statuses' },
+    { id: 'idea', name: 'Idea' },
+    { id: 'pending', name: 'Pending' },
+    { id: 'approved', name: 'Approved' },
+    { id: 'archived', name: 'Archived' }
+  ];
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
@@ -125,6 +164,127 @@ export function ViewSettingsSheet({
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 py-6">
+            {/* Sorting */}
+            <div className="space-y-4">
+              <Label>Sort By</Label>
+              <div className="space-y-4">
+                <Tabs
+                  value={settings.sortOrder}
+                  onValueChange={(value: 'asc' | 'desc') => 
+                    setSettings(prev => ({ ...prev, sortOrder: value }))
+                  }
+                >
+                  <TabsList className="w-full">
+                    <TabsTrigger value="asc" className="flex-1">ASC</TabsTrigger>
+                    <TabsTrigger value="desc" className="flex-1">DESC</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <Select
+                  value={settings.sortBy}
+                  onValueChange={(value: ViewSettings['sortBy']) => 
+                    setSettings(prev => ({ ...prev, sortBy: value }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select field" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created_at">Creation Date</SelectItem>
+                    <SelectItem value="ai_generated_name">Sculpture Name</SelectItem>
+                    <SelectItem value="updated_at">Last Modified</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Product Lines */}
+            <div className="space-y-4">
+              <Label>Product Line</Label>
+              <div className="space-y-2">
+                {allProductLines.map((pl) => (
+                  <div key={pl.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`pl-${pl.id}`}
+                      checked={pl.id === 'all' ? settings.productLineId === null : settings.productLineId === pl.id}
+                      onCheckedChange={(checked) => 
+                        handleProductLineSelection(pl.id, checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor={`pl-${pl.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {pl.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-4">
+              <Label>Status</Label>
+              <div className="space-y-2">
+                {allStatuses.map((status) => (
+                  <div key={status.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`status-${status.id}`}
+                      checked={status.id === 'all' ? settings.status === null : settings.status === status.id}
+                      onCheckedChange={(checked) => 
+                        handleStatusSelection(status.id, checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor={`status-${status.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {status.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Height Filter */}
+            <div className="space-y-4">
+              <Label>Height</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Select
+                  value={settings.heightOperator || 'none'}
+                  onValueChange={(value) => 
+                    setSettings(prev => ({ 
+                      ...prev, 
+                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Any</SelectItem>
+                    <SelectItem value="eq">Equal to</SelectItem>
+                    <SelectItem value="gt">Greater than</SelectItem>
+                    <SelectItem value="lt">Less than</SelectItem>
+                  </SelectContent>
+                </Select>
+                <input
+                  type="number"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Value (in)"
+                  value={settings.heightValue || ''}
+                  onChange={(e) => 
+                    setSettings(prev => ({ 
+                      ...prev, 
+                      heightValue: e.target.value === '' ? null : Number(e.target.value)
+                    }))
+                  }
+                  disabled={!settings.heightOperator}
+                />
+              </div>
+            </div>
+
             {/* Tags */}
             <div className="space-y-4">
               <Label>Tags</Label>
@@ -146,145 +306,6 @@ export function ViewSettingsSheet({
                     </label>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Sorting */}
-            <div className="space-y-4">
-              <Label>Sort By</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <Select
-                  value={settings.sortBy}
-                  onValueChange={(value: ViewSettings['sortBy']) => 
-                    setSettings(prev => ({ ...prev, sortBy: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="created_at">Creation Date</SelectItem>
-                    <SelectItem value="ai_generated_name">Sculpture Name</SelectItem>
-                    <SelectItem value="updated_at">Last Modified</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <RadioGroup
-                  value={settings.sortOrder}
-                  onValueChange={(value: 'asc' | 'desc') => 
-                    setSettings(prev => ({ ...prev, sortOrder: value }))
-                  }
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="asc" id="asc" />
-                    <Label htmlFor="asc" className="flex items-center gap-1">
-                      <ArrowUpIcon className="h-4 w-4" />
-                      ASC
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="desc" id="desc" />
-                    <Label htmlFor="desc" className="flex items-center gap-1">
-                      <ArrowDownIcon className="h-4 w-4" />
-                      DESC
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="space-y-4">
-              <Label>Filters</Label>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm">Product Line</Label>
-                  <Select
-                    value={settings.productLineId || 'all'}
-                    onValueChange={(value) => 
-                      setSettings(prev => ({ 
-                        ...prev, 
-                        productLineId: value === 'all' ? null : value 
-                      }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product line" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Product Lines</SelectItem>
-                      {productLines?.map((pl) => (
-                        <SelectItem key={pl.id} value={pl.id}>
-                          {pl.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-sm">Status</Label>
-                  <Select
-                    value={settings.status || 'all'}
-                    onValueChange={(value) => 
-                      setSettings(prev => ({ 
-                        ...prev, 
-                        status: value === 'all' ? null : value 
-                      }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="idea">Idea</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-sm">Height</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Select
-                      value={settings.heightOperator || 'none'}
-                      onValueChange={(value) => 
-                        setSettings(prev => ({ 
-                          ...prev, 
-                          heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
-                        }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Operator" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Any</SelectItem>
-                        <SelectItem value="eq">Equal to</SelectItem>
-                        <SelectItem value="gt">Greater than</SelectItem>
-                        <SelectItem value="lt">Less than</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <input
-                      type="number"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="Value (in)"
-                      value={settings.heightValue || ''}
-                      onChange={(e) => 
-                        setSettings(prev => ({ 
-                          ...prev, 
-                          heightValue: e.target.value === '' ? null : Number(e.target.value)
-                        }))
-                      }
-                      disabled={!settings.heightOperator}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
