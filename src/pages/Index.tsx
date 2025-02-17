@@ -10,20 +10,34 @@ import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react"
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 
+interface ViewSettings {
+  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
+  sortOrder: 'asc' | 'desc';
+  productLineId: string | null;
+  materialIds: string[];
+  status: string | null;
+  heightOperator: 'eq' | 'gt' | 'lt' | null;
+  heightValue: number | null;
+}
+
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
-  const [viewSettings, setViewSettings] = useState({
-    sortBy: 'created_at' as const,
-    sortOrder: 'desc' as const,
+  const [viewSettings, setViewSettings] = useState<ViewSettings>({
+    sortBy: 'created_at',
+    sortOrder: 'desc',
     productLineId: null,
     materialIds: [],
     status: null,
     heightOperator: null,
     heightValue: null,
   });
+
+  const handleViewSettingsChange = (newSettings: ViewSettings) => {
+    setViewSettings(newSettings);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +113,7 @@ const Index = () => {
         open={isViewSettingsOpen}
         onOpenChange={setIsViewSettingsOpen}
         settings={viewSettings}
-        onApply={setViewSettings}
+        onApply={handleViewSettingsChange}
       />
     </div>
   );
