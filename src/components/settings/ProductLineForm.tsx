@@ -32,27 +32,28 @@ export function ProductLineForm({
   const [name, setName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [whiteLogoUrl, setWhiteLogoUrl] = useState("");
+  const [blackLogoUrl, setBlackLogoUrl] = useState("");
 
   useEffect(() => {
     if (open) {
       if (initialData) {
-        // If editing, set the initial values from the provided data
         setName(initialData.name);
         setContactEmail(initialData.contact_email || "");
         setAddress(initialData.address || "");
-        setLogoUrl(initialData.logo_url || "");
+        setWhiteLogoUrl(initialData.white_logo_url || "");
+        setBlackLogoUrl(initialData.black_logo_url || "");
       } else {
-        // If adding new, reset all fields
         setName("");
         setContactEmail("");
         setAddress("");
-        setLogoUrl("");
+        setWhiteLogoUrl("");
+        setBlackLogoUrl("");
       }
     }
   }, [open, initialData]);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, isWhiteLogo: boolean) => {
     if (!e.target.files || e.target.files.length === 0) return;
     if (!user) {
       toast.error("You must be logged in to upload files");
@@ -65,7 +66,6 @@ export function ProductLineForm({
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-      // Add file size check
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
         toast.error("File size must be less than 5MB");
@@ -86,7 +86,11 @@ export function ProductLineForm({
         .from('product_line_logos')
         .getPublicUrl(`${user.id}/${fileName}`);
 
-      setLogoUrl(publicUrl);
+      if (isWhiteLogo) {
+        setWhiteLogoUrl(publicUrl);
+      } else {
+        setBlackLogoUrl(publicUrl);
+      }
       toast.success("Logo uploaded successfully");
     } catch (error) {
       console.error('Error uploading logo:', error);
@@ -96,8 +100,12 @@ export function ProductLineForm({
     }
   };
 
-  const handleRemoveLogo = () => {
-    setLogoUrl("");
+  const handleRemoveLogo = (isWhiteLogo: boolean) => {
+    if (isWhiteLogo) {
+      setWhiteLogoUrl("");
+    } else {
+      setBlackLogoUrl("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,7 +121,8 @@ export function ProductLineForm({
         name,
         contact_email: contactEmail,
         address,
-        logo_url: logoUrl,
+        white_logo_url: whiteLogoUrl,
+        black_logo_url: blackLogoUrl,
       });
       onOpenChange(false);
     } catch (error) {
@@ -122,6 +131,52 @@ export function ProductLineForm({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const LogoUploadField = ({ isWhiteLogo }: { isWhiteLogo: boolean }) => {
+    const logoUrl = isWhiteLogo ? whiteLogoUrl : blackLogoUrl;
+    const bgColor = isWhiteLogo ? "bg-black" : "bg-white";
+    
+    return (
+      <div className="space-y-2">
+        <Label>{isWhiteLogo ? "White Logo" : "Black Logo"}</Label>
+        <div className="flex items-center gap-4">
+          <div className={`relative h-16 w-16 overflow-hidden rounded-lg border ${bgColor}`}>
+            {logoUrl ? (
+              <>
+                <img
+                  src={logoUrl}
+                  alt={`Product line ${isWhiteLogo ? 'white' : 'black'} logo`}
+                  className="h-full w-full object-contain"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-6 w-6 rounded-bl bg-background/80 p-0.5"
+                  onClick={() => handleRemoveLogo(isWhiteLogo)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleLogoUpload(e, isWhiteLogo)}
+              disabled={isUploading}
+              className="w-full"
+            />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -141,44 +196,10 @@ export function ProductLineForm({
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label>Logo</Label>
-            <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-muted">
-                {logoUrl ? (
-                  <>
-                    <img
-                      src={logoUrl}
-                      alt="Product line logo"
-                      className="h-full w-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-6 w-6 rounded-bl bg-background/80 p-0.5"
-                      onClick={handleRemoveLogo}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  disabled={isUploading}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
+          
+          <LogoUploadField isWhiteLogo={true} />
+          <LogoUploadField isWhiteLogo={false} />
+
           <div className="space-y-2">
             <Label htmlFor="email">Contact Email</Label>
             <Input

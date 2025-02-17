@@ -72,30 +72,33 @@ export type Database = {
       product_lines: {
         Row: {
           address: string | null
+          black_logo_url: string | null
           contact_email: string | null
           created_at: string
           id: string
-          logo_url: string | null
           name: string
           user_id: string
+          white_logo_url: string | null
         }
         Insert: {
           address?: string | null
+          black_logo_url?: string | null
           contact_email?: string | null
           created_at?: string
           id?: string
-          logo_url?: string | null
           name: string
           user_id: string
+          white_logo_url?: string | null
         }
         Update: {
           address?: string | null
+          black_logo_url?: string | null
           contact_email?: string | null
           created_at?: string
           id?: string
-          logo_url?: string | null
           name?: string
           user_id?: string
+          white_logo_url?: string | null
         }
         Relationships: [
           {

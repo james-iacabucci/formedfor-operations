@@ -2,7 +2,8 @@
 export interface ProductLine {
   id: string;
   name: string;
-  logo_url: string | null;
+  white_logo_url: string | null;
+  black_logo_url: string | null;
   contact_email: string | null;
   address: string | null;
   created_at: string;

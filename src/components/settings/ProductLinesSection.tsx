@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTheme } from "next-themes";
 
 export function ProductLinesSection() {
   const [selectedProductLine, setSelectedProductLine] = useState<ProductLine | null>(null);
   const [showForm, setShowForm] = useState(false);
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -62,7 +64,8 @@ export function ProductLinesSection() {
             name: data.name,
             contact_email: data.contact_email,
             address: data.address,
-            logo_url: data.logo_url,
+            white_logo_url: data.white_logo_url,
+            black_logo_url: data.black_logo_url,
             user_id: user.user.id
           });
 
@@ -83,9 +86,17 @@ export function ProductLinesSection() {
 
   const handleDelete = async (productLine: ProductLine) => {
     try {
-      // Delete the logo file if it exists
-      if (productLine.logo_url) {
-        const fileName = productLine.logo_url.split('/').pop();
+      // Delete both logo files if they exist
+      if (productLine.white_logo_url) {
+        const fileName = productLine.white_logo_url.split('/').pop();
+        if (fileName) {
+          await supabase.storage
+            .from('product_line_logos')
+            .remove([fileName]);
+        }
+      }
+      if (productLine.black_logo_url) {
+        const fileName = productLine.black_logo_url.split('/').pop();
         if (fileName) {
           await supabase.storage
             .from('product_line_logos')
@@ -136,47 +147,54 @@ export function ProductLinesSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {productLines?.map((productLine) => (
-              <TableRow key={productLine.id}>
-                <TableCell>
-                  <Avatar className="h-12 w-12 rounded-lg">
-                    <AvatarImage 
-                      src={productLine.logo_url || ''} 
-                      alt={productLine.name}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="rounded-lg">
-                      {productLine.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </TableCell>
-                <TableCell>{productLine.name}</TableCell>
-                <TableCell>{productLine.contact_email}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8"
-                      onClick={() => {
-                        setSelectedProductLine(productLine);
-                        setShowForm(true);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 text-destructive"
-                      onClick={() => handleDelete(productLine)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {productLines?.map((productLine) => {
+              const logoUrl = theme === 'dark' 
+                ? productLine.black_logo_url 
+                : productLine.white_logo_url;
+              const bgColor = theme === 'dark' ? 'bg-white' : 'bg-black';
+              
+              return (
+                <TableRow key={productLine.id}>
+                  <TableCell>
+                    <Avatar className={`h-12 w-12 rounded-lg ${bgColor}`}>
+                      <AvatarImage 
+                        src={logoUrl || ''} 
+                        alt={productLine.name}
+                        className="object-contain p-1"
+                      />
+                      <AvatarFallback className="rounded-lg">
+                        {productLine.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TableCell>
+                  <TableCell>{productLine.name}</TableCell>
+                  <TableCell>{productLine.contact_email}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          setSelectedProductLine(productLine);
+                          setShowForm(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => handleDelete(productLine)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
