@@ -22,9 +22,12 @@ export function ManageTagsSection() {
     applyChanges,
   } = useTagsState();
 
+  const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
+  const tableHeight = Math.min(visibleTags.length * 53, 530); // 53px per row, max 10 rows (530px)
+
   return (
     <div className="border rounded-md">
-      <ScrollArea className="h-[400px]">
+      <ScrollArea style={{ height: tableHeight }}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -33,7 +36,7 @@ export function ManageTagsSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tags?.filter(tag => !pendingDeletes.has(tag.id)).map((tag) => (
+            {visibleTags.map((tag) => (
               <TableRow key={tag.id} className="group">
                 <TableCell>
                   {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
