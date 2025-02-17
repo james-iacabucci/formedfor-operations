@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
@@ -14,6 +13,7 @@ interface FabricationQuoteCardProps {
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
   formatNumber: (num: number) => string;
+  isEditing?: boolean;
 }
 
 export function FabricationQuoteCard({
@@ -25,7 +25,8 @@ export function FabricationQuoteCard({
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
-  formatNumber
+  formatNumber,
+  isEditing
 }: FabricationQuoteCardProps) {
   return (
     <div 
@@ -59,13 +60,16 @@ export function FabricationQuoteCard({
           >
             <PencilIcon className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-          >
-            <Trash2Icon className="h-4 w-4" />
-          </Button>
+          {isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 

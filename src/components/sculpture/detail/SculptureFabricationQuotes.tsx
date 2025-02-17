@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +59,17 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       return data as FabricationQuote[];
     },
   });
+
+  const sortQuotes = (quotes: FabricationQuote[]) => {
+    return [...quotes].sort((a, b) => {
+      // Selected quote comes first
+      if (a.is_selected) return -1;
+      if (b.is_selected) return 1;
+      
+      // Then sort by date descending
+      return new Date(b.quote_date).getTime() - new Date(a.quote_date).getTime();
+    });
+  };
 
   const handleStartEdit = (quote: FabricationQuote) => {
     setEditingQuoteId(quote.id);
@@ -209,7 +219,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
           />
         )}
 
-        {quotes?.map((quote) => (
+        {quotes && sortQuotes(quotes).map((quote) => (
           <FabricationQuoteCard
             key={quote.id}
             quote={quote}
@@ -221,6 +231,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             calculateTradePrice={calculateTradePrice}
             calculateRetailPrice={calculateRetailPrice}
             formatNumber={formatNumber}
+            isEditing={editingQuoteId === quote.id}
           />
         ))}
       </div>
