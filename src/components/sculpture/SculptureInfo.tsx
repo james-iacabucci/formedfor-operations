@@ -102,7 +102,11 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
 
       if (error) throw error;
 
+      // Invalidate both the specific sculpture query and the sculptures list query
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
+      
       toast.success("Product line updated successfully");
     } catch (error) {
       console.error('Error updating product line:', error);
