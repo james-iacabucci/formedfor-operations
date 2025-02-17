@@ -218,62 +218,79 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Fabrication Cost</label>
-          <Input
-            type="number"
-            value={newQuote.fabrication_cost}
-            onChange={(e) => setNewQuote({ ...newQuote, fabrication_cost: parseFloat(e.target.value) })}
-          />
+      <div className="space-y-4">
+        <div className="grid grid-cols-5 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fabrication Cost</label>
+            <Input
+              type="number"
+              value={newQuote.fabrication_cost}
+              onChange={(e) => setNewQuote({ ...newQuote, fabrication_cost: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Shipping Cost</label>
+            <Input
+              type="number"
+              value={newQuote.shipping_cost}
+              onChange={(e) => setNewQuote({ ...newQuote, shipping_cost: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Customs Cost</label>
+            <Input
+              type="number"
+              value={newQuote.customs_cost}
+              onChange={(e) => setNewQuote({ ...newQuote, customs_cost: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Other Cost</label>
+            <Input
+              type="number"
+              value={newQuote.other_cost}
+              onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Total Cost</label>
+            <Input
+              type="text"
+              value={`$${formatNumber(calculateTotal(newQuote))}`}
+              readOnly
+              className="bg-muted"
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Shipping Cost</label>
-          <Input
-            type="number"
-            value={newQuote.shipping_cost}
-            onChange={(e) => setNewQuote({ ...newQuote, shipping_cost: parseFloat(e.target.value) })}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Customs Cost</label>
-          <Input
-            type="number"
-            value={newQuote.customs_cost}
-            onChange={(e) => setNewQuote({ ...newQuote, customs_cost: parseFloat(e.target.value) })}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Other Cost</label>
-          <Input
-            type="number"
-            value={newQuote.other_cost}
-            onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Markup</label>
-          <Input
-            type="number"
-            step="any"
-            value={newQuote.markup}
-            onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
-          />
-        </div>
-      </div>
 
-      <div className="space-y-1">
-        <div className="text-sm font-medium">
-          Markup: {newQuote.markup}x
-        </div>
-        <div className="text-sm font-medium">
-          Total Cost: ${formatNumber(calculateTotal(newQuote))}
-        </div>
-        <div className="text-sm font-medium">
-          Trade Price: ${formatNumber(calculateTradePrice(newQuote))}
-        </div>
-        <div className="text-sm font-medium">
-          Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Markup</label>
+            <Input
+              type="number"
+              step="any"
+              value={newQuote.markup}
+              onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Trade Price</label>
+            <Input
+              type="text"
+              value={`$${formatNumber(calculateTradePrice(newQuote))}`}
+              readOnly
+              className="bg-muted"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Retail Price</label>
+            <Input
+              type="text"
+              value={`$${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}`}
+              readOnly
+              className="bg-muted"
+            />
+          </div>
         </div>
       </div>
 
@@ -359,33 +376,44 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-4 text-sm">
-              <div>
-                <p className="font-medium">Fabrication</p>
-                <p>${formatNumber(quote.fabrication_cost)}</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-5 gap-4 text-sm">
+                <div>
+                  <p className="font-medium">Fabrication</p>
+                  <p>${formatNumber(quote.fabrication_cost)}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Shipping</p>
+                  <p>${formatNumber(quote.shipping_cost)}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Customs</p>
+                  <p>${formatNumber(quote.customs_cost)}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Other</p>
+                  <p>${formatNumber(quote.other_cost)}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Total Cost</p>
+                  <p>${formatNumber(calculateTotal(quote))}</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">Shipping</p>
-                <p>${formatNumber(quote.shipping_cost)}</p>
-              </div>
-              <div>
-                <p className="font-medium">Customs</p>
-                <p>${formatNumber(quote.customs_cost)}</p>
-              </div>
-              <div>
-                <p className="font-medium">Other</p>
-                <p>${formatNumber(quote.other_cost)}</p>
-              </div>
-              <div>
-                <p className="font-medium">Markup</p>
-                <p>{quote.markup}x</p>
-              </div>
-            </div>
 
-            <div className="space-y-1 text-sm font-medium">
-              <div>Total Cost: ${formatNumber(calculateTotal(quote))}</div>
-              <div>Trade Price: ${formatNumber(calculateTradePrice(quote))}</div>
-              <div>Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</div>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="font-medium">Markup</p>
+                  <p>{quote.markup}x</p>
+                </div>
+                <div>
+                  <p className="font-medium">Trade Price</p>
+                  <p>${formatNumber(calculateTradePrice(quote))}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Retail Price</p>
+                  <p>${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</p>
+                </div>
+              </div>
             </div>
 
             {quote.notes && (
