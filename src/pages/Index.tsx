@@ -85,44 +85,40 @@ const Index = () => {
 
       <div className="mx-auto max-w-7xl p-6 pt-6">
         {/* Sculpture Listing Toolbar */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TagsList
-              title=""
-              tags={selectedTags}
-              variant="secondary"
-              onTagClick={() => setIsViewSettingsOpen(true)}
-              showRemoveIcon={false}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsViewSettingsOpen(true)}
+        <div className="mb-6 flex items-center gap-4">
+          <div className="flex gap-2 border rounded-md p-0.5">
+            <Toggle
+              pressed={isGridView}
+              onPressedChange={() => setIsGridView(true)}
+              size="sm"
+              className="data-[state=on]:bg-muted"
             >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-            <div className="flex gap-2 border rounded-md p-0.5">
-              <Toggle
-                pressed={isGridView}
-                onPressedChange={() => setIsGridView(true)}
-                size="sm"
-                className="data-[state=on]:bg-muted"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Toggle>
-              <Toggle
-                pressed={!isGridView}
-                onPressedChange={() => setIsGridView(false)}
-                size="sm"
-                className="data-[state=on]:bg-muted"
-              >
-                <List className="h-4 w-4" />
-              </Toggle>
-            </div>
+              <LayoutGrid className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              pressed={!isGridView}
+              onPressedChange={() => setIsGridView(false)}
+              size="sm"
+              className="data-[state=on]:bg-muted"
+            >
+              <List className="h-4 w-4" />
+            </Toggle>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setIsViewSettingsOpen(true)}
+          >
+            <Settings2 className="h-4 w-4" />
+          </Button>
+          <TagsList
+            title=""
+            tags={selectedTags}
+            variant="secondary"
+            onTagClick={() => setIsViewSettingsOpen(true)}
+            showRemoveIcon={false}
+          />
         </div>
 
         <Card className="border-0 shadow-none">
