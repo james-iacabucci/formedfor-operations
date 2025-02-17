@@ -6,7 +6,7 @@ import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
+import { LayoutGrid, List, Settings2 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
@@ -84,21 +84,6 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">Sculptify</h1>
             <div className="flex items-center gap-4 ml-auto">
-              <Button 
-                onClick={() => setIsCreateSheetOpen(true)}
-                className="gap-2"
-              >
-                <PlusIcon className="h-4 w-4" />
-                Create
-              </Button>
-              <Button 
-                onClick={() => setIsAddSheetOpen(true)}
-                variant="outline"
-                className="gap-2"
-              >
-                <UploadIcon className="h-4 w-4" />
-                Add
-              </Button>
               <UserMenu />
             </div>
           </div>
@@ -107,39 +92,54 @@ const Index = () => {
 
       <div className="mx-auto max-w-7xl p-6 pt-6">
         {/* Sculpture Listing Toolbar */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="flex gap-2 border rounded-md p-0.5">
-            <Toggle
-              pressed={isGridView}
-              onPressedChange={() => setIsGridView(true)}
-              size="sm"
-              className="data-[state=on]:bg-muted"
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2 border rounded-md p-0.5">
+              <Toggle
+                pressed={isGridView}
+                onPressedChange={() => setIsGridView(true)}
+                size="sm"
+                className="data-[state=on]:bg-muted"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={!isGridView}
+                onPressedChange={() => setIsGridView(false)}
+                size="sm"
+                className="data-[state=on]:bg-muted"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsViewSettingsOpen(true)}
             >
-              <LayoutGrid className="h-4 w-4" />
-            </Toggle>
-            <Toggle
-              pressed={!isGridView}
-              onPressedChange={() => setIsGridView(false)}
-              size="sm"
-              className="data-[state=on]:bg-muted"
-            >
-              <List className="h-4 w-4" />
-            </Toggle>
+              <Settings2 className="h-4 w-4" />
+            </Button>
+            <SelectedFilters
+              viewSettings={viewSettings}
+              productLines={productLines}
+              materials={materials}
+              tags={tags}
+            />
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setIsViewSettingsOpen(true)}
-          >
-            <Settings2 className="h-4 w-4" />
-          </Button>
-          <SelectedFilters
-            viewSettings={viewSettings}
-            productLines={productLines}
-            materials={materials}
-            tags={tags}
-          />
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setIsAddSheetOpen(true)}
+              variant="outline"
+            >
+              Add
+            </Button>
+            <Button 
+              onClick={() => setIsCreateSheetOpen(true)}
+            >
+              Create
+            </Button>
+          </div>
         </div>
 
         <Card className="border-0 shadow-none">
