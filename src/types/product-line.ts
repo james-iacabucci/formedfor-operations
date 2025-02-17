@@ -7,4 +7,5 @@ export interface ProductLine {
   contact_email: string | null;
   address: string | null;
   created_at: string;
+  product_line_code: string | null;
 }

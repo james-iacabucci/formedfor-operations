@@ -34,6 +34,7 @@ export function ProductLineForm({
   const [address, setAddress] = useState("");
   const [whiteLogoUrl, setWhiteLogoUrl] = useState("");
   const [blackLogoUrl, setBlackLogoUrl] = useState("");
+  const [productLineCode, setProductLineCode] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -43,12 +44,14 @@ export function ProductLineForm({
         setAddress(initialData.address || "");
         setWhiteLogoUrl(initialData.white_logo_url || "");
         setBlackLogoUrl(initialData.black_logo_url || "");
+        setProductLineCode(initialData.product_line_code || "");
       } else {
         setName("");
         setContactEmail("");
         setAddress("");
         setWhiteLogoUrl("");
         setBlackLogoUrl("");
+        setProductLineCode("");
       }
     }
   }, [open, initialData]);
@@ -115,6 +118,12 @@ export function ProductLineForm({
       return;
     }
     
+    // Validate product line code
+    if (productLineCode && !/^[A-Z]{2}$/.test(productLineCode)) {
+      toast.error("Product line code must be exactly 2 uppercase letters");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit({
@@ -123,6 +132,7 @@ export function ProductLineForm({
         address,
         white_logo_url: whiteLogoUrl,
         black_logo_url: blackLogoUrl,
+        product_line_code: productLineCode,
       });
       onOpenChange(false);
     } catch (error) {
@@ -195,6 +205,21 @@ export function ProductLineForm({
               placeholder="Enter product line name"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="productLineCode">Product Line Code</Label>
+            <Input
+              id="productLineCode"
+              value={productLineCode}
+              onChange={(e) => setProductLineCode(e.target.value.toUpperCase())}
+              placeholder="Enter 2-letter code (e.g., AB)"
+              maxLength={2}
+              className="uppercase"
+            />
+            <p className="text-xs text-muted-foreground">
+              Two uppercase letters (e.g., AB, XY)
+            </p>
           </div>
           
           <LogoUploadField isWhiteLogo={true} />

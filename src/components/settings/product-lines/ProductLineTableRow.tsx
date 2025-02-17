@@ -37,7 +37,16 @@ export function ProductLineTableRow({
           </AvatarFallback>
         </Avatar>
       </TableCell>
-      <TableCell>{productLine.name}</TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span>{productLine.name}</span>
+          {productLine.product_line_code && (
+            <span className="text-sm text-muted-foreground">
+              Code: {productLine.product_line_code}
+            </span>
+          )}
+        </div>
+      </TableCell>
       <TableCell>{productLine.contact_email}</TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

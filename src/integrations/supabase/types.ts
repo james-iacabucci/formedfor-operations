@@ -77,6 +77,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          product_line_code: string | null
           user_id: string
           white_logo_url: string | null
         }
@@ -87,6 +88,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          product_line_code?: string | null
           user_id: string
           white_logo_url?: string | null
         }
@@ -97,6 +99,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          product_line_code?: string | null
           user_id?: string
           white_logo_url?: string | null
         }
