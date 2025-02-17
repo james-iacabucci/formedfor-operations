@@ -11,6 +11,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  heightUnit: 'in' | 'cm';
 }
 
 export function useSculpturesData(viewSettings: ViewSettings) {
@@ -36,15 +37,16 @@ export function useSculpturesData(viewSettings: ViewSettings) {
       }
 
       if (viewSettings.heightOperator && viewSettings.heightValue !== null) {
+        const heightField = viewSettings.heightUnit === 'in' ? 'height_in' : 'height_cm';
         switch (viewSettings.heightOperator) {
           case 'eq':
-            query = query.eq('height_in', viewSettings.heightValue);
+            query = query.eq(heightField, viewSettings.heightValue);
             break;
           case 'gt':
-            query = query.gt('height_in', viewSettings.heightValue);
+            query = query.gt(heightField, viewSettings.heightValue);
             break;
           case 'lt':
-            query = query.lt('height_in', viewSettings.heightValue);
+            query = query.lt(heightField, viewSettings.heightValue);
             break;
         }
       }
