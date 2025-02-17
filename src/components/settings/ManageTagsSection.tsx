@@ -23,7 +23,9 @@ export function ManageTagsSection() {
   } = useTagsState();
 
   const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
-  const tableHeight = Math.min(visibleTags.length * 53, 530); // 53px per row, max 10 rows (530px)
+  const headerHeight = 45; // Height of the header row
+  const rowHeight = 53; // Height of each data row
+  const tableHeight = headerHeight + Math.min(visibleTags.length * rowHeight, 10 * rowHeight);
 
   return (
     <div className="border rounded-md">
