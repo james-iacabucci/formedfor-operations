@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -115,9 +114,7 @@ const Index = () => {
           <TagsList
             title=""
             tags={selectedTags}
-            variant="secondary"
-            onTagClick={() => setIsViewSettingsOpen(true)}
-            showRemoveIcon={false}
+            variant="outline"
           />
         </div>
 

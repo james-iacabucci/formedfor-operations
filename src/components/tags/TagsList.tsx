@@ -12,7 +12,7 @@ interface TagsListProps {
   title: string;
   tags: Tag[];
   variant?: "default" | "secondary" | "outline";
-  onTagClick: (tagId: string) => void;
+  onTagClick?: (tagId: string) => void;
   showRemoveIcon?: boolean;
   activeTagId?: string | null;
 }
@@ -32,12 +32,8 @@ export function TagsList({
         {tags.map((tag) => (
           <Badge
             key={tag.id}
-            variant={tag.id === activeTagId ? "default" : variant}
-            className={cn(
-              "cursor-pointer bg-background hover:bg-background/90",
-              tag.id === 'all' && !activeTagId && "bg-primary"
-            )}
-            onClick={() => onTagClick(tag.id)}
+            variant="outline"
+            className="bg-background text-foreground border-border"
           >
             {tag.name}
             {showRemoveIcon && <X className="ml-1 h-3 w-3" />}
