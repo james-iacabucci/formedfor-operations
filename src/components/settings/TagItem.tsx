@@ -5,11 +5,30 @@ import { Pencil, Trash2 } from "lucide-react";
 interface TagItemProps {
   id: string;
   name: string;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  isEditing: boolean;
+  editingName: string;
+  onStartEdit: (tagId: string, currentName: string) => void;
+  onSaveEdit: () => Promise<void>;
+  onCancelEdit: () => void;
+  onEditChange: (value: string) => void;
+  onDelete: (tagId: string) => void;
+  isPendingEdit: boolean;
+  onUndoEdit: (tagId: string) => void;
 }
 
-export function TagItem({ id, name, onEdit, onDelete }: TagItemProps) {
+export function TagItem({ 
+  id, 
+  name, 
+  isEditing,
+  editingName,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onEditChange,
+  onDelete,
+  isPendingEdit,
+  onUndoEdit 
+}: TagItemProps) {
   return (
     <div className="flex items-center justify-between p-4 border-b last:border-b-0">
       <span>{name}</span>
@@ -17,7 +36,7 @@ export function TagItem({ id, name, onEdit, onDelete }: TagItemProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onEdit(id)}
+          onClick={() => onStartEdit(id, name)}
           className="h-7 w-7 p-0"
         >
           <Pencil className="h-4 w-4" />
