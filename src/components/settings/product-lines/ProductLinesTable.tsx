@@ -27,6 +27,7 @@ export function ProductLinesTable({
         <TableHeader className="sticky top-0 bg-background z-10">
           <TableRow>
             <TableHead>Logo</TableHead>
+            <TableHead>Code</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Contact Email</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>

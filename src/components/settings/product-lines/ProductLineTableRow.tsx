@@ -38,14 +38,12 @@ export function ProductLineTableRow({
         </Avatar>
       </TableCell>
       <TableCell>
-        <div className="flex flex-col">
-          <span>{productLine.name}</span>
-          {productLine.product_line_code && (
-            <span className="text-sm text-muted-foreground">
-              Code: {productLine.product_line_code}
-            </span>
-          )}
-        </div>
+        <span className="font-mono">
+          {productLine.product_line_code || '-'}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span>{productLine.name}</span>
       </TableCell>
       <TableCell>{productLine.contact_email}</TableCell>
       <TableCell className="text-right">
