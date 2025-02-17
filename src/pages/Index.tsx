@@ -41,52 +41,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* App Header */}
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="mx-auto max-w-7xl p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Sculptify</h1>
             <div className="flex items-center gap-4 ml-auto">
               <Button 
-                onClick={() => setIsAddSheetOpen(true)}
-                variant="outline"
-                className="gap-2 shrink-0"
-              >
-                <UploadIcon className="h-4 w-4" />
-                Add
-              </Button>
-              <Button 
                 onClick={() => setIsCreateSheetOpen(true)}
-                className="gap-2 shrink-0"
+                className="gap-2"
               >
                 <PlusIcon className="h-4 w-4" />
                 Create
               </Button>
-              <div className="flex gap-2 border rounded-md p-0.5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setIsViewSettingsOpen(true)}
-                >
-                  <Settings2 className="h-4 w-4" />
-                </Button>
-                <Toggle
-                  pressed={isGridView}
-                  onPressedChange={() => setIsGridView(true)}
-                  size="sm"
-                  className="data-[state=on]:bg-muted"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Toggle>
-                <Toggle
-                  pressed={!isGridView}
-                  onPressedChange={() => setIsGridView(false)}
-                  size="sm"
-                  className="data-[state=on]:bg-muted"
-                >
-                  <List className="h-4 w-4" />
-                </Toggle>
-              </div>
+              <Button 
+                onClick={() => setIsAddSheetOpen(true)}
+                variant="outline"
+                className="gap-2"
+              >
+                <UploadIcon className="h-4 w-4" />
+                Add
+              </Button>
               <UserMenu />
             </div>
           </div>
@@ -94,6 +69,41 @@ const Index = () => {
       </div>
 
       <div className="mx-auto max-w-7xl p-6 pt-6">
+        {/* Sculpture Listing Toolbar */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Tags section will be implemented here */}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsViewSettingsOpen(true)}
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+            <div className="flex gap-2 border rounded-md p-0.5">
+              <Toggle
+                pressed={isGridView}
+                onPressedChange={() => setIsGridView(true)}
+                size="sm"
+                className="data-[state=on]:bg-muted"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={!isGridView}
+                onPressedChange={() => setIsGridView(false)}
+                size="sm"
+                className="data-[state=on]:bg-muted"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
+          </div>
+        </div>
+
         <Card className="border-0 shadow-none">
           <CardContent className="pt-6">
             <SculpturesList viewSettings={viewSettings} isGridView={isGridView} />
