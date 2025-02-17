@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface TagItemProps {
+  id: string;
   name: string;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function TagItem({ name, onEdit, onDelete }: TagItemProps) {
+export function TagItem({ id, name, onEdit, onDelete }: TagItemProps) {
   return (
     <div className="flex items-center justify-between p-4 border-b last:border-b-0">
       <span>{name}</span>
@@ -16,7 +17,7 @@ export function TagItem({ name, onEdit, onDelete }: TagItemProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={onEdit}
+          onClick={() => onEdit(id)}
           className="h-7 w-7 p-0"
         >
           <Pencil className="h-4 w-4" />
@@ -24,7 +25,7 @@ export function TagItem({ name, onEdit, onDelete }: TagItemProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={onDelete}
+          onClick={() => onDelete(id)}
           className="h-7 w-7 p-0"
         >
           <Trash2 className="h-4 w-4" />
