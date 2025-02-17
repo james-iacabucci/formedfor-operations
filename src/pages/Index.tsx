@@ -20,6 +20,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  selectedTagIds: string[];
 }
 
 const Index = () => {
@@ -35,21 +36,22 @@ const Index = () => {
     status: null,
     heightOperator: null,
     heightValue: null,
+    selectedTagIds: ['all'],
   });
   const { tags } = useTagsManagement(undefined);
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
   const handleViewSettingsChange = (newSettings: ViewSettings) => {
     setViewSettings(newSettings);
   };
 
-  const handleTagClick = (tagId: string) => {
-    setSelectedTagId(tagId === selectedTagId ? null : tagId);
-  };
-
-  const allTags = [
-    { id: 'all', name: 'All Sculptures' },
-    ...(tags || [])
+  // Filter tags to show only selected ones in the toolbar
+  const selectedTags = [
+    ...(viewSettings.selectedTagIds.includes('all') 
+      ? [{ id: 'all', name: 'All Sculptures' }] 
+      : []),
+    ...(tags || []).filter(tag => 
+      viewSettings.selectedTagIds.includes(tag.id)
+    ),
   ];
 
   return (
@@ -87,10 +89,10 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <TagsList
               title=""
-              tags={allTags}
-              variant={selectedTagId ? "outline" : "default"}
-              onTagClick={handleTagClick}
-              activeTagId={selectedTagId}
+              tags={selectedTags}
+              variant="secondary"
+              onTagClick={() => setIsViewSettingsOpen(true)}
+              showRemoveIcon={false}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -125,7 +127,10 @@ const Index = () => {
 
         <Card className="border-0 shadow-none">
           <CardContent className="pt-6">
-            <SculpturesList viewSettings={viewSettings} isGridView={isGridView} selectedTagId={selectedTagId} />
+            <SculpturesList 
+              viewSettings={viewSettings} 
+              isGridView={isGridView} 
+            />
           </CardContent>
         </Card>
       </div>

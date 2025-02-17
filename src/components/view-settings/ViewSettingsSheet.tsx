@@ -19,6 +19,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useTagsManagement } from "@/components/tags/useTagsManagement";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -28,6 +30,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  selectedTagIds: string[];
 }
 
 interface ViewSettingsSheetProps {
@@ -44,6 +47,7 @@ export function ViewSettingsSheet({
   onApply,
 }: ViewSettingsSheetProps) {
   const [settings, setSettings] = useState<ViewSettings>({ ...initialSettings });
+  const { tags } = useTagsManagement(undefined);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -74,6 +78,25 @@ export function ViewSettingsSheet({
     },
   });
 
+  const handleTagSelection = (tagId: string, checked: boolean) => {
+    if (tagId === 'all') {
+      setSettings(prev => ({
+        ...prev,
+        selectedTagIds: checked ? ['all'] : []
+      }));
+    } else {
+      setSettings(prev => {
+        const newSelectedTags = checked
+          ? [...prev.selectedTagIds.filter(id => id !== 'all'), tagId]
+          : prev.selectedTagIds.filter(id => id !== tagId);
+        return {
+          ...prev,
+          selectedTagIds: newSelectedTags
+        };
+      });
+    }
+  };
+
   const handleApply = () => {
     onApply(settings);
     onOpenChange(false);
@@ -83,6 +106,11 @@ export function ViewSettingsSheet({
     setSettings({ ...initialSettings });
     onOpenChange(false);
   };
+
+  const allTags = [
+    { id: 'all', name: 'All Sculptures' },
+    ...(tags || [])
+  ];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -97,6 +125,30 @@ export function ViewSettingsSheet({
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 py-6">
+            {/* Tags */}
+            <div className="space-y-4">
+              <Label>Tags</Label>
+              <div className="space-y-2">
+                {allTags.map((tag) => (
+                  <div key={tag.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`tag-${tag.id}`}
+                      checked={settings.selectedTagIds.includes(tag.id)}
+                      onCheckedChange={(checked) => 
+                        handleTagSelection(tag.id, checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor={`tag-${tag.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {tag.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Sorting */}
             <div className="space-y-4">
               <Label>Sort By</Label>
