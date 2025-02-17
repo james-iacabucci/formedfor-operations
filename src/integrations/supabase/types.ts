@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      fabrication_quotes: {
+        Row: {
+          created_at: string
+          customs_cost: number
+          fabrication_cost: number
+          fabricator_id: string
+          id: string
+          notes: string | null
+          other_cost: number
+          quote_date: string
+          sculpture_id: string
+          shipping_cost: number
+        }
+        Insert: {
+          created_at?: string
+          customs_cost?: number
+          fabrication_cost?: number
+          fabricator_id: string
+          id?: string
+          notes?: string | null
+          other_cost?: number
+          quote_date?: string
+          sculpture_id: string
+          shipping_cost?: number
+        }
+        Update: {
+          created_at?: string
+          customs_cost?: number
+          fabrication_cost?: number
+          fabricator_id?: string
+          id?: string
+          notes?: string | null
+          other_cost?: number
+          quote_date?: string
+          sculpture_id?: string
+          shipping_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fabrication_quotes_fabricator_id_fkey"
+            columns: ["fabricator_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fabrication_quotes_sculpture_id_fkey"
+            columns: ["sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_lines: {
         Row: {
           address: string | null

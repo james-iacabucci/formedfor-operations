@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
@@ -13,6 +14,7 @@ import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
 import { SculptureMethod } from "./SculptureMethod";
 import { SculptureWeight } from "./SculptureWeight";
 import { SculpturePDF } from "./SculpturePDF";
+import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -75,6 +77,8 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
             />
           </div>
         </div>
+
+        <SculptureFabricationQuotes sculptureId={sculpture.id} />
 
         <div>
           <h2 className="text-lg font-semibold mb-4">Base Details</h2>
