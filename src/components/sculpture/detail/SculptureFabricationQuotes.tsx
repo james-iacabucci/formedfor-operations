@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon, PencilIcon } from "lucide-react";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -27,6 +27,7 @@ type NewQuote = {
 
 export function SculptureFabricationQuotes({ sculptureId }: SculptureFabricationQuotesProps) {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [newQuote, setNewQuote] = useState<NewQuote>({
     sculpture_id: sculptureId,
     fabrication_cost: 500,
@@ -63,6 +64,58 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       return data as FabricationQuote[];
     },
   });
+
+  const handleStartEdit = (quote: FabricationQuote) => {
+    setEditingQuoteId(quote.id);
+    setNewQuote({
+      sculpture_id: quote.sculpture_id,
+      fabricator_id: quote.fabricator_id,
+      fabrication_cost: quote.fabrication_cost,
+      shipping_cost: quote.shipping_cost,
+      customs_cost: quote.customs_cost,
+      other_cost: quote.other_cost,
+      markup: quote.markup,
+      notes: quote.notes,
+      quote_date: quote.quote_date,
+    });
+    setIsAddingQuote(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingQuoteId || !newQuote.fabricator_id) return;
+
+    const { error } = await supabase
+      .from("fabrication_quotes")
+      .update({
+        fabricator_id: newQuote.fabricator_id,
+        fabrication_cost: newQuote.fabrication_cost,
+        shipping_cost: newQuote.shipping_cost,
+        customs_cost: newQuote.customs_cost,
+        other_cost: newQuote.other_cost,
+        markup: newQuote.markup,
+        notes: newQuote.notes,
+        quote_date: newQuote.quote_date,
+      })
+      .eq("id", editingQuoteId);
+
+    if (error) {
+      console.error("Error updating quote:", error);
+      return;
+    }
+
+    await refetchQuotes();
+    setEditingQuoteId(null);
+    setNewQuote({
+      sculpture_id: sculptureId,
+      fabrication_cost: 500,
+      shipping_cost: 0,
+      customs_cost: 0,
+      other_cost: 0,
+      markup: 4,
+      notes: "",
+      quote_date: new Date().toISOString(),
+    });
+  };
 
   const handleAddQuote = async () => {
     if (!newQuote.fabricator_id) return;
@@ -134,11 +187,121 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     }).format(num);
   };
 
+  const QuoteForm = ({ onSave, onCancel }: { onSave: () => void, onCancel: () => void }) => (
+    <div className="border rounded-lg p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Fabricator</label>
+          <Select
+            value={newQuote.fabricator_id}
+            onValueChange={(value) => setNewQuote({ ...newQuote, fabricator_id: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select fabricator" />
+            </SelectTrigger>
+            <SelectContent>
+              {fabricators?.map((fabricator) => (
+                <SelectItem key={fabricator.id} value={fabricator.id}>
+                  {fabricator.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Quote Date</label>
+          <Input
+            type="date"
+            value={format(new Date(newQuote.quote_date), "yyyy-MM-dd")}
+            onChange={(e) => setNewQuote({ ...newQuote, quote_date: new Date(e.target.value).toISOString() })}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-5 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Fabrication Cost</label>
+          <Input
+            type="number"
+            value={newQuote.fabrication_cost}
+            onChange={(e) => setNewQuote({ ...newQuote, fabrication_cost: parseFloat(e.target.value) })}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Shipping Cost</label>
+          <Input
+            type="number"
+            value={newQuote.shipping_cost}
+            onChange={(e) => setNewQuote({ ...newQuote, shipping_cost: parseFloat(e.target.value) })}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Customs Cost</label>
+          <Input
+            type="number"
+            value={newQuote.customs_cost}
+            onChange={(e) => setNewQuote({ ...newQuote, customs_cost: parseFloat(e.target.value) })}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Other Cost</label>
+          <Input
+            type="number"
+            value={newQuote.other_cost}
+            onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Markup</label>
+          <Input
+            type="number"
+            step="any"
+            value={newQuote.markup}
+            onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <div className="text-sm font-medium">
+          Markup: {newQuote.markup}x
+        </div>
+        <div className="text-sm font-medium">
+          Total Cost: ${formatNumber(calculateTotal(newQuote))}
+        </div>
+        <div className="text-sm font-medium">
+          Trade Price: ${formatNumber(calculateTradePrice(newQuote))}
+        </div>
+        <div className="text-sm font-medium">
+          Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Notes</label>
+        <Textarea
+          value={newQuote.notes || ""}
+          onChange={(e) => setNewQuote({ ...newQuote, notes: e.target.value })}
+          rows={5}
+        />
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={onSave}>
+          {editingQuoteId ? "Save Changes" : "Save Quote"}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
-        {!isAddingQuote && (
+        {!isAddingQuote && !editingQuoteId && (
           <Button onClick={() => setIsAddingQuote(true)} size="sm">
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Quote
@@ -147,112 +310,24 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       </div>
 
       <div className="space-y-6">
-        {isAddingQuote && (
-          <div className="border rounded-lg p-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Fabricator</label>
-                <Select
-                  value={newQuote.fabricator_id}
-                  onValueChange={(value) => setNewQuote({ ...newQuote, fabricator_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select fabricator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fabricators?.map((fabricator) => (
-                      <SelectItem key={fabricator.id} value={fabricator.id}>
-                        {fabricator.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Quote Date</label>
-                <Input
-                  type="date"
-                  value={format(new Date(newQuote.quote_date), "yyyy-MM-dd")}
-                  onChange={(e) => setNewQuote({ ...newQuote, quote_date: new Date(e.target.value).toISOString() })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-5 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Fabrication Cost</label>
-                <Input
-                  type="number"
-                  value={newQuote.fabrication_cost}
-                  onChange={(e) => setNewQuote({ ...newQuote, fabrication_cost: parseFloat(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Shipping Cost</label>
-                <Input
-                  type="number"
-                  value={newQuote.shipping_cost}
-                  onChange={(e) => setNewQuote({ ...newQuote, shipping_cost: parseFloat(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Customs Cost</label>
-                <Input
-                  type="number"
-                  value={newQuote.customs_cost}
-                  onChange={(e) => setNewQuote({ ...newQuote, customs_cost: parseFloat(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Other Cost</label>
-                <Input
-                  type="number"
-                  value={newQuote.other_cost}
-                  onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Markup</label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={newQuote.markup}
-                  onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea
-                value={newQuote.notes || ""}
-                onChange={(e) => setNewQuote({ ...newQuote, notes: e.target.value })}
-                rows={5}
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">
-                  Total Cost: ${formatNumber(calculateTotal(newQuote))}
-                </div>
-                <div className="text-sm font-medium">
-                  Trade Price: ${formatNumber(calculateTradePrice(newQuote))}
-                </div>
-                <div className="text-sm font-medium">
-                  Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}
-                </div>
-              </div>
-              <div className="space-x-2">
-                <Button variant="outline" onClick={() => setIsAddingQuote(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddQuote}>
-                  Save Quote
-                </Button>
-              </div>
-            </div>
-          </div>
+        {(isAddingQuote || editingQuoteId) && (
+          <QuoteForm
+            onSave={editingQuoteId ? handleSaveEdit : handleAddQuote}
+            onCancel={() => {
+              setIsAddingQuote(false);
+              setEditingQuoteId(null);
+              setNewQuote({
+                sculpture_id: sculptureId,
+                fabrication_cost: 500,
+                shipping_cost: 0,
+                customs_cost: 0,
+                other_cost: 0,
+                markup: 4,
+                notes: "",
+                quote_date: new Date().toISOString(),
+              });
+            }}
+          />
         )}
 
         {quotes?.map((quote) => (
@@ -266,13 +341,22 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                   {format(new Date(quote.quote_date), "PPP")}
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteQuote(quote.id)}
-              >
-                <Trash2Icon className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleStartEdit(quote)}
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteQuote(quote.id)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-5 gap-4 text-sm">
@@ -298,18 +382,18 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               </div>
             </div>
 
+            <div className="space-y-1 text-sm font-medium">
+              <div>Total Cost: ${formatNumber(calculateTotal(quote))}</div>
+              <div>Trade Price: ${formatNumber(calculateTradePrice(quote))}</div>
+              <div>Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</div>
+            </div>
+
             {quote.notes && (
               <div className="text-sm">
                 <p className="font-medium">Notes</p>
                 <p className="whitespace-pre-line">{quote.notes}</p>
               </div>
             )}
-
-            <div className="space-y-1 text-sm font-medium">
-              <div>Total Cost: ${formatNumber(calculateTotal(quote))}</div>
-              <div>Trade Price: ${formatNumber(calculateTradePrice(quote))}</div>
-              <div>Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</div>
-            </div>
           </div>
         ))}
       </div>
