@@ -102,7 +102,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
 
       if (error) throw error;
 
-      // Invalidate both the specific sculpture query and the sculptures list query
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
@@ -129,8 +128,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="outline" 
-                className="h-5 px-2 text-xs py-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                variant="ghost" 
+                className="h-5 px-2 text-xs py-0 bg-muted/50 hover:bg-muted text-muted-foreground"
               >
                 {getProductLineDisplay()}
               </Button>
@@ -152,8 +151,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="outline" 
-                className="h-5 px-2 text-xs py-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                variant="ghost" 
+                className="h-5 px-2 text-xs py-0 bg-muted/50 hover:bg-muted text-muted-foreground"
               >
                 {getDisplayStatus(sculpture.status)}
               </Button>
