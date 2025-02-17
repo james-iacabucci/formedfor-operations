@@ -1,3 +1,4 @@
+
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
@@ -61,12 +62,12 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
 
   const getDisplayStatus = (status: string) => {
     const statusMap: Record<string, string> = {
-      idea: "IDEA",
-      pending: "PENDING",
-      approved: "APPROVED",
-      archived: "ARCHIVED"
+      idea: "Idea",
+      pending: "Pending",
+      approved: "Approved",
+      archived: "Archived"
     };
-    return statusMap[status] || status.toUpperCase();
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
   const getMaterialName = () => {
@@ -158,16 +159,16 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
-                IDEA
+                Idea
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
-                PENDING
+                Pending
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
-                APPROVED
+                Approved
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
-                ARCHIVED
+                Archived
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
