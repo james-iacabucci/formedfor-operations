@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
+import { TagsList } from "@/components/tags/TagsList";
+import { useTagsManagement } from "@/components/tags/useTagsManagement";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -34,10 +36,21 @@ const Index = () => {
     heightOperator: null,
     heightValue: null,
   });
+  const { tags } = useTagsManagement(undefined);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
   const handleViewSettingsChange = (newSettings: ViewSettings) => {
     setViewSettings(newSettings);
   };
+
+  const handleTagClick = (tagId: string) => {
+    setSelectedTagId(tagId === selectedTagId ? null : tagId);
+  };
+
+  const allTags = [
+    { id: 'all', name: 'All Sculptures' },
+    ...(tags || [])
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,7 +85,13 @@ const Index = () => {
         {/* Sculpture Listing Toolbar */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* Tags section will be implemented here */}
+            <TagsList
+              title=""
+              tags={allTags}
+              variant={selectedTagId ? "outline" : "default"}
+              onTagClick={handleTagClick}
+              activeTagId={selectedTagId}
+            />
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -106,7 +125,7 @@ const Index = () => {
 
         <Card className="border-0 shadow-none">
           <CardContent className="pt-6">
-            <SculpturesList viewSettings={viewSettings} isGridView={isGridView} />
+            <SculpturesList viewSettings={viewSettings} isGridView={isGridView} selectedTagId={selectedTagId} />
           </CardContent>
         </Card>
       </div>

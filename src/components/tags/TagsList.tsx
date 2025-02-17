@@ -1,5 +1,7 @@
+
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Tag {
   id: string;
@@ -12,6 +14,7 @@ interface TagsListProps {
   variant?: "default" | "secondary" | "outline";
   onTagClick: (tagId: string) => void;
   showRemoveIcon?: boolean;
+  activeTagId?: string | null;
 }
 
 export function TagsList({ 
@@ -19,17 +22,21 @@ export function TagsList({
   tags, 
   variant = "default",
   onTagClick,
-  showRemoveIcon = false
+  showRemoveIcon = false,
+  activeTagId
 }: TagsListProps) {
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">{title}</div>
+      {title && <div className="text-sm font-medium">{title}</div>}
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <Badge
             key={tag.id}
-            variant={variant}
-            className="cursor-pointer"
+            variant={tag.id === activeTagId ? "default" : variant}
+            className={cn(
+              "cursor-pointer",
+              tag.id === 'all' && !activeTagId && "bg-primary"
+            )}
             onClick={() => onTagClick(tag.id)}
           >
             {tag.name}
