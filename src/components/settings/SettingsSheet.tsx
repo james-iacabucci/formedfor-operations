@@ -45,14 +45,17 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   return (
     <Sheet 
       open={open} 
-      onOpenChange={onOpenChange}
-      defaultOpen={false}
-      modal={true}
+      onOpenChange={(value) => {
+        // Only allow closing through buttons or ESC key
+        if (!value) {
+          onOpenChange(false);
+        }
+      }}
     >
       <SheetContent 
         className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
         onEscapeKeyDown={() => onOpenChange(false)}
-        onInteractOutside={(e) => {
+        onPointerDownOutside={(e) => {
           e.preventDefault();
         }}
       >
