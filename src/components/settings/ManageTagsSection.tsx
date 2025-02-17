@@ -6,9 +6,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { DeletedTagItem } from "./DeletedTagItem";
+import { useState } from "react";
+import { CreateTagForm } from "../tags/CreateTagForm";
+import { TagsManagementHeader } from "./TagsManagementHeader";
 
 export function ManageTagsSection() {
-  const { tags } = useTagsManagement(undefined);
+  const { tags, createTagMutation } = useTagsManagement(undefined);
   const {
     editingTag,
     setEditingTag,
@@ -21,66 +24,83 @@ export function ManageTagsSection() {
     undoEdit,
     applyChanges,
   } = useTagsState();
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
   const headerHeight = 45; // Height of the header row
   const rowHeight = 53; // Height of each data row
   const tableHeight = headerHeight + Math.min(visibleTags.length * rowHeight, 10 * rowHeight);
 
-  return (
-    <div className="border rounded-md">
-      <ScrollArea style={{ height: tableHeight }}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[300px]">Name</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {visibleTags.map((tag) => (
-              <TableRow key={tag.id} className="group">
-                <TableCell>
-                  {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => startEditingTag(tag.id, tag.name)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteTag(tag.id)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+  const handleCreateTag = (name: string) => {
+    createTagMutation.mutate(name);
+    setIsCreatingTag(false);
+  };
 
-      {Array.from(pendingDeletes).map(tagId => {
-        const tag = tags?.find(t => t.id === tagId);
-        if (!tag) return null;
-        
-        return (
-          <DeletedTagItem
-            key={tag.id}
-            name={tag.name}
-            onUndo={() => undoDelete(tag.id)}
-          />
-        );
-      })}
+  return (
+    <div className="space-y-4">
+      <TagsManagementHeader onCreateTag={() => setIsCreatingTag(true)} />
+      
+      {isCreatingTag && (
+        <CreateTagForm
+          onCreateTag={handleCreateTag}
+          onCancel={() => setIsCreatingTag(false)}
+        />
+      )}
+
+      <div className="border rounded-md">
+        <ScrollArea style={{ height: tableHeight }}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[300px]">Name</TableHead>
+                <TableHead className="w-[100px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleTags.map((tag) => (
+                <TableRow key={tag.id} className="group">
+                  <TableCell>
+                    {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => startEditingTag(tag.id, tag.name)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteTag(tag.id)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+
+        {Array.from(pendingDeletes).map(tagId => {
+          const tag = tags?.find(t => t.id === tagId);
+          if (!tag) return null;
+          
+          return (
+            <DeletedTagItem
+              key={tag.id}
+              name={tag.name}
+              onUndo={() => undoDelete(tag.id)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
