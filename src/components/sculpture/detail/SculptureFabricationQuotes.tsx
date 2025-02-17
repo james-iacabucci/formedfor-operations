@@ -65,7 +65,10 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof NewQuote) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    field: keyof NewQuote
+  ) => {
     const value = e.target.value;
     if (field === 'notes') {
       setNewQuote(prev => ({ ...prev, [field]: value }));
