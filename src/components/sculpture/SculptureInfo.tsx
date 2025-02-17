@@ -2,6 +2,7 @@
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -122,13 +123,17 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <h3 className="font-semibold line-clamp-1">
           {sculptureName}
         </h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground p-1 rounded transition-colors">
-              <span className="flex items-center gap-1">
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-1 h-8"
+              >
                 {getProductLineDisplay()}
                 <ChevronDownIcon className="h-3 w-3" />
-              </span>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleProductLineChange(null)}>
@@ -144,13 +149,16 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <span>|</span>
           <DropdownMenu>
-            <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground p-1 rounded transition-colors">
-              <span className="flex items-center gap-1">
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-1 h-8"
+              >
                 {getDisplayStatus(sculpture.status)}
                 <ChevronDownIcon className="h-3 w-3" />
-              </span>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
