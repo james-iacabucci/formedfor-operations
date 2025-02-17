@@ -1,25 +1,18 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
+import { SortingSection } from "./components/SortingSection";
+import { HeightFilterSection } from "./components/HeightFilterSection";
+import { FilterOptionsSection } from "./components/FilterOptionsSection";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -48,10 +41,9 @@ export function ViewSettingsSheet({
 }: ViewSettingsSheetProps) {
   const [settings, setSettings] = useState<ViewSettings>({ 
     ...initialSettings,
-    heightUnit: initialSettings.heightUnit || 'in' // Default to inches if not set
+    heightUnit: initialSettings.heightUnit || 'in'
   });
   const { tags } = useTagsManagement(undefined);
-  const heightValueInputRef = useRef<HTMLInputElement>(null);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -170,174 +162,42 @@ export function ViewSettingsSheet({
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 py-6">
-            {/* Sorting */}
-            <div className="space-y-4">
-              <Label>Sort By</Label>
-              <div className="flex gap-2 items-center">
-                <Select
-                  value={settings.sortBy}
-                  onValueChange={(value: ViewSettings['sortBy']) => 
-                    setSettings(prev => ({ ...prev, sortBy: value }))
-                  }
-                >
-                  <SelectTrigger className="w-full focus:ring-0 focus:ring-offset-0">
-                    <SelectValue placeholder="Select field" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="created_at">Creation Date</SelectItem>
-                    <SelectItem value="ai_generated_name">Sculpture Name</SelectItem>
-                    <SelectItem value="updated_at">Last Modified</SelectItem>
-                  </SelectContent>
-                </Select>
+            <SortingSection
+              sortBy={settings.sortBy}
+              sortOrder={settings.sortOrder}
+              onSortByChange={(value) => setSettings(prev => ({ ...prev, sortBy: value }))}
+              onSortOrderChange={(value) => setSettings(prev => ({ ...prev, sortOrder: value }))}
+            />
 
-                <Tabs
-                  value={settings.sortOrder}
-                  onValueChange={(value: 'asc' | 'desc') => 
-                    setSettings(prev => ({ ...prev, sortOrder: value }))
-                  }
-                  className="w-[120px]"
-                >
-                  <TabsList className="w-full h-9">
-                    <TabsTrigger value="asc" className="flex-1 text-xs px-2">ASC</TabsTrigger>
-                    <TabsTrigger value="desc" className="flex-1 text-xs px-2">DESC</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
+            <FilterOptionsSection
+              title="Product Line"
+              options={allProductLines}
+              selectedIds={settings.productLineId ? [settings.productLineId] : ['all']}
+              onSelectionChange={handleProductLineSelection}
+            />
 
-            {/* Product Lines */}
-            <div className="space-y-4">
-              <Label>Product Line</Label>
-              <div className="space-y-2">
-                {allProductLines.map((pl) => (
-                  <div key={pl.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`pl-${pl.id}`}
-                      checked={pl.id === 'all' ? settings.productLineId === null : settings.productLineId === pl.id}
-                      onCheckedChange={(checked) => 
-                        handleProductLineSelection(pl.id, checked as boolean)
-                      }
-                    />
-                    <label
-                      htmlFor={`pl-${pl.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {pl.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <FilterOptionsSection
+              title="Status"
+              options={allStatuses}
+              selectedIds={settings.status ? [settings.status] : ['all']}
+              onSelectionChange={handleStatusSelection}
+            />
 
-            {/* Status */}
-            <div className="space-y-4">
-              <Label>Status</Label>
-              <div className="space-y-2">
-                {allStatuses.map((status) => (
-                  <div key={status.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`status-${status.id}`}
-                      checked={status.id === 'all' ? settings.status === null : settings.status === status.id}
-                      onCheckedChange={(checked) => 
-                        handleStatusSelection(status.id, checked as boolean)
-                      }
-                    />
-                    <label
-                      htmlFor={`status-${status.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {status.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <FilterOptionsSection
+              title="Tags"
+              options={allTags}
+              selectedIds={settings.selectedTagIds}
+              onSelectionChange={handleTagSelection}
+            />
 
-            {/* Tags */}
-            <div className="space-y-4">
-              <Label>Tags</Label>
-              <div className="space-y-2">
-                {allTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`tag-${tag.id}`}
-                      checked={settings.selectedTagIds.includes(tag.id)}
-                      onCheckedChange={(checked) => 
-                        handleTagSelection(tag.id, checked as boolean)
-                      }
-                    />
-                    <label
-                      htmlFor={`tag-${tag.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {tag.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Height Filter */}
-            <div className="space-y-4">
-              <Label>Height</Label>
-              <div className="flex gap-2 items-start">
-                <Select
-                  value={settings.heightOperator || 'none'}
-                  onValueChange={(value) => {
-                    setSettings(prev => ({ 
-                      ...prev, 
-                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt',
-                      heightValue: value === 'none' ? null : prev.heightValue
-                    }));
-                    if (value !== 'none' && heightValueInputRef.current) {
-                      setTimeout(() => {
-                        heightValueInputRef.current?.focus();
-                      }, 0);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[140px] focus:ring-0 focus:ring-offset-0">
-                    <SelectValue placeholder="Operator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Any</SelectItem>
-                    <SelectItem value="eq">Equal to</SelectItem>
-                    <SelectItem value="gt">Greater than</SelectItem>
-                    <SelectItem value="lt">Less than</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="flex gap-2 items-center flex-1">
-                  <input
-                    ref={heightValueInputRef}
-                    type="number"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    placeholder="Value"
-                    value={settings.heightValue || ''}
-                    onChange={(e) => 
-                      setSettings(prev => ({ 
-                        ...prev, 
-                        heightValue: e.target.value === '' ? null : Number(e.target.value)
-                      }))
-                    }
-                    disabled={!settings.heightOperator}
-                  />
-                  
-                  <Tabs
-                    value={settings.heightUnit}
-                    onValueChange={(value: 'in' | 'cm') => 
-                      setSettings(prev => ({ ...prev, heightUnit: value }))
-                    }
-                    className="w-[120px]"
-                  >
-                    <TabsList className="w-full h-9">
-                      <TabsTrigger value="in" className="flex-1 text-xs px-2">IN</TabsTrigger>
-                      <TabsTrigger value="cm" className="flex-1 text-xs px-2">CM</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </div>
-            </div>
+            <HeightFilterSection
+              heightOperator={settings.heightOperator}
+              heightValue={settings.heightValue}
+              heightUnit={settings.heightUnit}
+              onHeightOperatorChange={(value) => setSettings(prev => ({ ...prev, heightOperator: value }))}
+              onHeightValueChange={(value) => setSettings(prev => ({ ...prev, heightValue: value }))}
+              onHeightUnitChange={(value) => setSettings(prev => ({ ...prev, heightUnit: value }))}
+            />
           </div>
         </div>
 
