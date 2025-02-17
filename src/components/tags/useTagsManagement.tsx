@@ -60,17 +60,11 @@ export function useTagsManagement(sculptureId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sculpture_tags"] });
       queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      toast({
-        title: "Tag added",
-        description: "The tag has been added to the sculpture.",
-      });
+      toast("Tag added successfully");
     },
     onError: (error) => {
       console.error("Error adding tag:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add tag. Please try again.",
-      });
+      toast("Failed to add tag. Please try again.");
     },
   });
 
@@ -92,17 +86,11 @@ export function useTagsManagement(sculptureId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sculpture_tags"] });
       queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      toast({
-        title: "Tag removed",
-        description: "The tag has been removed from the sculpture.",
-      });
+      toast("Tag removed successfully");
     },
     onError: (error) => {
       console.error("Error removing tag:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove tag. Please try again.",
-      });
+      toast("Failed to remove tag. Please try again.");
     },
   });
 
@@ -130,10 +118,7 @@ export function useTagsManagement(sculptureId: string | undefined) {
     },
     onError: (error) => {
       console.error("Error creating tag:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create tag. Please try again.",
-      });
+      toast("Failed to create tag. Please try again.");
     },
   });
 
