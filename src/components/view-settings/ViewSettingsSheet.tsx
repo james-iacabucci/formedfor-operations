@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import {
   Sheet,
   SheetContent,
@@ -46,6 +47,7 @@ export function ViewSettingsSheet({
 }: ViewSettingsSheetProps) {
   const [settings, setSettings] = useState<ViewSettings>({ ...initialSettings });
   const { tags } = useTagsManagement(undefined);
+  const heightValueInputRef = useRef<HTMLInputElement>(null);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -167,19 +169,7 @@ export function ViewSettingsSheet({
             {/* Sorting */}
             <div className="space-y-4">
               <Label>Sort By</Label>
-              <div className="space-y-4">
-                <Tabs
-                  value={settings.sortOrder}
-                  onValueChange={(value: 'asc' | 'desc') => 
-                    setSettings(prev => ({ ...prev, sortOrder: value }))
-                  }
-                >
-                  <TabsList className="w-full">
-                    <TabsTrigger value="asc" className="flex-1">ASC</TabsTrigger>
-                    <TabsTrigger value="desc" className="flex-1">DESC</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-
+              <div className="flex gap-2 items-center">
                 <Select
                   value={settings.sortBy}
                   onValueChange={(value: ViewSettings['sortBy']) => 
@@ -195,6 +185,19 @@ export function ViewSettingsSheet({
                     <SelectItem value="updated_at">Last Modified</SelectItem>
                   </SelectContent>
                 </Select>
+
+                <Tabs
+                  value={settings.sortOrder}
+                  onValueChange={(value: 'asc' | 'desc') => 
+                    setSettings(prev => ({ ...prev, sortOrder: value }))
+                  }
+                  className="w-[120px]"
+                >
+                  <TabsList className="w-full h-9">
+                    <TabsTrigger value="asc" className="flex-1 text-xs px-2">ASC</TabsTrigger>
+                    <TabsTrigger value="desc" className="flex-1 text-xs px-2">DESC</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
             </div>
 
@@ -246,45 +249,6 @@ export function ViewSettingsSheet({
               </div>
             </div>
 
-            {/* Height Filter */}
-            <div className="space-y-4">
-              <Label>Height</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Select
-                  value={settings.heightOperator || 'none'}
-                  onValueChange={(value) => 
-                    setSettings(prev => ({ 
-                      ...prev, 
-                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Operator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Any</SelectItem>
-                    <SelectItem value="eq">Equal to</SelectItem>
-                    <SelectItem value="gt">Greater than</SelectItem>
-                    <SelectItem value="lt">Less than</SelectItem>
-                  </SelectContent>
-                </Select>
-                <input
-                  type="number"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Value (in)"
-                  value={settings.heightValue || ''}
-                  onChange={(e) => 
-                    setSettings(prev => ({ 
-                      ...prev, 
-                      heightValue: e.target.value === '' ? null : Number(e.target.value)
-                    }))
-                  }
-                  disabled={!settings.heightOperator}
-                />
-              </div>
-            </div>
-
             {/* Tags */}
             <div className="space-y-4">
               <Label>Tags</Label>
@@ -306,6 +270,50 @@ export function ViewSettingsSheet({
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Height Filter */}
+            <div className="space-y-4">
+              <Label>Height</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Select
+                  value={settings.heightOperator || 'none'}
+                  onValueChange={(value) => {
+                    setSettings(prev => ({ 
+                      ...prev, 
+                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
+                    }));
+                    // Focus on the value input when an operator is selected
+                    if (value !== 'none' && heightValueInputRef.current) {
+                      heightValueInputRef.current.focus();
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Any</SelectItem>
+                    <SelectItem value="eq">Equal to</SelectItem>
+                    <SelectItem value="gt">Greater than</SelectItem>
+                    <SelectItem value="lt">Less than</SelectItem>
+                  </SelectContent>
+                </Select>
+                <input
+                  ref={heightValueInputRef}
+                  type="number"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Value (in)"
+                  value={settings.heightValue || ''}
+                  onChange={(e) => 
+                    setSettings(prev => ({ 
+                      ...prev, 
+                      heightValue: e.target.value === '' ? null : Number(e.target.value)
+                    }))
+                  }
+                  disabled={!settings.heightOperator}
+                />
               </div>
             </div>
           </div>
