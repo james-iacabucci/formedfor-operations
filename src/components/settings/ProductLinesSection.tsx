@@ -142,7 +142,7 @@ export function ProductLinesSection() {
               <TableHead>Logo</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Contact Email</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="w-[100px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,8 +168,8 @@ export function ProductLinesSection() {
                   </TableCell>
                   <TableCell>{productLine.name}</TableCell>
                   <TableCell>{productLine.contact_email}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="outline"
                         size="sm"
