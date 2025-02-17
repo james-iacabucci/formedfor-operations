@@ -84,36 +84,10 @@ export function SculptureCardActions({
     }
   };
 
-  const handleDownload = async () => {
-    if (!imageUrl) return;
-    
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sculpture-${sculptureId}.png`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading image:", error);
-      toast({
-        title: "Error",
-        description: "Failed to download image. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
       <SculptureActions
         isRegenerating={isRegenerating}
-        onDelete={onDelete}
-        onDownload={handleDownload}
         onManageTags={onManageTags}
         onRegenerate={handleRegenerate}
       />
