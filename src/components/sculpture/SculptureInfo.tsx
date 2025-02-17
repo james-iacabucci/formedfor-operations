@@ -4,8 +4,16 @@ import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon } from "lucide-react";
+import { toast } from "sonner";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -14,10 +22,27 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
+  const queryClient = useQueryClient();
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
-  const { data: productLine } = useQuery({
+  // Fetch all product lines for the dropdown
+  const { data: allProductLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 300000,
+  });
+
+  const { data: currentProductLine } = useQuery({
     queryKey: ["product_line", sculpture.product_line_id],
     queryFn: async () => {
       if (!sculpture.product_line_id) return null;
@@ -52,14 +77,43 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     return material ? material.name : "Not specified";
   };
 
-  // Format the display text for product line and status
-  const getProductLineStatusDisplay = () => {
-    const status = getDisplayStatus(sculpture.status);
-    if (!productLine) {
-      return `Unassigned (${status})`;
+  const handleStatusChange = async (newStatus: Sculpture['status']) => {
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ status: newStatus })
+        .eq('id', sculpture.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast.success("Status updated successfully");
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error("Failed to update status");
     }
-    const code = productLine.product_line_code || productLine.name;
-    return `${code} (${status})`;
+  };
+
+  const handleProductLineChange = async (productLineId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ product_line_id: productLineId })
+        .eq('id', sculpture.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast.success("Product line updated successfully");
+    } catch (error) {
+      console.error('Error updating product line:', error);
+      toast.error("Failed to update product line");
+    }
+  };
+
+  const getProductLineDisplay = () => {
+    if (!currentProductLine) return "Unassigned";
+    return currentProductLine.product_line_code || currentProductLine.name;
   };
 
   return (
@@ -68,9 +122,52 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <h3 className="font-semibold line-clamp-1">
           {sculptureName}
         </h3>
-        <span className="text-sm text-muted-foreground">
-          {getProductLineStatusDisplay()}
-        </span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground p-1 rounded transition-colors">
+              <span className="flex items-center gap-1">
+                {getProductLineDisplay()}
+                <ChevronDownIcon className="h-3 w-3" />
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleProductLineChange(null)}>
+                Unassigned
+              </DropdownMenuItem>
+              {allProductLines?.map((pl) => (
+                <DropdownMenuItem 
+                  key={pl.id}
+                  onClick={() => handleProductLineChange(pl.id)}
+                >
+                  {pl.product_line_code || pl.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <span>|</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground p-1 rounded transition-colors">
+              <span className="flex items-center gap-1">
+                {getDisplayStatus(sculpture.status)}
+                <ChevronDownIcon className="h-3 w-3" />
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
+                Idea
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+                Pending
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
+                Approved
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
+                Archived
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="flex items-center justify-between">
