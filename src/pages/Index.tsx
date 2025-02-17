@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -8,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
-import { TagsList } from "@/components/tags/TagsList";
+import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -37,21 +40,41 @@ const Index = () => {
     heightValue: null,
     selectedTagIds: ['all'],
   });
+
   const { tags } = useTagsManagement(undefined);
+
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: materials } = useQuery({
+    queryKey: ["value_lists_materials"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("value_lists")
+        .select("*")
+        .eq("type", "material");
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleViewSettingsChange = (newSettings: ViewSettings) => {
     setViewSettings(newSettings);
   };
-
-  // Filter tags to show only selected ones in the toolbar
-  const selectedTags = [
-    ...(viewSettings.selectedTagIds.includes('all') 
-      ? [{ id: 'all', name: 'All Sculptures' }] 
-      : []),
-    ...(tags || []).filter(tag => 
-      viewSettings.selectedTagIds.includes(tag.id)
-    ),
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,10 +134,11 @@ const Index = () => {
           >
             <Settings2 className="h-4 w-4" />
           </Button>
-          <TagsList
-            title=""
-            tags={selectedTags}
-            variant="outline"
+          <SelectedFilters
+            viewSettings={viewSettings}
+            productLines={productLines}
+            materials={materials}
+            tags={tags}
           />
         </div>
 
