@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureStatusProps {
   sculptureId: string;
-  status: "ideas" | "pending" | "approved";
+  status: "idea" | "pending" | "approved";
 }
 
 export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
@@ -27,7 +27,7 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
 
   const getDisplayName = (status: string) => {
     switch (status) {
-      case "ideas":
+      case "idea":
         return "Idea";
       case "pending":
         return "Pending";
@@ -46,11 +46,11 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
       className="flex gap-1"
     >
       <ToggleGroupItem
-        value="ideas"
+        value="idea"
         className="text-xs capitalize whitespace-nowrap"
         aria-label="Set status to idea"
       >
-        {getDisplayName("ideas")}
+        {getDisplayName("idea")}
       </ToggleGroupItem>
       <ToggleGroupItem
         value="pending"

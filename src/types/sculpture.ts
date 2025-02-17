@@ -17,7 +17,7 @@ export type Sculpture = {
   ai_description?: string | null;
   user_id: string;
   ai_engine: "runware" | "manual";
-  status: "ideas" | "pending" | "approved";
+  status: "idea" | "pending" | "approved";
   models: FileUpload[];
   renderings: FileUpload[];
   dimensions: FileUpload[];

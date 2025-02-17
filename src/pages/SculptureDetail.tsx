@@ -53,7 +53,7 @@ export default function SculptureDetail() {
         models: Array.isArray(data.models) ? data.models as FileUpload[] : [],
         renderings: Array.isArray(data.renderings) ? data.renderings as FileUpload[] : [],
         dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
-        status: (data.status || 'ideas') as "ideas" | "pending" | "approved",
+        status: (data.status || 'idea') as "idea" | "pending" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"],
         product_line_id: data.product_line_id
@@ -82,7 +82,7 @@ export default function SculptureDetail() {
         models: Array.isArray(data.models) ? data.models as FileUpload[] : [],
         renderings: Array.isArray(data.renderings) ? data.renderings as FileUpload[] : [],
         dimensions: Array.isArray(data.dimensions) ? data.dimensions as FileUpload[] : [],
-        status: (data.status || 'ideas') as "ideas" | "pending" | "approved",
+        status: (data.status || 'idea') as "idea" | "pending" | "approved",
         ai_engine: data.ai_engine as "runware" | "manual",
         creativity_level: data.creativity_level as Sculpture["creativity_level"],
         product_line_id: data.product_line_id
