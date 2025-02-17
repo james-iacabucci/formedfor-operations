@@ -11,4 +11,5 @@ export interface FabricationQuote {
   quote_date: string;
   notes: string | null;
   created_at: string;
+  is_selected: boolean;
 }

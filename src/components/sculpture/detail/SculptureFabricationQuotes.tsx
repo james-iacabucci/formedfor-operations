@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PlusIcon, Trash2Icon, PencilIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, PencilIcon, CheckCircle2Icon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -28,6 +29,7 @@ type NewQuote = {
 export function SculptureFabricationQuotes({ sculptureId }: SculptureFabricationQuotesProps) {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+  const { toast } = useToast();
   const [newQuote, setNewQuote] = useState<NewQuote>({
     sculpture_id: sculptureId,
     fabrication_cost: 500,
@@ -174,6 +176,29 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     }
 
     await refetchQuotes();
+  };
+
+  const handleSelectQuote = async (quoteId: string) => {
+    const { error } = await supabase
+      .from("fabrication_quotes")
+      .update({ is_selected: true })
+      .eq("id", quoteId);
+
+    if (error) {
+      console.error("Error selecting quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to select quote. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await refetchQuotes();
+    toast({
+      title: "Quote Selected",
+      description: "The fabrication quote has been selected.",
+    });
   };
 
   const calculateTotal = (quote: Partial<FabricationQuote> | NewQuote) => {
@@ -367,7 +392,12 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         )}
 
         {quotes?.map((quote) => (
-          <div key={quote.id} className="border rounded-lg p-4 space-y-4">
+          <div 
+            key={quote.id} 
+            className={`border rounded-lg p-4 space-y-4 transition-colors ${
+              quote.is_selected ? 'border-primary bg-primary/5' : ''
+            }`}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-medium">
@@ -378,6 +408,15 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                 </p>
               </div>
               <div className="flex gap-2">
+                {!quote.is_selected && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectQuote(quote.id)}
+                  >
+                    <CheckCircle2Icon className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -440,6 +479,13 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               <div className="text-sm">
                 <p className="font-medium">Notes</p>
                 <p className="whitespace-pre-line">{quote.notes}</p>
+              </div>
+            )}
+
+            {quote.is_selected && (
+              <div className="flex items-center gap-2 text-sm text-primary">
+                <CheckCircle2Icon className="h-4 w-4" />
+                <span>Selected Quote</span>
               </div>
             )}
           </div>

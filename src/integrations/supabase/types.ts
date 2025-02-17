@@ -16,6 +16,7 @@ export type Database = {
           fabrication_cost: number
           fabricator_id: string
           id: string
+          is_selected: boolean | null
           markup: number
           notes: string | null
           other_cost: number
@@ -29,6 +30,7 @@ export type Database = {
           fabrication_cost?: number
           fabricator_id: string
           id?: string
+          is_selected?: boolean | null
           markup?: number
           notes?: string | null
           other_cost?: number
@@ -42,6 +44,7 @@ export type Database = {
           fabrication_cost?: number
           fabricator_id?: string
           id?: string
+          is_selected?: boolean | null
           markup?: number
           notes?: string | null
           other_cost?: number
