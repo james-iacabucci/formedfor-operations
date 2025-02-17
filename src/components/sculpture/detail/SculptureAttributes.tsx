@@ -1,8 +1,7 @@
 
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { LinkIcon, TagIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
 import { SculptureHeader } from "./SculptureHeader";
@@ -115,24 +114,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           renderings={sculpture.renderings}
           dimensions={sculpture.dimensions}
         />
-
-        {tags && tags.length > 0 && (
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
-                  <TagIcon className="w-3 h-3" />
-                  <span>{tag.name}</span>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="space-y-4">
           <dl className="grid grid-cols-1 gap-2 text-sm">
