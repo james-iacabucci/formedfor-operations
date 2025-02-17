@@ -17,8 +17,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
-  // Fetch product line data with proper error handling
-  const { data: productLine, isError } = useQuery({
+  const { data: productLine } = useQuery({
     queryKey: ["product_line", sculpture.product_line_id],
     queryFn: async () => {
       if (!sculpture.product_line_id) return null;
@@ -33,21 +32,18 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     },
     enabled: !!sculpture.product_line_id,
     retry: false,
-    staleTime: 30000, // Cache the result for 30 seconds
-    gcTime: 300000, // Keep unused data in cache for 5 minutes
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   const getDisplayStatus = (status: string) => {
-    switch (status) {
-      case "ideas":
-        return "Idea";
-      case "pending_additions":
-        return "Pending Addition";
-      case "approved":
-        return "Approved";
-      default:
-        return status;
-    }
+    const statusMap: Record<string, string> = {
+      idea: "Idea",
+      pending: "Pending",
+      approved: "Approved",
+      archived: "Archived"
+    };
+    return statusMap[status] || status;
   };
 
   const getMaterialName = () => {
@@ -56,8 +52,15 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     return material ? material.name : "Not specified";
   };
 
-  // Memoize the product line display text to prevent unnecessary re-renders
-  const productLineDisplay = isError ? "Error loading product line" : (productLine?.name || "No Product Line");
+  // Format the display text for product line and status
+  const getProductLineStatusDisplay = () => {
+    const status = getDisplayStatus(sculpture.status);
+    if (!productLine) {
+      return `Unassigned (${status})`;
+    }
+    const code = productLine.product_line_code || productLine.name;
+    return `${code} (${status})`;
+  };
 
   return (
     <div className="mt-4 space-y-3">
@@ -66,7 +69,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           {sculptureName}
         </h3>
         <span className="text-sm text-muted-foreground">
-          {productLineDisplay} ({getDisplayStatus(sculpture.status)})
+          {getProductLineStatusDisplay()}
         </span>
       </div>
 
