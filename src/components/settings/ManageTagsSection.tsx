@@ -34,12 +34,12 @@ export function ManageTagsSection() {
           </TableHeader>
           <TableBody>
             {tags?.filter(tag => !pendingDeletes.has(tag.id)).map((tag) => (
-              <TableRow key={tag.id}>
+              <TableRow key={tag.id} className="group">
                 <TableCell>
                   {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="outline"
                       size="sm"

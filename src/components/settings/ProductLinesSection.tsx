@@ -153,7 +153,7 @@ export function ProductLinesSection() {
               const bgColor = theme === 'dark' ? 'bg-white' : 'bg-black';
               
               return (
-                <TableRow key={productLine.id}>
+                <TableRow key={productLine.id} className="group">
                   <TableCell>
                     <Avatar className={`h-12 w-12 rounded-lg ${bgColor}`}>
                       <AvatarImage 
@@ -169,7 +169,7 @@ export function ProductLinesSection() {
                   <TableCell>{productLine.name}</TableCell>
                   <TableCell>{productLine.contact_email}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="outline"
                         size="sm"
