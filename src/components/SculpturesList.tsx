@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Sculpture } from "@/types/sculpture";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
@@ -16,6 +17,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  heightUnit: 'in' | 'cm';
 }
 
 interface SculpturesListProps {
