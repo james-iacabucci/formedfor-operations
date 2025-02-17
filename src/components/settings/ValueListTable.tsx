@@ -48,17 +48,17 @@ export function ValueListTable({
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-8 w-8"
+                      className="h-7 w-7 p-0"
                       onClick={() => onEdit(item)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-8 w-8"
+                      className="h-7 w-7 p-0"
                       onClick={() => onDelete(item)}
                     >
                       <Trash2 className="h-4 w-4" />

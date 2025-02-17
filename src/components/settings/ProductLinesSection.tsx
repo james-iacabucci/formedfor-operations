@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,21 +171,21 @@ export function ProductLinesSection() {
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 w-8"
                         onClick={() => {
                           setSelectedProductLine(productLine);
                           setShowForm(true);
                         }}
+                        className="h-7 w-7 p-0"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 w-8 text-destructive"
                         onClick={() => handleDelete(productLine)}
+                        className="h-7 w-7 p-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
