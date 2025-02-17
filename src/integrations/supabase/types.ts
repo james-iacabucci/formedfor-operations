@@ -16,6 +16,7 @@ export type Database = {
           fabrication_cost: number
           fabricator_id: string
           id: string
+          markup: number
           notes: string | null
           other_cost: number
           quote_date: string
@@ -28,6 +29,7 @@ export type Database = {
           fabrication_cost?: number
           fabricator_id: string
           id?: string
+          markup?: number
           notes?: string | null
           other_cost?: number
           quote_date?: string
@@ -40,6 +42,7 @@ export type Database = {
           fabrication_cost?: number
           fabricator_id?: string
           id?: string
+          markup?: number
           notes?: string | null
           other_cost?: number
           quote_date?: string

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +20,7 @@ type NewQuote = {
   shipping_cost: number;
   customs_cost: number;
   other_cost: number;
+  markup: number;
   quote_date: string;
   notes: string | null;
 }
@@ -33,6 +33,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     shipping_cost: 0,
     customs_cost: 0,
     other_cost: 0,
+    markup: 4,
     notes: "",
     quote_date: new Date().toISOString(),
   });
@@ -89,6 +90,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       shipping_cost: 0,
       customs_cost: 0,
       other_cost: 0,
+      markup: 4,
       notes: "",
       quote_date: new Date().toISOString(),
     });
@@ -115,6 +117,21 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       (quote.customs_cost || 0) +
       (quote.other_cost || 0)
     );
+  };
+
+  const calculateTradePrice = (quote: Partial<FabricationQuote> | NewQuote) => {
+    return calculateTotal(quote) * (quote.markup || 4);
+  };
+
+  const calculateRetailPrice = (tradePrice: number) => {
+    return Math.ceil(tradePrice / (1 - 0.35) / 250) * 250;
+  };
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US', { 
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(num);
   };
 
   return (
@@ -161,7 +178,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Fabrication Cost</label>
                 <Input
@@ -194,6 +211,15 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                   onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Markup</label>
+                <Input
+                  type="number"
+                  step="any"
+                  value={newQuote.markup}
+                  onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -206,8 +232,16 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             </div>
 
             <div className="flex justify-between items-center">
-              <div className="text-sm font-medium">
-                Total Cost: ${calculateTotal(newQuote).toFixed(2)}
+              <div className="space-y-1">
+                <div className="text-sm font-medium">
+                  Total Cost: ${formatNumber(calculateTotal(newQuote))}
+                </div>
+                <div className="text-sm font-medium">
+                  Trade Price: ${formatNumber(calculateTradePrice(newQuote))}
+                </div>
+                <div className="text-sm font-medium">
+                  Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}
+                </div>
               </div>
               <div className="space-x-2">
                 <Button variant="outline" onClick={() => setIsAddingQuote(false)}>
@@ -241,22 +275,26 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               </Button>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-5 gap-4 text-sm">
               <div>
                 <p className="font-medium">Fabrication</p>
-                <p>${quote.fabrication_cost.toFixed(2)}</p>
+                <p>${formatNumber(quote.fabrication_cost)}</p>
               </div>
               <div>
                 <p className="font-medium">Shipping</p>
-                <p>${quote.shipping_cost.toFixed(2)}</p>
+                <p>${formatNumber(quote.shipping_cost)}</p>
               </div>
               <div>
                 <p className="font-medium">Customs</p>
-                <p>${quote.customs_cost.toFixed(2)}</p>
+                <p>${formatNumber(quote.customs_cost)}</p>
               </div>
               <div>
                 <p className="font-medium">Other</p>
-                <p>${quote.other_cost.toFixed(2)}</p>
+                <p>${formatNumber(quote.other_cost)}</p>
+              </div>
+              <div>
+                <p className="font-medium">Markup</p>
+                <p>{quote.markup}x</p>
               </div>
             </div>
 
@@ -267,8 +305,10 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               </div>
             )}
 
-            <div className="text-sm font-medium">
-              Total Cost: ${calculateTotal(quote).toFixed(2)}
+            <div className="space-y-1 text-sm font-medium">
+              <div>Total Cost: ${formatNumber(calculateTotal(quote))}</div>
+              <div>Trade Price: ${formatNumber(calculateTradePrice(quote))}</div>
+              <div>Retail Price: ${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</div>
             </div>
           </div>
         ))}
