@@ -18,7 +18,10 @@ useEffect(() => {
         portals.forEach(portal => {
           // Only target Settings-related portals
           if (portal.textContent?.includes('Settings')) {
-            portal.parentNode?.removeChild(portal);
+            const parent = portal.parentNode;
+            if (parent && parent.contains(portal)) {
+              parent.removeChild(portal);
+            }
           }
         });
       } catch (error) {
@@ -35,6 +38,8 @@ useEffect(() => {
 3. Only remove portals that:
    - Are in a "closed" state
    - Contain "Settings" text content
+   - Have a valid parent node
+   - Are still contained within their parent
 4. Include error handling for removeChild operation
 5. Wait for animations (300ms) before cleanup
 

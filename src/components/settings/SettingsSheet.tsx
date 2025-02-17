@@ -37,7 +37,10 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           portals.forEach(portal => {
             // Only target Settings-related portals
             if (portal.textContent?.includes('Settings')) {
-              portal.parentNode?.removeChild(portal);
+              const parent = portal.parentNode;
+              if (parent && parent.contains(portal)) {
+                parent.removeChild(portal);
+              }
             }
           });
         } catch (error) {
