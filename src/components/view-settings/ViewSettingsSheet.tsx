@@ -287,7 +287,7 @@ export function ViewSettingsSheet({
                     setSettings(prev => ({ 
                       ...prev, 
                       heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt',
-                      heightValue: value === 'none' ? null : prev.heightValue // Clear value when 'Any' is selected
+                      heightValue: value === 'none' ? null : prev.heightValue
                     }));
                     if (value !== 'none' && heightValueInputRef.current) {
                       setTimeout(() => {
@@ -328,7 +328,7 @@ export function ViewSettingsSheet({
                     onValueChange={(value: 'in' | 'cm') => 
                       setSettings(prev => ({ ...prev, heightUnit: value }))
                     }
-                    className="w-[100px]"
+                    className="w-[120px]"
                   >
                     <TabsList className="w-full h-9">
                       <TabsTrigger value="in" className="flex-1 text-xs px-2">IN</TabsTrigger>
