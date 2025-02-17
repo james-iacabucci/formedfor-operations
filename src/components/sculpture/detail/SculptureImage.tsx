@@ -5,8 +5,6 @@ interface SculptureImageProps {
   imageUrl: string;
   prompt: string;
   isRegenerating: boolean;
-  onDelete: () => void;
-  onDownload: () => void;
   onManageTags: () => void;
   onRegenerate: () => void;
 }
@@ -15,8 +13,6 @@ export function SculptureImage({
   imageUrl,
   prompt,
   isRegenerating,
-  onDelete,
-  onDownload,
   onManageTags,
   onRegenerate,
 }: SculptureImageProps) {
@@ -30,8 +26,6 @@ export function SculptureImage({
       <div className="absolute top-2 right-2">
         <SculptureActions
           isRegenerating={isRegenerating}
-          onDelete={onDelete}
-          onDownload={onDownload}
           onManageTags={onManageTags}
           onRegenerate={onRegenerate}
         />

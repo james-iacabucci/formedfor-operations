@@ -28,27 +28,6 @@ export function SculptureDetailContent({
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  const handleDownload = () => {
-    if (sculpture.image_url) {
-      const link = document.createElement("a");
-      link.href = sculpture.image_url;
-      link.download = "sculpture.png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast({
-        title: "Download started",
-        description: "Your image download has started.",
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsDeleteDialogOpen(false);
-    navigate("/");
-  };
 
   const handleRegenerate = async (options: any) => {
     setIsRegenerating(true);
@@ -68,8 +47,6 @@ export function SculptureDetailContent({
             imageUrl={sculpture.image_url || ""}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
-            onDelete={() => setIsDeleteDialogOpen(true)}
-            onDownload={handleDownload}
             onManageTags={() => setIsManageTagsOpen(true)}
             onRegenerate={() => setIsRegenerationSheetOpen(true)}
           />
