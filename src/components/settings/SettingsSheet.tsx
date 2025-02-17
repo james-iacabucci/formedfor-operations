@@ -45,17 +45,17 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   return (
     <Sheet 
       open={open} 
-      onOpenChange={(value) => {
-        // Only allow closing through buttons or ESC key
-        if (!value) {
+      onOpenChange={(isOpen) => {
+        // Only allow closing through explicit actions
+        if (!isOpen) {
           onOpenChange(false);
         }
       }}
     >
       <SheetContent 
         className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
-        onEscapeKeyDown={() => onOpenChange(false)}
         onPointerDownOutside={(e) => {
+          // Prevent closing when clicking outside
           e.preventDefault();
         }}
       >
