@@ -27,9 +27,9 @@ export function ManageTagsSection() {
   const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
+  const headerHeight = 45; // Height of the header row
   const rowHeight = 53; // Height of each data row
-  const maxVisibleRows = 10;
-  const tableBodyHeight = Math.min(visibleTags.length, maxVisibleRows) * rowHeight;
+  const tableHeight = headerHeight + Math.min(visibleTags.length * rowHeight, 10 * rowHeight);
 
   const handleCreateTag = (name: string) => {
     createTagMutation.mutate(name);
@@ -48,14 +48,14 @@ export function ManageTagsSection() {
       )}
 
       <div className="border rounded-md">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            <TableRow>
-              <TableHead className="w-[300px]">Name</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <ScrollArea className="h-[530px]">
+        <ScrollArea style={{ height: tableHeight }}>
+          <Table>
+            <TableHeader className="sticky top-0 bg-background z-10">
+              <TableRow>
+                <TableHead className="w-[300px]">Name</TableHead>
+                <TableHead className="w-[100px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {visibleTags.map((tag) => (
                 <TableRow key={tag.id} className="group">
@@ -85,8 +85,8 @@ export function ManageTagsSection() {
                 </TableRow>
               ))}
             </TableBody>
-          </ScrollArea>
-        </Table>
+          </Table>
+        </ScrollArea>
 
         {Array.from(pendingDeletes).map(tagId => {
           const tag = tags?.find(t => t.id === tagId);

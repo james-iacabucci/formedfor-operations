@@ -11,7 +11,7 @@ export function TagsManagementHeader({ onCreateTag }: TagsManagementHeaderProps)
   return (
     <div className="sticky top-0 bg-background pt-4 z-10">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Sculpture Tags</h3>
+        <h3 className="text-lg font-medium">Manage Sculpture Tags</h3>
         <Button 
           onClick={onCreateTag} 
           size="sm"
