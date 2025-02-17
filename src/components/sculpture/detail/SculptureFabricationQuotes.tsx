@@ -65,6 +65,16 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     },
   });
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof NewQuote) => {
+    const value = e.target.value;
+    if (field === 'notes') {
+      setNewQuote(prev => ({ ...prev, [field]: value }));
+    } else {
+      const numValue = value ? parseFloat(value) : 0;
+      setNewQuote(prev => ({ ...prev, [field]: numValue }));
+    }
+  };
+
   const handleStartEdit = (quote: FabricationQuote) => {
     setEditingQuoteId(quote.id);
     setNewQuote({
@@ -225,7 +235,8 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             <Input
               type="number"
               value={newQuote.fabrication_cost}
-              onChange={(e) => setNewQuote({ ...newQuote, fabrication_cost: parseFloat(e.target.value) })}
+              onChange={(e) => handleInputChange(e, 'fabrication_cost')}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-2">
@@ -233,7 +244,8 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             <Input
               type="number"
               value={newQuote.shipping_cost}
-              onChange={(e) => setNewQuote({ ...newQuote, shipping_cost: parseFloat(e.target.value) })}
+              onChange={(e) => handleInputChange(e, 'shipping_cost')}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-2">
@@ -241,7 +253,8 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             <Input
               type="number"
               value={newQuote.customs_cost}
-              onChange={(e) => setNewQuote({ ...newQuote, customs_cost: parseFloat(e.target.value) })}
+              onChange={(e) => handleInputChange(e, 'customs_cost')}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-2">
@@ -249,7 +262,8 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             <Input
               type="number"
               value={newQuote.other_cost}
-              onChange={(e) => setNewQuote({ ...newQuote, other_cost: parseFloat(e.target.value) })}
+              onChange={(e) => handleInputChange(e, 'other_cost')}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-2">
@@ -270,7 +284,8 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               type="number"
               step="any"
               value={newQuote.markup}
-              onChange={(e) => setNewQuote({ ...newQuote, markup: parseFloat(e.target.value) })}
+              onChange={(e) => handleInputChange(e, 'markup')}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-2">
@@ -299,7 +314,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         <label className="text-sm font-medium">Notes</label>
         <Textarea
           value={newQuote.notes || ""}
-          onChange={(e) => setNewQuote({ ...newQuote, notes: e.target.value })}
+          onChange={(e) => handleInputChange(e, 'notes')}
           rows={5}
         />
       </div>
