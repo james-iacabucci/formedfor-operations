@@ -5,14 +5,25 @@ import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
-import { TagsSelect } from "@/components/tags/TagsSelect";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, UploadIcon } from "lucide-react";
+import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
+import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 
 const Index = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isGridView, setIsGridView] = useState(true);
+  const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
+  const [viewSettings, setViewSettings] = useState({
+    sortBy: 'created_at' as const,
+    sortOrder: 'desc' as const,
+    productLineId: null,
+    materialIds: [],
+    status: null,
+    heightOperator: null,
+    heightValue: null,
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,6 +47,32 @@ const Index = () => {
                 <PlusIcon className="h-4 w-4" />
                 Create
               </Button>
+              <div className="flex gap-2 border rounded-md p-0.5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsViewSettingsOpen(true)}
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+                <Toggle
+                  pressed={isGridView}
+                  onPressedChange={() => setIsGridView(true)}
+                  size="sm"
+                  className="data-[state=on]:bg-muted"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Toggle>
+                <Toggle
+                  pressed={!isGridView}
+                  onPressedChange={() => setIsGridView(false)}
+                  size="sm"
+                  className="data-[state=on]:bg-muted"
+                >
+                  <List className="h-4 w-4" />
+                </Toggle>
+              </div>
               <UserMenu />
             </div>
           </div>
@@ -45,7 +82,7 @@ const Index = () => {
       <div className="mx-auto max-w-7xl p-6 pt-6">
         <Card className="border-0 shadow-none">
           <CardContent className="pt-6">
-            <SculpturesList selectedTags={selectedTags} />
+            <SculpturesList viewSettings={viewSettings} isGridView={isGridView} />
           </CardContent>
         </Card>
       </div>
@@ -57,6 +94,12 @@ const Index = () => {
       <AddSculptureSheet
         open={isAddSheetOpen}
         onOpenChange={setIsAddSheetOpen}
+      />
+      <ViewSettingsSheet
+        open={isViewSettingsOpen}
+        onOpenChange={setIsViewSettingsOpen}
+        settings={viewSettings}
+        onApply={setViewSettings}
       />
     </div>
   );

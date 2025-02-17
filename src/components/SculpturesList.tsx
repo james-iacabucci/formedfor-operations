@@ -7,22 +7,30 @@ import { useSculpturesData } from "@/hooks/useSculpturesData";
 import { SculpturesGrid } from "./sculpture/SculpturesGrid";
 import { SculpturesTable } from "./sculpture/SculpturesTable";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, UploadIcon, LayoutGrid, List } from "lucide-react";
-import { TagsSelect } from "@/components/tags/TagsSelect";
-import { Toggle } from "@/components/ui/toggle";
+import { PlusIcon, UploadIcon } from "lucide-react";
 
-interface SculpturesListProps {
-  selectedTags: string[];
+interface ViewSettings {
+  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
+  sortOrder: 'asc' | 'desc';
+  productLineId: string | null;
+  materialIds: string[];
+  status: string | null;
+  heightOperator: 'eq' | 'gt' | 'lt' | null;
+  heightValue: number | null;
 }
 
-export function SculpturesList({ selectedTags }: SculpturesListProps) {
+interface SculpturesListProps {
+  viewSettings: ViewSettings;
+  isGridView: boolean;
+}
+
+export function SculpturesList({ viewSettings, isGridView }: SculpturesListProps) {
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isGridView, setIsGridView] = useState(true);
 
-  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(selectedTags);
+  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(viewSettings);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -58,34 +66,6 @@ export function SculpturesList({ selectedTags }: SculpturesListProps) {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <TagsSelect 
-          selectedTags={selectedTags} 
-          onTagsChange={(tags) => {
-            const event = new CustomEvent('tagsChange', { detail: tags });
-            window.dispatchEvent(event);
-          }}
-        />
-        <div className="flex gap-2 border rounded-md p-0.5">
-          <Toggle
-            pressed={isGridView}
-            onPressedChange={() => setIsGridView(true)}
-            size="sm"
-            className="data-[state=on]:bg-muted"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            pressed={!isGridView}
-            onPressedChange={() => setIsGridView(false)}
-            size="sm"
-            className="data-[state=on]:bg-muted"
-          >
-            <List className="h-4 w-4" />
-          </Toggle>
-        </div>
-      </div>
-
       {isGridView ? (
         <SculpturesGrid 
           sculptures={sculptures}
