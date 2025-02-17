@@ -29,6 +29,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  heightUnit: 'in' | 'cm';
   selectedTagIds: string[];
 }
 
@@ -45,7 +46,10 @@ export function ViewSettingsSheet({
   settings: initialSettings,
   onApply,
 }: ViewSettingsSheetProps) {
-  const [settings, setSettings] = useState<ViewSettings>({ ...initialSettings });
+  const [settings, setSettings] = useState<ViewSettings>({ 
+    ...initialSettings,
+    heightUnit: initialSettings.heightUnit || 'in' // Default to inches if not set
+  });
   const { tags } = useTagsManagement(undefined);
   const heightValueInputRef = useRef<HTMLInputElement>(null);
 
@@ -276,7 +280,7 @@ export function ViewSettingsSheet({
             {/* Height Filter */}
             <div className="space-y-4">
               <Label>Height</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex gap-2 items-start">
                 <Select
                   value={settings.heightOperator || 'none'}
                   onValueChange={(value) => {
@@ -292,7 +296,7 @@ export function ViewSettingsSheet({
                     }
                   }}
                 >
-                  <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
+                  <SelectTrigger className="w-[140px] focus:ring-0 focus:ring-offset-0">
                     <SelectValue placeholder="Operator" />
                   </SelectTrigger>
                   <SelectContent>
@@ -302,20 +306,36 @@ export function ViewSettingsSheet({
                     <SelectItem value="lt">Less than</SelectItem>
                   </SelectContent>
                 </Select>
-                <input
-                  ref={heightValueInputRef}
-                  type="number"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Value (in)"
-                  value={settings.heightValue || ''}
-                  onChange={(e) => 
-                    setSettings(prev => ({ 
-                      ...prev, 
-                      heightValue: e.target.value === '' ? null : Number(e.target.value)
-                    }))
-                  }
-                  disabled={!settings.heightOperator}
-                />
+
+                <div className="flex gap-2 items-center flex-1">
+                  <input
+                    ref={heightValueInputRef}
+                    type="number"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Value"
+                    value={settings.heightValue || ''}
+                    onChange={(e) => 
+                      setSettings(prev => ({ 
+                        ...prev, 
+                        heightValue: e.target.value === '' ? null : Number(e.target.value)
+                      }))
+                    }
+                    disabled={!settings.heightOperator}
+                  />
+                  
+                  <Tabs
+                    value={settings.heightUnit}
+                    onValueChange={(value: 'in' | 'cm') => 
+                      setSettings(prev => ({ ...prev, heightUnit: value }))
+                    }
+                    className="w-[100px]"
+                  >
+                    <TabsList className="w-full h-9">
+                      <TabsTrigger value="in" className="flex-1 text-xs px-2">IN</TabsTrigger>
+                      <TabsTrigger value="cm" className="flex-1 text-xs px-2">CM</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
               </div>
             </div>
           </div>
