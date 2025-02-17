@@ -2,7 +2,6 @@
 import { useTagsManagement } from "../tags/useTagsManagement";
 import { useTagsState } from "./useTagsState";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { DeletedTagItem } from "./DeletedTagItem";
@@ -27,9 +26,6 @@ export function ManageTagsSection() {
   const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
-  const headerHeight = 45; // Height of the header row
-  const rowHeight = 53; // Height of each data row
-  const tableHeight = headerHeight + Math.min(visibleTags.length * rowHeight, 10 * rowHeight);
 
   const handleCreateTag = (name: string) => {
     createTagMutation.mutate(name);
@@ -48,45 +44,43 @@ export function ManageTagsSection() {
       )}
 
       <div className="border rounded-md">
-        <ScrollArea style={{ height: tableHeight }}>
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
-              <TableRow>
-                <TableHead className="w-[300px]">Name</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
+        <Table>
+          <TableHeader className="sticky top-0 bg-background z-10">
+            <TableRow>
+              <TableHead className="w-[300px]">Name</TableHead>
+              <TableHead className="w-[100px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {visibleTags.map((tag) => (
+              <TableRow key={tag.id} className="group">
+                <TableCell>
+                  {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => startEditingTag(tag.id, tag.name)}
+                      className="h-7 w-7 p-0 hover:bg-muted/50"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteTag(tag.id)}
+                      className="h-7 w-7 p-0 hover:bg-muted/50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleTags.map((tag) => (
-                <TableRow key={tag.id} className="group">
-                  <TableCell>
-                    {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEditingTag(tag.id, tag.name)}
-                        className="h-7 w-7 p-0 hover:bg-muted/50"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTag(tag.id)}
-                        className="h-7 w-7 p-0 hover:bg-muted/50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+            ))}
+          </TableBody>
+        </Table>
 
         {Array.from(pendingDeletes).map(tagId => {
           const tag = tags?.find(t => t.id === tagId);
