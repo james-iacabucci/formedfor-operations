@@ -14,9 +14,20 @@ interface SculptureFabricationQuotesProps {
   sculptureId: string;
 }
 
+type NewQuote = {
+  sculpture_id: string;
+  fabricator_id?: string;
+  fabrication_cost: number;
+  shipping_cost: number;
+  customs_cost: number;
+  other_cost: number;
+  quote_date: string;
+  notes: string | null;
+}
+
 export function SculptureFabricationQuotes({ sculptureId }: SculptureFabricationQuotesProps) {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
-  const [newQuote, setNewQuote] = useState<Partial<FabricationQuote>>({
+  const [newQuote, setNewQuote] = useState<NewQuote>({
     sculpture_id: sculptureId,
     fabrication_cost: 500,
     shipping_cost: 0,
@@ -55,9 +66,15 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
   const handleAddQuote = async () => {
     if (!newQuote.fabricator_id) return;
 
+    const quoteToInsert = {
+      ...newQuote,
+      fabricator_id: newQuote.fabricator_id,
+      sculpture_id: sculptureId,
+    };
+
     const { error } = await supabase
       .from("fabrication_quotes")
-      .insert([newQuote]);
+      .insert(quoteToInsert);
 
     if (error) {
       console.error("Error adding quote:", error);
@@ -91,7 +108,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     await refetchQuotes();
   };
 
-  const calculateTotal = (quote: Partial<FabricationQuote>) => {
+  const calculateTotal = (quote: Partial<FabricationQuote> | NewQuote) => {
     return (
       (quote.fabrication_cost || 0) +
       (quote.shipping_cost || 0) +
@@ -138,7 +155,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                 <label className="text-sm font-medium">Quote Date</label>
                 <Input
                   type="date"
-                  value={format(new Date(newQuote.quote_date || ""), "yyyy-MM-dd")}
+                  value={format(new Date(newQuote.quote_date), "yyyy-MM-dd")}
                   onChange={(e) => setNewQuote({ ...newQuote, quote_date: new Date(e.target.value).toISOString() })}
                 />
               </div>
