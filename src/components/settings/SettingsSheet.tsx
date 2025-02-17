@@ -56,40 +56,42 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           onOpenChange(false);
         }}
       >
-        <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
-          <SheetTitle className="flex items-center gap-2">
-            <Settings2 className="h-5 w-5" />
-            Settings
-          </SheetTitle>
-          <SheetDescription className="sr-only">
-            Configure application settings
-          </SheetDescription>
-        </SheetHeader>
-        
-        <div className="flex-1 overflow-y-auto px-6">
-          <div className="py-6 space-y-8">
-            <AppearanceSection />
-            <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
-            <ValueListsSection />
-            <ProductLinesSection />
-            <ManageTagsSection />
+        <div className="flex flex-col h-full">
+          <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              <Settings2 className="h-5 w-5" />
+              Settings
+            </SheetTitle>
+            <SheetDescription className="sr-only">
+              Configure application settings
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="flex-1 overflow-y-auto px-6">
+            <div className="py-6 space-y-8">
+              <AppearanceSection />
+              <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
+              <ValueListsSection />
+              <ProductLinesSection />
+              <ManageTagsSection />
+            </div>
           </div>
-        </div>
 
-        <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            type="button"
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleApply} 
-            type="button"
-          >
-            Apply Changes
-          </Button>
+          <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleApply} 
+              type="button"
+            >
+              Apply Changes
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

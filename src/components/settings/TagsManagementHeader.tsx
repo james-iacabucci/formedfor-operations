@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +9,7 @@ interface TagsManagementHeaderProps {
 
 export function TagsManagementHeader({ onCreateTag }: TagsManagementHeaderProps) {
   return (
-    <>
+    <div className="sticky top-0 bg-background pt-4 z-10">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Manage Sculpture Tags</h3>
         <Button 
@@ -20,7 +21,7 @@ export function TagsManagementHeader({ onCreateTag }: TagsManagementHeaderProps)
           Add Tag
         </Button>
       </div>
-      <Separator />
-    </>
+      <Separator className="mt-4" />
+    </div>
   );
 }
