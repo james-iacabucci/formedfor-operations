@@ -150,11 +150,11 @@ export function ViewSettingsSheet({
                 <div>
                   <Label className="text-sm">Product Line</Label>
                   <Select
-                    value={settings.productLineId || ''}
+                    value={settings.productLineId || 'all'}
                     onValueChange={(value) => 
                       setSettings(prev => ({ 
                         ...prev, 
-                        productLineId: value === '' ? null : value 
+                        productLineId: value === 'all' ? null : value 
                       }))
                     }
                   >
@@ -162,7 +162,7 @@ export function ViewSettingsSheet({
                       <SelectValue placeholder="Select product line" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Product Lines</SelectItem>
+                      <SelectItem value="all">All Product Lines</SelectItem>
                       {productLines?.map((pl) => (
                         <SelectItem key={pl.id} value={pl.id}>
                           {pl.name}
@@ -175,11 +175,11 @@ export function ViewSettingsSheet({
                 <div>
                   <Label className="text-sm">Status</Label>
                   <Select
-                    value={settings.status || ''}
+                    value={settings.status || 'all'}
                     onValueChange={(value) => 
                       setSettings(prev => ({ 
                         ...prev, 
-                        status: value === '' ? null : value 
+                        status: value === 'all' ? null : value 
                       }))
                     }
                   >
@@ -187,7 +187,7 @@ export function ViewSettingsSheet({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Statuses</SelectItem>
+                      <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="idea">Idea</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
@@ -200,11 +200,11 @@ export function ViewSettingsSheet({
                   <Label className="text-sm">Height</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <Select
-                      value={settings.heightOperator || ''}
+                      value={settings.heightOperator || 'none'}
                       onValueChange={(value) => 
                         setSettings(prev => ({ 
                           ...prev, 
-                          heightOperator: value === '' ? null : value as 'eq' | 'gt' | 'lt'
+                          heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
                         }))
                       }
                     >
@@ -212,7 +212,7 @@ export function ViewSettingsSheet({
                         <SelectValue placeholder="Operator" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any</SelectItem>
+                        <SelectItem value="none">Any</SelectItem>
                         <SelectItem value="eq">Equal to</SelectItem>
                         <SelectItem value="gt">Greater than</SelectItem>
                         <SelectItem value="lt">Less than</SelectItem>
