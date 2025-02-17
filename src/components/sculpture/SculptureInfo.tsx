@@ -1,4 +1,3 @@
-
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,6 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon } from "lucide-react";
 import { toast } from "sonner";
 
 interface SculptureInfoProps {
@@ -27,7 +25,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
-  // Fetch all product lines for the dropdown
   const { data: allProductLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
@@ -123,16 +120,14 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <h3 className="font-semibold line-clamp-1">
           {sculptureName}
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0.5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                size="sm"
-                className="gap-1 h-8"
+                className="h-5 px-2 text-xs py-0"
               >
                 {getProductLineDisplay()}
-                <ChevronDownIcon className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -153,11 +148,9 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                size="sm"
-                className="gap-1 h-8"
+                className="h-5 px-2 text-xs py-0"
               >
                 {getDisplayStatus(sculpture.status)}
-                <ChevronDownIcon className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
