@@ -221,7 +221,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       <div className="space-y-4">
         <div className="grid grid-cols-5 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Fabrication Cost</label>
+            <label className="text-sm font-medium">Fabrication</label>
             <Input
               type="number"
               value={newQuote.fabrication_cost}
@@ -229,7 +229,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Shipping Cost</label>
+            <label className="text-sm font-medium">Shipping</label>
             <Input
               type="number"
               value={newQuote.shipping_cost}
@@ -237,7 +237,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Customs Cost</label>
+            <label className="text-sm font-medium">Customs</label>
             <Input
               type="number"
               value={newQuote.customs_cost}
@@ -245,7 +245,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Other Cost</label>
+            <label className="text-sm font-medium">Other</label>
             <Input
               type="number"
               value={newQuote.other_cost}
