@@ -6,7 +6,7 @@ import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, Settings2 } from "lucide-react";
+import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
@@ -131,12 +131,16 @@ const Index = () => {
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
               variant="outline"
+              className="gap-2"
             >
+              <UploadIcon className="h-4 w-4" />
               Add
             </Button>
             <Button 
               onClick={() => setIsCreateSheetOpen(true)}
+              className="gap-2"
             >
+              <PlusIcon className="h-4 w-4" />
               Create
             </Button>
           </div>
