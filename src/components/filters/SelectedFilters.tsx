@@ -9,6 +9,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  heightUnit: 'in' | 'cm';
   selectedTagIds: string[];
 }
 
@@ -60,7 +61,7 @@ export function SelectedFilters({
     };
     filters.push({ 
       id: 'height', 
-      label: `Height ${operatorMap[viewSettings.heightOperator]} ${viewSettings.heightValue}"`
+      label: `Height ${operatorMap[viewSettings.heightOperator]} ${viewSettings.heightValue}${viewSettings.heightUnit}`
     });
   }
 
