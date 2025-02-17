@@ -126,7 +126,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="h-5 px-2 text-xs py-0"
+                className="h-5 px-2 text-xs py-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 {getProductLineDisplay()}
               </Button>
@@ -149,7 +149,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="h-5 px-2 text-xs py-0"
+                className="h-5 px-2 text-xs py-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               >
                 {getDisplayStatus(sculpture.status)}
               </Button>
