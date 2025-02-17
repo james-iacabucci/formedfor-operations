@@ -1,3 +1,4 @@
+
 import { LinkIcon, TagIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Badge } from "@/components/ui/badge";
@@ -110,7 +111,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   };
 
   const getProductLineDisplay = () => {
-    if (!currentProductLine) return "Unassigned";
+    if (!currentProductLine) return "??";
     return currentProductLine.product_line_code || currentProductLine.name;
   };
 
