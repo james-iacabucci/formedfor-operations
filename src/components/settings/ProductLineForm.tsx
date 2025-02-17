@@ -127,6 +127,7 @@ export function ProductLineForm({
     setIsSubmitting(true);
     try {
       await onSubmit({
+        ...(initialData?.id ? { id: initialData.id } : {}),
         name,
         contact_email: contactEmail,
         address,

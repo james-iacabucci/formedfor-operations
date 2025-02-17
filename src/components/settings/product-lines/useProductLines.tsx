@@ -69,13 +69,22 @@ export function useProductLines() {
       }
 
       if (data.id) {
+        // For existing records, update using the ID
         const { error } = await supabase
           .from("product_lines")
-          .update(data)
+          .update({
+            name: data.name,
+            contact_email: data.contact_email,
+            address: data.address,
+            white_logo_url: data.white_logo_url,
+            black_logo_url: data.black_logo_url,
+            product_line_code: data.product_line_code,
+          })
           .eq("id", data.id);
 
         if (error) throw error;
       } else {
+        // For new records, insert with user_id
         const { error } = await supabase
           .from("product_lines")
           .insert({
@@ -84,6 +93,7 @@ export function useProductLines() {
             address: data.address,
             white_logo_url: data.white_logo_url,
             black_logo_url: data.black_logo_url,
+            product_line_code: data.product_line_code,
             user_id: user.user.id
           });
 
