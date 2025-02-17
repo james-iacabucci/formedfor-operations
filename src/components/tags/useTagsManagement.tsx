@@ -1,6 +1,7 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useTagsManagement(sculptureId: string | undefined) {
   const queryClient = useQueryClient();
@@ -8,12 +9,15 @@ export function useTagsManagement(sculptureId: string | undefined) {
   const { data: tags } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        throw new Error("No authenticated user");
+      }
 
       const { data, error } = await supabase
         .from("tags")
         .select("*")
+        .eq("user_id", session.session.user.id)
         .order("name");
 
       if (error) throw error;
@@ -25,6 +29,11 @@ export function useTagsManagement(sculptureId: string | undefined) {
     queryKey: ["sculpture_tags", sculptureId],
     enabled: !!sculptureId,
     queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        throw new Error("No authenticated user");
+      }
+
       const { data, error } = await supabase
         .from("sculpture_tags")
         .select("tag_id")
@@ -37,6 +46,11 @@ export function useTagsManagement(sculptureId: string | undefined) {
 
   const addTagMutation = useMutation({
     mutationFn: async (tagId: string) => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        throw new Error("No authenticated user");
+      }
+
       const { error } = await supabase
         .from("sculpture_tags")
         .insert([{ sculpture_id: sculptureId, tag_id: tagId }]);
@@ -56,13 +70,17 @@ export function useTagsManagement(sculptureId: string | undefined) {
       toast({
         title: "Error",
         description: "Failed to add tag. Please try again.",
-        variant: "destructive",
       });
     },
   });
 
   const removeTagMutation = useMutation({
     mutationFn: async (tagId: string) => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        throw new Error("No authenticated user");
+      }
+
       const { error } = await supabase
         .from("sculpture_tags")
         .delete()
@@ -84,19 +102,20 @@ export function useTagsManagement(sculptureId: string | undefined) {
       toast({
         title: "Error",
         description: "Failed to remove tag. Please try again.",
-        variant: "destructive",
       });
     },
   });
 
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        throw new Error("No authenticated user");
+      }
 
       const { data, error } = await supabase
         .from("tags")
-        .insert([{ name, user_id: user.user.id }])
+        .insert([{ name, user_id: session.session.user.id }])
         .select()
         .single();
 
@@ -105,14 +124,15 @@ export function useTagsManagement(sculptureId: string | undefined) {
     },
     onSuccess: (newTag) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
-      addTagMutation.mutate(newTag.id);
+      if (sculptureId) {
+        addTagMutation.mutate(newTag.id);
+      }
     },
     onError: (error) => {
       console.error("Error creating tag:", error);
       toast({
         title: "Error",
         description: "Failed to create tag. Please try again.",
-        variant: "destructive",
       });
     },
   });
