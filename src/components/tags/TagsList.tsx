@@ -34,7 +34,7 @@ export function TagsList({
             key={tag.id}
             variant={tag.id === activeTagId ? "default" : variant}
             className={cn(
-              "cursor-pointer",
+              "cursor-pointer bg-background hover:bg-background/90",
               tag.id === 'all' && !activeTagId && "bg-primary"
             )}
             onClick={() => onTagClick(tag.id)}

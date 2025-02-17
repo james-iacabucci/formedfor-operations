@@ -122,7 +122,7 @@ const Index = () => {
         </div>
 
         <Card className="border-0 shadow-none">
-          <CardContent className="pt-6">
+          <CardContent className="p-0">
             <SculpturesList 
               viewSettings={viewSettings} 
               isGridView={isGridView} 
