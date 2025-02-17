@@ -47,10 +47,14 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       open={open} 
       onOpenChange={onOpenChange}
       defaultOpen={false}
+      modal={true}
     >
       <SheetContent 
         className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
         onEscapeKeyDown={() => onOpenChange(false)}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
       >
         <div className="flex flex-col h-full">
           <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
