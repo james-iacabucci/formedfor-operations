@@ -29,6 +29,21 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   useEffect(() => {
     if (!open) {
       setShowCreateForm(false);
+      
+      // Cleanup any lingering portals
+      setTimeout(() => {
+        try {
+          const portals = document.querySelectorAll('[data-state="closed"]');
+          portals.forEach(portal => {
+            // Only target Settings-related portals
+            if (portal.textContent?.includes('Settings')) {
+              portal.parentNode?.removeChild(portal);
+            }
+          });
+        } catch (error) {
+          console.error('Portal cleanup error:', error);
+        }
+      }, 300); // Wait for animation to complete
     }
   }, [open]);
 
@@ -46,7 +61,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     <Sheet 
       open={open} 
       onOpenChange={(isOpen) => {
-        // Only allow closing through explicit actions
         if (!isOpen) {
           onOpenChange(false);
         }
@@ -55,7 +69,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       <SheetContent 
         className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
         onPointerDownOutside={(e) => {
-          // Prevent closing when clicking outside
           e.preventDefault();
         }}
       >
