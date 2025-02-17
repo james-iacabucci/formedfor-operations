@@ -50,7 +50,7 @@ export function ManageTagsSection() {
       <div className="border rounded-md">
         <ScrollArea style={{ height: tableHeight }}>
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-[300px]">Name</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>

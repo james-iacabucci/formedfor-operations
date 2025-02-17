@@ -137,7 +137,7 @@ export function ProductLinesSection() {
 
       <div className="border rounded-md">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
               <TableHead>Logo</TableHead>
               <TableHead>Name</TableHead>

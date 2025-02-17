@@ -29,7 +29,7 @@ export function ValueListTable({
     <div className="border rounded-md">
       <ScrollArea className="h-[400px]">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
               {showCode && (
                 <TableHead className="w-[80px]">Code</TableHead>
