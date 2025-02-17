@@ -77,18 +77,14 @@ export function SelectedFilters({
   return (
     <div className="flex flex-wrap gap-2">
       {filters.length === 0 ? (
-        <Badge
-          variant="outline"
-          className="bg-background text-foreground border-border"
-        >
+        <Badge variant="default">
           All Sculptures
         </Badge>
       ) : (
         filters.map(filter => (
           <Badge
             key={filter.id}
-            variant="outline"
-            className="bg-background text-foreground border-border"
+            variant="default"
           >
             {filter.label}
           </Badge>
