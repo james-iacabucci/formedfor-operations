@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import {
   Sheet,
@@ -288,7 +287,6 @@ export function ViewSettingsSheet({
                       ...prev, 
                       heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
                     }));
-                    // Focus on the value input when an operator is selected
                     if (value !== 'none' && heightValueInputRef.current) {
                       setTimeout(() => {
                         heightValueInputRef.current?.focus();
@@ -311,7 +309,7 @@ export function ViewSettingsSheet({
                   <input
                     ref={heightValueInputRef}
                     type="number"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="Value"
                     value={settings.heightValue || ''}
                     onChange={(e) => 

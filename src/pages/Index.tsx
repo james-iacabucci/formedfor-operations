@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -22,6 +21,7 @@ interface ViewSettings {
   status: string | null;
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
+  heightUnit: 'in' | 'cm';
   selectedTagIds: string[];
 }
 
@@ -38,6 +38,7 @@ const Index = () => {
     status: null,
     heightOperator: null,
     heightValue: null,
+    heightUnit: 'in',
     selectedTagIds: ['all'],
   });
 
