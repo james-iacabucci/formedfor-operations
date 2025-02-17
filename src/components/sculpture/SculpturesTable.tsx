@@ -137,13 +137,13 @@ export function SculpturesTable({
                   variant={
                     sculpture.status === "approved" 
                       ? "default" 
-                      : sculpture.status === "pending_additions" 
+                      : sculpture.status === "pending" 
                         ? "secondary" 
                         : "outline"
                   }
                   className="capitalize"
                 >
-                  {sculpture.status === "pending_additions" ? "Pending" : sculpture.status}
+                  {sculpture.status}
                 </Badge>
               </TableCell>
               <TableCell className="font-mono text-sm">

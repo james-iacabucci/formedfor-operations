@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -30,8 +29,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { isGeneratingName, isGeneratingDescription, generateAIContent } = useAIGeneration();
 
-  // New state for additional fields
-  const [status, setStatus] = useState<"ideas" | "pending_additions" | "approved">("ideas");
+  const [status, setStatus] = useState<"ideas" | "pending" | "approved">("ideas");
   const [models, setModels] = useState<FileUpload[]>([]);
   const [renderings, setRenderings] = useState<FileUpload[]>([]);
   const [dimensions, setDimensions] = useState<FileUpload[]>([]);
@@ -40,7 +38,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [depthIn, setDepthIn] = useState<string>("");
 
   const handleDimensionChange = (value: string, setter: (value: string) => void) => {
-    // Only allow numbers and decimal points
     const sanitizedValue = value.replace(/[^0-9.]/g, '');
     setter(sanitizedValue);
   };
@@ -64,7 +61,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
     
     setIsLoading(true);
     try {
-      // Upload image
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -77,7 +73,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
         .from('sculptures')
         .getPublicUrl(fileName);
 
-      // Create sculpture record with new fields
       const { data: sculpture, error } = await supabase
         .from('sculptures')
         .insert([
@@ -89,7 +84,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             image_url: publicUrl,
             prompt: "Manually added sculpture",
             ai_engine: "manual",
-            status,
+            status: status as "ideas" | "pending" | "approved",
             models,
             renderings,
             dimensions,
@@ -103,7 +98,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
 
       if (error) throw error;
 
-      // Reset form
       setName("");
       setDescription("");
       setFile(null);
@@ -122,7 +116,6 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
         description: "Sculpture added successfully",
       });
       
-      // Refresh the sculptures list
       queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       
     } catch (error) {
@@ -188,13 +181,13 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={status} onValueChange={(value: "ideas" | "pending_additions" | "approved") => setStatus(value)}>
+              <Select value={status} onValueChange={(value: "ideas" | "pending" | "approved") => setStatus(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ideas">Ideas</SelectItem>
-                  <SelectItem value="pending_additions">Pending Additions</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                 </SelectContent>
               </Select>
