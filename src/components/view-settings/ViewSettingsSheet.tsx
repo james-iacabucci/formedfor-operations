@@ -176,7 +176,7 @@ export function ViewSettingsSheet({
                     setSettings(prev => ({ ...prev, sortBy: value }))
                   }
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full focus:ring-0 focus:ring-offset-0">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -286,11 +286,13 @@ export function ViewSettingsSheet({
                     }));
                     // Focus on the value input when an operator is selected
                     if (value !== 'none' && heightValueInputRef.current) {
-                      heightValueInputRef.current.focus();
+                      setTimeout(() => {
+                        heightValueInputRef.current?.focus();
+                      }, 0);
                     }
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="focus:ring-0 focus:ring-offset-0">
                     <SelectValue placeholder="Operator" />
                   </SelectTrigger>
                   <SelectContent>
