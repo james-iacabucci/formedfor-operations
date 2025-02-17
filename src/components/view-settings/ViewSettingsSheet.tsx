@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import {
   Sheet,
@@ -285,7 +286,8 @@ export function ViewSettingsSheet({
                   onValueChange={(value) => {
                     setSettings(prev => ({ 
                       ...prev, 
-                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt'
+                      heightOperator: value === 'none' ? null : value as 'eq' | 'gt' | 'lt',
+                      heightValue: value === 'none' ? null : prev.heightValue // Clear value when 'Any' is selected
                     }));
                     if (value !== 'none' && heightValueInputRef.current) {
                       setTimeout(() => {
