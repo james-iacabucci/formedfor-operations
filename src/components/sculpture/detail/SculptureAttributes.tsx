@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon, TagIcon } from "lucide-react";
@@ -44,7 +43,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <SculptureHeader sculpture={sculpture} />
-        <SculpturePDF sculpture={sculpture} materialName={material?.name} />
       </div>
 
       <div className="space-y-6">

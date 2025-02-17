@@ -129,6 +129,21 @@ export default function SculptureDetail() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (sculpture) {
+      const link = document.createElement("a");
+      link.href = `/sculpture-spec/${sculpture.id}.pdf`;
+      link.download = `${sculpture.ai_generated_name || 'sculpture'}-spec.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast({
+        title: "Download started",
+        description: "Your spec sheet download has started.",
+      });
+    }
+  };
+
   const handleDelete = () => {
     if (sculpture) {
       const deleteDialog = document.getElementById(`delete-sculpture-${sculpture.id}`);
@@ -199,7 +214,7 @@ export default function SculptureDetail() {
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Sculpture Image
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDownloadPDF}>
                   <FileIcon className="h-4 w-4 mr-2" />
                   Sculpture Spec Sheet
                 </DropdownMenuItem>
