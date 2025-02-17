@@ -263,7 +263,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-5 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Markup</label>
             <Input
@@ -291,6 +291,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
               className="bg-muted"
             />
           </div>
+          <div className="col-span-2" />
         </div>
       </div>
 
@@ -400,7 +401,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-5 gap-4 text-sm">
                 <div>
                   <p className="font-medium">Markup</p>
                   <p>{quote.markup}x</p>
@@ -413,6 +414,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
                   <p className="font-medium">Retail Price</p>
                   <p>${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</p>
                 </div>
+                <div className="col-span-2" />
               </div>
             </div>
 
