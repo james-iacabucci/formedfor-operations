@@ -47,7 +47,7 @@ export function SelectedFilters({
   if (viewSettings.status) {
     filters.push({ 
       id: `status-${viewSettings.status}`, 
-      label: viewSettings.status.toUpperCase() 
+      label: viewSettings.status.charAt(0).toUpperCase() + viewSettings.status.slice(1).toLowerCase()
     });
   }
 
