@@ -52,10 +52,17 @@ export function SculptureMethod({
     });
   };
 
+  const selectedMethod = methods?.find(m => m.id === methodId)?.name || '';
+
   return (
     <Select value={methodId || ''} onValueChange={handleMethodChange}>
       <SelectTrigger>
-        <SelectValue placeholder="Method" />
+        <div className="flex gap-1 items-center">
+          <span className="text-muted-foreground">Method:</span>
+          <SelectValue placeholder="Select method">
+            {selectedMethod}
+          </SelectValue>
+        </div>
       </SelectTrigger>
       <SelectContent>
         {methods?.map((method) => (

@@ -40,10 +40,17 @@ export function SculptureMaterialFinish({
     });
   };
 
+  const selectedMaterial = materials?.find(m => m.id === materialId)?.name || '';
+
   return (
     <Select value={materialId || ''} onValueChange={handleMaterialChange}>
       <SelectTrigger>
-        <SelectValue placeholder="Material" />
+        <div className="flex gap-1 items-center">
+          <span className="text-muted-foreground">Material:</span>
+          <SelectValue placeholder="Select material">
+            {selectedMaterial}
+          </SelectValue>
+        </div>
       </SelectTrigger>
       <SelectContent>
         {materials?.map((material) => (
