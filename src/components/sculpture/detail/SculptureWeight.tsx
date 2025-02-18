@@ -125,7 +125,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground">Weight:</span>
+            <span className="text-muted-foreground text-sm">Weight:</span>
             <Input
               readOnly
               value={formatWeightString(weightKg, weightLbs)}

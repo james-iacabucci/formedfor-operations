@@ -130,7 +130,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground">HWD:</span>
+            <span className="text-muted-foreground text-sm">HWD:</span>
             <Input
               readOnly
               value={formatDimensionString(height, width, depth)}
