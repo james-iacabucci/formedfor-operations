@@ -1,11 +1,11 @@
 
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProductLine } from "@/types/product-line";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -58,25 +58,28 @@ export function ProductLineButton({
   };
 
   return (
-    <Select
-      value={productLineId || undefined}
-      onValueChange={handleProductLineChange}
-    >
-      <SelectTrigger className={cn(
-        variant === "small" ? "w-[100px]" : "w-[180px]",
-        "h-9"
-      )}>
-        <SelectValue placeholder="-">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline"
+          className={cn(
+            variant === "small" ? "h-8 px-2 text-xs" : "h-9 px-4",
+            "min-w-[100px]"
+          )}
+        >
           {currentProductLine?.product_line_code || "-"}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
         {productLines?.map((productLine) => (
-          <SelectItem key={productLine.id} value={productLine.id}>
+          <DropdownMenuItem
+            key={productLine.id}
+            onClick={() => handleProductLineChange(productLine.id)}
+          >
             {productLine.product_line_code || productLine.name}
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

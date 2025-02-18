@@ -1,21 +1,13 @@
 
 import { LinkIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
-import { Button } from "@/components/ui/button";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
-import { Badge } from "@/components/ui/badge";
+import { SculptureStatus } from "./detail/SculptureStatus";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -24,7 +16,6 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
-  const queryClient = useQueryClient();
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
@@ -62,62 +53,10 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
     gcTime: 300000,
   });
 
-  const getDisplayStatus = (status: string) => {
-    const statusMap: Record<string, string> = {
-      idea: "Idea",
-      pending: "Pending",
-      approved: "Approved",
-      archived: "Archived"
-    };
-    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-  };
-
   const getMaterialName = () => {
     if (!sculpture.material_id || !materials) return "Not specified";
     const material = materials.find(m => m.id === sculpture.material_id);
     return material ? material.name : "Not specified";
-  };
-
-  const handleStatusChange = async (newStatus: Sculpture['status']) => {
-    try {
-      const { error } = await supabase
-        .from('sculptures')
-        .update({ status: newStatus })
-        .eq('id', sculpture.id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      toast.success("Status updated successfully");
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast.error("Failed to update status");
-    }
-  };
-
-  const handleProductLineChange = async (productLineId: string | null) => {
-    try {
-      const { error } = await supabase
-        .from('sculptures')
-        .update({ product_line_id: productLineId })
-        .eq('id', sculpture.id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
-      
-      toast.success("Product line updated successfully");
-    } catch (error) {
-      console.error('Error updating product line:', error);
-      toast.error("Failed to update product line");
-    }
-  };
-
-  const getProductLineDisplay = () => {
-    if (!currentProductLine) return "??";
-    return currentProductLine.product_line_code || currentProductLine.name;
   };
 
   return (
@@ -134,18 +73,11 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             currentProductLine={currentProductLine}
             variant="small"
           />
-          <Badge
-            variant={
-              sculpture.status === "approved" 
-                ? "default" 
-                : sculpture.status === "pending" 
-                  ? "secondary" 
-                  : "outline"
-            }
-            className="capitalize"
-          >
-            {sculpture.status}
-          </Badge>
+          <SculptureStatus
+            sculptureId={sculpture.id}
+            status={sculpture.status}
+            variant="small"
+          />
         </div>
       </div>
 
