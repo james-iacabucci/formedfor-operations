@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,10 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       return (val * 2.54).toFixed(1);
     };
     
-    return `${formatValue(h)} - ${formatValue(w)} - ${formatValue(d)} in | ${formatValueCm(h)} - ${formatValueCm(w)} - ${formatValueCm(d)} cm`;
+    const imperial = `${formatValue(h)} x ${formatValue(w)} x ${formatValue(d)} (in)`;
+    const metric = `${formatValueCm(h)} x ${formatValueCm(w)} x ${formatValueCm(d)} (cm)`;
+    
+    return `${imperial} | ${metric}`;
   };
 
   const handleDimensionsUpdate = async () => {

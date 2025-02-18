@@ -1,5 +1,11 @@
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -41,40 +47,29 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
   };
 
   return (
-    <ToggleGroup
-      type="single"
-      value={status}
-      onValueChange={handleStatusChange}
-      className="flex gap-1"
-    >
-      <ToggleGroupItem
-        value="idea"
-        className="text-xs capitalize whitespace-nowrap"
-        aria-label="Set status to idea"
-      >
-        {getDisplayName("idea")}
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="pending"
-        className="text-xs capitalize whitespace-nowrap"
-        aria-label="Set status to pending"
-      >
-        {getDisplayName("pending")}
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="approved"
-        className="text-xs capitalize whitespace-nowrap"
-        aria-label="Set status to approved"
-      >
-        {getDisplayName("approved")}
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="archived"
-        className="text-xs capitalize whitespace-nowrap"
-        aria-label="Set status to archived"
-      >
-        {getDisplayName("archived")}
-      </ToggleGroupItem>
-    </ToggleGroup>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="h-5 px-2 text-xs py-0"
+        >
+          {getDisplayName(status)}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
+          Idea
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+          Pending
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
+          Approved
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
+          Archived
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

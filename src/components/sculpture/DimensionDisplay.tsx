@@ -23,7 +23,9 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     const w_val = formatValue(w);
     const d_val = formatValue(d);
     
-    return `${h_val}h - ${w_val}w - ${d_val}d`;
+    const unitLabel = unit === 'centimeters' ? '(cm)' : '(in)';
+    
+    return `${h_val} x ${w_val} x ${d_val} ${unitLabel}`;
   };
 
   return (
