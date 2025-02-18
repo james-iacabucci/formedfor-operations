@@ -11,6 +11,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FileIcon, ImageIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ProductLine } from "@/types/product-line";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -18,6 +29,66 @@ interface SculptureHeaderProps {
 
 export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
+  const { data: currentProductLine } = useQuery({
+    queryKey: ["product_line", sculpture.product_line_id],
+    queryFn: async () => {
+      if (!sculpture.product_line_id) return null;
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("id", sculpture.product_line_id)
+        .single();
+      
+      if (error) throw error;
+      return data as ProductLine;
+    },
+    enabled: !!sculpture.product_line_id,
+  });
+
+  const handleProductLineChange = async (productLineId: string) => {
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ product_line_id: productLineId })
+        .eq('id', sculpture.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
+
+      toast({
+        title: "Success",
+        description: "Product line updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating product line:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update product line",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDownloadImage = () => {
     if (sculpture?.image_url) {
@@ -73,6 +144,23 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Select
+            value={sculpture.product_line_id || undefined}
+            onValueChange={handleProductLineChange}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="-">
+                {currentProductLine?.product_line_code || "-"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {productLines?.map((productLine) => (
+                <SelectItem key={productLine.id} value={productLine.id}>
+                  {productLine.product_line_code || productLine.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <SculptureStatus
             sculptureId={sculpture.id}
             status={sculpture.status}
