@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
-import { SculptureHeader } from "./SculptureHeader";
 import { SculpturePrompt } from "./SculpturePrompt";
 import { SculptureStatus } from "./SculptureStatus";
 import { SculptureDimensions } from "./SculptureDimensions";
@@ -21,9 +20,10 @@ interface SculptureAttributesProps {
   sculpture: Sculpture;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
+  hideHeaderInfo?: boolean;
 }
 
-export function SculptureAttributes({ sculpture, originalSculpture, tags }: SculptureAttributesProps) {
+export function SculptureAttributes({ sculpture, originalSculpture, tags, hideHeaderInfo }: SculptureAttributesProps) {
   const navigate = useNavigate();
 
   const { data: material } = useQuery({
@@ -41,9 +41,14 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <SculptureHeader sculpture={sculpture} />
-      </div>
+      {!hideHeaderInfo && (
+        <div className="flex justify-between items-start">
+          <div className="space-y-2 flex-1">
+            <h2 className="text-4xl font-bold tracking-tight">{sculpture.ai_generated_name || "Untitled Sculpture"}</h2>
+            <p className="text-muted-foreground italic">{sculpture.ai_description}</p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         <div>

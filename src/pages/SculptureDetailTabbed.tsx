@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,12 +19,14 @@ import { SculptureAttributes } from "@/components/sculpture/detail/SculptureAttr
 import { SculptureFiles } from "@/components/sculpture/detail/SculptureFiles";
 import { SculptureImage } from "@/components/sculpture/detail/SculptureImage";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { SculpturePreviewDialog } from "@/components/sculpture/SculpturePreviewDialog";
 
 export default function SculptureDetailTabbed() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   const { data: sculpture, isLoading: isLoadingSculpture } = useQuery({
     queryKey: ["sculpture", id],
@@ -167,10 +168,23 @@ export default function SculptureDetailTabbed() {
           </Button>
         </div>
 
-        <SculptureHeader sculpture={sculpture} />
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="md:col-span-2">
+            <SculptureHeader sculpture={sculpture} />
+          </div>
+          <div className="w-full cursor-pointer" onClick={() => setIsImagePreviewOpen(true)}>
+            <AspectRatio ratio={1}>
+              <SculptureImage
+                imageUrl={sculpture.image_url || ""}
+                prompt={sculpture.prompt}
+                isRegenerating={false}
+                onManageTags={() => {}}
+                onRegenerate={() => {}}
+              />
+            </AspectRatio>
+          </div>
+        </div>
 
-      <div className="mx-auto max-w-7xl p-6">
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList>
             <TabsTrigger value="details">Details</TabsTrigger>
@@ -179,25 +193,13 @@ export default function SculptureDetailTabbed() {
             <TabsTrigger value="fabrication">Fabrication</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="w-full">
-                <AspectRatio ratio={1}>
-                  <SculptureImage
-                    imageUrl={sculpture.image_url || ""}
-                    prompt={sculpture.prompt}
-                    isRegenerating={false}
-                    onManageTags={() => {}}
-                    onRegenerate={() => {}}
-                  />
-                </AspectRatio>
-              </div>
-              <SculptureAttributes
-                sculpture={sculpture}
-                originalSculpture={originalSculpture}
-                tags={tags || []}
-              />
-            </div>
+          <TabsContent value="details">
+            <SculptureAttributes
+              sculpture={sculpture}
+              originalSculpture={originalSculpture}
+              tags={tags || []}
+              hideHeaderInfo
+            />
           </TabsContent>
 
           <TabsContent value="comments">
@@ -230,6 +232,11 @@ export default function SculptureDetailTabbed() {
       <AddSculptureSheet
         open={isAddSheetOpen}
         onOpenChange={setIsAddSheetOpen}
+      />
+      <SculpturePreviewDialog
+        sculpture={sculpture}
+        open={isImagePreviewOpen}
+        onOpenChange={setIsImagePreviewOpen}
       />
     </div>
   );
