@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
-import { X } from "lucide-react";
+import { X, FileIcon, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
+import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
 
 interface FileUploadFieldProps {
   label: string;
@@ -23,6 +24,7 @@ export function FileUploadField({
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -32,9 +34,6 @@ export function FileUploadField({
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      
-      // Get file size before upload
-      const fileSize = file.size;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
@@ -46,15 +45,11 @@ export function FileUploadField({
         .from('sculpture_files')
         .getPublicUrl(fileName);
 
-      const { data: { user } } = await supabase.auth.getUser();
-
       const newFile: FileUpload = {
         id: fileName,
         name: file.name,
         url: publicUrl,
         created_at: new Date().toISOString(),
-        size: fileSize,
-        uploaded_by: user?.email || 'Unknown',
       };
 
       onFilesChange([...files, newFile]);
@@ -65,7 +60,8 @@ export function FileUploadField({
     }
   };
 
-  const handleRemoveFile = (fileId: string) => {
+  const handleRemoveFile = (e: React.MouseEvent, fileId: string) => {
+    e.stopPropagation();
     onFilesChange(files.filter(f => f.id !== fileId));
   };
 
@@ -74,18 +70,14 @@ export function FileUploadField({
     return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (!bytes) return 'Unknown size';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    let size = bytes;
-    let unitIndex = 0;
-    
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-    
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
+  const handlePrevious = () => {
+    if (selectedFileIndex === null) return;
+    setSelectedFileIndex(selectedFileIndex > 0 ? selectedFileIndex - 1 : files.length - 1);
+  };
+
+  const handleNext = () => {
+    if (selectedFileIndex === null) return;
+    setSelectedFileIndex(selectedFileIndex < files.length - 1 ? selectedFileIndex + 1 : 0);
   };
 
   return (
@@ -111,57 +103,64 @@ export function FileUploadField({
         onChange={handleFileChange}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {files.map((file) => (
+        {files.map((file, index) => (
           <Card
             key={file.id}
-            className="flex overflow-hidden"
+            className="overflow-hidden cursor-pointer group"
+            onClick={() => setSelectedFileIndex(index)}
           >
-            <div className="flex-grow p-4">
-              <div className="flex items-center gap-2 mb-2">
-                {!isImage(file.name) && icon}
+            <div className="relative">
+              {isImage(file.name) ? (
+                <div className="aspect-video w-full">
+                  <img 
+                    src={file.url} 
+                    alt="" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                  <FileIcon className="h-12 w-12 text-muted-foreground" />
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => handleRemoveFile(e, file.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4">
+              <div className="mb-2">
                 <a
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-blue-500 hover:underline truncate"
+                  className="text-sm font-medium text-blue-500 hover:underline truncate block"
+                  onClick={e => e.stopPropagation()}
                 >
                   {file.name}
                 </a>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">
-                  Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Size: {formatFileSize(file.size)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  By: {file.uploaded_by || 'Unknown'}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="mt-2"
-                onClick={() => handleRemoveFile(file.id)}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Remove
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
+              </p>
             </div>
-            {isImage(file.name) && (
-              <div className="w-32 h-32 flex-shrink-0 border-l">
-                <img 
-                  src={file.url} 
-                  alt="" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
           </Card>
         ))}
       </div>
+
+      <SculpturePreviewDialog
+        files={files}
+        selectedIndex={selectedFileIndex}
+        open={selectedFileIndex !== null}
+        onOpenChange={(open) => !open && setSelectedFileIndex(null)}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
     </div>
   );
 }
