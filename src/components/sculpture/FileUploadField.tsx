@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
-import { X, FileIcon, ImageIcon } from "lucide-react";
+import { Trash2, FileIcon, ImageIcon, LoaderCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
@@ -24,14 +24,17 @@ export function FileUploadField({
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState<File | null>(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
+    const file = e.target.files[0];
+    setUploadingFile(file);
     setIsUploading(true);
+
     try {
-      const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
@@ -57,6 +60,7 @@ export function FileUploadField({
       console.error('Error uploading file:', error);
     } finally {
       setIsUploading(false);
+      setUploadingFile(null);
     }
   };
 
@@ -103,6 +107,26 @@ export function FileUploadField({
         onChange={handleFileChange}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {isUploading && uploadingFile && (
+          <Card className="overflow-hidden">
+            <div className="relative">
+              <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="mb-2">
+                <span className="text-sm font-medium truncate block">
+                  Uploading {uploadingFile.name}...
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Please wait...
+              </p>
+            </div>
+          </Card>
+        )}
+
         {files.map((file, index) => (
           <Card
             key={file.id}
@@ -125,12 +149,12 @@ export function FileUploadField({
               )}
               <Button
                 type="button"
-                variant="destructive"
+                variant="outline"
                 size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
                 onClick={(e) => handleRemoveFile(e, file.id)}
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
             <div className="p-4">
