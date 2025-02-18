@@ -63,7 +63,7 @@ export function ProductLineButton({
         <Button 
           variant="outline"
           className={cn(
-            variant === "small" ? "h-8 w-8 px-0 text-xs" : "h-9 w-9 px-0",
+            variant === "small" ? "h-5 w-8 px-1.5 text-[10px]" : "h-9 w-9 px-0",
             "font-mono uppercase"
           )}
         >

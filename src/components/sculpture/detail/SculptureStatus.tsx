@@ -39,7 +39,7 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
         <Button 
           variant="outline" 
           className={cn(
-            variant === "small" ? "h-8 px-2 text-xs" : "h-9 px-4",
+            variant === "small" ? "h-5 px-1.5 text-[10px]" : "h-9 px-4",
             status === "approved" 
               ? "bg-primary text-primary-foreground hover:bg-primary/90" 
               : status === "pending" 
