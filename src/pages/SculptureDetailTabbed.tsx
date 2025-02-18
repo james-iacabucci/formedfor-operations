@@ -168,11 +168,8 @@ export default function SculptureDetailTabbed() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="md:col-span-2">
-            <SculptureHeader sculpture={sculpture} />
-          </div>
-          <div className="w-full cursor-pointer" onClick={() => setIsImagePreviewOpen(true)}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="w-full cursor-pointer md:col-span-1" onClick={() => setIsImagePreviewOpen(true)}>
             <AspectRatio ratio={1}>
               <SculptureImage
                 imageUrl={sculpture.image_url || ""}
@@ -182,6 +179,9 @@ export default function SculptureDetailTabbed() {
                 onRegenerate={() => {}}
               />
             </AspectRatio>
+          </div>
+          <div className="md:col-span-3">
+            <SculptureHeader sculpture={sculpture} />
           </div>
         </div>
 
