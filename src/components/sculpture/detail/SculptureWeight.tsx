@@ -33,18 +33,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       return val.toFixed(2);
     };
     
-    return `${formatValue(lbs)} lbs`;
-  };
-
-  const formatMetricString = (kg: number | null) => {
-    if (!kg) return "";
-    
-    const formatValue = (val: number | null) => {
-      if (val === null) return '-';
-      return val.toFixed(2);
-    };
-    
-    return `| ${formatValue(kg)} kg`;
+    return `${formatValue(lbs)} lbs | ${formatValue(kg)} kg`;
   };
 
   const handleWeightUpdate = async () => {
@@ -136,19 +125,14 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground text-sm min-w-[3rem]">Weight:</span>
-            <div className="flex-1 flex justify-between items-center">
-              <Input
-                readOnly
-                value={formatWeightString(weightKg, weightLbs)}
-                placeholder="Enter weight"
-                className="border-0 focus-visible:ring-0 px-0 min-w-[8rem]"
-                onClick={() => setIsEditingWeight(true)}
-              />
-              <span className="text-muted-foreground ml-2">
-                {formatMetricString(weightKg)}
-              </span>
-            </div>
+            <span className="text-muted-foreground text-sm">Weight:</span>
+            <Input
+              readOnly
+              value={formatWeightString(weightKg, weightLbs)}
+              placeholder="Enter weight"
+              className="border-0 focus-visible:ring-0 px-0"
+              onClick={() => setIsEditingWeight(true)}
+            />
           </div>
           <Button
             variant="ghost"
