@@ -53,20 +53,17 @@ export function SculptureMethod({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Method</label>
-      <Select value={methodId || ''} onValueChange={handleMethodChange}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select method" />
-        </SelectTrigger>
-        <SelectContent>
-          {methods?.map((method) => (
-            <SelectItem key={method.id} value={method.id}>
-              {method.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={methodId || ''} onValueChange={handleMethodChange}>
+      <SelectTrigger>
+        <SelectValue placeholder="Method" />
+      </SelectTrigger>
+      <SelectContent>
+        {methods?.map((method) => (
+          <SelectItem key={method.id} value={method.id}>
+            {method.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

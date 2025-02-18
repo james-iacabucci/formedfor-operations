@@ -41,20 +41,17 @@ export function SculptureMaterialFinish({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Material</label>
-      <Select value={materialId || ''} onValueChange={handleMaterialChange}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select material" />
-        </SelectTrigger>
-        <SelectContent>
-          {materials?.map((material) => (
-            <SelectItem key={material.id} value={material.id}>
-              {material.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={materialId || ''} onValueChange={handleMaterialChange}>
+      <SelectTrigger>
+        <SelectValue placeholder="Material" />
+      </SelectTrigger>
+      <SelectContent>
+        {materials?.map((material) => (
+          <SelectItem key={material.id} value={material.id}>
+            {material.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
