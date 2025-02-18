@@ -5,6 +5,7 @@ import { FileUpload } from "@/types/sculpture";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Card } from "@/components/ui/card";
 
 interface FileUploadFieldProps {
   label: string;
@@ -31,7 +32,10 @@ export function FileUploadField({
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
+      
+      // Get file size before upload
+      const fileSize = file.size;
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
         .upload(fileName, file);
@@ -42,11 +46,15 @@ export function FileUploadField({
         .from('sculpture_files')
         .getPublicUrl(fileName);
 
+      const { data: { user } } = await supabase.auth.getUser();
+
       const newFile: FileUpload = {
         id: fileName,
         name: file.name,
         url: publicUrl,
         created_at: new Date().toISOString(),
+        size: fileSize,
+        uploaded_by: user?.email || 'Unknown',
       };
 
       onFilesChange([...files, newFile]);
@@ -64,6 +72,20 @@ export function FileUploadField({
   const isImage = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
     return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (!bytes) return 'Unknown size';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
   };
 
   return (
@@ -88,50 +110,56 @@ export function FileUploadField({
         accept={acceptTypes}
         onChange={handleFileChange}
       />
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {files.map((file) => (
-          <div
+          <Card
             key={file.id}
-            className="flex items-center justify-between p-2 bg-muted rounded-md"
+            className="flex overflow-hidden"
           >
-            <div className="flex items-center gap-3">
-              {isImage(file.name) ? (
-                <div className="w-8 h-8 rounded overflow-hidden bg-background flex-shrink-0">
-                  <img 
-                    src={file.url} 
-                    alt="" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded bg-background flex items-center justify-center flex-shrink-0">
-                  {icon}
-                </div>
-              )}
-              <div className="min-w-0">
+            <div className="flex-grow p-4">
+              <div className="flex items-center gap-2 mb-2">
+                {!isImage(file.name) && icon}
                 <a
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline block truncate"
+                  className="text-sm font-medium text-blue-500 hover:underline truncate"
                 >
                   {file.name}
                 </a>
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(file.created_at), 'MMM d, yyyy')}
-                </span>
               </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Size: {formatFileSize(file.size)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  By: {file.uploaded_by || 'Unknown'}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => handleRemoveFile(file.id)}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Remove
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 flex-shrink-0"
-              onClick={() => handleRemoveFile(file.id)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+            {isImage(file.name) && (
+              <div className="w-32 h-32 flex-shrink-0 border-l">
+                <img 
+                  src={file.url} 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </Card>
         ))}
       </div>
     </div>

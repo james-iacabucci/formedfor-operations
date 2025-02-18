@@ -1,4 +1,3 @@
-
 export interface Sculpture {
   id: string;
   created_at: string;
@@ -25,4 +24,13 @@ export interface Sculpture {
     name: string;
   }>;
   status: string;
+}
+
+export interface FileUpload {
+  id: string;
+  name: string;
+  url: string;
+  created_at: string;
+  size?: number;
+  uploaded_by?: string;
 }
