@@ -8,7 +8,7 @@ import {
   ArrowLeft, 
   PlusIcon, 
   UploadIcon,
-  ChevronDownIcon,
+  MoreHorizontalIcon,
   FileIcon,
   ImageIcon,
   Trash2Icon
@@ -203,32 +203,25 @@ export default function SculptureDetail() {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <FileIcon className="h-4 w-4" />
-                  Download
-                  <ChevronDownIcon className="h-4 w-4" />
+                <Button variant="outline" size="icon">
+                  <MoreHorizontalIcon className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleDownloadImage}>
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Sculpture Image
+                  Download Image
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadPDF}>
                   <FileIcon className="h-4 w-4 mr-2" />
-                  Sculpture Spec Sheet
+                  Download Spec Sheet
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                  <Trash2Icon className="h-4 w-4 mr-2" />
+                  Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button 
-              variant="outline" 
-              className="gap-2" 
-              onClick={handleDelete}
-            >
-              <Trash2Icon className="h-4 w-4" />
-              Delete
-            </Button>
           </div>
         </div>
       </div>
