@@ -1,4 +1,3 @@
-
 import { LinkIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ProductLineButton } from "@/components/ui/product-line-button";
+import { Badge } from "@/components/ui/badge";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -124,54 +125,26 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <h3 className="font-semibold line-clamp-1">
           {sculptureName}
         </h3>
-        <div className="flex items-center gap-0.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="h-5 px-2 text-xs py-0"
-              >
-                {getProductLineDisplay()}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleProductLineChange(null)}>
-                Unassigned
-              </DropdownMenuItem>
-              {allProductLines?.map((pl) => (
-                <DropdownMenuItem 
-                  key={pl.id}
-                  onClick={() => handleProductLineChange(pl.id)}
-                >
-                  {pl.product_line_code || pl.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="h-5 px-2 text-xs py-0"
-              >
-                {getDisplayStatus(sculpture.status)}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
-                Idea
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
-                Pending
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
-                Approved
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
-                Archived
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <ProductLineButton 
+            sculptureId={sculpture.id}
+            productLineId={sculpture.product_line_id}
+            productLines={productLines}
+            currentProductLine={currentProductLine}
+            variant="small"
+          />
+          <Badge
+            variant={
+              sculpture.status === "approved" 
+                ? "default" 
+                : sculpture.status === "pending" 
+                  ? "secondary" 
+                  : "outline"
+            }
+            className="capitalize"
+          >
+            {sculpture.status}
+          </Badge>
         </div>
       </div>
 

@@ -14,14 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useQueryClient } from "@tanstack/react-query";
+import { ProductLineButton } from "./ProductLineButton";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -29,7 +22,6 @@ interface SculptureHeaderProps {
 
 export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -62,33 +54,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     },
     enabled: !!sculpture.product_line_id,
   });
-
-  const handleProductLineChange = async (productLineId: string) => {
-    try {
-      const { error } = await supabase
-        .from('sculptures')
-        .update({ product_line_id: productLineId })
-        .eq('id', sculpture.id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
-
-      toast({
-        title: "Success",
-        description: "Product line updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating product line:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update product line",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleDownloadImage = () => {
     if (sculpture?.image_url) {
@@ -144,23 +109,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Select
-            value={sculpture.product_line_id || undefined}
-            onValueChange={handleProductLineChange}
-          >
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="-">
-                {currentProductLine?.product_line_code || "-"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {productLines?.map((productLine) => (
-                <SelectItem key={productLine.id} value={productLine.id}>
-                  {productLine.product_line_code || productLine.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ProductLineButton
+            sculptureId={sculpture.id}
+            productLineId={sculpture.product_line_id}
+            productLines={productLines}
+            currentProductLine={currentProductLine}
+            variant="large"
+          />
           <SculptureStatus
             sculptureId={sculpture.id}
             status={sculpture.status}
