@@ -135,16 +135,16 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground text-sm">HWD:</span>
-            <div className="flex-1 flex gap-1">
+            <span className="text-muted-foreground text-sm min-w-[3rem]">HWD:</span>
+            <div className="flex-1 flex justify-between items-center">
               <Input
                 readOnly
                 value={formatDimensionString(height, width, depth)}
                 placeholder="Enter dimensions"
-                className="border-0 focus-visible:ring-0 px-0"
+                className="border-0 focus-visible:ring-0 px-0 min-w-[8rem]"
                 onClick={() => setIsEditingDimensions(true)}
               />
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground ml-2">
                 {formatMetricString(height, width, depth)}
               </span>
             </div>
