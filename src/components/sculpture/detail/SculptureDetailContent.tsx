@@ -41,7 +41,7 @@ export function SculptureDetailContent({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="w-full space-y-6">
         <AspectRatio ratio={1}>
           <SculptureImage
