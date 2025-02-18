@@ -32,6 +32,7 @@ export default function SculptureDetailTabbed() {
       console.log("Fetching sculpture details:", id);
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
+      if (!id) throw new Error("No sculpture ID provided");
 
       const { data, error } = await supabase
         .from("sculptures")
@@ -55,6 +56,7 @@ export default function SculptureDetailTabbed() {
       console.log("Fetched sculpture:", validatedData);
       return validatedData;
     },
+    enabled: !!id, // Only run the query if we have an id
   });
 
   const { data: originalSculpture } = useQuery({
@@ -88,7 +90,7 @@ export default function SculptureDetailTabbed() {
 
   const { data: tags } = useQuery({
     queryKey: ["sculpture_tags", id],
-    enabled: !!id,
+    enabled: !!id, // Only run the query if we have an id
     queryFn: async () => {
       console.log("Fetching sculpture tags");
       const { data, error } = await supabase
