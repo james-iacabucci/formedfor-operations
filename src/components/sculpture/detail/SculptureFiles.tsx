@@ -17,7 +17,25 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
       <h2 className="text-lg font-semibold mb-2">Attachments</h2>
       <div className="space-y-4">
         <FileUploadField
-          label="Models"
+          label="Renderings"
+          files={renderings}
+          icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
+          acceptTypes="image/*"
+          onFilesChange={async (files) => {
+            const { error } = await supabase
+              .from('sculptures')
+              .update({ renderings: files })
+              .eq('id', sculptureId);
+            
+            if (error) {
+              console.error('Error updating renderings:', error);
+              return;
+            }
+          }}
+        />
+
+        <FileUploadField
+          label="3D Models"
           files={models}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           onFilesChange={async (files) => {
@@ -34,24 +52,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
         />
 
         <FileUploadField
-          label="Renderings"
-          files={renderings}
-          icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
-          onFilesChange={async (files) => {
-            const { error } = await supabase
-              .from('sculptures')
-              .update({ renderings: files })
-              .eq('id', sculptureId);
-            
-            if (error) {
-              console.error('Error updating renderings:', error);
-              return;
-            }
-          }}
-        />
-
-        <FileUploadField
-          label="Dimensions"
+          label="Specifications"
           files={dimensions}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           onFilesChange={async (files) => {

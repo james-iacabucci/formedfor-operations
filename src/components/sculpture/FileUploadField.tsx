@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface FileUploadFieldProps {
   label: string;
   files: FileUpload[];
   icon?: React.ReactNode;
+  acceptTypes?: string;
   onFilesChange: (files: FileUpload[]) => void;
 }
 
@@ -16,6 +18,7 @@ export function FileUploadField({
   label,
   files,
   icon,
+  acceptTypes,
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -58,6 +61,11 @@ export function FileUploadField({
     onFilesChange(files.filter(f => f.id !== fileId));
   };
 
+  const isImage = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -77,6 +85,7 @@ export function FileUploadField({
         id={`${label}-upload`}
         type="file"
         className="hidden"
+        accept={acceptTypes}
         onChange={handleFileChange}
       />
       <div className="grid gap-2">
@@ -85,22 +94,39 @@ export function FileUploadField({
             key={file.id}
             className="flex items-center justify-between p-2 bg-muted rounded-md"
           >
-            <div className="flex items-center gap-2">
-              {icon}
-              <a
-                href={file.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-500 hover:underline"
-              >
-                {file.name}
-              </a>
+            <div className="flex items-center gap-3">
+              {isImage(file.name) ? (
+                <div className="w-8 h-8 rounded overflow-hidden bg-background flex-shrink-0">
+                  <img 
+                    src={file.url} 
+                    alt="" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded bg-background flex items-center justify-center flex-shrink-0">
+                  {icon}
+                </div>
+              )}
+              <div className="min-w-0">
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline block truncate"
+                >
+                  {file.name}
+                </a>
+                <span className="text-xs text-muted-foreground">
+                  {format(new Date(file.created_at), 'MMM d, yyyy')}
+                </span>
+              </div>
             </div>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 px-2"
+              className="h-8 px-2 flex-shrink-0"
               onClick={() => handleRemoveFile(file.id)}
             >
               <X className="h-4 w-4" />
