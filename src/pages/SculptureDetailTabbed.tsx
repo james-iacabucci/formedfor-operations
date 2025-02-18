@@ -201,76 +201,76 @@ export default function SculptureDetailTabbed() {
           </div>
 
           <div className="md:col-span-3">
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold">{sculpture.ai_generated_name || "Untitled Sculpture"}</h2>
-              </div>
-              <Tabs defaultValue="details" className="flex-none">
+            <Tabs defaultValue="details" className="w-full">
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold">{sculpture.ai_generated_name || "Untitled Sculpture"}</h2>
+                </div>
                 <TabsList>
                   <TabsTrigger value="details">Details</TabsTrigger>
                   <TabsTrigger value="attachments">Attachments</TabsTrigger>
                   <TabsTrigger value="comments">Comments</TabsTrigger>
                 </TabsList>
-              </Tabs>
-            </div>
+              </div>
 
-            <TabsContent value="details">
-              <div className="space-y-8">
-                <p className="text-muted-foreground">{sculpture.ai_description}</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold">Sculpture Details</h3>
-                    <SculptureAttributes
-                      sculpture={sculpture}
-                      originalSculpture={originalSculpture}
-                      tags={tags || []}
-                      hideHeaderInfo
-                    />
-                  </div>
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-semibold">Base Details</h3>
-                    <div className="text-muted-foreground italic">Base details coming soon...</div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold">Fabrication Quotes</h3>
-                  <div className="text-muted-foreground italic">Fabrication quotes coming soon...</div>
-                </div>
-
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold">AI Attributes</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium">Prompt</h4>
-                      <p className="text-muted-foreground">{sculpture.prompt}</p>
+              <TabsContent value="details">
+                <div className="space-y-8">
+                  <p className="text-muted-foreground">{sculpture.ai_description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold">Sculpture Details</h3>
+                      <SculptureAttributes
+                        sculpture={sculpture}
+                        originalSculpture={originalSculpture}
+                        tags={tags || []}
+                        hideHeaderInfo
+                      />
                     </div>
-                    {sculpture.creativity_level && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold">Base Details</h3>
+                      <div className="text-muted-foreground italic">Base details coming soon...</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold">Fabrication Quotes</h3>
+                    <div className="text-muted-foreground italic">Fabrication quotes coming soon...</div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold">AI Attributes</h3>
+                    <div className="space-y-4">
                       <div>
-                        <h4 className="text-sm font-medium">Variation Type</h4>
-                        <p className="text-muted-foreground capitalize">{sculpture.creativity_level}</p>
+                        <h4 className="text-sm font-medium">Prompt</h4>
+                        <p className="text-muted-foreground">{sculpture.prompt}</p>
                       </div>
-                    )}
+                      {sculpture.creativity_level && (
+                        <div>
+                          <h4 className="text-sm font-medium">Variation Type</h4>
+                          <p className="text-muted-foreground capitalize">{sculpture.creativity_level}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="attachments">
-              <SculptureFiles
-                sculptureId={sculpture.id}
-                models={sculpture.models}
-                renderings={sculpture.renderings}
-                dimensions={sculpture.dimensions}
-              />
-            </TabsContent>
+              <TabsContent value="attachments">
+                <SculptureFiles
+                  sculptureId={sculpture.id}
+                  models={sculpture.models}
+                  renderings={sculpture.renderings}
+                  dimensions={sculpture.dimensions}
+                />
+              </TabsContent>
 
-            <TabsContent value="comments">
-              <div className="text-muted-foreground italic">
-                Comments feature coming soon...
-              </div>
-            </TabsContent>
+              <TabsContent value="comments">
+                <div className="text-muted-foreground italic">
+                  Comments feature coming soon...
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
