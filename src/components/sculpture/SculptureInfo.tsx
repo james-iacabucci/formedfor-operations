@@ -128,8 +128,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="ghost" 
-                className="h-5 px-2 text-xs py-0 bg-muted/50 hover:bg-muted text-muted-foreground"
+                variant="outline" 
+                className="h-5 px-2 text-xs py-0"
               >
                 {getProductLineDisplay()}
               </Button>
@@ -151,8 +151,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="ghost" 
-                className="h-5 px-2 text-xs py-0 bg-muted/50 hover:bg-muted text-muted-foreground"
+                variant="outline" 
+                className="h-5 px-2 text-xs py-0"
               >
                 {getDisplayStatus(sculpture.status)}
               </Button>
@@ -201,7 +201,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             {tags.map(tag => (
               <div
                 key={tag.id}
-                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground"
+                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border text-foreground"
               >
                 {tag.name}
               </div>
