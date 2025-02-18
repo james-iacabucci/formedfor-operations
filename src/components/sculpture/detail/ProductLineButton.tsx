@@ -63,11 +63,11 @@ export function ProductLineButton({
         <Button 
           variant="outline"
           className={cn(
-            variant === "small" ? "h-8 px-2 text-xs" : "h-9 px-4",
-            "min-w-[100px]"
+            variant === "small" ? "h-8 w-8 px-0 text-xs" : "h-9 w-9 px-0",
+            "font-mono uppercase"
           )}
         >
-          {currentProductLine?.product_line_code || "-"}
+          {currentProductLine?.product_line_code?.slice(0, 2) || "--"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

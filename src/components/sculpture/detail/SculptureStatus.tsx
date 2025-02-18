@@ -9,7 +9,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface SculptureStatusProps {
   sculptureId: string;
@@ -34,42 +33,22 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
     await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
   };
 
-  const getDisplayName = (status: string) => {
-    switch (status) {
-      case "idea":
-        return "Idea";
-      case "pending":
-        return "Pending";
-      case "approved":
-        return "Approved";
-      case "archived":
-        return "Archived";
-      default:
-        return status;
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
           className={cn(
-            variant === "small" ? "h-8 px-2 text-xs" : "h-9 px-4"
+            variant === "small" ? "h-8 px-2 text-xs" : "h-9 px-4",
+            status === "approved" 
+              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+              : status === "pending" 
+                ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                : "",
+            "capitalize"
           )}
         >
-          <Badge
-            variant={
-              status === "approved" 
-                ? "default" 
-                : status === "pending" 
-                  ? "secondary" 
-                  : "outline"
-            }
-            className="capitalize"
-          >
-            {status}
-          </Badge>
+          {status}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
