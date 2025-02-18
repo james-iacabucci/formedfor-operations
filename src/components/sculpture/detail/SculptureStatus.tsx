@@ -49,10 +49,7 @@ export function SculptureStatus({ sculptureId, status }: SculptureStatusProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="h-5 px-2 text-xs py-0"
-        >
+        <Button variant="outline">
           {getDisplayName(status)}
         </Button>
       </DropdownMenuTrigger>

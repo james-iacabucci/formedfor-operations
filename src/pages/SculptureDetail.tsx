@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -193,7 +192,7 @@ export default function SculptureDetail() {
       <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between">
           <Button
-            variant="ghost"
+            variant="outline"
             className="flex items-center gap-2"
             onClick={() => navigate("/")}
           >

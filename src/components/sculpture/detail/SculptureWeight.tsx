@@ -33,7 +33,18 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       return val.toFixed(2);
     };
     
-    return `${formatValue(lbs)} lbs | ${formatValue(kg)} kg`;
+    return `${formatValue(lbs)} (lbs)`;
+  };
+
+  const formatMetricString = (kg: number | null) => {
+    if (!kg) return "";
+    
+    const formatValue = (val: number | null) => {
+      if (val === null) return '-';
+      return val.toFixed(2);
+    };
+    
+    return `| ${formatValue(kg)} (kg)`;
   };
 
   const handleWeightUpdate = async () => {
@@ -128,7 +139,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
             <span className="text-muted-foreground text-sm">Weight:</span>
             <Input
               readOnly
-              value={formatWeightString(weightKg, weightLbs)}
+              value={formatWeightString(weightKg, weightLbs) + formatMetricString(weightKg)}
               placeholder="Enter weight"
               className="border-0 focus-visible:ring-0 px-0"
               onClick={() => setIsEditingWeight(true)}
