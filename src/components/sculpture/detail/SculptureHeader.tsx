@@ -61,14 +61,16 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
-        <div className="space-y-2 flex-1">
-          <EditableField
-            value={sculpture.ai_generated_name || "Untitled Sculpture"}
-            type="input"
-            sculptureId={sculpture.id}
-            field="ai_generated_name"
-            className="text-4xl font-bold tracking-tight"
-          />
+        <div className="flex items-start gap-2 flex-1">
+          <div className="group inline-flex items-center">
+            <EditableField
+              value={sculpture.ai_generated_name || "Untitled Sculpture"}
+              type="input"
+              sculptureId={sculpture.id}
+              field="ai_generated_name"
+              className="text-4xl font-bold tracking-tight"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <SculptureStatus
