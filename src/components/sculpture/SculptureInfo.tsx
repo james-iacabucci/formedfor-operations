@@ -1,3 +1,4 @@
+
 import { LinkIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { ProductLineButton } from "@/components/ui/product-line-button";
+import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
 import { Badge } from "@/components/ui/badge";
 
 interface SculptureInfoProps {
@@ -27,7 +28,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
-  const { data: allProductLines } = useQuery({
+  const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
       const { data, error } = await supabase
