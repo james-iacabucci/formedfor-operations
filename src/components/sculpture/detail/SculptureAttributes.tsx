@@ -76,22 +76,41 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           </div>
         </div>
 
-        <SculptureFabricationQuotes sculptureId={sculpture.id} />
-
         <div>
           <h2 className="text-lg font-semibold mb-4">Base Details</h2>
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-medium mb-2">Material</h3>
-              <p className="text-sm text-muted-foreground">Not specified</p>
+              <SculptureMaterialFinish
+                sculptureId={sculpture.id}
+                materialId={sculpture.base_material_id}
+                isBase={true}
+              />
             </div>
 
-            <div>
-              <h3 className="text-sm font-medium mb-2">Dimensions</h3>
-              <p className="text-sm text-muted-foreground">Not specified</p>
-            </div>
+            <SculptureMethod
+              sculptureId={sculpture.id}
+              methodId={sculpture.base_method_id}
+              isBase={true}
+            />
+
+            <SculptureDimensions
+              sculptureId={sculpture.id}
+              height={sculpture.base_height_in}
+              width={sculpture.base_width_in}
+              depth={sculpture.base_depth_in}
+              isBase={true}
+            />
+
+            <SculptureWeight
+              sculptureId={sculpture.id}
+              weightKg={sculpture.base_weight_kg}
+              weightLbs={sculpture.base_weight_lbs}
+              isBase={true}
+            />
           </div>
         </div>
+
+        <SculptureFabricationQuotes sculptureId={sculpture.id} />
 
         <div>
           <h2 className="text-lg font-semibold mb-2">AI Generation</h2>
