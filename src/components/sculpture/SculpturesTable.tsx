@@ -43,7 +43,7 @@ export function SculpturesTable({
   onManageTags 
 }: SculpturesTableProps) {
   const navigate = useNavigate();
-  const [previewSculpture, setPreviewSculpture] = useState<Sculpture | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -95,6 +95,24 @@ export function SculpturesTable({
     }
   };
 
+  const handlePrevious = () => {
+    if (selectedIndex === null) return;
+    setSelectedIndex(selectedIndex > 0 ? selectedIndex - 1 : sculptures.length - 1);
+  };
+
+  const handleNext = () => {
+    if (selectedIndex === null) return;
+    setSelectedIndex(selectedIndex < sculptures.length - 1 ? selectedIndex + 1 : 0);
+  };
+
+  // Convert sculptures to file format for preview
+  const previewFiles = sculptures.map(sculpture => ({
+    id: sculpture.id,
+    name: sculpture.ai_generated_name || "Untitled Sculpture",
+    url: sculpture.image_url || "",
+    created_at: sculpture.created_at,
+  }));
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -109,7 +127,7 @@ export function SculpturesTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sculptures.map((sculpture) => (
+          {sculptures.map((sculpture, index) => (
             <TableRow key={sculpture.id}>
               <TableCell>
                 <div className="relative w-16 h-16 rounded-md overflow-hidden group">
@@ -117,7 +135,7 @@ export function SculpturesTable({
                     src={sculpture.image_url || ''} 
                     alt={sculpture.prompt}
                     className="object-cover w-full h-full cursor-zoom-in"
-                    onClick={() => setPreviewSculpture(sculpture)}
+                    onClick={() => setSelectedIndex(index)}
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <ZoomIn className="w-6 h-6 text-white" />
@@ -194,9 +212,12 @@ export function SculpturesTable({
       </Table>
 
       <SculpturePreviewDialog
-        sculpture={previewSculpture}
-        open={!!previewSculpture}
-        onOpenChange={(open) => !open && setPreviewSculpture(null)}
+        files={previewFiles}
+        selectedIndex={selectedIndex}
+        open={selectedIndex !== null}
+        onOpenChange={(open) => !open && setSelectedIndex(null)}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
       />
     </div>
   );
