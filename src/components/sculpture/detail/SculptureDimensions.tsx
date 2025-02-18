@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       return (val * 2.54).toFixed(1);
     };
     
-    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d in | ${formatValueCm(h)}h - ${formatValueCm(w)}w - ${formatValueCm(d)}d cm`;
+    return `${formatValue(h)} - ${formatValue(w)} - ${formatValue(d)} in | ${formatValueCm(h)} - ${formatValueCm(w)} - ${formatValueCm(d)} cm`;
   };
 
   const handleDimensionsUpdate = async () => {
@@ -129,7 +130,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground">Dimensions:</span>
+            <span className="text-muted-foreground">HWD:</span>
             <Input
               readOnly
               value={formatDimensionString(height, width, depth)}
