@@ -168,7 +168,7 @@ export default function SculptureDetailTabbed() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="w-full cursor-pointer md:col-span-1" onClick={() => setIsImagePreviewOpen(true)}>
             <AspectRatio ratio={1}>
               <SculptureImage
@@ -180,49 +180,53 @@ export default function SculptureDetailTabbed() {
               />
             </AspectRatio>
           </div>
-          <div className="md:col-span-3">
+          <div className="md:col-span-3 space-y-6">
+            <div className="flex items-center justify-between">
+              <Tabs defaultValue="details" className="flex-1">
+                <TabsList>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="comments">Comments</TabsTrigger>
+                  <TabsTrigger value="files">Files</TabsTrigger>
+                  <TabsTrigger value="fabrication">Fabrication</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
             <SculptureHeader sculpture={sculpture} />
+
+            <div>
+              <TabsContent value="details">
+                <SculptureAttributes
+                  sculpture={sculpture}
+                  originalSculpture={originalSculpture}
+                  tags={tags || []}
+                  hideHeaderInfo
+                />
+              </TabsContent>
+
+              <TabsContent value="comments">
+                <div className="text-muted-foreground italic">
+                  Comments feature coming soon...
+                </div>
+              </TabsContent>
+
+              <TabsContent value="files">
+                <SculptureFiles
+                  sculptureId={sculpture.id}
+                  models={sculpture.models}
+                  renderings={sculpture.renderings}
+                  dimensions={sculpture.dimensions}
+                />
+              </TabsContent>
+
+              <TabsContent value="fabrication">
+                <div className="text-muted-foreground italic">
+                  Fabrication details coming soon...
+                </div>
+              </TabsContent>
+            </div>
           </div>
         </div>
-
-        <Tabs defaultValue="details" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">Comments</TabsTrigger>
-            <TabsTrigger value="files">Files</TabsTrigger>
-            <TabsTrigger value="fabrication">Fabrication</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details">
-            <SculptureAttributes
-              sculpture={sculpture}
-              originalSculpture={originalSculpture}
-              tags={tags || []}
-              hideHeaderInfo
-            />
-          </TabsContent>
-
-          <TabsContent value="comments">
-            <div className="text-muted-foreground italic">
-              Comments feature coming soon...
-            </div>
-          </TabsContent>
-
-          <TabsContent value="files">
-            <SculptureFiles
-              sculptureId={sculpture.id}
-              models={sculpture.models}
-              renderings={sculpture.renderings}
-              dimensions={sculpture.dimensions}
-            />
-          </TabsContent>
-
-          <TabsContent value="fabrication">
-            <div className="text-muted-foreground italic">
-              Fabrication details coming soon...
-            </div>
-          </TabsContent>
-        </Tabs>
       </div>
 
       <CreateSculptureSheet 
