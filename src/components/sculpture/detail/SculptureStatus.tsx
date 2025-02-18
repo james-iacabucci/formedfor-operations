@@ -9,6 +9,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 interface SculptureStatusProps {
   sculptureId: string;
@@ -18,6 +19,7 @@ interface SculptureStatusProps {
 
 export function SculptureStatus({ sculptureId, status, variant = "large" }: SculptureStatusProps) {
   const queryClient = useQueryClient();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleStatusChange = async (newStatus: string) => {
     const { error } = await supabase
@@ -31,20 +33,22 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
     }
 
     await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+    buttonRef.current?.blur();
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
+          ref={buttonRef}
           variant="outline" 
           className={cn(
             variant === "small" ? "h-5 px-1.5 text-[10px]" : "h-9 px-4",
             status === "approved" 
-              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+              ? "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground" 
               : status === "pending" 
-                ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                : "",
+                ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:bg-secondary focus:text-secondary-foreground"
+                : "focus:bg-background focus:text-foreground",
             "capitalize"
           )}
         >

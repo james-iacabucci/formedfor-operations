@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 interface ProductLineButtonProps {
   sculptureId: string;
@@ -29,6 +30,7 @@ export function ProductLineButton({
 }: ProductLineButtonProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleProductLineChange = async (productLineId: string) => {
     try {
@@ -42,6 +44,8 @@ export function ProductLineButton({
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
       await queryClient.invalidateQueries({ queryKey: ["product_line", productLineId] });
+
+      buttonRef.current?.blur();
 
       toast({
         title: "Success",
@@ -61,10 +65,11 @@ export function ProductLineButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
+          ref={buttonRef}
           variant="outline"
           className={cn(
             variant === "small" ? "h-5 w-8 px-1.5 text-[10px]" : "h-9 w-9 px-0",
-            "font-mono uppercase"
+            "font-mono uppercase focus:bg-background focus:text-foreground"
           )}
         >
           {currentProductLine?.product_line_code?.slice(0, 2) || "--"}
