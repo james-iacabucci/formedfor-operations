@@ -201,7 +201,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             {tags.map(tag => (
               <div
                 key={tag.id}
-                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium text-muted-foreground bg-muted/50"
+                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium text-white bg-muted/50"
               >
                 {tag.name}
               </div>
