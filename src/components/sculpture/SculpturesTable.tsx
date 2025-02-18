@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProductLineSelector } from "./table/ProductLineSelector";
 import { SculptureActions } from "./table/SculptureActions";
 import { SculpturePreview } from "./table/SculpturePreview";
+import { ProductLine } from "@/types/product-line";
 
 interface SculpturesTableProps {
   sculptures: Sculpture[];
