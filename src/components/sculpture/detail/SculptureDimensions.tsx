@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,9 @@ interface SculptureDimensionsProps {
   height: number | null;
   width: number | null;
   depth: number | null;
-  isBase?: boolean;
 }
 
-export function SculptureDimensions({ sculptureId, height, width, depth, isBase = false }: SculptureDimensionsProps) {
+export function SculptureDimensions({ sculptureId, height, width, depth }: SculptureDimensionsProps) {
   const [isEditingDimensions, setIsEditingDimensions] = useState(false);
   const [dimensions, setDimensions] = useState({
     height: height?.toString() || "",
@@ -24,6 +22,10 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
   });
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const calculateCm = (inches: number): number => {
+    return inches * 2.54;
+  };
 
   const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
     if (!h && !w && !d) return "";
@@ -45,11 +47,10 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
   };
 
   const handleDimensionsUpdate = async () => {
-    const prefix = isBase ? 'base_' : '';
     const updatedDimensions = {
-      [`${prefix}height_in`]: dimensions.height ? parseFloat(dimensions.height) : null,
-      [`${prefix}width_in`]: dimensions.width ? parseFloat(dimensions.width) : null,
-      [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
+      height_in: dimensions.height ? parseFloat(dimensions.height) : null,
+      width_in: dimensions.width ? parseFloat(dimensions.width) : null,
+      depth_in: dimensions.depth ? parseFloat(dimensions.depth) : null,
     };
 
     const { error } = await supabase

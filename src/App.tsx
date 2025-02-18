@@ -1,23 +1,32 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./components/AuthProvider";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SculptureDetail from "./pages/SculptureDetail";
-import SculptureDetailTabbed from "./pages/SculptureDetailTabbed";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { ThemeProvider } from "./components/ThemeProvider";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "./components/AuthProvider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <ThemeProvider>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider defaultTheme="light">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <AuthProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
@@ -37,21 +46,12 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/sculpture/:id/tabs"
-                element={
-                  <ProtectedRoute>
-                    <SculptureDetailTabbed />
-                  </ProtectedRoute>
-                }
-              />
             </Routes>
-            <Toaster />
           </AuthProvider>
-        </ThemeProvider>
-      </Router>
-    </QueryClientProvider>
-  );
-}
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+);
 
 export default App;

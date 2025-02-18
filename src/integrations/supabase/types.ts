@@ -172,16 +172,6 @@ export type Database = {
           ai_description: string | null
           ai_engine: string
           ai_generated_name: string | null
-          base_depth_cm: number | null
-          base_depth_in: number | null
-          base_height_cm: number | null
-          base_height_in: number | null
-          base_material_id: string | null
-          base_method_id: string | null
-          base_weight_kg: number | null
-          base_weight_lbs: number | null
-          base_width_cm: number | null
-          base_width_in: number | null
           created_at: string
           creativity_level: string | null
           depth_cm: number | null
@@ -212,16 +202,6 @@ export type Database = {
           ai_description?: string | null
           ai_engine?: string
           ai_generated_name?: string | null
-          base_depth_cm?: number | null
-          base_depth_in?: number | null
-          base_height_cm?: number | null
-          base_height_in?: number | null
-          base_material_id?: string | null
-          base_method_id?: string | null
-          base_weight_kg?: number | null
-          base_weight_lbs?: number | null
-          base_width_cm?: number | null
-          base_width_in?: number | null
           created_at?: string
           creativity_level?: string | null
           depth_cm?: number | null
@@ -252,16 +232,6 @@ export type Database = {
           ai_description?: string | null
           ai_engine?: string
           ai_generated_name?: string | null
-          base_depth_cm?: number | null
-          base_depth_in?: number | null
-          base_height_cm?: number | null
-          base_height_in?: number | null
-          base_material_id?: string | null
-          base_method_id?: string | null
-          base_weight_kg?: number | null
-          base_weight_lbs?: number | null
-          base_width_cm?: number | null
-          base_width_in?: number | null
           created_at?: string
           creativity_level?: string | null
           depth_cm?: number | null
@@ -289,20 +259,6 @@ export type Database = {
           width_in?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "sculptures_base_material_id_fkey"
-            columns: ["base_material_id"]
-            isOneToOne: false
-            referencedRelation: "value_lists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sculptures_base_method_id_fkey"
-            columns: ["base_method_id"]
-            isOneToOne: false
-            referencedRelation: "value_lists"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "sculptures_material_id_fkey"
             columns: ["material_id"]

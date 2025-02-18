@@ -9,7 +9,6 @@ import {
   ArrowLeft, 
   PlusIcon, 
   UploadIcon,
-  LayoutTemplateIcon,
 } from "lucide-react";
 import { UserMenu } from "@/components/UserMenu";
 import { useState } from "react";
@@ -149,14 +148,6 @@ export default function SculptureDetail() {
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Sculptures
-          </Button>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => navigate(`/sculpture/${id}/tabs`)}
-          >
-            <LayoutTemplateIcon className="h-4 w-4" />
-            Switch to Tabbed View
           </Button>
         </div>
       </div>
