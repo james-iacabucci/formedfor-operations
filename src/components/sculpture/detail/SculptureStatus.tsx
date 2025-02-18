@@ -44,12 +44,7 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
           variant="outline" 
           className={cn(
             variant === "small" ? "h-5 px-1.5 text-[10px]" : "h-9 px-4",
-            status === "approved" 
-              ? "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground" 
-              : status === "pending" 
-                ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:bg-secondary focus:text-secondary-foreground"
-                : "focus:bg-background focus:text-foreground",
-            "capitalize"
+            "capitalize focus:bg-background focus:text-foreground"
           )}
         >
           {status}
