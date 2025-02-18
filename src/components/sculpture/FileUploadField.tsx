@@ -8,12 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 interface FileUploadFieldProps {
   label: string;
   files: FileUpload[];
+  icon?: React.ReactNode;
   onFilesChange: (files: FileUpload[]) => void;
 }
 
 export function FileUploadField({
   label,
   files,
+  icon,
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -83,14 +85,17 @@ export function FileUploadField({
             key={file.id}
             className="flex items-center justify-between p-2 bg-muted rounded-md"
           >
-            <a
-              href={file.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-blue-500 hover:underline"
-            >
-              {file.name}
-            </a>
+            <div className="flex items-center gap-2">
+              {icon}
+              <a
+                href={file.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-500 hover:underline"
+              >
+                {file.name}
+              </a>
+            </div>
             <Button
               type="button"
               variant="ghost"

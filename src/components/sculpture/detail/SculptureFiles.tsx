@@ -2,6 +2,7 @@
 import { FileUploadField } from "../FileUploadField";
 import { FileUpload } from "@/types/sculpture";
 import { supabase } from "@/integrations/supabase/client";
+import { FileIcon, ImageIcon } from "lucide-react";
 
 interface SculptureFilesProps {
   sculptureId: string;
@@ -13,11 +14,12 @@ interface SculptureFilesProps {
 export function SculptureFiles({ sculptureId, models, renderings, dimensions }: SculptureFilesProps) {
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-2">Files</h2>
+      <h2 className="text-lg font-semibold mb-2">Attachments</h2>
       <div className="space-y-4">
         <FileUploadField
           label="Models"
           files={models}
+          icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')
@@ -34,6 +36,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
         <FileUploadField
           label="Renderings"
           files={renderings}
+          icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')
@@ -50,6 +53,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
         <FileUploadField
           label="Dimensions"
           files={dimensions}
+          icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')

@@ -1,6 +1,7 @@
 
 import { SculptureImage } from "../detail/SculptureImage";
 import { SculptureAttributes } from "./SculptureAttributes";
+import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { RegenerationSheet } from "@/components/sculpture/RegenerationSheet";
 import { DeleteSculptureDialog } from "@/components/sculpture/DeleteSculptureDialog";
@@ -41,7 +42,7 @@ export function SculptureDetailContent({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="w-full">
+      <div className="w-full space-y-6">
         <AspectRatio ratio={1}>
           <SculptureImage
             imageUrl={sculpture.image_url || ""}
@@ -51,6 +52,12 @@ export function SculptureDetailContent({
             onRegenerate={() => setIsRegenerationSheetOpen(true)}
           />
         </AspectRatio>
+        <SculptureFiles
+          sculptureId={sculpture.id}
+          models={sculpture.models}
+          renderings={sculpture.renderings}
+          dimensions={sculpture.dimensions}
+        />
       </div>
       <SculptureAttributes
         sculpture={sculpture}

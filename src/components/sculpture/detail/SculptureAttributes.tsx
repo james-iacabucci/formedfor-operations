@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon } from "lucide-react";
@@ -126,13 +125,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
             )}
           </dl>
         </div>
-
-        <SculptureFiles
-          sculptureId={sculpture.id}
-          models={sculpture.models}
-          renderings={sculpture.renderings}
-          dimensions={sculpture.dimensions}
-        />
 
         <div className="space-y-4">
           <dl className="grid grid-cols-1 gap-2 text-sm">
