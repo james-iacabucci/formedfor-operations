@@ -1,7 +1,6 @@
 
-import { LinkIcon, TagIcon } from "lucide-react";
+import { LinkIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
@@ -14,6 +13,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -196,18 +196,19 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
       </div>
 
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {tags.map(tag => (
-            <Badge
-              key={tag.id}
-              variant="secondary"
-              className="flex items-center gap-1 text-xs px-2 py-0.5"
-            >
-              <TagIcon className="w-3 h-3" />
-              <span>{tag.name}</span>
-            </Badge>
-          ))}
-        </div>
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-1.5">
+            {tags.map(tag => (
+              <div
+                key={tag.id}
+                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium text-muted-foreground bg-muted/50"
+              >
+                {tag.name}
+              </div>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" className="h-2" />
+        </ScrollArea>
       )}
     </div>
   );
