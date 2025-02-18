@@ -113,12 +113,12 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
         <SculptureFabricationQuotes sculptureId={sculpture.id} />
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">AI Generation</h2>
+          <h2 className="text-lg font-semibold mb-2">AI Settings</h2>
           <SculpturePrompt prompt={sculpture.prompt} />
           <dl className="grid grid-cols-1 gap-2 text-sm mt-4">
             {sculpture.creativity_level && (
               <div className="flex justify-between py-2 border-b">
-                <dt className="font-medium">Variation Type</dt>
+                <dt className="font-medium">Variation Creativity</dt>
                 <dd className="text-muted-foreground capitalize">
                   {sculpture.creativity_level}
                 </dd>
