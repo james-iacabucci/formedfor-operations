@@ -21,6 +21,7 @@ import { SculptureImage } from "@/components/sculpture/detail/SculptureImage";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { SculpturePreviewDialog } from "@/components/sculpture/SculpturePreviewDialog";
 import { ImageUpload } from "@/components/sculpture/ImageUpload";
+import { BaseDetails } from "@/components/sculpture/detail/BaseDetails";
 
 export default function SculptureDetailTabbed() {
   const { id } = useParams();
@@ -229,7 +230,10 @@ export default function SculptureDetailTabbed() {
                     </div>
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold">Base Details</h3>
-                      <div className="text-muted-foreground italic">Base details coming soon...</div>
+                      <BaseDetails
+                        sculptureId={sculpture.id}
+                        sculpture={sculpture}
+                      />
                     </div>
                   </div>
 

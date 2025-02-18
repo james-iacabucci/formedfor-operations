@@ -7,11 +7,13 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 interface SculptureMethodProps {
   sculptureId: string;
   methodId: string | null;
+  isBase?: boolean;
 }
 
 export function SculptureMethod({ 
   sculptureId, 
-  methodId
+  methodId,
+  isBase = false
 }: SculptureMethodProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -31,9 +33,10 @@ export function SculptureMethod({
   });
 
   const handleMethodChange = async (newMethodId: string) => {
+    const fieldName = isBase ? 'base_method_id' : 'method_id';
     const { error } = await supabase
       .from("sculptures")
-      .update({ method_id: newMethodId })
+      .update({ [fieldName]: newMethodId })
       .eq("id", sculptureId);
 
     if (error) {

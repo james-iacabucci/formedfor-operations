@@ -8,20 +8,23 @@ import { useMaterialFinishData } from "./useMaterialFinishData";
 interface SculptureMaterialFinishProps {
   sculptureId: string;
   materialId: string | null;
+  isBase?: boolean;
 }
 
 export function SculptureMaterialFinish({ 
   sculptureId, 
-  materialId
+  materialId,
+  isBase = false
 }: SculptureMaterialFinishProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { materials } = useMaterialFinishData(materialId);
 
   const handleMaterialChange = async (newMaterialId: string) => {
+    const fieldName = isBase ? 'base_material_id' : 'material_id';
     const { error } = await supabase
       .from("sculptures")
-      .update({ material_id: newMaterialId })
+      .update({ [fieldName]: newMaterialId })
       .eq("id", sculptureId);
 
     if (error) {

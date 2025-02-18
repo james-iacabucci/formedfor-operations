@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,10 @@ interface SculptureWeightProps {
   sculptureId: string;
   weightKg: number | null;
   weightLbs: number | null;
+  isBase?: boolean;
 }
 
-export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureWeightProps) {
+export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = false }: SculptureWeightProps) {
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [weight, setWeight] = useState({
     kg: weightKg?.toString() || "",
@@ -48,9 +50,10 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
   };
 
   const handleWeightUpdate = async () => {
+    const prefix = isBase ? 'base_' : '';
     const updatedWeight = {
-      weight_kg: weight.kg ? parseFloat(weight.kg) : null,
-      weight_lbs: weight.lbs ? parseFloat(weight.lbs) : null,
+      [`${prefix}weight_kg`]: weight.kg ? parseFloat(weight.kg) : null,
+      [`${prefix}weight_lbs`]: weight.lbs ? parseFloat(weight.lbs) : null,
     };
 
     const { error } = await supabase
