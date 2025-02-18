@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,15 +27,20 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
     return inches * 2.54;
   };
 
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: string) => {
+  const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
     if (!h && !w && !d) return "";
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return unit === 'cm' ? val.toFixed(2) : val;
+      return val;
     };
     
-    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d`;
+    const formatValueCm = (val: number | null) => {
+      if (val === null) return '-';
+      return (val * 2.54).toFixed(1);
+    };
+    
+    return `${formatValue(h)}h - ${formatValue(w)}w - ${formatValue(d)}d in | ${formatValueCm(h)}h - ${formatValueCm(w)}w - ${formatValueCm(d)}d cm`;
   };
 
   const handleDimensionsUpdate = async () => {
@@ -124,13 +128,16 @@ export function SculptureDimensions({ sculptureId, height, width, depth }: Sculp
         </div>
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
-          <Input
-            readOnly
-            value={formatDimensionString(height, width, depth, "in") || ""}
-            placeholder="Dimensions"
-            className="border-0 focus-visible:ring-0 px-0"
-            onClick={() => setIsEditingDimensions(true)}
-          />
+          <div className="flex gap-1 items-center flex-1">
+            <span className="text-muted-foreground">Dimensions:</span>
+            <Input
+              readOnly
+              value={formatDimensionString(height, width, depth)}
+              placeholder="Enter dimensions"
+              className="border-0 focus-visible:ring-0 px-0"
+              onClick={() => setIsEditingDimensions(true)}
+            />
+          </div>
           <Button
             variant="ghost"
             size="sm"

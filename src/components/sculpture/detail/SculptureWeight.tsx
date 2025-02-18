@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,13 +33,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
       return val.toFixed(2);
     };
     
-    return (
-      <>
-        <span>{formatValue(lbs)} lbs</span>
-        <span className="text-muted-foreground mx-3">|</span>
-        <span className="text-muted-foreground">{formatValue(kg)} kg</span>
-      </>
-    );
+    return `${formatValue(lbs)} lbs | ${formatValue(kg)} kg`;
   };
 
   const handleWeightUpdate = async () => {
@@ -131,13 +124,16 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs }: SculptureW
         </div>
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
-          <Input
-            readOnly
-            value={formatWeightString(weightKg, weightLbs) as string || ""}
-            placeholder="Weight"
-            className="border-0 focus-visible:ring-0 px-0"
-            onClick={() => setIsEditingWeight(true)}
-          />
+          <div className="flex gap-1 items-center flex-1">
+            <span className="text-muted-foreground">Weight:</span>
+            <Input
+              readOnly
+              value={formatWeightString(weightKg, weightLbs)}
+              placeholder="Enter weight"
+              className="border-0 focus-visible:ring-0 px-0"
+              onClick={() => setIsEditingWeight(true)}
+            />
+          </div>
           <Button
             variant="ghost"
             size="sm"
