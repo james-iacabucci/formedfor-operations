@@ -212,7 +212,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-[600px] h-screen flex flex-col">
+      <SheetContent className="sm:max-w-[800px] h-screen flex flex-col">
         <SheetHeader>
           <SheetTitle>Create New Sculpture</SheetTitle>
         </SheetHeader>
