@@ -9,12 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon, ImageIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
+import { FileIcon, ImageIcon, MoreHorizontalIcon, RefreshCwIcon, ShuffleIcon, Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
 import { ProductLineButton } from "./ProductLineButton";
+import { useState } from "react";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -22,6 +25,10 @@ interface SculptureHeaderProps {
 
 export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const { toast } = useToast();
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { regenerateImage } = useSculptureRegeneration();
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -94,6 +101,27 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      await regenerateImage(sculpture.id);
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
+    } catch (error) {
+      console.error("Error regenerating:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -120,6 +148,21 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
             sculptureId={sculpture.id}
             status={sculpture.status}
           />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRegenerate}
+            disabled={isRegenerating}
+          >
+            <RefreshCwIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsRegenerationSheetOpen(true)}
+          >
+            <ShuffleIcon className="h-4 w-4" />
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon">
