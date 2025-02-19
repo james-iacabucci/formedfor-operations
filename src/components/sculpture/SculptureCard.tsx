@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { RegenerationSheet } from "./RegenerationSheet";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
@@ -27,6 +28,7 @@ export function SculptureCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const queryClient = useQueryClient();
 
   if (!sculpture?.id) {
@@ -77,33 +79,71 @@ export function SculptureCard({
     }
   };
 
-  const handleGenerateVariant = async () => {
+  const handleGenerateVariant = async (options: {
+    creativity: "none" | "small" | "medium" | "large";
+    changes?: string;
+    updateExisting: boolean;
+    regenerateImage: boolean;
+    regenerateMetadata: boolean;
+  }) => {
+    setIsRegenerating(true);
     try {
-      const { data: variant, error } = await supabase
-        .from('sculptures')
-        .insert([
-          {
-            prompt: sculpture.prompt,
-            user_id: sculpture.user_id,
-            ai_engine: sculpture.ai_engine,
-            status: "idea",
-            original_sculpture_id: sculpture.id
-          }
-        ])
-        .select()
-        .single();
+      if (options.updateExisting) {
+        // Update existing sculpture
+        const { error: updateError } = await supabase
+          .from('sculptures')
+          .update({
+            prompt: options.changes ? `${sculpture.prompt}\n\nChanges: ${options.changes}` : sculpture.prompt,
+            creativity_level: options.creativity
+          })
+          .eq('id', sculpture.id);
 
-      if (error) throw error;
+        if (updateError) throw updateError;
 
-      const { error: generateError } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: sculpture.prompt, sculptureId: variant.id }
-      });
+        if (options.regenerateImage) {
+          const { error } = await supabase.functions.invoke('regenerate-image', {
+            body: { sculptureId: sculpture.id }
+          });
 
-      if (generateError) throw generateError;
+          if (error) throw error;
+        }
+
+      } else {
+        // Create new variant
+        const { data: variant, error } = await supabase
+          .from('sculptures')
+          .insert([
+            {
+              prompt: options.changes ? `${sculpture.prompt}\n\nChanges: ${options.changes}` : sculpture.prompt,
+              user_id: sculpture.user_id,
+              ai_engine: sculpture.ai_engine,
+              status: "idea",
+              original_sculpture_id: sculpture.id,
+              creativity_level: options.creativity
+            }
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        if (options.regenerateImage) {
+          const { error: generateError } = await supabase.functions.invoke('generate-image', {
+            body: { 
+              prompt: options.changes ? `${sculpture.prompt}\n\nChanges: ${options.changes}` : sculpture.prompt,
+              sculptureId: variant.id 
+            }
+          });
+
+          if (generateError) throw generateError;
+        }
+      }
 
       toast({
-        title: "Generating variant",
-        description: "Your sculpture variant is being generated.",
+        title: options.updateExisting ? "Updating sculpture" : "Generating variant",
+        description: options.updateExisting 
+          ? "Your sculpture is being updated."
+          : "Your sculpture variant is being generated.",
       });
 
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
@@ -114,6 +154,8 @@ export function SculptureCard({
         description: "Could not generate variant. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -133,32 +175,42 @@ export function SculptureCard({
   };
 
   return (
-    <Card 
-      className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
-      onClick={handleCardClick}
-    >
-      <CardContent className="p-0">
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
-          <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
-          <SculptureCardImage
-            imageUrl={sculpture.image_url}
-            prompt={sculpture.prompt}
-            isRegenerating={isRegenerating}
-            onDelete={onDelete}
-            onManageTags={onManageTags}
-            onRegenerate={handleRegenerate}
-            onGenerateVariant={handleGenerateVariant}
-            onDownload={handleDownload}
-          />
-        </div>
-        <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
-          <SculptureInfo 
-            sculpture={sculpture}
-            tags={tags}
-            showAIContent={showAIContent}
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card 
+        className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
+        onClick={handleCardClick}
+      >
+        <CardContent className="p-0">
+          <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
+            <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
+            <SculptureCardImage
+              imageUrl={sculpture.image_url}
+              prompt={sculpture.prompt}
+              isRegenerating={isRegenerating}
+              onDelete={onDelete}
+              onManageTags={onManageTags}
+              onRegenerate={handleRegenerate}
+              onGenerateVariant={() => setIsRegenerationSheetOpen(true)}
+              onDownload={handleDownload}
+            />
+          </div>
+          <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
+            <SculptureInfo 
+              sculpture={sculpture}
+              tags={tags}
+              showAIContent={showAIContent}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <RegenerationSheet
+        open={isRegenerationSheetOpen}
+        onOpenChange={setIsRegenerationSheetOpen}
+        onRegenerate={handleGenerateVariant}
+        isRegenerating={isRegenerating}
+        defaultPrompt={sculpture.prompt}
+      />
+    </>
   );
 }

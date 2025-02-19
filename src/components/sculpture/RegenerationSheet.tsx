@@ -24,13 +24,15 @@ interface RegenerationSheetProps {
   onOpenChange: (open: boolean) => void;
   onRegenerate: (options: RegenerationOptions) => void;
   isRegenerating: boolean;
+  defaultPrompt?: string;
 }
 
 export function RegenerationSheet({ 
   open, 
   onOpenChange, 
   onRegenerate,
-  isRegenerating 
+  isRegenerating,
+  defaultPrompt = ""
 }: RegenerationSheetProps) {
   const [changes, setChanges] = useState("");
   const [creativity, setCreativity] = useState<"none" | "small" | "medium" | "large">("medium");
@@ -81,6 +83,15 @@ export function RegenerationSheet({
           <SheetTitle>Generate Variation</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-6 mt-4" onClick={(e) => e.stopPropagation()}>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Original Prompt
+            </label>
+            <div className="p-3 rounded bg-muted/50 text-sm">
+              {defaultPrompt}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <label htmlFor="changes" className="text-sm font-medium">
               Describe the changes you'd like to make (Optional)
