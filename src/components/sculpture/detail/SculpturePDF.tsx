@@ -22,12 +22,14 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
         setIsLoading(true);
         setError(null);
         
+        // First, load the logo
         const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
         console.log('Loading logo from:', logoUrl);
         const logoBase64Data = await convertImageUrlToBase64(logoUrl);
         setLogoBase64(logoBase64Data);
         console.log('Logo loaded successfully');
 
+        // Then, load the sculpture image
         if (!sculpture.image_url) {
           throw new Error('No sculpture image URL provided');
         }
@@ -50,6 +52,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
   const { data: selectedQuote } = useQuery({
     queryKey: ["selected_quote", sculpture.id],
     queryFn: async () => {
+      console.log('Fetching selected quote for sculpture:', sculpture.id);
       const { data: quotes, error } = await supabase
         .from("fabrication_quotes")
         .select("*")

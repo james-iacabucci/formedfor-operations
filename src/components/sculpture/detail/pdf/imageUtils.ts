@@ -2,7 +2,16 @@
 export async function convertImageUrlToBase64(url: string): Promise<string> {
   console.log('convertImageUrlToBase64: Starting fetch for:', url);
   
+  // Add URL validation
   try {
+    new URL(url); // This will throw if the URL is invalid
+  } catch (error) {
+    console.error('Invalid URL provided:', url);
+    throw new Error('Invalid URL provided');
+  }
+
+  try {
+    console.log('Attempting fetch with URL:', url);
     const response = await fetch(url, {
       cache: 'no-store',
       headers: {
@@ -34,11 +43,13 @@ export async function convertImageUrlToBase64(url: string): Promise<string> {
     }
 
     return new Promise((resolve, reject) => {
+      console.log('Starting FileReader conversion');
       const reader = new FileReader();
       reader.onloadend = () => {
         try {
           const base64Data = reader.result as string;
-          // Validate the base64 data
+          console.log('FileReader conversion complete, validating data');
+          
           if (!base64Data || !base64Data.startsWith('data:image/')) {
             console.error('Invalid base64 image data:', {
               dataStart: base64Data ? base64Data.substring(0, 30) : 'null'
