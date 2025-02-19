@@ -9,25 +9,30 @@ export function useSculptureRegeneration() {
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
 
-  // Use React Query to manage regeneration state per sculpture
-  const { data: regeneratingIds = [] } = useQuery({
+  // Use React Query to manage regeneration state per sculpture as a Record
+  const { data: regeneratingState } = useQuery({
     queryKey: ['regeneration-state'],
-    queryFn: () => [] as string[],
-    initialData: [] as string[],
+    queryFn: () => ({}) as Record<string, boolean>,
+    initialData: {} as Record<string, boolean>,
     staleTime: Infinity,
   });
 
   const isRegenerating = (sculptureId: string): boolean => {
-    if (!Array.isArray(regeneratingIds)) return false;
-    return regeneratingIds.includes(sculptureId);
+    return !!regeneratingState?.[sculptureId];
   };
 
   const setRegeneratingState = (sculptureId: string, value: boolean) => {
-    const currentIds = Array.isArray(regeneratingIds) ? regeneratingIds : [];
-    const newIds = value 
-      ? [...currentIds, sculptureId]
-      : currentIds.filter(id => id !== sculptureId);
-    queryClient.setQueryData(['regeneration-state'], newIds);
+    const currentState = regeneratingState || {};
+    const newState = {
+      ...currentState,
+      [sculptureId]: value
+    };
+    
+    if (!value) {
+      delete newState[sculptureId];
+    }
+    
+    queryClient.setQueryData(['regeneration-state'], newState);
   };
 
   const regenerateImage = async (sculptureId: string) => {
