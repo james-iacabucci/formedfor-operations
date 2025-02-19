@@ -93,7 +93,9 @@ export function SculptureCardImage({
                     onRegenerate();
                   }}
                 >
-                  <RefreshCwIcon className="h-4 w-4" />
+                  <RefreshCwIcon className={cn("h-4 w-4", {
+                    "animate-spin": isRegenerating
+                  })} />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

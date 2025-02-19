@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 export function useSculptureRegeneration() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { generateAIContent } = useAIGeneration();
 
   const regenerateImage = async (sculptureId: string) => {
     if (!sculptureId) {
@@ -34,9 +36,40 @@ export function useSculptureRegeneration() {
         throw new Error(data?.message || 'Failed to regenerate image');
       }
 
+      // Get the new image
+      const response = await fetch(data.imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'regenerated-image.png', { type: 'image/png' });
+
+      // Generate new AI content
+      let aiName = '';
+      let aiDescription = '';
+
+      await generateAIContent('name', file, '', (name) => {
+        aiName = name;
+      });
+
+      await generateAIContent('description', file, aiName, (description) => {
+        aiDescription = description;
+      });
+
+      // Update the sculpture with new AI content
+      const { error: updateError } = await supabase
+        .from('sculptures')
+        .update({
+          ai_generated_name: aiName,
+          ai_description: aiDescription
+        })
+        .eq('id', sculptureId);
+
+      if (updateError) {
+        console.error('Error updating AI content:', updateError);
+        throw updateError;
+      }
+
       toast({
         title: "Success",
-        description: "Your sculpture image is being regenerated.",
+        description: "Your sculpture has been updated with a new image and AI-generated content.",
       });
 
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
