@@ -14,18 +14,13 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, type } = await req.json()
+    const { imageUrl, type, systemMessage } = await req.json()
     console.log(`Processing request for type: ${type}, imageUrl: ${imageUrl}`)
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found')
     }
-
-    // Prepare system message based on type
-    const systemMessage = type === 'name' 
-      ? "You are an art curator responsible for naming sculptures. Create a short, creative name for the sculpture in the image. The name should be brief (2-4 words) and capture the essence of the piece."
-      : "You are an art curator describing how sculptures enhance spaces. Create a 2-3 sentence description of how this sculpture would enhance the space it's placed in. Focus on its visual impact, mood, and spatial interaction.";
 
     console.log('Making request to OpenAI API...')
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -36,7 +31,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 150,
+        max_tokens: type === 'name' ? 50 : 150,
         messages: [
           { 
             role: 'system', 
@@ -93,4 +88,3 @@ serve(async (req) => {
     )
   }
 })
-
