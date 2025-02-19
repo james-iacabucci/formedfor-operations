@@ -60,22 +60,24 @@ export function useSculptureGeneration() {
           if (error) throw error;
           if (!data?.imageUrl) throw new Error('No image URL in response');
           
-          const updatedImages = generatedImages.map(img => 
-            img.id === image.id 
-              ? { ...img, url: data.imageUrl, isGenerating: false }
-              : img
+          setGeneratedImages((current: GeneratedImage[]) => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, url: data.imageUrl, isGenerating: false }
+                : img
+            )
           );
-          setGeneratedImages(updatedImages);
           
           return { id: image.id, success: true };
         }).catch(error => {
           console.error('Error generating image:', error);
-          const updatedImages = generatedImages.map(img => 
-            img.id === image.id 
-              ? { ...img, isGenerating: false, error: true }
-              : img
+          setGeneratedImages((current: GeneratedImage[]) => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, isGenerating: false, error: true }
+                : img
+            )
           );
-          setGeneratedImages(updatedImages);
           return { id: image.id, success: false };
         })
       );
