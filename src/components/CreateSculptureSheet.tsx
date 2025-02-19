@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -247,7 +248,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         <SheetHeader>
           <SheetTitle>Create New Sculpture</SheetTitle>
         </SheetHeader>
-        <div className="space-y-4 mt-4 flex-1 overflow-y-auto px-1">
+        <div className="space-y-4 mt-4 flex-1 overflow-y-auto">
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
