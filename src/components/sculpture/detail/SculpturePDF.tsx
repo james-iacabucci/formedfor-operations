@@ -99,7 +99,14 @@ const SculptureDocument = ({
   logoBase64,
   sculptureImageBase64 
 }: SculptureDocumentProps) => {
+  console.log('SculptureDocument: Attempting to render with:', {
+    hasLogo: !!logoBase64,
+    hasSculptureImage: !!sculptureImageBase64,
+    sculptureNameLength: sculpture.ai_generated_name?.length
+  });
+
   if (!logoBase64 || !sculptureImageBase64) {
+    console.error('SculptureDocument: Missing required images');
     throw new Error('Required images are missing');
   }
 
@@ -145,17 +152,22 @@ const SculptureDocument = ({
 };
 
 async function convertImageUrlToBase64(url: string): Promise<string> {
+  console.log('convertImageUrlToBase64: Fetching image from:', url);
+  
   const response = await fetch(url, {
     cache: 'no-store'
   });
   
   if (!response.ok) {
+    console.error('Failed to fetch image:', response.status, response.statusText);
     throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
   }
   
   const blob = await response.blob();
+  console.log('Image blob received, size:', blob.size, 'type:', blob.type);
   
   if (blob.size === 0) {
+    console.error('Retrieved empty image blob');
     throw new Error('Retrieved empty image blob');
   }
 
@@ -163,14 +175,20 @@ async function convertImageUrlToBase64(url: string): Promise<string> {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64Data = reader.result as string;
-      resolve(base64Data);
+      const base64Only = base64Data.split(',')[1];
+      console.log('Image converted to base64, length:', base64Only?.length || 0);
+      resolve(base64Only);
     };
-    reader.onerror = reject;
+    reader.onerror = (error) => {
+      console.error('Error reading file:', error);
+      reject(error);
+    };
     reader.readAsDataURL(blob);
   });
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
+  console.log('SculpturePDF: Component mounted');
   const [logoBase64, setLogoBase64] = useState<string>();
   const [sculptureImageBase64, setSculptureImageBase64] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
@@ -179,23 +197,34 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
   useEffect(() => {
     const loadImages = async () => {
       try {
+        console.log('loadImages: Starting to load images');
         setIsLoading(true);
         setError(null);
         
         const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
         const logoBase64Data = await convertImageUrlToBase64(logoUrl);
-        if (!logoBase64Data) throw new Error('Failed to load logo');
+        if (!logoBase64Data) {
+          console.error('Failed to load logo');
+          throw new Error('Failed to load logo');
+        }
         setLogoBase64(logoBase64Data);
+        console.log('Logo loaded successfully');
 
         if (!sculpture.image_url) {
+          console.error('No sculpture image URL provided');
           throw new Error('No sculpture image URL provided');
         }
 
         const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
-        if (!sculptureBase64Data) throw new Error('Failed to load sculpture image');
+        if (!sculptureBase64Data) {
+          console.error('Failed to load sculpture image');
+          throw new Error('Failed to load sculpture image');
+        }
         setSculptureImageBase64(sculptureBase64Data);
+        console.log('Sculpture image loaded successfully');
 
       } catch (error) {
+        console.error('Error in loadImages:', error);
         setError(error instanceof Error ? error.message : 'Unknown error occurred');
       } finally {
         setIsLoading(false);
@@ -266,6 +295,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
     >
       {({ loading, error }) => {
         if (error) {
+          console.error('PDFDownloadLink error:', error);
           return (
             <Button disabled variant="outline" size="sm" className="gap-2">
               <FileIcon className="h-4 w-4" />
