@@ -218,13 +218,11 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         </SheetHeader>
         <div className="space-y-4 mt-4 flex-1 overflow-y-auto">
           <div className="space-y-4">
-            <Textarea
-              placeholder="Describe your sculpture..."
+            <PromptField
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="min-h-[80px] resize-y"
-              rows={3}
+              onChange={setPrompt}
             />
+            
             <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="low">Low Creativity</TabsTrigger>
