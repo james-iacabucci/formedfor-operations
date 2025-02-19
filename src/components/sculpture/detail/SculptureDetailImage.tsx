@@ -26,6 +26,8 @@ export function SculptureDetailImage({
   userId,
   onRegenerate,
 }: SculptureDetailImageProps) {
+  console.log("SculptureDetailImage rendering with isRegenerating:", isRegenerating);
+  
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -79,12 +81,15 @@ export function SculptureDetailImage({
     }
   };
 
+  console.log("About to render BaseSculptureImage with isRegenerating:", isRegenerating);
+
   return (
     <>
       <BaseSculptureImage
         imageUrl={imageUrl}
         prompt={prompt}
         isRegenerating={isRegenerating}
+        className="rounded-lg"
       >
         <div className="absolute top-2 right-2 flex gap-2">
           <Button
