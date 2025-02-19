@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, RefreshCwIcon, PlusIcon } from "lucide-react";
+import { DownloadIcon, PlusIcon } from "lucide-react";
 import { BaseSculptureImage } from "../BaseSculptureImage";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
@@ -42,7 +42,6 @@ export function SculptureDetailImage({
       await generateVariant(sculptureId, userId, prompt, options);
       
       if (!options.updateExisting) {
-        // Query for the most recently created variation
         const { data: newSculpture, error } = await supabase
           .from("sculptures")
           .select("id")
@@ -52,8 +51,6 @@ export function SculptureDetailImage({
           .single();
 
         if (error) throw error;
-
-        // Navigate to the new sculpture's detail page
         navigate(`/sculpture/${newSculpture.id}`);
       }
     } catch (error) {
@@ -90,15 +87,6 @@ export function SculptureDetailImage({
         isRegenerating={isRegenerating}
       >
         <div className="absolute top-2 right-2 flex gap-2">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="bg-black/50 hover:bg-black/70 text-white"
-            disabled={isRegenerating}
-            onClick={onRegenerate}
-          >
-            <RefreshCwIcon className="h-4 w-4" />
-          </Button>
           <Button
             size="icon"
             variant="secondary"

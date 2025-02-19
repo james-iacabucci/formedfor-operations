@@ -154,7 +154,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
             onClick={handleRegenerate}
             disabled={isRegenerating}
           >
-            <RefreshCwIcon className="h-4 w-4" />
+            <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
           </Button>
           <Button
             variant="outline"
