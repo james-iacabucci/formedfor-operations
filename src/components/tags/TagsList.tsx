@@ -32,8 +32,8 @@ export function TagsList({
         {tags.map((tag) => (
           <Badge
             key={tag.id}
-            variant="outline"
-            className="bg-background text-foreground border-border"
+            variant="secondary"
+            className="bg-muted text-white border-0"
           >
             {tag.name}
             {showRemoveIcon && <X className="ml-1 h-3 w-3" />}
