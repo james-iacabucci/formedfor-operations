@@ -82,7 +82,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       await Promise.all(
         imagesToGenerate.map(async (image) => {
           try {
-            const { error: generateError } = await supabase.functions.invoke('generate-image', {
+            const { data, error } = await supabase.functions.invoke('generate-image', {
               body: { 
                 prompt: prompt.trim(),
                 sculptureId: image.id,
@@ -90,17 +90,29 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               }
             });
 
-            if (generateError) throw generateError;
+            if (error) throw error;
+
+            if (!data?.imageUrl) {
+              throw new Error('No image URL in response');
+            }
 
             setGeneratedImages(current => 
               current.map(img => 
                 img.id === image.id 
-                  ? { ...img, url: `https://temp-url/${image.id}`, isGenerating: false }
+                  ? { ...img, url: data.imageUrl, isGenerating: false }
                   : img
               )
             );
           } catch (error) {
             console.error('Error generating image:', error);
+            // Update the failed image state
+            setGeneratedImages(current => 
+              current.map(img => 
+                img.id === image.id 
+                  ? { ...img, isGenerating: false, error: true }
+                  : img
+              )
+            );
             toast({
               title: "Error",
               description: "Failed to generate one or more images. Please try again.",
