@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -223,42 +222,36 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             throw createError;
           }
 
-          // Then update with metadata
-          try {
-            const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
-              body: { 
-                imageUrl: publicUrl,
-                type: 'both'
-              }
-            });
-
-            if (metadataError) {
-              console.error('Metadata error:', metadataError);
-              throw metadataError;
-            }
-
-            if (metadata) {
-              const { error: updateError } = await supabase
-                .from('sculptures')
-                .update({
-                  ai_generated_name: metadata.name,
-                  ai_description: metadata.description
-                })
-                .eq('id', sculpture.id);
-
-              if (updateError) {
-                console.error('Update error:', updateError);
-                throw updateError;
+          // Generate metadata using sculpture-metadata endpoint with specific system messages
+          const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
+            body: { 
+              imageUrl: publicUrl,
+              type: 'both',
+              systemMessages: {
+                name: "You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else.",
+                description: "You are a designer talking casually to another designer about a sculpture. In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional."
               }
             }
-          } catch (metadataError) {
-            console.error('Failed to generate or update metadata:', metadataError);
-            // Don't throw here - we still created the sculpture successfully
-            toast({
-              title: "Partial Success",
-              description: "Sculpture saved but name/description generation failed.",
-              variant: "default",
-            });
+          });
+
+          if (metadataError) {
+            console.error('Metadata error:', metadataError);
+            throw metadataError;
+          }
+
+          if (metadata) {
+            const { error: updateError } = await supabase
+              .from('sculptures')
+              .update({
+                ai_generated_name: metadata.name,
+                ai_description: metadata.description
+              })
+              .eq('id', sculpture.id);
+
+            if (updateError) {
+              console.error('Update error:', updateError);
+              throw updateError;
+            }
           }
         } catch (imageError) {
           console.error('Failed to process image:', imageError);
