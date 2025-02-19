@@ -174,7 +174,26 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       
       for (const image of selectedImages) {
         try {
-          // First check if we can access the image
+          // First generate metadata for the image
+          console.log('Generating metadata for image:', image.url);
+          const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
+            body: { 
+              imageUrl: image.url
+            }
+          });
+
+          if (metadataError) {
+            console.error('Metadata generation error:', metadataError);
+            throw metadataError;
+          }
+
+          if (!metadata?.name || !metadata?.description) {
+            throw new Error('Invalid metadata response');
+          }
+
+          console.log('Generated metadata:', metadata);
+
+          // Now handle the image upload
           const response = await fetch(image.url!);
           if (!response.ok) {
             throw new Error('Could not access image');
@@ -186,7 +205,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           const fileExt = file.name.split('.').pop();
           const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
           
-          // Upload image to storage
           const { error: uploadError } = await supabase.storage
             .from('sculptures')
             .upload(fileName, file);
@@ -196,33 +214,12 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             throw uploadError;
           }
 
-          // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('sculptures')
             .getPublicUrl(fileName);
 
-          console.log('Starting sculpture creation process with image URL:', publicUrl);
-
-          // Generate metadata first
-          console.log('Requesting metadata generation...');
-          const metadataResponse = await supabase.functions.invoke('generate-sculpture-metadata', {
-            body: { 
-              imageUrl: image.url,
-              type: 'both'
-            }
-          });
-
-          console.log('Metadata response:', metadataResponse);
-
-          if (metadataResponse.error) {
-            throw new Error(`Metadata generation failed: ${metadataResponse.error.message}`);
-          }
-
-          const metadata = metadataResponse.data;
-          console.log('Generated metadata:', metadata);
-
-          // Create sculpture with all info at once
-          const { data: sculpture, error: createError } = await supabase
+          // Create sculpture with all info
+          const { error: createError } = await supabase
             .from('sculptures')
             .insert([
               {
@@ -232,19 +229,15 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 status: "idea",
                 image_url: publicUrl,
                 creativity_level: creativity,
-                ai_generated_name: metadata?.name,
-                ai_description: metadata?.description
+                ai_generated_name: metadata.name,
+                ai_description: metadata.description
               }
-            ])
-            .select()
-            .single();
+            ]);
 
           if (createError) {
             console.error('Create error:', createError);
             throw createError;
           }
-
-          console.log('Successfully created sculpture:', sculpture);
 
         } catch (imageError) {
           console.error('Failed to process image:', imageError);
