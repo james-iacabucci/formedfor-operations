@@ -11,6 +11,7 @@ import { GeneratedSculptureGrid, GeneratedImage } from "./sculpture/create/Gener
 import { CheckIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
 import { Label } from "./ui/label";
 import { cn } from "@/lib/utils";
+import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface CreateSculptureSheetProps {
 export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureSheetProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { generateAIContent } = useAIGeneration();
   const [prompt, setPrompt] = useState("");
   const [creativity, setCreativity] = useState<"low" | "medium" | "high">("medium");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -174,26 +176,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       
       for (const image of selectedImages) {
         try {
-          // First generate metadata for the image
-          console.log('Generating metadata for image:', image.url);
-          const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
-            body: { 
-              imageUrl: image.url
-            }
-          });
-
-          if (metadataError) {
-            console.error('Metadata generation error:', metadataError);
-            throw metadataError;
-          }
-
-          if (!metadata?.name || !metadata?.description) {
-            throw new Error('Invalid metadata response');
-          }
-
-          console.log('Generated metadata:', metadata);
-
-          // Now handle the image upload
+          // Download the image first
           const response = await fetch(image.url!);
           if (!response.ok) {
             throw new Error('Could not access image');
@@ -205,6 +188,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           const fileExt = file.name.split('.').pop();
           const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
           
+          // Upload to storage
           const { error: uploadError } = await supabase.storage
             .from('sculptures')
             .upload(fileName, file);
@@ -218,6 +202,18 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             .from('sculptures')
             .getPublicUrl(fileName);
 
+          // Generate AI content using the same hook used for regeneration
+          let aiName = '';
+          let aiDescription = '';
+
+          await generateAIContent('name', file, '', (name) => {
+            aiName = name;
+          });
+
+          await generateAIContent('description', file, aiName, (description) => {
+            aiDescription = description;
+          });
+
           // Create sculpture with all info
           const { error: createError } = await supabase
             .from('sculptures')
@@ -229,8 +225,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 status: "idea",
                 image_url: publicUrl,
                 creativity_level: creativity,
-                ai_generated_name: metadata.name,
-                ai_description: metadata.description
+                ai_generated_name: aiName,
+                ai_description: aiDescription
               }
             ]);
 
