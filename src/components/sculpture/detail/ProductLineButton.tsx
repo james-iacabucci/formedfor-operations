@@ -81,7 +81,7 @@ export function ProductLineButton({
             key={productLine.id}
             onClick={() => handleProductLineChange(productLine.id)}
           >
-            {productLine.product_line_code || productLine.name}
+            {productLine.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
