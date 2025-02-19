@@ -84,7 +84,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             image_url: publicUrl,
             prompt: "Manually added sculpture",
             ai_engine: "manual",
-            status: status as "idea" | "pending" | "approved" | "archived",
+            status: "idea",
             models,
             renderings,
             dimensions,

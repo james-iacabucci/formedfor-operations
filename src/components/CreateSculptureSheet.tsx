@@ -31,7 +31,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           {
             prompt: prompt.trim(),
             user_id: user.id,
-            ai_engine: "runware"
+            ai_engine: "runware",
+            status: "idea" // Add explicit status
           }
         ])
         .select()
