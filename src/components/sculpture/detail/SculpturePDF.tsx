@@ -1,4 +1,3 @@
-
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
@@ -86,7 +85,6 @@ interface SculptureDocumentProps {
 }
 
 const SculptureDocument = ({ sculpture, materialName, selectedQuote }: SculptureDocumentProps) => {
-  // Get the absolute URL for the logo
   const logoUrl = new URL(
     '/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png',
     window.location.origin
@@ -197,17 +195,12 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
       }
       fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
     >
-      {({ loading, error }) => {
-        if (error) {
-          console.error("PDF generation error:", error);
-        }
-        return (
-          <Button disabled={loading} variant="outline" size="sm" className="gap-2">
-            <FileIcon className="h-4 w-4" />
-            {loading ? "Generating PDF..." : "Download PDF"}
-          </Button>
-        );
-      }}
+      {({ loading }) => (
+        <Button disabled={loading} variant="outline" size="sm" className="gap-2">
+          <FileIcon className="h-4 w-4" />
+          {loading ? "Generating PDF..." : "Download PDF"}
+        </Button>
+      )}
     </PDFDownloadLink>
   );
 }

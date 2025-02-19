@@ -33,7 +33,7 @@ declare module '@react-pdf/renderer' {
   export interface PDFDownloadLinkProps {
     document: ReactElement;
     fileName?: string;
-    children?: (props: { loading: boolean }) => ReactNode;
+    children?: (props: { loading: boolean; error?: Error }) => ReactNode;
   }
 
   export const Document: ComponentType<DocumentProps>;
