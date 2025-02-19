@@ -1,7 +1,8 @@
 
 import { cn } from "@/lib/utils";
 import { BaseSculptureImage } from "@/components/sculpture/BaseSculptureImage";
-import { useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { LockIcon } from "lucide-react";
 
 export interface GeneratedImage {
   id: string;
@@ -39,7 +40,16 @@ export function GeneratedSculptureGrid({
             isRegenerating={image.isGenerating}
           />
           {selectedIds.has(image.id) && (
-            <div className="absolute inset-0 bg-primary/20" />
+            <>
+              <div className="absolute inset-0 bg-primary/20" />
+              <Badge 
+                className="absolute top-2 right-2 gap-1 bg-primary/90"
+                variant="default"
+              >
+                <LockIcon className="h-3 w-3" />
+                Locked
+              </Badge>
+            </>
           )}
         </button>
       ))}

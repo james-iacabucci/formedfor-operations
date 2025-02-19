@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { GeneratedSculptureGrid, GeneratedImage } from "./sculpture/create/Gener
 import { CheckIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
+import { Badge } from "./ui/badge";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -27,7 +27,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
-  const [regenerateOnlyUnselected, setRegenerateOnlyUnselected] = useState(true);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -43,14 +42,14 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     setSelectedIds(new Set());
   };
 
-  const generateImages = async (regenerateUnselected = regenerateOnlyUnselected) => {
+  const generateImages = async () => {
     if (!user || !prompt.trim()) return;
     
     setIsGenerating(true);
     const numImages = 6;
     const newImages: GeneratedImage[] = [];
 
-    if (regenerateUnselected && generatedImages.length > 0) {
+    if (generatedImages.length > 0) {
       generatedImages.forEach(img => {
         if (selectedIds.has(img.id)) {
           newImages.push(img);
@@ -240,17 +239,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Generated Sculptures</h3>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="regenerate-unselected"
-                      checked={regenerateOnlyUnselected}
-                      onCheckedChange={setRegenerateOnlyUnselected}
-                    />
-                    <Label htmlFor="regenerate-unselected">Keep selected images on regenerate</Label>
-                  </div>
                   {selectedIds.size > 0 && (
                     <Button variant="ghost" onClick={clearSelection}>
-                      Clear Selection
+                      Clear Selections
                     </Button>
                   )}
                 </div>
