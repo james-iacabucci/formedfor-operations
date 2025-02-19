@@ -7,7 +7,6 @@ interface BaseSculptureImageProps {
   prompt: string;
   isRegenerating?: boolean;
   className?: string;
-  onClick?: () => void;
   children?: React.ReactNode;
 }
 
@@ -16,7 +15,6 @@ export function BaseSculptureImage({
   prompt, 
   isRegenerating,
   className,
-  onClick,
   children 
 }: BaseSculptureImageProps) {
   if (!imageUrl) {
@@ -35,8 +33,7 @@ export function BaseSculptureImage({
       <img
         src={imageUrl}
         alt={prompt}
-        className="object-cover w-full h-full cursor-pointer"
-        onClick={onClick}
+        className="object-cover w-full h-full"
       />
       {children}
     </div>
