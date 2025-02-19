@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -202,7 +201,27 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             .from('sculptures')
             .getPublicUrl(fileName);
 
-          // Create sculpture first with basic info
+          console.log('Starting sculpture creation process with image URL:', publicUrl);
+
+          // Generate metadata first
+          console.log('Requesting metadata generation...');
+          const metadataResponse = await supabase.functions.invoke('generate-sculpture-metadata', {
+            body: { 
+              imageUrl: image.url,
+              type: 'both'
+            }
+          });
+
+          console.log('Metadata response:', metadataResponse);
+
+          if (metadataResponse.error) {
+            throw new Error(`Metadata generation failed: ${metadataResponse.error.message}`);
+          }
+
+          const metadata = metadataResponse.data;
+          console.log('Generated metadata:', metadata);
+
+          // Create sculpture with all info at once
           const { data: sculpture, error: createError } = await supabase
             .from('sculptures')
             .insert([
@@ -213,6 +232,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 status: "idea",
                 image_url: publicUrl,
                 creativity_level: creativity,
+                ai_generated_name: metadata?.name,
+                ai_description: metadata?.description
               }
             ])
             .select()
@@ -223,41 +244,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             throw createError;
           }
 
-          console.log('Generating metadata for sculpture:', sculpture.id);
+          console.log('Successfully created sculpture:', sculpture);
 
-          // Generate metadata using sculpture-metadata endpoint
-          const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
-            body: { 
-              imageUrl: publicUrl,
-              type: 'both'
-            }
-          });
-
-          console.log('Metadata response:', metadata);
-          console.log('Metadata error:', metadataError);
-
-          if (metadataError) {
-            console.error('Metadata error:', metadataError);
-            throw metadataError;
-          }
-
-          if (metadata?.name && metadata?.description) {
-            const { error: updateError } = await supabase
-              .from('sculptures')
-              .update({
-                ai_generated_name: metadata.name,
-                ai_description: metadata.description
-              })
-              .eq('id', sculpture.id);
-
-            if (updateError) {
-              console.error('Update error:', updateError);
-              throw updateError;
-            }
-          } else {
-            console.error('Invalid metadata response:', metadata);
-            throw new Error('Invalid metadata response from server');
-          }
         } catch (imageError) {
           console.error('Failed to process image:', imageError);
           toast({
