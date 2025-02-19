@@ -192,144 +192,158 @@ async function convertImageUrlToBase64(url: string): Promise<string> {
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
-  console.log('SculpturePDF component mounting');
-  
-  const [logoBase64, setLogoBase64] = useState<string>();
-  const [sculptureImageBase64, setSculptureImageBase64] = useState<string>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  console.log('SculpturePDF: Initial render attempt with:', {
+    sculptureId: sculpture.id,
+    hasImageUrl: !!sculpture.image_url,
+    materialName
+  });
 
-  useEffect(() => {
-    console.log('Loading images useEffect triggered');
-    const loadImages = async () => {
-      try {
-        console.log('Starting image loading process');
-        setIsLoading(true);
-        setError(null);
-        
-        const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
-        console.log('Loading logo from:', logoUrl);
-        const logoBase64Data = await convertImageUrlToBase64(logoUrl);
-        if (!logoBase64Data) throw new Error('Failed to load logo');
-        setLogoBase64(logoBase64Data);
-        console.log('Logo loaded successfully');
+  try {
+    const [logoBase64, setLogoBase64] = useState<string>();
+    const [sculptureImageBase64, setSculptureImageBase64] = useState<string>();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-        if (!sculpture.image_url) {
-          throw new Error('No sculpture image URL provided');
+    useEffect(() => {
+      console.log('Loading images useEffect triggered');
+      const loadImages = async () => {
+        try {
+          console.log('Starting image loading process');
+          setIsLoading(true);
+          setError(null);
+          
+          const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
+          console.log('Loading logo from:', logoUrl);
+          const logoBase64Data = await convertImageUrlToBase64(logoUrl);
+          if (!logoBase64Data) throw new Error('Failed to load logo');
+          setLogoBase64(logoBase64Data);
+          console.log('Logo loaded successfully');
+
+          if (!sculpture.image_url) {
+            throw new Error('No sculpture image URL provided');
+          }
+
+          console.log('Loading sculpture image from:', sculpture.image_url);
+          const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
+          if (!sculptureBase64Data) throw new Error('Failed to load sculpture image');
+          setSculptureImageBase64(sculptureBase64Data);
+          console.log('Sculpture image loaded successfully');
+
+        } catch (error) {
+          console.error('Error in loadImages:', error);
+          setError(error instanceof Error ? error.message : 'Unknown error occurred');
+        } finally {
+          setIsLoading(false);
+          console.log('Image loading process completed');
+        }
+      };
+
+      loadImages();
+    }, [sculpture.image_url]);
+
+    const { data: selectedQuote } = useQuery({
+      queryKey: ["selected_quote", sculpture.id],
+      queryFn: async () => {
+        console.log('Fetching selected quote for sculpture:', sculpture.id);
+        const { data: quotes, error } = await supabase
+          .from("fabrication_quotes")
+          .select("*")
+          .eq("sculpture_id", sculpture.id)
+          .eq("is_selected", true)
+          .single();
+
+        if (error) {
+          console.error("Error fetching selected quote:", error);
+          return null;
         }
 
-        console.log('Loading sculpture image from:', sculpture.image_url);
-        const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
-        if (!sculptureBase64Data) throw new Error('Failed to load sculpture image');
-        setSculptureImageBase64(sculptureBase64Data);
-        console.log('Sculpture image loaded successfully');
+        if (!quotes) {
+          console.log('No selected quote found');
+          return null;
+        }
 
-      } catch (error) {
-        console.error('Error in loadImages:', error);
-        setError(error instanceof Error ? error.message : 'Unknown error occurred');
-      } finally {
-        setIsLoading(false);
-        console.log('Image loading process completed');
+        const total = quotes.fabrication_cost + 
+                     quotes.shipping_cost + 
+                     quotes.customs_cost + 
+                     quotes.other_cost;
+        
+        const tradePrice = total * quotes.markup;
+        const retailPrice = tradePrice * 1.5;
+
+        console.log('Quote calculated:', { tradePrice, retailPrice });
+        return {
+          tradePrice,
+          retailPrice
+        };
       }
-    };
+    });
 
-    loadImages();
-  }, [sculpture.image_url]);
+    console.log('SculpturePDF render state:', {
+      isLoading,
+      hasError: !!error,
+      hasLogoBase64: !!logoBase64,
+      hasSculptureImage: !!sculptureImageBase64,
+      hasSelectedQuote: !!selectedQuote
+    });
 
-  const { data: selectedQuote } = useQuery({
-    queryKey: ["selected_quote", sculpture.id],
-    queryFn: async () => {
-      console.log('Fetching selected quote for sculpture:', sculpture.id);
-      const { data: quotes, error } = await supabase
-        .from("fabrication_quotes")
-        .select("*")
-        .eq("sculpture_id", sculpture.id)
-        .eq("is_selected", true)
-        .single();
-
-      if (error) {
-        console.error("Error fetching selected quote:", error);
-        return null;
-      }
-
-      if (!quotes) {
-        console.log('No selected quote found');
-        return null;
-      }
-
-      const total = quotes.fabrication_cost + 
-                   quotes.shipping_cost + 
-                   quotes.customs_cost + 
-                   quotes.other_cost;
-      
-      const tradePrice = total * quotes.markup;
-      const retailPrice = tradePrice * 1.5;
-
-      console.log('Quote calculated:', { tradePrice, retailPrice });
-      return {
-        tradePrice,
-        retailPrice
-      };
+    if (error) {
+      return (
+        <Button disabled variant="outline" size="sm" className="gap-2">
+          <FileIcon className="h-4 w-4" />
+          Error: {error}
+        </Button>
+      );
     }
-  });
 
-  console.log('SculpturePDF render state:', {
-    isLoading,
-    hasError: !!error,
-    hasLogoBase64: !!logoBase64,
-    hasSculptureImage: !!sculptureImageBase64,
-    hasSelectedQuote: !!selectedQuote
-  });
+    if (isLoading || !logoBase64 || !sculptureImageBase64) {
+      return (
+        <Button disabled variant="outline" size="sm" className="gap-2">
+          <FileIcon className="h-4 w-4" />
+          Loading images...
+        </Button>
+      );
+    }
 
-  if (error) {
     return (
-      <Button disabled variant="outline" size="sm" className="gap-2">
-        <FileIcon className="h-4 w-4" />
-        Error: {error}
-      </Button>
-    );
-  }
-
-  if (isLoading || !logoBase64 || !sculptureImageBase64) {
-    return (
-      <Button disabled variant="outline" size="sm" className="gap-2">
-        <FileIcon className="h-4 w-4" />
-        Loading images...
-      </Button>
-    );
-  }
-
-  return (
-    <PDFDownloadLink
-      document={
-        <SculptureDocument 
-          sculpture={sculpture} 
-          materialName={materialName} 
-          selectedQuote={selectedQuote}
-          logoBase64={logoBase64}
-          sculptureImageBase64={sculptureImageBase64}
-        />
-      }
-      fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
-    >
-      {({ loading, error }) => {
-        console.log('PDFDownloadLink render state:', { loading, error });
-        if (error) {
-          console.error('PDF generation error:', error);
+      <PDFDownloadLink
+        document={
+          <SculptureDocument 
+            sculpture={sculpture} 
+            materialName={materialName} 
+            selectedQuote={selectedQuote}
+            logoBase64={logoBase64}
+            sculptureImageBase64={sculptureImageBase64}
+          />
+        }
+        fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
+      >
+        {({ loading, error }) => {
+          console.log('PDFDownloadLink render state:', { loading, error });
+          if (error) {
+            console.error('PDF generation error:', error);
+            return (
+              <Button disabled variant="outline" size="sm" className="gap-2">
+                <FileIcon className="h-4 w-4" />
+                PDF Error: {error.message}
+              </Button>
+            );
+          }
           return (
-            <Button disabled variant="outline" size="sm" className="gap-2">
+            <Button disabled={loading} variant="outline" size="sm" className="gap-2">
               <FileIcon className="h-4 w-4" />
-              PDF Error: {error.message}
+              {loading ? "Generating PDF..." : "Download PDF"}
             </Button>
           );
-        }
-        return (
-          <Button disabled={loading} variant="outline" size="sm" className="gap-2">
-            <FileIcon className="h-4 w-4" />
-            {loading ? "Generating PDF..." : "Download PDF"}
-          </Button>
-        );
-      }}
-    </PDFDownloadLink>
-  );
+        }}
+      </PDFDownloadLink>
+    );
+  } catch (error) {
+    console.error('Critical error in SculpturePDF:', error);
+    return (
+      <Button disabled variant="outline" size="sm" className="gap-2">
+        <FileIcon className="h-4 w-4" />
+        Critical Error: {error instanceof Error ? error.message : 'Unknown error'}
+      </Button>
+    );
+  }
 }
