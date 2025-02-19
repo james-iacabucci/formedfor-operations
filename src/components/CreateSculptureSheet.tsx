@@ -109,22 +109,18 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     try {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
       
-      for (const image of imagesToGenerate) {
-        try {
-          const { data, error } = await supabase.functions.invoke('generate-image', {
-            body: { 
-              prompt: prompt.trim(),
-              sculptureId: image.id,
-              creativity: creativity 
-            }
-          });
-
-          if (error) throw error;
-
-          if (!data?.imageUrl) {
-            throw new Error('No image URL in response');
+      // Generate all images in parallel
+      const generationPromises = imagesToGenerate.map(image =>
+        supabase.functions.invoke('generate-image', {
+          body: { 
+            prompt: prompt.trim(),
+            sculptureId: image.id,
+            creativity: creativity 
           }
-
+        }).then(({ data, error }) => {
+          if (error) throw error;
+          if (!data?.imageUrl) throw new Error('No image URL in response');
+          
           setGeneratedImages(current => 
             current.map(img => 
               img.id === image.id 
@@ -132,7 +128,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 : img
             )
           );
-        } catch (error) {
+          
+          return { id: image.id, success: true };
+        }).catch(error => {
           console.error('Error generating image:', error);
           setGeneratedImages(current => 
             current.map(img => 
@@ -141,12 +139,20 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 : img
             )
           );
-          toast({
-            title: "Error",
-            description: "Failed to generate one or more images. Please try again.",
-            variant: "destructive",
-          });
-        }
+          return { id: image.id, success: false };
+        })
+      );
+
+      // Wait for all generation promises to complete
+      const results = await Promise.all(generationPromises);
+      
+      const failedCount = results.filter(r => !r.success).length;
+      if (failedCount > 0) {
+        toast({
+          title: "Generation Completed",
+          description: `${failedCount} out of ${results.length} images failed to generate.`,
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error in generation process:', error);
