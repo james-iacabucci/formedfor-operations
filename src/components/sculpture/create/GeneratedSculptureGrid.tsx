@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 import { BaseSculptureImage } from "@/components/sculpture/BaseSculptureImage";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,6 @@ export interface GeneratedImage {
   url: string | null;
   isGenerating: boolean;
   prompt: string;
-  negativePrompt?: string;
   error?: boolean;
 }
 
