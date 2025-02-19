@@ -85,56 +85,68 @@ interface SculptureDocumentProps {
   } | null;
 }
 
-const SculptureDocument = ({ sculpture, materialName, selectedQuote }: SculptureDocumentProps) => (
-  <Document>
-    <Page size="A4" orientation="landscape" style={styles.page}>
-      <View style={styles.leftSection}>
-        {sculpture.image_url && (
-          <Image src={sculpture.image_url} style={styles.image} />
-        )}
-      </View>
-      <View style={styles.rightSection}>
-        <Image 
-          src="/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png" 
-          style={styles.logo} 
-        />
-        
-        <Text style={styles.title}>
-          {sculpture.ai_generated_name || "Untitled Sculpture"}
-        </Text>
-        
-        <Text style={styles.material}>
-          {materialName || "Material not specified"}
-        </Text>
+const SculptureDocument = ({ sculpture, materialName, selectedQuote }: SculptureDocumentProps) => {
+  // Get the absolute URL for the logo
+  const logoUrl = new URL(
+    '/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png',
+    window.location.origin
+  ).href;
 
-        {selectedQuote && (
-          <Text style={styles.pricing}>
-            Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
+  return (
+    <Document>
+      <Page size="A4" orientation="landscape" style={styles.page}>
+        <View style={styles.leftSection}>
+          {sculpture.image_url && (
+            <Image src={sculpture.image_url} style={styles.image} />
+          )}
+        </View>
+        <View style={styles.rightSection}>
+          <Image 
+            src={logoUrl}
+            style={styles.logo} 
+          />
+          
+          <Text style={styles.title}>
+            {sculpture.ai_generated_name || "Untitled Sculpture"}
           </Text>
-        )}
+          
+          <Text style={styles.material}>
+            {materialName || "Material not specified"}
+          </Text>
 
-        <Text style={styles.dimensions}>
-          {sculpture.height_in && sculpture.width_in && sculpture.depth_in
-            ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
-                Math.round(sculpture.height_in * 2.54)
-              } - ${Math.round(sculpture.width_in * 2.54)} - ${
-                Math.round(sculpture.depth_in * 2.54)
-              } (cm)`
-            : "Dimensions not specified"}
-        </Text>
+          {selectedQuote ? (
+            <Text style={styles.pricing}>
+              Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
+            </Text>
+          ) : (
+            <Text style={styles.pricing}>
+              Pricing Upon Request
+            </Text>
+          )}
 
-        <Text style={styles.description}>
-          {sculpture.ai_description || sculpture.prompt || "No description available"}
-        </Text>
+          <Text style={styles.dimensions}>
+            {sculpture.height_in && sculpture.width_in && sculpture.depth_in
+              ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
+                  Math.round(sculpture.height_in * 2.54)
+                } - ${Math.round(sculpture.width_in * 2.54)} - ${
+                  Math.round(sculpture.depth_in * 2.54)
+                } (cm)`
+              : "Dimensions not specified"}
+          </Text>
 
-        <Text style={styles.footer}>
-          LIMITED EDITION OF 33{"\n"}
-          (available in multiple finishes and sizes)
-        </Text>
-      </View>
-    </Page>
-  </Document>
-);
+          <Text style={styles.description}>
+            {sculpture.ai_description || sculpture.prompt || "No description available"}
+          </Text>
+
+          <Text style={styles.footer}>
+            LIMITED EDITION OF 33{"\n"}
+            (available in multiple finishes and sizes)
+          </Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};
 
 interface SculpturePDFProps {
   sculpture: Sculpture;
@@ -142,7 +154,6 @@ interface SculpturePDFProps {
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
-  // Fetch selected quote for the sculpture
   const { data: selectedQuote } = useQuery({
     queryKey: ["selected_quote", sculpture.id],
     queryFn: async () => {
@@ -186,12 +197,17 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
       }
       fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
     >
-      {({ loading }) => (
-        <Button disabled={loading} variant="outline" size="sm" className="gap-2">
-          <FileIcon className="h-4 w-4" />
-          {loading ? "Generating PDF..." : "Download PDF"}
-        </Button>
-      )}
+      {({ loading, error }) => {
+        if (error) {
+          console.error("PDF generation error:", error);
+        }
+        return (
+          <Button disabled={loading} variant="outline" size="sm" className="gap-2">
+            <FileIcon className="h-4 w-4" />
+            {loading ? "Generating PDF..." : "Download PDF"}
+          </Button>
+        );
+      }}
     </PDFDownloadLink>
   );
 }
