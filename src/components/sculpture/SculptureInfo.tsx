@@ -1,12 +1,11 @@
 
-import { LinkIcon } from "lucide-react";
+import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sculpture } from "@/types/sculpture";
 import { useMaterialFinishData } from "./detail/useMaterialFinishData";
 import { DimensionDisplay } from "./DimensionDisplay";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
 import { SculptureStatus } from "./detail/SculptureStatus";
 import { Badge } from "@/components/ui/badge";
 
@@ -80,15 +79,6 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             variant="small"
           />
         </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        {sculpture.original_sculpture_id && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <LinkIcon className="w-4 h-4" />
-            <span>Variation ({sculpture.creativity_level})</span>
-          </div>
-        )}
       </div>
 
       <div className="space-y-2 text-sm">

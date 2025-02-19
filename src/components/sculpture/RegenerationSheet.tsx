@@ -7,9 +7,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface RegenerationOptions {
   creativity: "none" | "small" | "medium" | "large";
@@ -53,10 +53,8 @@ export function RegenerationSheet({
         regenerateMetadata
       });
       
-      // Invalidate relevant queries
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       
-      // Clear form and close sheet
       setChanges("");
       onOpenChange(false);
       
@@ -127,21 +125,16 @@ export function RegenerationSheet({
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Variation Mode</Label>
-            <RadioGroup
-              defaultValue="new"
-              value={updateExisting ? "update" : "new"}
+            <Tabs 
+              defaultValue={updateExisting ? "update" : "new"} 
+              className="w-full" 
               onValueChange={(value) => setUpdateExisting(value === "update")}
-              className="grid grid-cols-2 gap-4"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="new" id="new" />
-                <Label htmlFor="new">Create New Sculpture</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="update" id="update" />
-                <Label htmlFor="update">Update Existing Sculpture</Label>
-              </div>
-            </RadioGroup>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="new">Create New</TabsTrigger>
+                <TabsTrigger value="update">Update Existing</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
           <div className="space-y-4">
