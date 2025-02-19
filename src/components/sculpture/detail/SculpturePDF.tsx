@@ -1,3 +1,4 @@
+
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
@@ -99,25 +100,29 @@ const SculptureDocument = ({
   logoBase64,
   sculptureImageBase64 
 }: SculptureDocumentProps) => {
-  console.log('SculptureDocument: Attempting to render with:', {
-    hasLogo: !!logoBase64,
-    hasSculptureImage: !!sculptureImageBase64,
-    sculptureNameLength: sculpture.ai_generated_name?.length
-  });
-
-  if (!logoBase64 || !sculptureImageBase64) {
-    console.error('SculptureDocument: Missing required images');
-    throw new Error('Required images are missing');
+  console.log('SculptureDocument: Starting render');
+  
+  // Validate image data
+  if (!logoBase64?.startsWith('data:image') && !logoBase64?.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
+    console.error('SculptureDocument: Invalid logo base64 format');
+    throw new Error('Invalid logo format');
   }
+  
+  if (!sculptureImageBase64?.startsWith('data:image') && !sculptureImageBase64?.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
+    console.error('SculptureDocument: Invalid sculpture image base64 format');
+    throw new Error('Invalid sculpture image format');
+  }
+
+  console.log('SculptureDocument: Images validated, proceeding with render');
 
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
         <View style={styles.leftSection}>
-          <Image src={sculptureImageBase64} style={styles.image} />
+          <Image src={`data:image/jpeg;base64,${sculptureImageBase64}`} style={styles.image} />
         </View>
         <View style={styles.rightSection}>
-          <Image src={logoBase64} style={styles.logo} />
+          <Image src={`data:image/png;base64,${logoBase64}`} style={styles.logo} />
           <Text style={styles.title}>
             {sculpture.ai_generated_name || "Untitled Sculpture"}
           </Text>
@@ -152,43 +157,75 @@ const SculptureDocument = ({
 };
 
 async function convertImageUrlToBase64(url: string): Promise<string> {
-  console.log('convertImageUrlToBase64: Fetching image from:', url);
+  console.log('convertImageUrlToBase64: Starting fetch for:', url);
   
-  const response = await fetch(url, {
-    cache: 'no-store'
-  });
-  
-  if (!response.ok) {
-    console.error('Failed to fetch image:', response.status, response.statusText);
-    throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-  }
-  
-  const blob = await response.blob();
-  console.log('Image blob received, size:', blob.size, 'type:', blob.type);
-  
-  if (blob.size === 0) {
-    console.error('Retrieved empty image blob');
-    throw new Error('Retrieved empty image blob');
-  }
+  try {
+    const response = await fetch(url, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) {
+      console.error('Fetch failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: url
+      });
+      throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    console.log('Image content type:', contentType);
+    
+    const blob = await response.blob();
+    console.log('Blob received:', {
+      size: blob.size,
+      type: blob.type
+    });
+    
+    if (blob.size === 0) {
+      console.error('Empty blob received');
+      throw new Error('Retrieved empty image blob');
+    }
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64Data = reader.result as string;
-      const base64Only = base64Data.split(',')[1];
-      console.log('Image converted to base64, length:', base64Only?.length || 0);
-      resolve(base64Only);
-    };
-    reader.onerror = (error) => {
-      console.error('Error reading file:', error);
-      reject(error);
-    };
-    reader.readAsDataURL(blob);
-  });
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        try {
+          const base64Data = reader.result as string;
+          const base64Match = base64Data.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
+          
+          if (!base64Match) {
+            console.error('Invalid base64 image data format');
+            reject(new Error('Invalid base64 image data format'));
+            return;
+          }
+          
+          const base64Content = base64Match[2];
+          console.log('Base64 conversion successful:', {
+            contentLength: base64Content.length,
+            startsWidth: base64Content.substring(0, 20) + '...',
+            endsWidth: '...' + base64Content.substring(base64Content.length - 20)
+          });
+          
+          resolve(base64Content);
+        } catch (error) {
+          console.error('Error processing base64 data:', error);
+          reject(error);
+        }
+      };
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        reject(error);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error in convertImageUrlToBase64:', error);
+    throw error;
+  }
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
-  console.log('SculpturePDF: Component mounted');
   const [logoBase64, setLogoBase64] = useState<string>();
   const [sculptureImageBase64, setSculptureImageBase64] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
@@ -197,29 +234,23 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
   useEffect(() => {
     const loadImages = async () => {
       try {
-        console.log('loadImages: Starting to load images');
+        console.log('loadImages: Starting image loading process');
         setIsLoading(true);
         setError(null);
         
+        // Load logo
         const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
+        console.log('Loading logo from:', logoUrl);
         const logoBase64Data = await convertImageUrlToBase64(logoUrl);
-        if (!logoBase64Data) {
-          console.error('Failed to load logo');
-          throw new Error('Failed to load logo');
-        }
         setLogoBase64(logoBase64Data);
         console.log('Logo loaded successfully');
 
+        // Load sculpture image
         if (!sculpture.image_url) {
-          console.error('No sculpture image URL provided');
           throw new Error('No sculpture image URL provided');
         }
-
+        console.log('Loading sculpture image from:', sculpture.image_url);
         const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
-        if (!sculptureBase64Data) {
-          console.error('Failed to load sculpture image');
-          throw new Error('Failed to load sculpture image');
-        }
         setSculptureImageBase64(sculptureBase64Data);
         console.log('Sculpture image loaded successfully');
 
@@ -295,7 +326,11 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
     >
       {({ loading, error }) => {
         if (error) {
-          console.error('PDFDownloadLink error:', error);
+          console.error('PDFDownloadLink error:', {
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause
+          });
           return (
             <Button disabled variant="outline" size="sm" className="gap-2">
               <FileIcon className="h-4 w-4" />
