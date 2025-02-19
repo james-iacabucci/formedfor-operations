@@ -1,13 +1,14 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function useAIGeneration() {
+  const { toast } = useToast();
   const [isGeneratingName, setIsGeneratingName] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
-  const generateAIContent = async (
+  const generateAIContent = useCallback(async (
     type: 'name' | 'description',
     file: File,
     name: string,
@@ -91,7 +92,7 @@ export function useAIGeneration() {
         setIsGeneratingDescription(false);
       }
     }
-  };
+  }, [toast]);
 
   return {
     isGeneratingName,

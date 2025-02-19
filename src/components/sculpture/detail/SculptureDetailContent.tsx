@@ -3,13 +3,11 @@ import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
-import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -28,8 +26,10 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage } = useSculptureRegeneration();
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = useCallback(async () => {
     console.log("SculptureDetailContent: handleRegenerate called");
+    if (isRegenerating) return; // Prevent multiple regenerations
+
     console.log("Setting isRegenerating to true");
     setIsRegenerating(true);
     
@@ -54,7 +54,7 @@ export function SculptureDetailContent({
       console.log("Setting isRegenerating to false");
       setIsRegenerating(false);
     }
-  };
+  }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   console.log("SculptureDetailContent: Current isRegenerating state:", isRegenerating);
 
