@@ -7,7 +7,7 @@ import { Sculpture } from "@/types/sculpture";
 interface SculptureCardContentProps {
   sculpture: Sculpture;
   tags: Array<{ id: string; name: string }>;
-  isRegenerating: (sculptureId: string) => boolean;
+  isRegenerating: (id: string) => boolean;
   showAIContent?: boolean;
   onDelete: () => void;
   onManageTags: () => void;

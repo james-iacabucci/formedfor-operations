@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,22 +9,23 @@ export function useSculptureRegeneration() {
   const { generateAIContent } = useAIGeneration();
 
   // Use React Query to manage regeneration state per sculpture
-  const { data: regeneratingIds = new Set() } = useQuery({
+  const { data: regeneratingIds } = useQuery({
     queryKey: ['regeneration-state'],
-    queryFn: () => new Set<string>(),
+    queryFn: () => [] as string[],
+    initialData: [] as string[],
     staleTime: Infinity,
   });
 
-  const isRegenerating = (sculptureId: string) => regeneratingIds.has(sculptureId);
+  const isRegenerating = (sculptureId: string) => {
+    return regeneratingIds?.includes(sculptureId) ?? false;
+  };
 
   const setRegeneratingState = (sculptureId: string, value: boolean) => {
-    const newSet = new Set(regeneratingIds);
-    if (value) {
-      newSet.add(sculptureId);
-    } else {
-      newSet.delete(sculptureId);
-    }
-    queryClient.setQueryData(['regeneration-state'], newSet);
+    const currentIds = [...(regeneratingIds || [])];
+    const newIds = value 
+      ? [...currentIds, sculptureId]
+      : currentIds.filter(id => id !== sculptureId);
+    queryClient.setQueryData(['regeneration-state'], newIds);
   };
 
   const regenerateImage = async (sculptureId: string) => {
