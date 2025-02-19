@@ -106,30 +106,25 @@ const SculptureDocument = ({
     hasSelectedQuote: !!selectedQuote
   });
   
+  if (!logoBase64 || !sculptureImageBase64) {
+    console.error('Missing required images:', { hasLogo: !!logoBase64, hasSculptureImage: !!sculptureImageBase64 });
+    throw new Error('Required images are missing');
+  }
+
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
         <View style={styles.leftSection}>
-          {sculptureImageBase64 && (
-            <Image src={sculptureImageBase64} style={styles.image} />
-          )}
+          <Image src={sculptureImageBase64} style={styles.image} />
         </View>
         <View style={styles.rightSection}>
-          {logoBase64 && (
-            <Image 
-              src={logoBase64}
-              style={styles.logo} 
-            />
-          )}
-          
+          <Image src={logoBase64} style={styles.logo} />
           <Text style={styles.title}>
             {sculpture.ai_generated_name || "Untitled Sculpture"}
           </Text>
-          
           <Text style={styles.material}>
             {materialName || "Material not specified"}
           </Text>
-
           {selectedQuote ? (
             <Text style={styles.pricing}>
               Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
@@ -139,21 +134,14 @@ const SculptureDocument = ({
               Pricing Upon Request
             </Text>
           )}
-
           <Text style={styles.dimensions}>
             {sculpture.height_in && sculpture.width_in && sculpture.depth_in
-              ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
-                  Math.round(sculpture.height_in * 2.54)
-                } - ${Math.round(sculpture.width_in * 2.54)} - ${
-                  Math.round(sculpture.depth_in * 2.54)
-                } (cm)`
+              ? `${sculpture.height_in}" × ${sculpture.width_in}" × ${sculpture.depth_in}"`
               : "Dimensions not specified"}
           </Text>
-
           <Text style={styles.description}>
             {sculpture.ai_description || sculpture.prompt || "No description available"}
           </Text>
-
           <Text style={styles.footer}>
             LIMITED EDITION OF 33{"\n"}
             (available in multiple finishes and sizes)
@@ -167,13 +155,23 @@ const SculptureDocument = ({
 async function convertImageUrlToBase64(url: string): Promise<string> {
   try {
     console.log('Converting image to base64:', url);
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      cache: 'no-store'
+    });
+    
     if (!response.ok) {
+      console.error('Failed to fetch image:', response.statusText);
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
+    
     const blob = await response.blob();
     console.log('Image blob size:', blob.size, 'bytes');
     
+    if (blob.size === 0) {
+      console.error('Retrieved empty blob');
+      throw new Error('Retrieved empty image blob');
+    }
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -209,25 +207,23 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
         setIsLoading(true);
         setError(null);
         
-        // Convert logo
-        const logoUrl = new URL(
-          '/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png',
-          window.location.origin
-        ).href;
+        const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
         console.log('Loading logo from:', logoUrl);
         const logoBase64Data = await convertImageUrlToBase64(logoUrl);
+        if (!logoBase64Data) throw new Error('Failed to load logo');
         setLogoBase64(logoBase64Data);
         console.log('Logo loaded successfully');
 
-        // Convert sculpture image if available
-        if (sculpture.image_url) {
-          console.log('Loading sculpture image from:', sculpture.image_url);
-          const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
-          setSculptureImageBase64(sculptureBase64Data);
-          console.log('Sculpture image loaded successfully');
-        } else {
-          console.log('No sculpture image URL provided');
+        if (!sculpture.image_url) {
+          throw new Error('No sculpture image URL provided');
         }
+
+        console.log('Loading sculpture image from:', sculpture.image_url);
+        const sculptureBase64Data = await convertImageUrlToBase64(sculpture.image_url);
+        if (!sculptureBase64Data) throw new Error('Failed to load sculpture image');
+        setSculptureImageBase64(sculptureBase64Data);
+        console.log('Sculpture image loaded successfully');
+
       } catch (error) {
         console.error('Error in loadImages:', error);
         setError(error instanceof Error ? error.message : 'Unknown error occurred');
@@ -267,7 +263,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
                    quotes.other_cost;
       
       const tradePrice = total * quotes.markup;
-      const retailPrice = tradePrice * 1.5; // 50% markup for retail
+      const retailPrice = tradePrice * 1.5;
 
       console.log('Quote calculated:', { tradePrice, retailPrice });
       return {
@@ -294,7 +290,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !logoBase64 || !sculptureImageBase64) {
     return (
       <Button disabled variant="outline" size="sm" className="gap-2">
         <FileIcon className="h-4 w-4" />
@@ -323,7 +319,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
           return (
             <Button disabled variant="outline" size="sm" className="gap-2">
               <FileIcon className="h-4 w-4" />
-              PDF Error
+              PDF Error: {error.message}
             </Button>
           );
         }
