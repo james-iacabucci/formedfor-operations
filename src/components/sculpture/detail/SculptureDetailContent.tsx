@@ -73,20 +73,25 @@ export function SculptureDetailContent({
             userId={user.id}
             onRegenerate={handleRegenerate}
           />
-          <SculpturePrompt sculptureId={sculpture.id} prompt={sculpture.prompt} />
-          <SculptureMethod sculptureId={sculpture.id} method={sculpture.method} />
+          <SculpturePrompt sculpture={sculpture} />
+          <SculptureMethod sculpture={sculpture} />
           <SculptureAttributes 
             sculpture={sculpture} 
             originalSculpture={originalSculpture}
             tags={tags}
           />
-          <SculptureFiles sculptureId={sculpture.id} files={sculpture.files} />
+          <SculptureFiles 
+            sculptureId={sculpture.id} 
+            models={sculpture.models || []}
+            renderings={sculpture.renderings || []}
+            dimensions={sculpture.dimensions || []}
+          />
           <SculpturePDF sculpture={sculpture} />
           <SculptureVariations 
-            sculptureId={sculpture.id} 
-            originalSculptureId={sculpture.original_sculpture_id}
+            sculpture={sculpture} 
+            originalSculpture={originalSculpture}
           />
-          <SculptureFabricationQuotes sculptureId={sculpture.id} />
+          <SculptureFabricationQuotes sculpture={sculpture} />
         </div>
       </div>
     </div>
