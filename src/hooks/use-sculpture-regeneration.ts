@@ -1,10 +1,12 @@
 
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 export function useSculptureRegeneration() {
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
@@ -22,7 +24,13 @@ export function useSculptureRegeneration() {
       return;
     }
 
+    if (isRegenerating) {
+      console.log("Already regenerating, skipping");
+      return;
+    }
+
     console.log("Starting regeneration process...");
+    setIsRegenerating(true);
     
     try {
       console.log("Calling regenerate-image edge function");
@@ -91,7 +99,10 @@ export function useSculptureRegeneration() {
         description: error.message || "Could not regenerate image. Please try again.",
         variant: "destructive",
       });
-      throw error; // Re-throw the error so the component can handle it
+      throw error;
+    } finally {
+      console.log("Setting isRegenerating to false");
+      setIsRegenerating(false);
     }
   };
 
@@ -108,6 +119,12 @@ export function useSculptureRegeneration() {
     }
   ) => {
     console.log("generateVariant called with options:", options);
+    if (isRegenerating) {
+      console.log("Already regenerating, skipping variant generation");
+      return;
+    }
+
+    setIsRegenerating(true);
     try {
       if (options.updateExisting) {
         console.log("Updating existing sculpture");
@@ -175,10 +192,13 @@ export function useSculptureRegeneration() {
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
   return {
+    isRegenerating,
     regenerateImage,
     generateVariant
   };

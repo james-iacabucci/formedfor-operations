@@ -3,7 +3,7 @@ import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -21,17 +21,13 @@ export function SculptureDetailContent({
   tags,
 }: SculptureDetailContentProps) {
   console.log("SculptureDetailContent: Initial render");
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { regenerateImage } = useSculptureRegeneration();
+  const { regenerateImage, isRegenerating } = useSculptureRegeneration();
 
   const handleRegenerate = useCallback(async () => {
     console.log("SculptureDetailContent: handleRegenerate called");
     if (isRegenerating) return; // Prevent multiple regenerations
-
-    console.log("Setting isRegenerating to true");
-    setIsRegenerating(true);
     
     try {
       console.log("Starting regeneration process...");
@@ -50,9 +46,6 @@ export function SculptureDetailContent({
         description: "Failed to regenerate. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      console.log("Setting isRegenerating to false");
-      setIsRegenerating(false);
     }
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
