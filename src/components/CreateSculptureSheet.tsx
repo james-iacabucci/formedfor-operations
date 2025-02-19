@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -40,6 +42,36 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
 
   const clearSelection = () => {
     setSelectedIds(new Set());
+  };
+
+  const improvePrompt = async () => {
+    if (!prompt.trim()) return;
+
+    setIsImproving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('improve-prompt', {
+        body: { prompt: prompt.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data?.improvedPrompt) {
+        setPrompt(data.improvedPrompt);
+        toast({
+          title: "Prompt Improved",
+          description: "Your prompt has been enhanced for better results.",
+        });
+      }
+    } catch (error) {
+      console.error('Error improving prompt:', error);
+      toast({
+        title: "Error",
+        description: "Could not improve prompt. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImproving(false);
+    }
   };
 
   const generateImages = async () => {
@@ -218,10 +250,38 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         </SheetHeader>
         <div className="space-y-4 mt-4 flex-1 overflow-y-auto">
           <div className="space-y-4">
-            <PromptField
-              value={prompt}
-              onChange={setPrompt}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="prompt">Prompt</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={improvePrompt}
+                  disabled={isImproving || !prompt.trim()}
+                  className="h-8 px-2"
+                >
+                  {isImproving ? (
+                    <>
+                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                      Improving...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCwIcon className="h-4 w-4 mr-2" />
+                      Improve Prompt
+                    </>
+                  )}
+                </Button>
+              </div>
+              <Textarea
+                id="prompt"
+                placeholder="Describe your sculpture..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="min-h-[80px] resize-y"
+                rows={3}
+              />
+            </div>
             
             <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
               <TabsList className="grid w-full grid-cols-3">
