@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GeneratedSculptureGrid, GeneratedImage } from "./sculpture/create/GeneratedSculptureGrid";
 import { CheckIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
 import { Label } from "./ui/label";
+import { cn } from "@/lib/utils";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [isImproving, setIsImproving] = useState(false);
+  const [isPromptUpdated, setIsPromptUpdated] = useState(false);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -55,10 +57,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
 
       if (data?.improvedPrompt) {
         setPrompt(data.improvedPrompt);
-        toast({
-          title: "Prompt Improved",
-          description: "Your prompt has been enhanced for better results.",
-        });
+        setIsPromptUpdated(true);
+        setTimeout(() => setIsPromptUpdated(false), 1000); // Reset after 1 second
       }
     } catch (error) {
       console.error('Error improving prompt:', error);
@@ -340,7 +340,10 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 placeholder="Describe your sculpture..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[80px] resize-y"
+                className={cn(
+                  "min-h-[80px] resize-y transition-colors duration-300",
+                  isPromptUpdated && "bg-green-50 dark:bg-green-900/20"
+                )}
                 rows={5}
               />
             </div>
