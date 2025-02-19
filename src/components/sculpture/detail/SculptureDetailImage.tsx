@@ -90,7 +90,7 @@ export function SculptureDetailImage({
           <Button
             size="icon"
             variant="secondary"
-            className="bg-black/50 hover:bg-black/70 text-white"
+            className="bg-black/30 hover:bg-black/50 text-white/90"
             onClick={handleDownload}
           >
             <DownloadIcon className="h-4 w-4" />
