@@ -20,46 +20,31 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
+  isRegenerating: boolean;
+  onRegenerate: () => Promise<void>;
 }
 
-export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
+export function SculptureHeader({ sculpture, isRegenerating, onRegenerate }: SculptureHeaderProps) {
   const { toast } = useToast();
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { regenerateImage } = useSculptureRegeneration();
 
-  const { data: productLines } = useQuery({
-    queryKey: ["product_lines"],
-    queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
-
-      if (error) throw error;
-      return data as ProductLine[];
-    },
-  });
-
-  const { data: currentProductLine } = useQuery({
-    queryKey: ["product_line", sculpture.product_line_id],
-    queryFn: async () => {
-      if (!sculpture.product_line_id) return null;
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("id", sculpture.product_line_id)
-        .single();
-      
-      if (error) throw error;
-      return data as ProductLine;
-    },
-    enabled: !!sculpture.product_line_id,
-  });
+  const handleRegenerate = async () => {
+    try {
+      await onRegenerate();
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
+    } catch (error) {
+      console.error("Error regenerating:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDownloadImage = () => {
     if (sculpture?.image_url) {
@@ -100,26 +85,37 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
-  const handleRegenerate = async () => {
-    setIsRegenerating(true);
-    try {
-      await regenerateImage(sculpture.id);
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      toast({
-        title: "Success",
-        description: "Image regenerated successfully.",
-      });
-    } catch (error) {
-      console.error("Error regenerating:", error);
-      toast({
-        title: "Error",
-        description: "Failed to regenerate. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
+  const { data: currentProductLine } = useQuery({
+    queryKey: ["product_line", sculpture.product_line_id],
+    queryFn: async () => {
+      if (!sculpture.product_line_id) return null;
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("id", sculpture.product_line_id)
+        .single();
+      
+      if (error) throw error;
+      return data as ProductLine;
+    },
+    enabled: !!sculpture.product_line_id,
+  });
 
   return (
     <div className="space-y-6">
