@@ -17,7 +17,7 @@ export function BaseSculptureImage({
   className,
   children 
 }: BaseSculptureImageProps) {
-  console.log("BaseSculptureImage rendering with props:", {
+  console.log("BaseSculptureImage: Rendering with props:", {
     imageUrl,
     prompt,
     isRegenerating,
@@ -25,7 +25,7 @@ export function BaseSculptureImage({
   });
 
   if (!imageUrl) {
-    console.log("No imageUrl, showing loading state");
+    console.log("BaseSculptureImage: No imageUrl, showing loading state");
     return (
       <div className="flex h-full items-center justify-center bg-muted">
         <div className="flex flex-col items-center text-muted-foreground">
@@ -36,7 +36,7 @@ export function BaseSculptureImage({
     );
   }
 
-  console.log("Rendering image with overlay, isRegenerating:", isRegenerating);
+  console.log("BaseSculptureImage: Rendering image with overlay, isRegenerating:", isRegenerating);
   return (
     <div className={cn("relative aspect-square w-full overflow-hidden", className)}>
       <img

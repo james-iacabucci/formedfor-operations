@@ -12,7 +12,10 @@ export function useSculptureRegeneration() {
   const { generateAIContent } = useAIGeneration();
 
   const regenerateImage = async (sculptureId: string) => {
+    console.log("useSculptureRegeneration: regenerateImage called for sculptureId:", sculptureId);
+    
     if (!sculptureId) {
+      console.error("Invalid sculpture data: missing sculptureId");
       toast({
         title: "Error",
         description: "Invalid sculpture data",
@@ -21,38 +24,48 @@ export function useSculptureRegeneration() {
       return;
     }
 
+    console.log("Starting regeneration process...");
     setIsRegenerating(true);
+    
     try {
+      console.log("Calling regenerate-image edge function");
       const { data, error } = await supabase.functions.invoke('regenerate-image', {
         body: { sculptureId }
       });
 
       if (error) {
-        console.error('Error regenerating image:', error);
+        console.error('Error from edge function:', error);
         throw error;
       }
 
       if (!data?.success) {
+        console.error('Edge function response indicates failure:', data);
         throw new Error(data?.message || 'Failed to regenerate image');
       }
+
+      console.log("Successfully received new image URL:", data.imageUrl);
 
       // Get the new image
       const response = await fetch(data.imageUrl);
       const blob = await response.blob();
       const file = new File([blob], 'regenerated-image.png', { type: 'image/png' });
 
+      console.log("Starting AI content generation");
       // Generate new AI content
       let aiName = '';
       let aiDescription = '';
 
       await generateAIContent('name', file, '', (name) => {
+        console.log("Generated AI name:", name);
         aiName = name;
       });
 
       await generateAIContent('description', file, aiName, (description) => {
+        console.log("Generated AI description:", description);
         aiDescription = description;
       });
 
+      console.log("Updating sculpture with new AI content");
       // Update the sculpture with new AI content
       const { error: updateError } = await supabase
         .from('sculptures')
@@ -67,6 +80,7 @@ export function useSculptureRegeneration() {
         throw updateError;
       }
 
+      console.log("Regeneration process completed successfully");
       toast({
         title: "Success",
         description: "Your sculpture has been updated with a new image and AI-generated content.",
@@ -74,13 +88,14 @@ export function useSculptureRegeneration() {
 
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
     } catch (error) {
-      console.error('Error regenerating image:', error);
+      console.error('Error in regeneration process:', error);
       toast({
         title: "Error",
         description: error.message || "Could not regenerate image. Please try again.",
         variant: "destructive",
       });
     } finally {
+      console.log("Setting isRegenerating to false");
       setIsRegenerating(false);
     }
   };
@@ -97,9 +112,11 @@ export function useSculptureRegeneration() {
       regenerateMetadata: boolean;
     }
   ) => {
+    console.log("generateVariant called with options:", options);
     setIsRegenerating(true);
     try {
       if (options.updateExisting) {
+        console.log("Updating existing sculpture");
         const { error: updateError } = await supabase
           .from('sculptures')
           .update({
@@ -111,6 +128,7 @@ export function useSculptureRegeneration() {
         if (updateError) throw updateError;
 
         if (options.regenerateImage) {
+          console.log("Regenerating image for existing sculpture");
           const { error } = await supabase.functions.invoke('regenerate-image', {
             body: { sculptureId }
           });
@@ -119,6 +137,7 @@ export function useSculptureRegeneration() {
         }
 
       } else {
+        console.log("Creating new variant");
         const { data: variant, error } = await supabase
           .from('sculptures')
           .insert([
@@ -137,6 +156,7 @@ export function useSculptureRegeneration() {
         if (error) throw error;
 
         if (options.regenerateImage) {
+          console.log("Generating image for new variant");
           const { error: generateError } = await supabase.functions.invoke('generate-image', {
             body: { 
               prompt: options.changes ? `${prompt}\n\nChanges: ${options.changes}` : prompt,
@@ -148,6 +168,7 @@ export function useSculptureRegeneration() {
         }
       }
 
+      console.log("Variant generation completed successfully");
       toast({
         title: options.updateExisting ? "Updating sculpture" : "Generating variant",
         description: options.updateExisting 
@@ -164,6 +185,7 @@ export function useSculptureRegeneration() {
         variant: "destructive",
       });
     } finally {
+      console.log("Setting isRegenerating to false");
       setIsRegenerating(false);
     }
   };

@@ -22,36 +22,41 @@ export function SculptureDetailContent({
   originalSculpture,
   tags,
 }: SculptureDetailContentProps) {
+  console.log("SculptureDetailContent: Initial render");
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { regenerateImage } = useSculptureRegeneration();
 
   const handleRegenerate = async () => {
-    console.log("Starting regeneration...");
+    console.log("SculptureDetailContent: handleRegenerate called");
+    console.log("Setting isRegenerating to true");
     setIsRegenerating(true);
-    console.log("isRegenerating set to:", true);
+    
     try {
+      console.log("Starting regeneration process...");
       await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      console.log("Regeneration completed successfully");
+      
       toast({
         title: "Success",
         description: "Image regenerated successfully.",
       });
     } catch (error) {
-      console.error("Error regenerating:", error);
+      console.error("Regeneration error:", error);
       toast({
         title: "Error",
         description: "Failed to regenerate. Please try again.",
         variant: "destructive",
       });
     } finally {
-      console.log("Regeneration complete, setting isRegenerating to false");
+      console.log("Setting isRegenerating to false");
       setIsRegenerating(false);
     }
   };
 
-  console.log("SculptureDetailContent rendering, isRegenerating:", isRegenerating);
+  console.log("SculptureDetailContent: Current isRegenerating state:", isRegenerating);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
