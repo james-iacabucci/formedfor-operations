@@ -5,6 +5,33 @@ This file tracks potential improvements and features that could be implemented i
 
 ## Pending Improvements
 
+### User Management System
+- [ ] Add comprehensive user roles system (admin, manager, user, etc.)
+- [ ] Implement role-based permissions management
+- [ ] Create admin interface for user management
+- [ ] Add user activity logging and audit trails
+
+### Project Management
+- [ ] Implement client projects system
+  - [ ] Add project metadata (location, client info, trade contact)
+  - [ ] Enable adding sculptures from library
+  - [ ] Implement smart copy system for library items
+  - [ ] Add branching logic for project-specific variants vs library variants
+  - [ ] Add project status tracking
+  - [ ] Create project dashboard
+
+### Sculpture Features
+- [ ] Enhance variant generation system
+  - [ ] Generate multiple variants simultaneously (grid of 10)
+  - [ ] Add batch selection interface
+  - [ ] Implement bulk save functionality
+  - [ ] Add regenerate all capability
+- [ ] Add 3D model preview functionality
+- [ ] Implement PDF export system
+  - [ ] Sales presentation format
+  - [ ] Marketing collateral format
+  - [ ] Technical specifications format
+
 ### Regeneration System
 - [ ] Refactor `use-sculpture-regeneration.ts` into smaller, more focused hooks (current file is over 200 lines)
 - [ ] Add loading states and better error handling for regeneration processes
@@ -30,4 +57,5 @@ When working with the AI assistant:
 - This list is maintained across conversations through the codebase
 - Items are moved to "Implemented Features" section once completed
 - Each item should be specific and actionable
+
 
