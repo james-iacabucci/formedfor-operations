@@ -134,7 +134,7 @@ export function SculptureCard({
 
   return (
     <Card 
-      className="group hover:shadow-lg relative overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1"
+      className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
       onClick={handleCardClick}
     >
       <CardContent className="p-0">
