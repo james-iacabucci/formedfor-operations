@@ -16,9 +16,6 @@ export async function convertImageUrlToBase64(url: string): Promise<string> {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
     
-    const contentType = response.headers.get('content-type');
-    console.log('Image content type:', contentType);
-    
     const blob = await response.blob();
     console.log('Blob received:', {
       size: blob.size,
@@ -35,22 +32,12 @@ export async function convertImageUrlToBase64(url: string): Promise<string> {
       reader.onloadend = () => {
         try {
           const base64Data = reader.result as string;
-          const base64Match = base64Data.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
-          
-          if (!base64Match) {
-            console.error('Invalid base64 image data format');
-            reject(new Error('Invalid base64 image data format'));
-            return;
-          }
-          
-          const base64Content = base64Match[2];
           console.log('Base64 conversion successful:', {
-            contentLength: base64Content.length,
-            startsWidth: base64Content.substring(0, 20) + '...',
-            endsWidth: '...' + base64Content.substring(base64Content.length - 20)
+            contentLength: base64Data.length,
+            startsWidth: base64Data.substring(0, 50) + '...'
           });
           
-          resolve(base64Content);
+          resolve(base64Data); // Return the complete data URL
         } catch (error) {
           console.error('Error processing base64 data:', error);
           reject(error);

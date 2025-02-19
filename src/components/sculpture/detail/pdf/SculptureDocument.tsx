@@ -12,13 +12,13 @@ export const SculptureDocument = ({
 }: SculptureDocumentProps) => {
   console.log('SculptureDocument: Starting render');
   
-  if (!logoBase64?.startsWith('data:image') && !logoBase64?.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
-    console.error('SculptureDocument: Invalid logo base64 format');
+  if (!logoBase64?.startsWith('data:image/')) {
+    console.error('SculptureDocument: Invalid logo format');
     throw new Error('Invalid logo format');
   }
   
-  if (!sculptureImageBase64?.startsWith('data:image') && !sculptureImageBase64?.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
-    console.error('SculptureDocument: Invalid sculpture image base64 format');
+  if (!sculptureImageBase64?.startsWith('data:image/')) {
+    console.error('SculptureDocument: Invalid sculpture image format');
     throw new Error('Invalid sculpture image format');
   }
 
@@ -28,10 +28,10 @@ export const SculptureDocument = ({
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
         <View style={styles.leftSection}>
-          <Image src={`data:image/jpeg;base64,${sculptureImageBase64}`} style={styles.image} />
+          <Image src={sculptureImageBase64} style={styles.image} />
         </View>
         <View style={styles.rightSection}>
-          <Image src={`data:image/png;base64,${logoBase64}`} style={styles.logo} />
+          <Image src={logoBase64} style={styles.logo} />
           <Text style={styles.title}>
             {sculpture.ai_generated_name || "Untitled Sculpture"}
           </Text>
