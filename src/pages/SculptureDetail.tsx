@@ -21,7 +21,7 @@ export default function SculptureDetail() {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
-  const { data: sculpture, isLoading: isLoadingSculpture } = useQuery({
+  const { data: sculpture, isLoading: isLoadingSculpture, refetch } = useQuery({
     queryKey: ["sculpture", id],
     queryFn: async () => {
       console.log("Fetching sculpture details:", id);
@@ -157,6 +157,7 @@ export default function SculptureDetail() {
           sculpture={sculpture}
           originalSculpture={originalSculpture}
           tags={tags || []}
+          onUpdate={refetch}
         />
       </div>
 
