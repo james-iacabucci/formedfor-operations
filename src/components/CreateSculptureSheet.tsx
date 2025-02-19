@@ -168,48 +168,100 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       const selectedImages = generatedImages.filter(img => selectedIds.has(img.id));
       
       for (const image of selectedImages) {
-        const response = await fetch(image.url!);
-        const blob = await response.blob();
-        const file = new File([blob], 'generated-image.png', { type: 'image/png' });
-        
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('sculptures')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('sculptures')
-          .getPublicUrl(fileName);
-
-        const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
-          body: { 
-            imageUrl: publicUrl,
-            type: 'both'
+        try {
+          // First check if we can access the image
+          const response = await fetch(image.url!);
+          if (!response.ok) {
+            throw new Error('Could not access image');
           }
-        });
 
-        if (metadataError) throw metadataError;
+          const blob = await response.blob();
+          const file = new File([blob], 'generated-image.png', { type: 'image/png' });
+          
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
+          
+          // Upload image to storage
+          const { error: uploadError } = await supabase.storage
+            .from('sculptures')
+            .upload(fileName, file);
 
-        const { error: createError } = await supabase
-          .from('sculptures')
-          .insert([
-            {
-              prompt: prompt.trim(),
-              user_id: user.id,
-              ai_engine: "runware",
-              status: "idea",
-              image_url: publicUrl,
-              creativity_level: creativity,
-              ai_generated_name: metadata?.name,
-              ai_description: metadata?.description
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('sculptures')
+            .getPublicUrl(fileName);
+
+          // Create sculpture first with basic info
+          const { data: sculpture, error: createError } = await supabase
+            .from('sculptures')
+            .insert([
+              {
+                prompt: prompt.trim(),
+                user_id: user.id,
+                ai_engine: "runware",
+                status: "idea",
+                image_url: publicUrl,
+                creativity_level: creativity,
+              }
+            ])
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Create error:', createError);
+            throw createError;
+          }
+
+          // Then update with metadata
+          try {
+            const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
+              body: { 
+                imageUrl: publicUrl,
+                type: 'both'
+              }
+            });
+
+            if (metadataError) {
+              console.error('Metadata error:', metadataError);
+              throw metadataError;
             }
-          ]);
 
-        if (createError) throw createError;
+            if (metadata) {
+              const { error: updateError } = await supabase
+                .from('sculptures')
+                .update({
+                  ai_generated_name: metadata.name,
+                  ai_description: metadata.description
+                })
+                .eq('id', sculpture.id);
+
+              if (updateError) {
+                console.error('Update error:', updateError);
+                throw updateError;
+              }
+            }
+          } catch (metadataError) {
+            console.error('Failed to generate or update metadata:', metadataError);
+            // Don't throw here - we still created the sculpture successfully
+            toast({
+              title: "Partial Success",
+              description: "Sculpture saved but name/description generation failed.",
+              variant: "default",
+            });
+          }
+        } catch (imageError) {
+          console.error('Failed to process image:', imageError);
+          toast({
+            title: "Error",
+            description: "Failed to process one of the selected images.",
+            variant: "destructive",
+          });
+        }
       }
 
       toast({
@@ -225,10 +277,10 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       clearSelection();
       
     } catch (error) {
-      console.error('Error saving sculptures:', error);
+      console.error('Error in save process:', error);
       toast({
         title: "Error",
-        description: "Could not save one or more sculptures. Please try again.",
+        description: "Could not complete the save operation. Please try again.",
         variant: "destructive",
       });
     } finally {
