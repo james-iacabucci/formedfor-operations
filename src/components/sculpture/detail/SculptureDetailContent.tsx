@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -11,12 +10,14 @@ import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
+  onUpdate: () => void;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
 }
 
 export function SculptureDetailContent({
   sculpture,
+  onUpdate,
   originalSculpture,
   tags,
 }: SculptureDetailContentProps) {
@@ -45,25 +46,23 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-      <div className="w-full space-y-6">
-        <AspectRatio ratio={1}>
-          <SculptureDetailImage
-            imageUrl={sculpture.image_url || ""}
-            prompt={sculpture.prompt}
-            isRegenerating={isRegenerating}
-            sculptureId={sculpture.id}
-            userId={sculpture.user_id}
-            onRegenerate={handleRegenerate}
-          />
-        </AspectRatio>
-        <SculptureFiles
+    <div className="space-y-8">
+      <AspectRatio ratio={1}>
+        <SculptureDetailImage
+          imageUrl={sculpture.image_url}
+          prompt={sculpture.prompt}
+          isRegenerating={isRegenerating(sculpture.id)}
           sculptureId={sculpture.id}
-          models={sculpture.models}
-          renderings={sculpture.renderings}
-          dimensions={sculpture.dimensions}
+          userId={sculpture.user_id}
+          onRegenerate={() => handleRegenerate()}
         />
-      </div>
+      </AspectRatio>
+      <SculptureFiles
+        sculptureId={sculpture.id}
+        models={sculpture.models}
+        renderings={sculpture.renderings}
+        dimensions={sculpture.dimensions}
+      />
       <SculptureAttributes
         sculpture={sculpture}
         originalSculpture={originalSculpture}
