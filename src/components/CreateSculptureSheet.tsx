@@ -23,6 +23,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [creativity, setCreativity] = useState<"low" | "medium" | "high">("medium");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
@@ -175,6 +176,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       const selectedImages = generatedImages.filter(img => selectedIds.has(img.id));
       
       for (const image of selectedImages) {
+        // Download and prepare the image
         const response = await fetch(image.url!);
         const blob = await response.blob();
         const file = new File([blob], 'generated-image.png', { type: 'image/png' });
@@ -182,6 +184,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         const fileExt = file.name.split('.').pop();
         const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
         
+        // Upload the image to storage
         const { error: uploadError } = await supabase.storage
           .from('sculptures')
           .upload(fileName, file);
@@ -192,6 +195,17 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           .from('sculptures')
           .getPublicUrl(fileName);
 
+        // Generate AI name and description for the sculpture
+        const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
+          body: { 
+            imageUrl: publicUrl,
+            type: 'both'
+          }
+        });
+
+        if (metadataError) throw metadataError;
+
+        // Create the sculpture with generated metadata
         const { error: createError } = await supabase
           .from('sculptures')
           .insert([
@@ -201,7 +215,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               ai_engine: "runware",
               status: "idea",
               image_url: publicUrl,
-              creativity_level: creativity
+              creativity_level: creativity,
+              ai_generated_name: metadata?.name,
+              ai_description: metadata?.description
             }
           ]);
 
@@ -217,6 +233,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       onOpenChange(false);
       
       setPrompt("");
+      setNegativePrompt("");
       setGeneratedImages([]);
       clearSelection();
       
@@ -235,6 +252,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   useEffect(() => {
     if (!open) {
       setPrompt("");
+      setNegativePrompt("");
       setGeneratedImages([]);
       clearSelection();
       setIsGenerating(false);
@@ -248,39 +266,52 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         <SheetHeader>
           <SheetTitle>Create New Sculpture</SheetTitle>
         </SheetHeader>
-        <div className="space-y-4 mt-4 flex-1 overflow-y-auto">
+        <div className="space-y-4 mt-4 flex-1 overflow-y-auto px-1">
           <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="prompt">Prompt</Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={improvePrompt}
-                  disabled={isImproving || !prompt.trim()}
-                  className="h-8 px-2"
-                >
-                  {isImproving ? (
-                    <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                      Improving...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCwIcon className="h-4 w-4 mr-2" />
-                      Improve Prompt
-                    </>
-                  )}
-                </Button>
+            <div className="flex gap-4">
+              <div className="space-y-2 flex-[3]">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="prompt">Prompt</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={improvePrompt}
+                    disabled={isImproving || !prompt.trim()}
+                    className="h-8 px-2"
+                  >
+                    {isImproving ? (
+                      <>
+                        <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                        Improving...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCwIcon className="h-4 w-4 mr-2" />
+                        Improve Prompt
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <Textarea
+                  id="prompt"
+                  placeholder="Describe your sculpture..."
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="min-h-[80px] resize-y"
+                  rows={5}
+                />
               </div>
-              <Textarea
-                id="prompt"
-                placeholder="Describe your sculpture..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[80px] resize-y"
-                rows={3}
-              />
+              <div className="space-y-2 flex-[2]">
+                <Label htmlFor="negativePrompt">Negative Prompt</Label>
+                <Textarea
+                  id="negativePrompt"
+                  placeholder="Describe what you don't want in the sculpture..."
+                  value={negativePrompt}
+                  onChange={(e) => setNegativePrompt(e.target.value)}
+                  className="min-h-[80px] resize-y"
+                  rows={5}
+                />
+              </div>
             </div>
             
             <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
