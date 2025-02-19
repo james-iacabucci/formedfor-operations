@@ -3,6 +3,8 @@ import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from "
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
 import { Sculpture } from "@/types/sculpture";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const styles = StyleSheet.create({
   page: {
@@ -67,11 +69,15 @@ const styles = StyleSheet.create({
 interface SculptureDocumentProps {
   sculpture: Sculpture;
   materialName?: string;
+  selectedQuote?: {
+    tradePrice: number;
+    retailPrice: number;
+  } | null;
 }
 
-const SculptureDocument = ({ sculpture, materialName }: SculptureDocumentProps) => (
+const SculptureDocument = ({ sculpture, materialName, selectedQuote }: SculptureDocumentProps) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.leftSection}>
         {sculpture.image_url && (
           <Image src={sculpture.image_url} style={styles.image} />
@@ -89,7 +95,9 @@ const SculptureDocument = ({ sculpture, materialName }: SculptureDocumentProps) 
         </Text>
 
         <Text style={styles.pricing}>
-          Trade ${(79800).toLocaleString()}   /   Retail ${(123000).toLocaleString()}
+          {selectedQuote 
+            ? `Trade $${selectedQuote.tradePrice.toLocaleString()}   /   Retail $${selectedQuote.retailPrice.toLocaleString()}`
+            : "Pricing Upon Request"}
         </Text>
 
         <Text style={styles.dimensions}>
@@ -121,9 +129,48 @@ interface SculpturePDFProps {
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
+  // Fetch selected quote for the sculpture
+  const { data: selectedQuote } = useQuery({
+    queryKey: ["selected_quote", sculpture.id],
+    queryFn: async () => {
+      const { data: quotes, error } = await supabase
+        .from("fabrication_quotes")
+        .select("*")
+        .eq("sculpture_id", sculpture.id)
+        .eq("is_selected", true)
+        .single();
+
+      if (error) {
+        console.error("Error fetching selected quote:", error);
+        return null;
+      }
+
+      if (!quotes) return null;
+
+      const total = quotes.fabrication_cost + 
+                   quotes.shipping_cost + 
+                   quotes.customs_cost + 
+                   quotes.other_cost;
+      
+      const tradePrice = total * quotes.markup;
+      const retailPrice = tradePrice * 1.5; // 50% markup for retail
+
+      return {
+        tradePrice,
+        retailPrice
+      };
+    }
+  });
+
   return (
     <PDFDownloadLink
-      document={<SculptureDocument sculpture={sculpture} materialName={materialName} />}
+      document={
+        <SculptureDocument 
+          sculpture={sculpture} 
+          materialName={materialName} 
+          selectedQuote={selectedQuote}
+        />
+      }
       fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
     >
       {({ loading }) => (
