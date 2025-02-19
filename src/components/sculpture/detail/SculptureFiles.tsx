@@ -11,7 +11,7 @@ interface SculptureFilesProps {
   dimensions: FileUpload[];
 }
 
-export function SculptureFiles({ sculptureId, models = [], renderings = [], dimensions = [] }: SculptureFilesProps) {
+export function SculptureFiles({ sculptureId, models, renderings, dimensions }: SculptureFilesProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold mb-2">Attachments</h2>

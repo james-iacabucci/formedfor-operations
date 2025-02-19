@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, PlusIcon } from "lucide-react";
 import { BaseSculptureImage } from "../BaseSculptureImage";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
@@ -86,11 +86,19 @@ export function SculptureDetailImage({
         prompt={prompt}
         isRegenerating={isRegenerating}
       >
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex gap-2">
           <Button
             size="icon"
             variant="secondary"
-            className="bg-black/30 hover:bg-black/50 text-white/90"
+            className="bg-black/50 hover:bg-black/70 text-white"
+            onClick={() => setIsRegenerationSheetOpen(true)}
+          >
+            <PlusIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="bg-black/50 hover:bg-black/70 text-white"
             onClick={handleDownload}
           >
             <DownloadIcon className="h-4 w-4" />

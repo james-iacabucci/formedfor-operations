@@ -1,99 +1,94 @@
 
-import { Sculpture } from "@/types/sculpture";
-import { SculptureHeader } from "./SculptureHeader";
-import { SculptureAttributes } from "./SculptureAttributes";
-import { SculptureMethod } from "./SculptureMethod";
-import { SculptureVariations } from "./SculptureVariations";
-import { SculptureFiles } from "./SculptureFiles";
-import { SculpturePDF } from "./SculpturePDF";
-import { SculpturePrompt } from "./SculpturePrompt";
 import { SculptureDetailImage } from "./SculptureDetailImage";
-import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
+import { SculptureAttributes } from "./SculptureAttributes";
+import { SculptureFiles } from "./SculptureFiles";
+import { Sculpture } from "@/types/sculpture";
+import { RegenerationSheet } from "@/components/sculpture/RegenerationSheet";
+import { DeleteSculptureDialog } from "@/components/sculpture/DeleteSculptureDialog";
+import { ManageTagsDialog } from "@/components/tags/ManageTagsDialog";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
-  originalSculpture?: Sculpture | null;
-  tags: { id: string; name: string }[];
+  originalSculpture: Sculpture | null;
+  tags: Array<{ id: string; name: string }>;
 }
 
-export function SculptureDetailContent({ 
-  sculpture, 
+export function SculptureDetailContent({
+  sculpture,
   originalSculpture,
-  tags
+  tags,
 }: SculptureDetailContentProps) {
-  const queryClient = useQueryClient();
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-      setUser(user);
-    };
-    getUser();
-  }, []);
+  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { regenerateImage } = useSculptureRegeneration();
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
     try {
-      const { error } = await supabase.functions.invoke('regenerate-image', {
-        body: { sculptureId: sculpture.id }
-      });
-      if (error) throw error;
+      await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
     } catch (error) {
-      console.error('Error regenerating:', error);
+      console.error("Error regenerating:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsRegenerating(false);
     }
   };
 
-  if (!user) return null; // Wait for user data to be loaded
-
   return (
-    <div className="grid gap-6">
-      <SculptureHeader 
-        sculpture={sculpture}
-        onRegenerate={handleRegenerate}
-        isRegenerating={isRegenerating}
-      />
-      
-      <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-        <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="w-full space-y-6">
+        <AspectRatio ratio={1}>
           <SculptureDetailImage
-            imageUrl={sculpture.image_url}
+            imageUrl={sculpture.image_url || ""}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
             sculptureId={sculpture.id}
-            userId={user.id}
+            userId={sculpture.user_id}
             onRegenerate={handleRegenerate}
           />
-          <SculpturePrompt sculpture={sculpture} />
-          <SculptureMethod sculpture={sculpture} />
-          <SculptureAttributes 
-            sculpture={sculpture} 
-            originalSculpture={originalSculpture}
-            tags={tags}
-          />
-          <SculptureFiles 
-            sculptureId={sculpture.id} 
-            models={sculpture.models || []}
-            renderings={sculpture.renderings || []}
-            dimensions={sculpture.dimensions || []}
-          />
-          <SculpturePDF sculpture={sculpture} />
-          <SculptureVariations 
-            sculpture={sculpture} 
-            originalSculpture={originalSculpture}
-          />
-          <SculptureFabricationQuotes sculpture={sculpture} />
-        </div>
+        </AspectRatio>
+        <SculptureFiles
+          sculptureId={sculpture.id}
+          models={sculpture.models}
+          renderings={sculpture.renderings}
+          dimensions={sculpture.dimensions}
+        />
       </div>
+      <SculptureAttributes
+        sculpture={sculpture}
+        originalSculpture={originalSculpture}
+        tags={tags}
+      />
+      <DeleteSculptureDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        sculpture={sculpture}
+      />
+      <ManageTagsDialog
+        open={isManageTagsOpen}
+        onOpenChange={setIsManageTagsOpen}
+        sculpture={sculpture}
+      />
     </div>
   );
 }
