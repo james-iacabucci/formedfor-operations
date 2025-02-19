@@ -1,5 +1,6 @@
 
 import { cn } from "@/lib/utils";
+import { Image as ImageIcon } from "lucide-react";
 
 interface BaseSculptureImageProps {
   imageUrl: string | null;

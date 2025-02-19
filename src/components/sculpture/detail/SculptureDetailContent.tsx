@@ -28,6 +28,7 @@ export function SculptureDetailContent({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleRegenerate = async (options: any) => {
     setIsRegenerating(true);
