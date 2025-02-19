@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { GeneratedSculptureGrid, GeneratedImage } from "./sculpture/create/GeneratedSculptureGrid";
-import { CheckIcon, Loader2Icon } from "lucide-react";
+import { CheckIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -24,6 +27,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+  const [regenerateOnlyUnselected, setRegenerateOnlyUnselected] = useState(true);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -39,7 +43,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     setSelectedIds(new Set());
   };
 
-  const generateImages = async (regenerateUnselected = false) => {
+  const generateImages = async (regenerateUnselected = regenerateOnlyUnselected) => {
     if (!user || !prompt.trim()) return;
     
     setIsGenerating(true);
@@ -220,11 +224,21 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Generated Sculptures</h3>
-                {selectedIds.size > 0 && (
-                  <Button variant="ghost" onClick={clearSelection}>
-                    Clear Selection
-                  </Button>
-                )}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="regenerate-unselected"
+                      checked={regenerateOnlyUnselected}
+                      onCheckedChange={setRegenerateOnlyUnselected}
+                    />
+                    <Label htmlFor="regenerate-unselected">Keep selected images on regenerate</Label>
+                  </div>
+                  {selectedIds.size > 0 && (
+                    <Button variant="ghost" onClick={clearSelection}>
+                      Clear Selection
+                    </Button>
+                  )}
+                </div>
               </div>
               <GeneratedSculptureGrid
                 images={generatedImages}
@@ -262,7 +276,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           )}
           
           <Button 
-            onClick={() => generateImages(generatedImages.length > 0)}
+            onClick={() => generateImages()}
             disabled={isGenerating || isSaving || !prompt.trim()}
             className="gap-2"
           >
@@ -272,7 +286,16 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 Generating...
               </>
             ) : (
-              generatedImages.length > 0 ? 'Regenerate' : 'Generate'
+              <>
+                {generatedImages.length > 0 ? (
+                  <>
+                    <RefreshCwIcon className="h-4 w-4" />
+                    Regenerate
+                  </>
+                ) : (
+                  'Generate'
+                )}
+              </>
             )}
           </Button>
         </div>
