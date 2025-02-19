@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -13,8 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, sculptureId } = await req.json()
-    console.log('Generating image for prompt:', prompt, 'sculptureId:', sculptureId)
+    const { prompt, sculptureId, creativity } = await req.json()
+    console.log('Generating image for prompt:', prompt, 'sculptureId:', sculptureId, 'creativity:', creativity)
 
     const API_ENDPOINT = "https://api.runware.ai/v1"
     const RUNWARE_API_KEY = Deno.env.get('RUNWARE_API_KEY')
@@ -22,6 +23,24 @@ serve(async (req) => {
     if (!RUNWARE_API_KEY) {
       throw new Error('RUNWARE_API_KEY is not set')
     }
+
+    // Map creativity levels to model parameters
+    const creativitySettings = {
+      low: {
+        CFGScale: 8,
+        scheduler: "EulerDiscreteScheduler"
+      },
+      medium: {
+        CFGScale: 12,
+        scheduler: "DPMSolverMultistepScheduler"
+      },
+      high: {
+        CFGScale: 16,
+        scheduler: "UniPCMultistepScheduler"
+      }
+    }
+
+    const settings = creativitySettings[creativity] || creativitySettings.medium
 
     // Call Runware API
     const response = await fetch(API_ENDPOINT, {
@@ -41,7 +60,10 @@ serve(async (req) => {
           model: "runware:100@1",
           width: 1024,
           height: 1024,
-          numberResults: 1
+          numberResults: 1,
+          CFGScale: settings.CFGScale,
+          scheduler: settings.scheduler,
+          outputFormat: "WEBP"
         }
       ])
     })
@@ -58,23 +80,13 @@ serve(async (req) => {
       throw new Error('No image URL in response')
     }
 
-    // Update the sculpture with the generated image URL
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const { error: updateError } = await supabase
-      .from('sculptures')
-      .update({ image_url: imageData.imageURL })
-      .eq('id', sculptureId)
-
-    if (updateError) {
-      throw new Error(`Failed to update sculpture: ${updateError.message}`)
-    }
-
+    // Instead of storing in Supabase immediately, return the temporary URL
     return new Response(
-      JSON.stringify({ imageUrl: imageData.imageURL }),
+      JSON.stringify({ 
+        success: true,
+        imageUrl: imageData.imageURL,
+        sculptureId: sculptureId
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
