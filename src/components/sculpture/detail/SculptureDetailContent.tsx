@@ -10,8 +10,9 @@ import { SculpturePrompt } from "./SculpturePrompt";
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -26,6 +27,16 @@ export function SculptureDetailContent({
 }: SculptureDetailContentProps) {
   const queryClient = useQueryClient();
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -42,8 +53,7 @@ export function SculptureDetailContent({
     }
   };
 
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error("No user found");
+  if (!user) return null; // Wait for user data to be loaded
 
   return (
     <div className="grid gap-6">
@@ -60,19 +70,23 @@ export function SculptureDetailContent({
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
             sculptureId={sculpture.id}
-            userId={user.user.id}
+            userId={user.id}
             onRegenerate={handleRegenerate}
           />
-          <SculpturePrompt sculpture={sculpture} />
-          <SculptureMethod sculpture={sculpture} />
-          <SculptureAttributes sculpture={sculpture} />
-          <SculptureFiles sculpture={sculpture} />
-          <SculpturePDF sculpture={sculpture} />
-          <SculptureVariations 
+          <SculpturePrompt sculptureId={sculpture.id} prompt={sculpture.prompt} />
+          <SculptureMethod sculptureId={sculpture.id} method={sculpture.method} />
+          <SculptureAttributes 
             sculpture={sculpture} 
             originalSculpture={originalSculpture}
+            tags={tags}
           />
-          <SculptureFabricationQuotes sculpture={sculpture} />
+          <SculptureFiles sculptureId={sculpture.id} files={sculpture.files} />
+          <SculpturePDF sculpture={sculpture} />
+          <SculptureVariations 
+            sculptureId={sculpture.id} 
+            originalSculptureId={sculpture.original_sculpture_id}
+          />
+          <SculptureFabricationQuotes sculptureId={sculpture.id} />
         </div>
       </div>
     </div>
