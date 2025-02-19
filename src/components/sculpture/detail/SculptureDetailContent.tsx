@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -29,28 +31,18 @@ export function SculptureDetailContent({
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { regenerateImage } = useSculptureRegeneration();
 
-  const handleRegenerate = async (options: any) => {
-    setIsRegenerating(true);
+  const handleRegenerate = async () => {
     try {
-      // Add your regeneration logic here
-      await queryClient.invalidateQueries({ queryKey: ["sculpture"] });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (sculpture?.image_url) {
-      const link = document.createElement("a");
-      link.href = sculpture.image_url;
-      link.download = `${sculpture.ai_generated_name || 'sculpture'}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      await regenerateImage(sculpture.id);
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+    } catch (error) {
+      console.error("Error regenerating:", error);
       toast({
-        title: "Download started",
-        description: "Your image download has started.",
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -63,9 +55,9 @@ export function SculptureDetailContent({
             imageUrl={sculpture.image_url || ""}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
-            onRegenerate={() => setIsRegenerationSheetOpen(true)}
-            onGenerateVariant={() => {}}
-            onDownload={handleDownload}
+            sculptureId={sculpture.id}
+            userId={sculpture.user_id}
+            onRegenerate={handleRegenerate}
           />
         </AspectRatio>
         <SculptureFiles
@@ -79,12 +71,6 @@ export function SculptureDetailContent({
         sculpture={sculpture}
         originalSculpture={originalSculpture}
         tags={tags}
-      />
-      <RegenerationSheet
-        open={isRegenerationSheetOpen}
-        onOpenChange={setIsRegenerationSheetOpen}
-        onRegenerate={handleRegenerate}
-        isRegenerating={isRegenerating}
       />
       <DeleteSculptureDialog
         open={isDeleteDialogOpen}
