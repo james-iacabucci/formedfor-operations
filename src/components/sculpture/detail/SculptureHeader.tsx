@@ -1,4 +1,3 @@
-
 import { EditableField } from "./EditableField";
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
