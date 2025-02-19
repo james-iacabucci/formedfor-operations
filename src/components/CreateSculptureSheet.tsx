@@ -223,24 +223,25 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             throw createError;
           }
 
-          // Generate metadata using sculpture-metadata endpoint with specific system messages
+          console.log('Generating metadata for sculpture:', sculpture.id);
+
+          // Generate metadata using sculpture-metadata endpoint
           const { data: metadata, error: metadataError } = await supabase.functions.invoke('generate-sculpture-metadata', {
             body: { 
               imageUrl: publicUrl,
-              type: 'both',
-              systemMessages: {
-                name: "You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else.",
-                description: "You are a designer talking casually to another designer about a sculpture. In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional."
-              }
+              type: 'both'
             }
           });
+
+          console.log('Metadata response:', metadata);
+          console.log('Metadata error:', metadataError);
 
           if (metadataError) {
             console.error('Metadata error:', metadataError);
             throw metadataError;
           }
 
-          if (metadata) {
+          if (metadata?.name && metadata?.description) {
             const { error: updateError } = await supabase
               .from('sculptures')
               .update({
@@ -253,6 +254,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               console.error('Update error:', updateError);
               throw updateError;
             }
+          } else {
+            console.error('Invalid metadata response:', metadata);
+            throw new Error('Invalid metadata response from server');
           }
         } catch (imageError) {
           console.error('Failed to process image:', imageError);
