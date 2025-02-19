@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,21 +105,19 @@ export function RegenerationSheet({
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Creativity Level
-            </label>
-            <ToggleGroup
-              type="single"
-              value={creativity}
-              onValueChange={(value) => value && setCreativity(value as "none" | "small" | "medium" | "large")}
-              className="justify-start"
-              onClick={(e) => e.stopPropagation()}
+            <Label className="text-sm font-medium">Creativity Level</Label>
+            <Tabs 
+              defaultValue={creativity} 
+              className="w-full" 
+              onValueChange={(value) => setCreativity(value as "none" | "small" | "medium" | "large")}
             >
-              <ToggleGroupItem value="none">None</ToggleGroupItem>
-              <ToggleGroupItem value="small">Low</ToggleGroupItem>
-              <ToggleGroupItem value="medium">Normal</ToggleGroupItem>
-              <ToggleGroupItem value="large">High</ToggleGroupItem>
-            </ToggleGroup>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="none">None</TabsTrigger>
+                <TabsTrigger value="small">Low</TabsTrigger>
+                <TabsTrigger value="medium">Normal</TabsTrigger>
+                <TabsTrigger value="large">High</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
           <div className="space-y-2">
