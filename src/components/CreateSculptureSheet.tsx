@@ -222,8 +222,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               placeholder="Describe your sculpture..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="min-h-[200px] resize-y"
-              rows={10}
+              className="min-h-[80px] resize-y"
+              rows={3}
             />
             <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
               <TabsList className="grid w-full grid-cols-3">
