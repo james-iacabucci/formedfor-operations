@@ -28,15 +28,15 @@ serve(async (req) => {
     const creativitySettings = {
       low: {
         CFGScale: 8,
-        scheduler: "euler"
+        scheduler: "FlowMatchEulerDiscreteScheduler"
       },
       medium: {
         CFGScale: 12,
-        scheduler: "dpm_solver"
+        scheduler: "FlowMatchEulerDiscreteScheduler"
       },
       high: {
         CFGScale: 16,
-        scheduler: "unipc"
+        scheduler: "FlowMatchEulerDiscreteScheduler"
       }
     }
 
