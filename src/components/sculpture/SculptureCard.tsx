@@ -5,6 +5,9 @@ import { SculptureInfo } from "./SculptureInfo";
 import { useNavigate } from "react-router-dom";
 import { SculptureCardImage } from "./SculptureCardImage";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureCardProps {
   sculpture: Sculpture;
@@ -23,10 +26,79 @@ export function SculptureCard({
 }: SculptureCardProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const queryClient = useQueryClient();
 
   if (!sculpture?.id) {
     return null;
   }
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      const { error } = await supabase.functions.invoke('regenerate-image', {
+        body: { sculptureId: sculpture.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Regenerating image",
+        description: "Your sculpture image is being regenerated.",
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+    } catch (error) {
+      console.error('Error regenerating image:', error);
+      toast({
+        title: "Error",
+        description: "Could not regenerate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleGenerateVariant = async () => {
+    try {
+      const { data: variant, error } = await supabase
+        .from('sculptures')
+        .insert([
+          {
+            prompt: sculpture.prompt,
+            user_id: sculpture.user_id,
+            ai_engine: sculpture.ai_engine,
+            status: "idea",
+            original_sculpture_id: sculpture.id
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const { error: generateError } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: sculpture.prompt, sculptureId: variant.id }
+      });
+
+      if (generateError) throw generateError;
+
+      toast({
+        title: "Generating variant",
+        description: "Your sculpture variant is being generated.",
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+    } catch (error) {
+      console.error('Error generating variant:', error);
+      toast({
+        title: "Error",
+        description: "Could not generate variant. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDownload = () => {
     if (sculpture?.image_url) {
@@ -51,10 +123,11 @@ export function SculptureCard({
           <SculptureCardImage
             imageUrl={sculpture.image_url}
             prompt={sculpture.prompt}
+            isRegenerating={isRegenerating}
             onDelete={onDelete}
             onManageTags={onManageTags}
-            onRegenerate={() => {}}
-            onGenerateVariant={() => {}}
+            onRegenerate={handleRegenerate}
+            onGenerateVariant={handleGenerateVariant}
             onDownload={handleDownload}
             onClick={() => sculpture.image_url && navigate(`/sculpture/${sculpture.id}`)}
           />
