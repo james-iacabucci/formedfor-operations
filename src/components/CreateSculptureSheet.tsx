@@ -79,48 +79,51 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
 
     try {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
-      await Promise.all(
-        imagesToGenerate.map(async (image) => {
-          try {
-            const { data, error } = await supabase.functions.invoke('generate-image', {
-              body: { 
-                prompt: prompt.trim(),
-                sculptureId: image.id,
-                creativity: creativity 
-              }
-            });
-
-            if (error) throw error;
-
-            if (!data?.imageUrl) {
-              throw new Error('No image URL in response');
+      
+      for (const image of imagesToGenerate) {
+        try {
+          console.log('Generating image:', image.id);
+          const { data, error } = await supabase.functions.invoke('generate-image', {
+            body: { 
+              prompt: prompt.trim(),
+              sculptureId: image.id,
+              creativity: creativity 
             }
+          });
 
-            setGeneratedImages(current => 
-              current.map(img => 
-                img.id === image.id 
-                  ? { ...img, url: data.imageUrl, isGenerating: false }
-                  : img
-              )
-            );
-          } catch (error) {
-            console.error('Error generating image:', error);
-            // Update the failed image state
-            setGeneratedImages(current => 
-              current.map(img => 
-                img.id === image.id 
-                  ? { ...img, isGenerating: false, error: true }
-                  : img
-              )
-            );
-            toast({
-              title: "Error",
-              description: "Failed to generate one or more images. Please try again.",
-              variant: "destructive",
-            });
+          console.log('Generation response:', { data, error });
+
+          if (error) {
+            throw error;
           }
-        })
-      );
+
+          if (!data?.imageUrl) {
+            throw new Error('No image URL in response');
+          }
+
+          setGeneratedImages(current => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, url: data.imageUrl, isGenerating: false }
+                : img
+            )
+          );
+        } catch (error) {
+          console.error('Error generating image:', error);
+          setGeneratedImages(current => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, isGenerating: false, error: true }
+                : img
+            )
+          );
+          toast({
+            title: "Error",
+            description: "Failed to generate one or more images. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
     } catch (error) {
       console.error('Error in generation process:', error);
       toast({

@@ -59,7 +59,8 @@ serve(async (req) => {
         numberResults: 1,
         CFGScale: settings.CFGScale,
         scheduler: settings.scheduler,
-        outputFormat: "WEBP"
+        outputFormat: "WEBP",
+        steps: 4
       }
     ]
 
@@ -72,37 +73,46 @@ serve(async (req) => {
       body: JSON.stringify(requestBody)
     })
 
+    const responseText = await response.text();
+    console.log('Raw Runware API response:', responseText);
+
     if (!response.ok) {
-      const errorText = await response.text()
       console.error('Runware API error:', {
         status: response.status,
         statusText: response.statusText,
-        body: errorText
+        body: responseText
       })
       throw new Error(`API request failed: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    console.log('Runware API response received:', data)
-
-    if (data.error || !data.data) {
-      console.error('Invalid response from Runware:', data)
-      throw new Error(data.error || 'Failed to generate image')
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse JSON response:', e);
+      throw new Error('Invalid JSON response from API');
     }
 
-    const imageData = data.data.find((item: any) => item.taskType === 'imageInference')
+    console.log('Parsed Runware API response:', data);
+
+    if (!data.data || !Array.isArray(data.data)) {
+      console.error('Invalid response structure from Runware:', data);
+      throw new Error('Invalid response structure from API');
+    }
+
+    const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
     if (!imageData || !imageData.imageURL) {
-      console.error('No image URL in response:', imageData)
-      throw new Error('No image URL in response')
+      console.error('No image URL in response:', imageData);
+      throw new Error('No image URL in response');
     }
 
     console.log('Successfully generated image:', {
       sculptureId,
       imageUrl: imageData.imageURL
-    })
+    });
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         imageUrl: imageData.imageURL,
         sculptureId: sculptureId
@@ -110,15 +120,15 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error in generate-image function:', error)
+    console.error('Error in generate-image function:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
-        details: error.stack 
+        details: error.stack
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-        status: 500 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     )
   }
