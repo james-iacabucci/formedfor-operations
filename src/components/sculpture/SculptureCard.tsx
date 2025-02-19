@@ -33,6 +33,23 @@ export function SculptureCard({
     return null;
   }
 
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't navigate if the click target is an interactive element
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'SELECT' ||
+      target.closest('button') ||
+      target.closest('select')
+    ) {
+      return;
+    }
+    
+    if (sculpture.image_url) {
+      navigate(`/sculpture/${sculpture.id}`);
+    }
+  };
+
   const handleRegenerate = async () => {
     setIsRegenerating(true);
     try {
@@ -116,7 +133,10 @@ export function SculptureCard({
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+    <Card 
+      className="group hover:shadow-lg relative overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1"
+      onClick={handleCardClick}
+    >
       <CardContent className="p-0">
         <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
           <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
@@ -129,7 +149,6 @@ export function SculptureCard({
             onRegenerate={handleRegenerate}
             onGenerateVariant={handleGenerateVariant}
             onDownload={handleDownload}
-            onClick={() => sculpture.image_url && navigate(`/sculpture/${sculpture.id}`)}
           />
         </div>
         <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
