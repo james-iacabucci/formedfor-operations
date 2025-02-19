@@ -1,12 +1,10 @@
 
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 export function useSculptureRegeneration() {
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
@@ -25,7 +23,6 @@ export function useSculptureRegeneration() {
     }
 
     console.log("Starting regeneration process...");
-    setIsRegenerating(true);
     
     try {
       console.log("Calling regenerate-image edge function");
@@ -94,9 +91,7 @@ export function useSculptureRegeneration() {
         description: error.message || "Could not regenerate image. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      console.log("Setting isRegenerating to false");
-      setIsRegenerating(false);
+      throw error; // Re-throw the error so the component can handle it
     }
   };
 
@@ -113,7 +108,6 @@ export function useSculptureRegeneration() {
     }
   ) => {
     console.log("generateVariant called with options:", options);
-    setIsRegenerating(true);
     try {
       if (options.updateExisting) {
         console.log("Updating existing sculpture");
@@ -129,11 +123,7 @@ export function useSculptureRegeneration() {
 
         if (options.regenerateImage) {
           console.log("Regenerating image for existing sculpture");
-          const { error } = await supabase.functions.invoke('regenerate-image', {
-            body: { sculptureId }
-          });
-
-          if (error) throw error;
+          await regenerateImage(sculptureId);
         }
 
       } else {
@@ -184,14 +174,11 @@ export function useSculptureRegeneration() {
         description: "Could not generate variant. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      console.log("Setting isRegenerating to false");
-      setIsRegenerating(false);
+      throw error;
     }
   };
 
   return {
-    isRegenerating,
     regenerateImage,
     generateVariant
   };
