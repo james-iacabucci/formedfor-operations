@@ -32,8 +32,12 @@ export function useSculpturesData(viewSettings: ViewSettings) {
         query = query.eq('product_line_id', viewSettings.productLineId);
       }
 
+      // Handle status filtering
       if (viewSettings.status) {
         query = query.eq('status', viewSettings.status);
+      } else {
+        // If no status is explicitly selected, exclude archived sculptures
+        query = query.neq('status', 'archived');
       }
 
       if (viewSettings.heightOperator && viewSettings.heightValue !== null) {
