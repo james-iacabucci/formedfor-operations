@@ -34,9 +34,14 @@ export function SculptureDetailContent({
   const { regenerateImage } = useSculptureRegeneration();
 
   const handleRegenerate = async () => {
+    setIsRegenerating(true);
     try {
       await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
     } catch (error) {
       console.error("Error regenerating:", error);
       toast({
@@ -44,6 +49,8 @@ export function SculptureDetailContent({
         description: "Failed to regenerate. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
