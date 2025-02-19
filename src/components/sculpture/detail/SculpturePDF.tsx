@@ -17,7 +17,9 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     width: '50%',
-    padding: 40,
+    padding: 60,
+    display: 'flex',
+    alignItems: 'center',
   },
   image: {
     width: '100%',
@@ -25,42 +27,50 @@ const styles = StyleSheet.create({
     objectFit: 'cover',
   },
   logo: {
-    width: 80,
-    height: 80,
-    alignSelf: 'center',
-    marginBottom: 20,
+    width: 120,
+    marginBottom: 40,
   },
   title: {
-    fontSize: 32,
+    fontSize: 48,
     marginBottom: 20,
     fontFamily: 'Helvetica',
+    textAlign: 'center',
   },
   material: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 20,
+    color: '#333',
     marginBottom: 30,
     fontFamily: 'Helvetica',
+    textAlign: 'center',
   },
   pricing: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 30,
     fontFamily: 'Helvetica',
+    textAlign: 'center',
   },
   dimensions: {
-    fontSize: 16,
-    marginBottom: 30,
+    fontSize: 18,
+    marginBottom: 40,
     fontFamily: 'Helvetica',
+    textAlign: 'center',
   },
   description: {
-    fontSize: 14,
-    lineHeight: 1.5,
+    fontSize: 16,
+    lineHeight: 1.6,
     marginBottom: 40,
     textAlign: 'center',
     fontFamily: 'Helvetica',
+    paddingLeft: 40,
+    paddingRight: 40,
   },
   footer: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
     fontSize: 14,
-    color: '#666',
+    color: '#333',
     textAlign: 'center',
     fontFamily: 'Helvetica',
   },
@@ -84,7 +94,10 @@ const SculptureDocument = ({ sculpture, materialName, selectedQuote }: Sculpture
         )}
       </View>
       <View style={styles.rightSection}>
-        <Image src="/lovable-uploads/b3dc8e74-9575-4573-9428-2a7b2fcd3c22.png" style={styles.logo} />
+        <Image 
+          src="/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png" 
+          style={styles.logo} 
+        />
         
         <Text style={styles.title}>
           {sculpture.ai_generated_name || "Untitled Sculpture"}
@@ -94,15 +107,15 @@ const SculptureDocument = ({ sculpture, materialName, selectedQuote }: Sculpture
           {materialName || "Material not specified"}
         </Text>
 
-        <Text style={styles.pricing}>
-          {selectedQuote 
-            ? `Trade $${selectedQuote.tradePrice.toLocaleString()}   /   Retail $${selectedQuote.retailPrice.toLocaleString()}`
-            : "Pricing Upon Request"}
-        </Text>
+        {selectedQuote && (
+          <Text style={styles.pricing}>
+            Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
+          </Text>
+        )}
 
         <Text style={styles.dimensions}>
           {sculpture.height_in && sculpture.width_in && sculpture.depth_in
-            ? `${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
+            ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
                 Math.round(sculpture.height_in * 2.54)
               } - ${Math.round(sculpture.width_in * 2.54)} - ${
                 Math.round(sculpture.depth_in * 2.54)
