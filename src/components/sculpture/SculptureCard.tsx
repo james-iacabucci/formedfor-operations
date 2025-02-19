@@ -53,16 +53,32 @@ export function SculptureCard({
   };
 
   const handleRegenerate = async () => {
+    if (!sculpture.id) {
+      toast({
+        title: "Error",
+        description: "Invalid sculpture data",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsRegenerating(true);
     try {
-      const { error } = await supabase.functions.invoke('regenerate-image', {
+      const { data, error } = await supabase.functions.invoke('regenerate-image', {
         body: { sculptureId: sculpture.id }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error regenerating image:', error);
+        throw error;
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to regenerate image');
+      }
 
       toast({
-        title: "Regenerating image",
+        title: "Success",
         description: "Your sculpture image is being regenerated.",
       });
 
@@ -71,7 +87,7 @@ export function SculptureCard({
       console.error('Error regenerating image:', error);
       toast({
         title: "Error",
-        description: "Could not regenerate image. Please try again.",
+        description: error.message || "Could not regenerate image. Please try again.",
         variant: "destructive",
       });
     } finally {
