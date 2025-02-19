@@ -10,6 +10,7 @@ declare module '@react-pdf/renderer' {
 
   export interface PageProps {
     size?: string;
+    orientation?: string;
     style?: any;
     children?: ReactNode;
   }
