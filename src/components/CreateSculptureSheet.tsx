@@ -15,9 +15,14 @@ import { useSculptureGeneration } from "@/hooks/use-sculpture-generation";
 interface CreateSculptureSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultProductLineId?: string | null;
 }
 
-export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureSheetProps) {
+export function CreateSculptureSheet({ 
+  open, 
+  onOpenChange,
+  defaultProductLineId 
+}: CreateSculptureSheetProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
@@ -104,7 +109,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 image_url: publicUrl,
                 creativity_level: creativity,
                 ai_generated_name: aiName,
-                ai_description: aiDescription
+                ai_description: aiDescription,
+                product_line_id: defaultProductLineId || null
               }
             ]);
 

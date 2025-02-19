@@ -1,8 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { AddSculptureSheet } from "@/components/AddSculptureSheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
@@ -12,6 +13,7 @@ import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -30,6 +32,7 @@ const Index = () => {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
+  const [selectedProductLineId, setSelectedProductLineId] = useState<string | null>(null);
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
     sortOrder: 'desc',
@@ -60,6 +63,20 @@ const Index = () => {
     },
   });
 
+  // Set default product line to "Formed For" when productLines are loaded
+  useEffect(() => {
+    if (productLines && !selectedProductLineId) {
+      const defaultProductLine = productLines.find(pl => pl.name === "Formed For");
+      if (defaultProductLine) {
+        setSelectedProductLineId(defaultProductLine.id);
+        setViewSettings(prev => ({
+          ...prev,
+          productLineId: defaultProductLine.id
+        }));
+      }
+    }
+  }, [productLines]);
+
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
     queryFn: async () => {
@@ -77,6 +94,14 @@ const Index = () => {
     setViewSettings(newSettings);
   };
 
+  const handleProductLineChange = (productLineId: string | null) => {
+    setSelectedProductLineId(productLineId);
+    setViewSettings(prev => ({
+      ...prev,
+      productLineId
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* App Header */}
@@ -84,6 +109,19 @@ const Index = () => {
         <div className="mx-auto max-w-7xl p-6">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">Sculptify</h1>
+            <div className="flex items-center gap-4">
+              {productLines && productLines.length > 0 && (
+                <Tabs value={selectedProductLineId || undefined} onValueChange={handleProductLineChange}>
+                  <TabsList>
+                    {productLines.map((productLine) => (
+                      <TabsTrigger key={productLine.id} value={productLine.id}>
+                        {productLine.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              )}
+            </div>
             <div className="flex items-center gap-4 ml-auto">
               <UserMenu />
             </div>
@@ -160,6 +198,7 @@ const Index = () => {
       <CreateSculptureSheet 
         open={isCreateSheetOpen} 
         onOpenChange={setIsCreateSheetOpen}
+        defaultProductLineId={selectedProductLineId}
       />
       <AddSculptureSheet
         open={isAddSheetOpen}
