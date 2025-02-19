@@ -26,8 +26,6 @@ export function SculptureDetailImage({
   userId,
   onRegenerate,
 }: SculptureDetailImageProps) {
-  console.log("SculptureDetailImage rendering with isRegenerating:", isRegenerating);
-  
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,7 +40,6 @@ export function SculptureDetailImage({
   }) => {
     try {
       if (options.regenerateImage) {
-        // Call the parent's onRegenerate instead of generating a variant
         await onRegenerate();
         return;
       }
@@ -62,7 +59,6 @@ export function SculptureDetailImage({
         navigate(`/sculpture/${newSculpture.id}`);
       }
     } catch (error) {
-      console.error("Error generating variant:", error);
       toast({
         title: "Error",
         description: "Failed to generate variant. Please try again.",
@@ -86,8 +82,6 @@ export function SculptureDetailImage({
       });
     }
   };
-
-  console.log("About to render BaseSculptureImage with isRegenerating:", isRegenerating);
 
   return (
     <>
