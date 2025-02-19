@@ -28,7 +28,9 @@ export function SculptureDetailContent({
   const { regenerateImage } = useSculptureRegeneration();
 
   const handleRegenerate = async () => {
+    console.log("Starting regeneration...");
     setIsRegenerating(true);
+    console.log("isRegenerating set to:", true);
     try {
       await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
@@ -44,9 +46,12 @@ export function SculptureDetailContent({
         variant: "destructive",
       });
     } finally {
+      console.log("Regeneration complete, setting isRegenerating to false");
       setIsRegenerating(false);
     }
   };
+
+  console.log("SculptureDetailContent rendering, isRegenerating:", isRegenerating);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
