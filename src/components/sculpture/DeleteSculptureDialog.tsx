@@ -32,6 +32,46 @@ export function DeleteSculptureDialog({
   console.log("[DeleteSculptureDialog] Current sculpture:", sculpture);
   console.log("[DeleteSculptureDialog] Dialog open:", open);
 
+  const archiveMutation = useMutation({
+    mutationFn: async () => {
+      if (!sculpture?.id) {
+        console.error("[DeleteSculptureDialog] No sculpture ID provided for archiving:", sculpture);
+        throw new Error("No sculpture ID provided");
+      }
+
+      console.log("[DeleteSculptureDialog] Archiving sculpture:", sculpture.id);
+
+      const { error } = await supabase
+        .from("sculptures")
+        .update({ status: "archived" })
+        .eq("id", sculpture.id);
+
+      if (error) {
+        console.error("[DeleteSculptureDialog] Error archiving sculpture:", error);
+        throw error;
+      }
+
+      console.log("[DeleteSculptureDialog] Successfully archived sculpture");
+    },
+    onSuccess: () => {
+      console.log("[DeleteSculptureDialog] Archive mutation successful");
+      queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Sculpture archived successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error("[DeleteSculptureDialog] Archive mutation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive sculpture. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!sculpture?.id) {
@@ -143,28 +183,29 @@ export function DeleteSculptureDialog({
     },
   });
 
-  const handleDelete = () => {
-    console.log("[DeleteSculptureDialog] Delete button clicked");
-    deleteMutation.mutate();
-  };
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>Manage Sculpture</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            sculpture and all its variations.
+            You can either archive this sculpture or permanently delete it and all its variations.
+            Archived sculptures can be restored later.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <Button
+            variant="secondary"
+            onClick={() => archiveMutation.mutate()}
+          >
+            Archive
+          </Button>
           <AlertDialogAction
-            onClick={handleDelete}
+            onClick={() => deleteMutation.mutate()}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Delete
+            Delete Forever
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
