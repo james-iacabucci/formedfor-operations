@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, PlusIcon } from "lucide-react";
 import { BaseSculptureImage } from "./BaseSculptureImage";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface SculptureCardImageProps {
   imageUrl: string | null;
