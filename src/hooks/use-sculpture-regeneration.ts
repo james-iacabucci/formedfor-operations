@@ -57,12 +57,30 @@ export function useSculptureRegeneration() {
         throw new Error(data?.message || 'Failed to regenerate image');
       }
 
-      console.log("Successfully received new image URL:", data.imageUrl);
-
-      // Get the new image
+      // Download the image from the URL
       const response = await fetch(data.imageUrl);
       const blob = await response.blob();
       const file = new File([blob], 'regenerated-image.png', { type: 'image/png' });
+      
+      // Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${sculptureId}/${crypto.randomUUID()}.${fileExt}`;
+      
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('sculptures')
+        .upload(fileName, file, {
+          contentType: file.type,
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get the public URL of the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('sculptures')
+        .getPublicUrl(fileName);
 
       console.log("Starting AI content generation");
       // Generate new AI content
@@ -79,13 +97,14 @@ export function useSculptureRegeneration() {
         aiDescription = description;
       });
 
-      console.log("Updating sculpture with new AI content");
-      // Update the sculpture with new AI content
+      console.log("Updating sculpture with new AI content and image URL");
+      // Update the sculpture with new AI content and the Supabase storage URL
       const { error: updateError } = await supabase
         .from('sculptures')
         .update({
           ai_generated_name: aiName,
-          ai_description: aiDescription
+          ai_description: aiDescription,
+          image_url: publicUrl
         })
         .eq('id', sculptureId);
 
