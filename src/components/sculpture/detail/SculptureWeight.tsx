@@ -144,7 +144,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
               readOnly
               value={formatWeightString(weightKg, weightLbs) + formatMetricString(weightKg)}
               placeholder="Enter weight"
-              className="border-0 focus-visible:ring-0 px-0"
+              className={`border-0 focus-visible:ring-0 px-0 ${!weightKg && !weightLbs ? 'placeholder:text-white' : ''}`}
               onClick={() => setIsEditingWeight(true)}
             />
           </div>

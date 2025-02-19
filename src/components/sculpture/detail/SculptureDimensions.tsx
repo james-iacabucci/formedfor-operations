@@ -143,7 +143,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
               readOnly
               value={formatDimensionString(height, width, depth)}
               placeholder="Enter dimensions"
-              className="border-0 focus-visible:ring-0 px-0"
+              className={`border-0 focus-visible:ring-0 px-0 ${!height && !width && !depth ? 'placeholder:text-white' : ''}`}
               onClick={() => setIsEditingDimensions(true)}
             />
           </div>
