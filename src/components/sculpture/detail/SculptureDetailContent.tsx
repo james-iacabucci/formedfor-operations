@@ -3,9 +3,6 @@ import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { RegenerationSheet } from "@/components/sculpture/RegenerationSheet";
-import { DeleteSculptureDialog } from "@/components/sculpture/DeleteSculptureDialog";
-import { ManageTagsDialog } from "@/components/tags/ManageTagsDialog";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,9 +23,6 @@ export function SculptureDetailContent({
   tags,
 }: SculptureDetailContentProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { regenerateImage } = useSculptureRegeneration();
@@ -78,16 +72,6 @@ export function SculptureDetailContent({
         sculpture={sculpture}
         originalSculpture={originalSculpture}
         tags={tags}
-      />
-      <DeleteSculptureDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        sculpture={sculpture}
-      />
-      <ManageTagsDialog
-        open={isManageTagsOpen}
-        onOpenChange={setIsManageTagsOpen}
-        sculpture={sculpture}
       />
     </div>
   );
