@@ -94,67 +94,71 @@ const SculptureDocument = ({
   selectedQuote,
   logoBase64,
   sculptureImageBase64 
-}: SculptureDocumentProps) => (
-  <Document>
-    <Page size="A4" orientation="landscape" style={styles.page}>
-      <View style={styles.leftSection}>
-        {sculptureImageBase64 && (
-          <Image src={sculptureImageBase64} style={styles.image} />
-        )}
-      </View>
-      <View style={styles.rightSection}>
-        {logoBase64 && (
-          <Image 
-            src={logoBase64}
-            style={styles.logo} 
-          />
-        )}
-        
-        <Text style={styles.title}>
-          {sculpture.ai_generated_name || "Untitled Sculpture"}
-        </Text>
-        
-        <Text style={styles.material}>
-          {materialName || "Material not specified"}
-        </Text>
-
-        {selectedQuote ? (
-          <Text style={styles.pricing}>
-            Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
+}: SculptureDocumentProps) => {
+  console.log('SculptureDocument rendering with props:', {
+    hasLogoBase64: !!logoBase64,
+    hasSculptureImage: !!sculptureImageBase64,
+    materialName,
+    hasSelectedQuote: !!selectedQuote
+  });
+  
+  return (
+    <Document>
+      <Page size="A4" orientation="landscape" style={styles.page}>
+        <View style={styles.leftSection}>
+          {sculptureImageBase64 && (
+            <Image src={sculptureImageBase64} style={styles.image} />
+          )}
+        </View>
+        <View style={styles.rightSection}>
+          {logoBase64 && (
+            <Image 
+              src={logoBase64}
+              style={styles.logo} 
+            />
+          )}
+          
+          <Text style={styles.title}>
+            {sculpture.ai_generated_name || "Untitled Sculpture"}
           </Text>
-        ) : (
-          <Text style={styles.pricing}>
-            Pricing Upon Request
+          
+          <Text style={styles.material}>
+            {materialName || "Material not specified"}
           </Text>
-        )}
 
-        <Text style={styles.dimensions}>
-          {sculpture.height_in && sculpture.width_in && sculpture.depth_in
-            ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
-                Math.round(sculpture.height_in * 2.54)
-              } - ${Math.round(sculpture.width_in * 2.54)} - ${
-                Math.round(sculpture.depth_in * 2.54)
-              } (cm)`
-            : "Dimensions not specified"}
-        </Text>
+          {selectedQuote ? (
+            <Text style={styles.pricing}>
+              Trade ${selectedQuote.tradePrice.toLocaleString()} / Retail ${selectedQuote.retailPrice.toLocaleString()}
+            </Text>
+          ) : (
+            <Text style={styles.pricing}>
+              Pricing Upon Request
+            </Text>
+          )}
 
-        <Text style={styles.description}>
-          {sculpture.ai_description || sculpture.prompt || "No description available"}
-        </Text>
+          <Text style={styles.dimensions}>
+            {sculpture.height_in && sculpture.width_in && sculpture.depth_in
+              ? `Height: ${sculpture.height_in} - ${sculpture.width_in} - ${sculpture.depth_in} (in) | ${
+                  Math.round(sculpture.height_in * 2.54)
+                } - ${Math.round(sculpture.width_in * 2.54)} - ${
+                  Math.round(sculpture.depth_in * 2.54)
+                } (cm)`
+              : "Dimensions not specified"}
+          </Text>
 
-        <Text style={styles.footer}>
-          LIMITED EDITION OF 33{"\n"}
-          (available in multiple finishes and sizes)
-        </Text>
-      </View>
-    </Page>
-  </Document>
-);
+          <Text style={styles.description}>
+            {sculpture.ai_description || sculpture.prompt || "No description available"}
+          </Text>
 
-interface SculpturePDFProps {
-  sculpture: Sculpture;
-  materialName?: string;
-}
+          <Text style={styles.footer}>
+            LIMITED EDITION OF 33{"\n"}
+            (available in multiple finishes and sizes)
+          </Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};
 
 async function convertImageUrlToBase64(url: string): Promise<string> {
   try {
@@ -186,12 +190,15 @@ async function convertImageUrlToBase64(url: string): Promise<string> {
 }
 
 export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
+  console.log('SculpturePDF component mounting');
+  
   const [logoBase64, setLogoBase64] = useState<string>();
   const [sculptureImageBase64, setSculptureImageBase64] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('Loading images useEffect triggered');
     const loadImages = async () => {
       try {
         console.log('Starting image loading process');
@@ -266,6 +273,14 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
     }
   });
 
+  console.log('SculpturePDF render state:', {
+    isLoading,
+    hasError: !!error,
+    hasLogoBase64: !!logoBase64,
+    hasSculptureImage: !!sculptureImageBase64,
+    hasSelectedQuote: !!selectedQuote
+  });
+
   if (error) {
     return (
       <Button disabled variant="outline" size="sm" className="gap-2">
@@ -298,6 +313,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
       fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
     >
       {({ loading, error }) => {
+        console.log('PDFDownloadLink render state:', { loading, error });
         if (error) {
           console.error('PDF generation error:', error);
           return (
