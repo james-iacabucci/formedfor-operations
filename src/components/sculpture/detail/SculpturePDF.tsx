@@ -1,4 +1,3 @@
-
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
@@ -76,6 +75,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
   },
 });
+
+interface SculpturePDFProps {
+  sculpture: Sculpture;
+  materialName?: string;
+}
 
 interface SculptureDocumentProps {
   sculpture: Sculpture;
