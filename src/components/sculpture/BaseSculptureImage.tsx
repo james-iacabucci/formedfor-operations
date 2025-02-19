@@ -1,6 +1,6 @@
 
 import { cn } from "@/lib/utils";
-import { Image as ImageIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface BaseSculptureImageProps {
   imageUrl: string | null;
@@ -21,7 +21,7 @@ export function BaseSculptureImage({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex flex-col items-center text-muted-foreground">
-          <ImageIcon className="mb-2 h-12 w-12 animate-pulse" />
+          <Loader2 className="mb-2 h-12 w-12 animate-spin" />
           <span>{isRegenerating ? "Regenerating..." : "Generating..."}</span>
         </div>
       </div>
@@ -29,12 +29,18 @@ export function BaseSculptureImage({
   }
 
   return (
-    <div className={cn("relative w-full h-full rounded-lg overflow-hidden", className)}>
+    <div className={cn("relative w-full h-full overflow-hidden", className)}>
       <img
         src={imageUrl}
         alt={prompt}
         className="object-cover w-full h-full"
       />
+      {isRegenerating && (
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
+          <span className="text-white text-sm">Regenerating image...</span>
+        </div>
+      )}
       {children}
     </div>
   );

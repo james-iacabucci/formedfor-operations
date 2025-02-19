@@ -30,7 +30,7 @@ export function SculptureCardImage({
 }: SculptureCardImageProps) {
   return (
     <div
-      className="relative w-full h-full cursor-pointer"
+      className="relative w-full h-full cursor-pointer rounded-t-lg"
       onClick={(e) => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === 'IMG') {
           onClick?.();
@@ -94,9 +94,7 @@ export function SculptureCardImage({
                     onRegenerate();
                   }}
                 >
-                  <RefreshCwIcon className={cn("h-4 w-4", {
-                    "animate-spin": isRegenerating
-                  })} />
+                  <RefreshCwIcon className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
