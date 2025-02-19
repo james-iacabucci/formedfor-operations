@@ -12,6 +12,7 @@ import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -77,6 +78,8 @@ const Index = () => {
     setViewSettings(newSettings);
   };
 
+  const currentProductLine = productLines?.find(pl => pl.id === viewSettings.productLineId) || null;
+
   return (
     <div className="min-h-screen bg-background">
       {/* App Header */}
@@ -85,6 +88,13 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">Sculptify</h1>
             <div className="flex items-center gap-4 ml-auto">
+              <ProductLineButton
+                sculptureId="global"
+                productLineId={viewSettings.productLineId}
+                productLines={productLines}
+                currentProductLine={currentProductLine}
+                display="name"
+              />
               <UserMenu />
             </div>
           </div>

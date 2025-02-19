@@ -19,6 +19,7 @@ interface ProductLineButtonProps {
   productLines: ProductLine[] | undefined;
   currentProductLine: ProductLine | null;
   variant?: "small" | "large";
+  display?: "code" | "name";
 }
 
 export function ProductLineButton({ 
@@ -26,7 +27,8 @@ export function ProductLineButton({
   productLineId, 
   productLines,
   currentProductLine,
-  variant = "large" 
+  variant = "large",
+  display = "code"
 }: ProductLineButtonProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -61,6 +63,13 @@ export function ProductLineButton({
     }
   };
 
+  const getButtonContent = () => {
+    if (!currentProductLine) return "--";
+    return display === "code" 
+      ? currentProductLine.product_line_code?.slice(0, 2) || "--"
+      : currentProductLine.name;
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -68,11 +77,12 @@ export function ProductLineButton({
           ref={buttonRef}
           variant="outline"
           className={cn(
-            variant === "small" ? "h-5 w-8 px-1.5 text-[10px]" : "h-9 w-9 px-0",
-            "font-mono uppercase focus:bg-background focus:text-foreground"
+            variant === "small" ? "h-5 text-[10px]" : "h-9 px-4",
+            "font-mono uppercase focus:bg-background focus:text-foreground",
+            display === "name" && "font-sans normal-case"
           )}
         >
-          {currentProductLine?.product_line_code?.slice(0, 2) || "--"}
+          {getButtonContent()}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
