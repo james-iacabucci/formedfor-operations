@@ -23,9 +23,9 @@ export function UserMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="outline" className="gap-2">
             <User className="h-4 w-4" />
-            <span className="sr-only">User menu</span>
+            {email}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

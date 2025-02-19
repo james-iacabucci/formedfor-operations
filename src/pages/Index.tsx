@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -63,7 +62,6 @@ const Index = () => {
     },
   });
 
-  // Set default product line to "Formed For" when productLines are loaded
   useEffect(() => {
     if (productLines && !selectedProductLineId) {
       const defaultProductLine = productLines.find(pl => pl.name === "Formed For");
@@ -109,7 +107,7 @@ const Index = () => {
         <div className="mx-auto max-w-7xl p-6">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">Sculptify</h1>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 ml-auto">
               {productLines && productLines.length > 0 && (
                 <Tabs value={selectedProductLineId || undefined} onValueChange={handleProductLineChange}>
                   <TabsList>
@@ -121,8 +119,6 @@ const Index = () => {
                   </TabsList>
                 </Tabs>
               )}
-            </div>
-            <div className="flex items-center gap-4 ml-auto">
               <UserMenu />
             </div>
           </div>
