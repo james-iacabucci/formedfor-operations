@@ -1,16 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { GeneratedSculptureGrid, GeneratedImage } from "./sculpture/create/GeneratedSculptureGrid";
 import { CheckIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
-import { PromptField } from "./sculpture/create/PromptField";
-import { CreativitySelector } from "./sculpture/create/CreativitySelector";
-import { AdvancedGenerationOptions } from "./sculpture/create/AdvancedGenerationOptions";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
+import { Badge } from "./ui/badge";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -26,11 +27,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
-  
-  // New state for advanced options
-  const [seed, setSeed] = useState("");
-  const [negativePrompt, setNegativePrompt] = useState("");
-  const [batchSize, setBatchSize] = useState(6);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -50,7 +46,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     if (!user || !prompt.trim()) return;
     
     setIsGenerating(true);
-    const numImages = batchSize;
+    const numImages = 6;
     const newImages: GeneratedImage[] = [];
 
     if (generatedImages.length > 0) {
@@ -90,9 +86,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             body: { 
               prompt: prompt.trim(),
               sculptureId: image.id,
-              creativity: creativity,
-              seed: seed ? parseInt(seed) : undefined,
-              negativePrompt: negativePrompt.trim() || undefined,
+              creativity: creativity 
             }
           });
 
@@ -213,9 +207,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       clearSelection();
       setIsGenerating(false);
       setIsSaving(false);
-      setSeed("");
-      setNegativePrompt("");
-      setBatchSize(6);
     }
   }, [open]);
 
@@ -227,24 +218,20 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         </SheetHeader>
         <div className="space-y-4 mt-4 flex-1 overflow-y-auto">
           <div className="space-y-4">
-            <PromptField 
+            <Textarea
+              placeholder="Describe your sculpture..."
               value={prompt}
-              onChange={setPrompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="min-h-[80px] resize-y"
+              rows={3}
             />
-            
-            <CreativitySelector
-              value={creativity}
-              onChange={setCreativity}
-            />
-
-            <AdvancedGenerationOptions
-              seed={seed}
-              onSeedChange={setSeed}
-              negativePrompt={negativePrompt}
-              onNegativePromptChange={setNegativePrompt}
-              batchSize={batchSize}
-              onBatchSizeChange={setBatchSize}
-            />
+            <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="low">Low Creativity</TabsTrigger>
+                <TabsTrigger value="medium">Medium Creativity</TabsTrigger>
+                <TabsTrigger value="high">High Creativity</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           
           {generatedImages.length > 0 && (
