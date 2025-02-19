@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -26,7 +27,7 @@ export function SculptureDetailContent({
   const { regenerateImage, isRegenerating } = useSculptureRegeneration();
 
   const handleRegenerate = useCallback(async () => {
-    if (isRegenerating) return;
+    if (isRegenerating(sculpture.id)) return;
     
     try {
       await regenerateImage(sculpture.id);
@@ -46,28 +47,32 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="space-y-8">
-      <AspectRatio ratio={1}>
-        <SculptureDetailImage
-          imageUrl={sculpture.image_url}
-          prompt={sculpture.prompt}
-          isRegenerating={isRegenerating(sculpture.id)}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-8">
+        <AspectRatio ratio={1}>
+          <SculptureDetailImage
+            imageUrl={sculpture.image_url}
+            prompt={sculpture.prompt}
+            isRegenerating={isRegenerating(sculpture.id)}
+            sculptureId={sculpture.id}
+            userId={sculpture.user_id}
+            onRegenerate={handleRegenerate}
+          />
+        </AspectRatio>
+        <SculptureFiles
           sculptureId={sculpture.id}
-          userId={sculpture.user_id}
-          onRegenerate={() => handleRegenerate()}
+          models={sculpture.models}
+          renderings={sculpture.renderings}
+          dimensions={sculpture.dimensions}
         />
-      </AspectRatio>
-      <SculptureFiles
-        sculptureId={sculpture.id}
-        models={sculpture.models}
-        renderings={sculpture.renderings}
-        dimensions={sculpture.dimensions}
-      />
-      <SculptureAttributes
-        sculpture={sculpture}
-        originalSculpture={originalSculpture}
-        tags={tags}
-      />
+      </div>
+      <div>
+        <SculptureAttributes
+          sculpture={sculpture}
+          originalSculpture={originalSculpture}
+          tags={tags}
+        />
+      </div>
     </div>
   );
 }
