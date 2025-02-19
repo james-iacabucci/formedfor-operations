@@ -60,8 +60,8 @@ export function useSculptureGeneration() {
           if (error) throw error;
           if (!data?.imageUrl) throw new Error('No image URL in response');
           
-          setGeneratedImages(
-            generatedImages.map(img => 
+          setGeneratedImages((current: GeneratedImage[]) => 
+            current.map(img => 
               img.id === image.id 
                 ? { ...img, url: data.imageUrl, isGenerating: false }
                 : img
@@ -71,8 +71,8 @@ export function useSculptureGeneration() {
           return { id: image.id, success: true };
         }).catch(error => {
           console.error('Error generating image:', error);
-          setGeneratedImages(
-            generatedImages.map(img => 
+          setGeneratedImages((current: GeneratedImage[]) => 
+            current.map(img => 
               img.id === image.id 
                 ? { ...img, isGenerating: false, error: true }
                 : img

@@ -23,7 +23,7 @@ export function UserMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="ghost" size="icon">
             <User className="h-4 w-4" />
             <span className="sr-only">User menu</span>
           </Button>
