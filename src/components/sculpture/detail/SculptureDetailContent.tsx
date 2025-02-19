@@ -1,5 +1,5 @@
 
-import { SculptureImage } from "../detail/SculptureImage";
+import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
@@ -27,8 +27,7 @@ export function SculptureDetailContent({
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const handleRegenerate = async (options: any) => {
     setIsRegenerating(true);
@@ -40,16 +39,32 @@ export function SculptureDetailContent({
     }
   };
 
+  const handleDownload = () => {
+    if (sculpture?.image_url) {
+      const link = document.createElement("a");
+      link.href = sculpture.image_url;
+      link.download = `${sculpture.ai_generated_name || 'sculpture'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast({
+        title: "Download started",
+        description: "Your image download has started.",
+      });
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="w-full space-y-6">
         <AspectRatio ratio={1}>
-          <SculptureImage
+          <SculptureDetailImage
             imageUrl={sculpture.image_url || ""}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
-            onManageTags={() => setIsManageTagsOpen(true)}
             onRegenerate={() => setIsRegenerationSheetOpen(true)}
+            onGenerateVariant={() => {}}
+            onDownload={handleDownload}
           />
         </AspectRatio>
         <SculptureFiles
