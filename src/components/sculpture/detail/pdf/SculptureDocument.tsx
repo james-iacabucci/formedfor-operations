@@ -12,17 +12,31 @@ export const SculptureDocument = ({
 }: SculptureDocumentProps) => {
   console.log('SculptureDocument: Starting render');
   
-  if (!logoBase64?.startsWith('data:image/')) {
-    console.error('SculptureDocument: Invalid logo format');
+  // More detailed validation
+  if (!logoBase64) {
+    console.error('SculptureDocument: Logo base64 is missing');
+    throw new Error('Logo base64 is missing');
+  }
+  
+  if (!sculptureImageBase64) {
+    console.error('SculptureDocument: Sculpture image base64 is missing');
+    throw new Error('Sculpture image base64 is missing');
+  }
+  
+  if (!logoBase64.startsWith('data:image/')) {
+    console.error('SculptureDocument: Invalid logo format:', logoBase64.substring(0, 30));
     throw new Error('Invalid logo format');
   }
   
-  if (!sculptureImageBase64?.startsWith('data:image/')) {
-    console.error('SculptureDocument: Invalid sculpture image format');
+  if (!sculptureImageBase64.startsWith('data:image/')) {
+    console.error('SculptureDocument: Invalid sculpture image format:', sculptureImageBase64.substring(0, 30));
     throw new Error('Invalid sculpture image format');
   }
 
-  console.log('SculptureDocument: Images validated, proceeding with render');
+  console.log('SculptureDocument: Images validated successfully', {
+    logoFormat: logoBase64.split(';')[0],
+    sculptureFormat: sculptureImageBase64.split(';')[0]
+  });
 
   return (
     <Document>
