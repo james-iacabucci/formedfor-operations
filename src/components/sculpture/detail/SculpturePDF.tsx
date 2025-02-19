@@ -1,4 +1,3 @@
-
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
@@ -102,7 +101,6 @@ const SculptureDocument = ({
 }: SculptureDocumentProps) => {
   console.log('SculptureDocument: Starting render');
   
-  // Validate image data
   if (!logoBase64?.startsWith('data:image') && !logoBase64?.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
     console.error('SculptureDocument: Invalid logo base64 format');
     throw new Error('Invalid logo format');
@@ -238,14 +236,12 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
         setIsLoading(true);
         setError(null);
         
-        // Load logo
         const logoUrl = `${window.location.origin}/lovable-uploads/96d92d6a-1130-494a-9059-caa66e10cdd8.png`;
         console.log('Loading logo from:', logoUrl);
         const logoBase64Data = await convertImageUrlToBase64(logoUrl);
         setLogoBase64(logoBase64Data);
         console.log('Logo loaded successfully');
 
-        // Load sculpture image
         if (!sculpture.image_url) {
           throw new Error('No sculpture image URL provided');
         }
@@ -328,8 +324,7 @@ export function SculpturePDF({ sculpture, materialName }: SculpturePDFProps) {
         if (error) {
           console.error('PDFDownloadLink error:', {
             message: error.message,
-            stack: error.stack,
-            cause: error.cause
+            stack: error.stack
           });
           return (
             <Button disabled variant="outline" size="sm" className="gap-2">
