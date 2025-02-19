@@ -41,6 +41,12 @@ export function SculptureDetailImage({
     regenerateMetadata: boolean;
   }) => {
     try {
+      if (options.regenerateImage) {
+        // Call the parent's onRegenerate instead of generating a variant
+        await onRegenerate();
+        return;
+      }
+
       await generateVariant(sculptureId, userId, prompt, options);
       
       if (!options.updateExisting) {
