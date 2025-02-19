@@ -7,7 +7,7 @@ import { Sculpture } from "@/types/sculpture";
 interface SculptureCardContentProps {
   sculpture: Sculpture;
   tags: Array<{ id: string; name: string }>;
-  isRegenerating: boolean;
+  isRegenerating: (sculptureId: string) => boolean;
   showAIContent?: boolean;
   onDelete: () => void;
   onManageTags: () => void;
@@ -34,7 +34,7 @@ export function SculptureCardContent({
         <SculptureCardImage
           imageUrl={sculpture.image_url}
           prompt={sculpture.prompt}
-          isRegenerating={isRegenerating}
+          isRegenerating={isRegenerating(sculpture.id)}
           onDelete={onDelete}
           onManageTags={onManageTags}
           onRegenerate={onRegenerate}

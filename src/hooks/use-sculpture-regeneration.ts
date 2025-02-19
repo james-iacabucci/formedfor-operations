@@ -9,15 +9,23 @@ export function useSculptureRegeneration() {
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
 
-  // Use React Query to manage regeneration state
-  const { data: isRegenerating = false } = useQuery({
+  // Use React Query to manage regeneration state per sculpture
+  const { data: regeneratingIds = new Set() } = useQuery({
     queryKey: ['regeneration-state'],
-    queryFn: () => false,
+    queryFn: () => new Set<string>(),
     staleTime: Infinity,
   });
 
-  const setIsRegenerating = (value: boolean) => {
-    queryClient.setQueryData(['regeneration-state'], value);
+  const isRegenerating = (sculptureId: string) => regeneratingIds.has(sculptureId);
+
+  const setRegeneratingState = (sculptureId: string, value: boolean) => {
+    const newSet = new Set(regeneratingIds);
+    if (value) {
+      newSet.add(sculptureId);
+    } else {
+      newSet.delete(sculptureId);
+    }
+    queryClient.setQueryData(['regeneration-state'], newSet);
   };
 
   const regenerateImage = async (sculptureId: string) => {
@@ -33,13 +41,13 @@ export function useSculptureRegeneration() {
       return;
     }
 
-    if (isRegenerating) {
-      console.log("Already regenerating, skipping");
+    if (isRegenerating(sculptureId)) {
+      console.log("Already regenerating this sculpture, skipping");
       return;
     }
 
     console.log("Starting regeneration process...");
-    setIsRegenerating(true);
+    setRegeneratingState(sculptureId, true);
     
     try {
       console.log("Calling regenerate-image edge function");
@@ -129,8 +137,8 @@ export function useSculptureRegeneration() {
       });
       throw error;
     } finally {
-      console.log("Setting isRegenerating to false");
-      setIsRegenerating(false);
+      console.log("Setting isRegenerating to false for sculptureId:", sculptureId);
+      setRegeneratingState(sculptureId, false);
     }
   };
 
@@ -147,12 +155,12 @@ export function useSculptureRegeneration() {
     }
   ) => {
     console.log("generateVariant called with options:", options);
-    if (isRegenerating) {
-      console.log("Already regenerating, skipping variant generation");
+    if (isRegenerating(sculptureId)) {
+      console.log("Already regenerating this sculpture, skipping variant generation");
       return;
     }
 
-    setIsRegenerating(true);
+    setRegeneratingState(sculptureId, true);
     try {
       if (options.updateExisting) {
         console.log("Updating existing sculpture");
@@ -221,7 +229,7 @@ export function useSculptureRegeneration() {
       });
       throw error;
     } finally {
-      setIsRegenerating(false);
+      setRegeneratingState(sculptureId, false);
     }
   };
 
