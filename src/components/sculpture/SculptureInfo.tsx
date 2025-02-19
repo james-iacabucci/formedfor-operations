@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
 import { SculptureStatus } from "./detail/SculptureStatus";
+import { Badge } from "@/components/ui/badge";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -105,12 +106,13 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         <ScrollArea className="w-full whitespace-nowrap">
           <div className="flex gap-1.5">
             {tags.map(tag => (
-              <div
+              <Badge
                 key={tag.id}
-                className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border text-foreground"
+                variant="secondary"
+                className="bg-muted text-white border-0"
               >
                 {tag.name}
-              </div>
+              </Badge>
             ))}
           </div>
           <ScrollBar orientation="horizontal" className="h-2" />

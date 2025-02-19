@@ -34,6 +34,7 @@ export function TagsList({
             key={tag.id}
             variant="secondary"
             className="bg-muted text-white border-0"
+            onClick={() => onTagClick?.(tag.id)}
           >
             {tag.name}
             {showRemoveIcon && <X className="ml-1 h-3 w-3" />}
