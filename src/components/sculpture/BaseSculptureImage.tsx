@@ -19,7 +19,7 @@ export function BaseSculptureImage({
 }: BaseSculptureImageProps) {
   if (!imageUrl) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center bg-muted">
         <div className="flex flex-col items-center text-muted-foreground">
           <Loader2 className="mb-2 h-12 w-12 animate-spin" />
           <span>{isRegenerating ? "Regenerating..." : "Generating..."}</span>
@@ -29,16 +29,19 @@ export function BaseSculptureImage({
   }
 
   return (
-    <div className={cn("relative w-full h-full overflow-hidden", className)}>
+    <div className={cn("relative aspect-square w-full overflow-hidden", className)}>
       <img
         src={imageUrl}
         alt={prompt}
         className="object-cover w-full h-full"
       />
       {isRegenerating && (
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm">
-          <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-          <span className="text-white text-sm">Regenerating image...</span>
+        <div 
+          className="absolute inset-0 z-10 bg-black/50 flex flex-col items-center justify-center backdrop-blur-sm"
+          aria-live="polite"
+        >
+          <Loader2 className="h-12 w-12 animate-spin text-white mb-3" />
+          <span className="text-white text-base font-medium">Regenerating image...</span>
         </div>
       )}
       {children}
