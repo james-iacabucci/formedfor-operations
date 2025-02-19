@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, sculptureId, creativity } = await req.json()
-    console.log('Starting image generation:', { prompt, sculptureId, creativity })
+    const { prompt, sculptureId, creativity, seed, negativePrompt } = await req.json()
+    console.log('Starting image generation:', { prompt, sculptureId, creativity, seed, negativePrompt })
 
     const API_ENDPOINT = "https://api.runware.ai/v1"
     const RUNWARE_API_KEY = Deno.env.get('RUNWARE_API_KEY')
@@ -53,6 +53,7 @@ serve(async (req) => {
         taskType: "imageInference",
         taskUUID: crypto.randomUUID(),
         positivePrompt: prompt,
+        negativePrompt: negativePrompt,
         model: "runware:100@1",
         width: 1024,
         height: 1024,
@@ -60,7 +61,8 @@ serve(async (req) => {
         CFGScale: settings.CFGScale,
         scheduler: settings.scheduler,
         outputFormat: "WEBP",
-        steps: 4
+        steps: 4,
+        seed: seed
       }
     ]
 
@@ -73,8 +75,8 @@ serve(async (req) => {
       body: JSON.stringify(requestBody)
     })
 
-    const responseText = await response.text();
-    console.log('Raw Runware API response:', responseText);
+    const responseText = await response.text()
+    console.log('Raw Runware API response:', responseText)
 
     if (!response.ok) {
       console.error('Runware API error:', {
@@ -85,31 +87,31 @@ serve(async (req) => {
       throw new Error(`API request failed: ${response.statusText}`)
     }
 
-    let data;
+    let data
     try {
-      data = JSON.parse(responseText);
+      data = JSON.parse(responseText)
     } catch (e) {
-      console.error('Failed to parse JSON response:', e);
-      throw new Error('Invalid JSON response from API');
+      console.error('Failed to parse JSON response:', e)
+      throw new Error('Invalid JSON response from API')
     }
 
-    console.log('Parsed Runware API response:', data);
+    console.log('Parsed Runware API response:', data)
 
     if (!data.data || !Array.isArray(data.data)) {
-      console.error('Invalid response structure from Runware:', data);
-      throw new Error('Invalid response structure from API');
+      console.error('Invalid response structure from Runware:', data)
+      throw new Error('Invalid response structure from API')
     }
 
-    const imageData = data.data.find((item: any) => item.taskType === 'imageInference');
+    const imageData = data.data.find((item: any) => item.taskType === 'imageInference')
     if (!imageData || !imageData.imageURL) {
-      console.error('No image URL in response:', imageData);
-      throw new Error('No image URL in response');
+      console.error('No image URL in response:', imageData)
+      throw new Error('No image URL in response')
     }
 
     console.log('Successfully generated image:', {
       sculptureId,
       imageUrl: imageData.imageURL
-    });
+    })
 
     return new Response(
       JSON.stringify({
@@ -120,7 +122,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error in generate-image function:', error);
+    console.error('Error in generate-image function:', error)
     return new Response(
       JSON.stringify({
         error: error.message,
