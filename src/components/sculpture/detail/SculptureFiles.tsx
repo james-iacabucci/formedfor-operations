@@ -12,12 +12,25 @@ interface SculptureFilesProps {
 }
 
 export function SculptureFiles({ sculptureId, models, renderings, dimensions }: SculptureFilesProps) {
-  console.log('SculptureFiles - Current values:', {
+  console.log('SculptureFiles - Component props:', {
     sculptureId,
     models: models?.length,
     renderings: renderings?.length,
     dimensions: dimensions?.length
   });
+
+  const handleFilesChange = async (files: FileUpload[], type: string) => {
+    console.log('handleFilesChange called with type:', type);
+    const { error } = await supabase
+      .from('sculptures')
+      .update({ [type]: files })
+      .eq('id', sculptureId);
+    
+    if (error) {
+      console.error(`Error updating ${type}:`, error);
+      return;
+    }
+  };
 
   return (
     <div>
@@ -29,18 +42,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
           acceptTypes="image/*"
           sculptureId={sculptureId}
-          onFilesChange={async (files) => {
-            console.log('Updating renderings:', files.length);
-            const { error } = await supabase
-              .from('sculptures')
-              .update({ renderings: files })
-              .eq('id', sculptureId);
-            
-            if (error) {
-              console.error('Error updating renderings:', error);
-              return;
-            }
-          }}
+          onFilesChange={(files) => handleFilesChange(files, 'renderings')}
         />
 
         <FileUploadField
@@ -48,18 +50,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           files={models}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
-          onFilesChange={async (files) => {
-            console.log('Updating models:', files.length);
-            const { error } = await supabase
-              .from('sculptures')
-              .update({ models: files })
-              .eq('id', sculptureId);
-            
-            if (error) {
-              console.error('Error updating models:', error);
-              return;
-            }
-          }}
+          onFilesChange={(files) => handleFilesChange(files, 'models')}
         />
 
         <FileUploadField
@@ -67,18 +58,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           files={dimensions}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
-          onFilesChange={async (files) => {
-            console.log('Updating dimensions:', files.length);
-            const { error } = await supabase
-              .from('sculptures')
-              .update({ dimensions: files })
-              .eq('id', sculptureId);
-            
-            if (error) {
-              console.error('Error updating dimensions:', error);
-              return;
-            }
-          }}
+          onFilesChange={(files) => handleFilesChange(files, 'dimensions')}
         />
       </div>
     </div>
