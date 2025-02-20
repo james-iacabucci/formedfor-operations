@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { supabase } from "@/integrations/supabase/client";
+import { SCULPTURE_STATUS, SculptureStatusCode } from "@/lib/status";
 
 interface SculptureDetailImageProps {
   imageUrl: string;
@@ -17,7 +18,7 @@ interface SculptureDetailImageProps {
   userId: string;
   onRegenerate: () => Promise<void>;
   hideButtons?: boolean;  
-  status?: "idea" | "pending" | "approved" | "archived";
+  status?: SculptureStatusCode;
 }
 
 export function SculptureDetailImage({
@@ -97,7 +98,7 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            {status === "idea" && (
+            {status === SCULPTURE_STATUS.IDEA.code && (
               <Button
                 size="icon"
                 variant="secondary"

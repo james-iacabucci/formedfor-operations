@@ -10,10 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useRef } from "react";
+import { SCULPTURE_STATUS, SculptureStatusCode, getStatusDisplayName } from "@/lib/status";
 
 interface SculptureStatusProps {
   sculptureId: string;
-  status: "idea" | "pending" | "approved" | "archived";
+  status: SculptureStatusCode;
   variant?: "small" | "large";
 }
 
@@ -21,7 +22,7 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
   const queryClient = useQueryClient();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: SculptureStatusCode) => {
     const { error } = await supabase
       .from('sculptures')
       .update({ status: newStatus })
@@ -44,25 +45,24 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
           variant="outline" 
           size="default"
           className={cn(
-            "capitalize",
             variant === "small" && "h-5 px-1.5 text-[10px]"
           )}
         >
-          {status}
+          {getStatusDisplayName(status)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleStatusChange("idea")}>
-          Idea
+        <DropdownMenuItem onClick={() => handleStatusChange(SCULPTURE_STATUS.IDEA.code)}>
+          {SCULPTURE_STATUS.IDEA.displayName}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
-          Pending
+        <DropdownMenuItem onClick={() => handleStatusChange(SCULPTURE_STATUS.PENDING.code)}>
+          {SCULPTURE_STATUS.PENDING.displayName}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
-          Approved
+        <DropdownMenuItem onClick={() => handleStatusChange(SCULPTURE_STATUS.APPROVED.code)}>
+          {SCULPTURE_STATUS.APPROVED.displayName}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
-          Archived
+        <DropdownMenuItem onClick={() => handleStatusChange(SCULPTURE_STATUS.ARCHIVED.code)}>
+          {SCULPTURE_STATUS.ARCHIVED.displayName}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
