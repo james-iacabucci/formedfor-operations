@@ -17,6 +17,7 @@ import { ProductLineButton } from "./ProductLineButton";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { useQueryClient } from "@tanstack/react-query";
+import { SCULPTURE_STATUS } from "@/lib/status";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -102,14 +103,16 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         sculptureId={sculpture.id}
         status={sculpture.status}
       />
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleRegenerate}
-        disabled={isRegenerating}
-      >
-        <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-      </Button>
+      {(!sculpture.status || sculpture.status === SCULPTURE_STATUS.IDEA.code) && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRegenerate}
+          disabled={isRegenerating}
+        >
+          <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+        </Button>
+      )}
       <Button
         variant="outline"
         size="icon"
