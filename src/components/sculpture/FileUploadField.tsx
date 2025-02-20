@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface FileUploadFieldProps {
   label: string;
@@ -31,6 +32,7 @@ export function FileUploadField({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<UploadingFile | null>(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -69,19 +71,47 @@ export function FileUploadField({
       onFilesChange([...files, newFile]);
     } catch (error) {
       console.error('Error uploading file:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your file. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       // Clean up the preview URL
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
-      setIsUploading(false);
-      setUploadingFile(null);
     }
   };
 
-  const handleRemoveFile = (e: React.MouseEvent, fileId: string) => {
+  const handleRemoveFile = async (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation();
-    onFilesChange(files.filter(f => f.id !== fileId));
+    
+    try {
+      // First, delete from storage
+      const { error: deleteError } = await supabase.storage
+        .from('sculpture_files')
+        .remove([fileId]);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      // Then update the files list
+      onFilesChange(files.filter(f => f.id !== fileId));
+
+      toast({
+        title: "File deleted",
+        description: "The file has been removed successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast({
+        title: "Delete failed",
+        description: "There was an error deleting the file. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isImage = (fileName: string) => {
@@ -122,7 +152,7 @@ export function FileUploadField({
         onChange={handleFileChange}
       />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {isUploading && uploadingFile && (
+        {uploadingFile && (
           <Card className="aspect-square overflow-hidden">
             <div className="relative w-full h-full">
               {uploadingFile.previewUrl ? (
