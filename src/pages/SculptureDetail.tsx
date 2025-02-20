@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,6 @@ import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureD
 import { Sculpture, FileUpload } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
 import { 
-  ArrowLeft,
   UploadIcon,
   PlusIcon,
 } from "lucide-react";
@@ -114,18 +114,8 @@ export default function SculptureDetail() {
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="mx-auto max-w-7xl p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => navigate("/")}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <h1 className="text-2xl font-bold">Sculptify</h1>
-            </div>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Sculptify</h1>
             <div className="flex items-center gap-4 ml-auto">
               <Button 
                 onClick={() => setIsAddSheetOpen(true)}
@@ -148,13 +138,14 @@ export default function SculptureDetail() {
           </div>
         </div>
       </div>
-      
+
       <div className="mx-auto max-w-7xl p-6">
         <SculptureDetailContent
           sculpture={sculpture}
           originalSculpture={originalSculpture}
           tags={tags || []}
           onUpdate={refetch}
+          onBack={() => navigate("/")}
         />
       </div>
 

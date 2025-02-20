@@ -8,12 +8,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { SculptureHeader } from "./SculptureHeader";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
   onUpdate: () => void;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
+  onBack: () => void;
 }
 
 export function SculptureDetailContent({
@@ -21,6 +25,7 @@ export function SculptureDetailContent({
   onUpdate,
   originalSculpture,
   tags,
+  onBack,
 }: SculptureDetailContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -47,31 +52,56 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className="space-y-8">
-        <AspectRatio ratio={1}>
-          <SculptureDetailImage
-            imageUrl={sculpture.image_url}
-            prompt={sculpture.prompt}
-            isRegenerating={isRegenerating(sculpture.id)}
-            sculptureId={sculpture.id}
-            userId={sculpture.user_id}
-            onRegenerate={handleRegenerate}
-          />
-        </AspectRatio>
-        <SculptureFiles
-          sculptureId={sculpture.id}
-          models={sculpture.models}
-          renderings={sculpture.renderings}
-          dimensions={sculpture.dimensions}
-        />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between border-b pb-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="text-2xl font-bold">
+            {sculpture.ai_generated_name || "Untitled Sculpture"}
+          </div>
+        </div>
+        <SculptureHeader sculpture={sculpture} />
       </div>
-      <div>
-        <SculptureAttributes
-          sculpture={sculpture}
-          originalSculpture={originalSculpture}
-          tags={tags}
-        />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <AspectRatio ratio={1}>
+            <SculptureDetailImage
+              imageUrl={sculpture.image_url}
+              prompt={sculpture.prompt}
+              isRegenerating={isRegenerating(sculpture.id)}
+              sculptureId={sculpture.id}
+              userId={sculpture.user_id}
+              onRegenerate={handleRegenerate}
+            />
+          </AspectRatio>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Description</h3>
+            <p className="text-muted-foreground">
+              {sculpture.ai_description || "No description available"}
+            </p>
+          </div>
+          <SculptureFiles
+            sculptureId={sculpture.id}
+            models={sculpture.models}
+            renderings={sculpture.renderings}
+            dimensions={sculpture.dimensions}
+          />
+        </div>
+        <div>
+          <SculptureAttributes
+            sculpture={sculpture}
+            originalSculpture={originalSculpture}
+            tags={tags}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 
-import { EditableField } from "./EditableField";
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
@@ -30,39 +29,28 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const queryClient = useQueryClient();
   const { regenerateImage } = useSculptureRegeneration();
 
-  const { data: productLines } = useQuery({
-    queryKey: ["product_lines"],
-    queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      await regenerateImage(sculpture.id);
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
+    } catch (error) {
+      console.error("Error regenerating:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
-
-      if (error) throw error;
-      return data as ProductLine[];
-    },
-  });
-
-  const { data: currentProductLine } = useQuery({
-    queryKey: ["product_line", sculpture.product_line_id],
-    queryFn: async () => {
-      if (!sculpture.product_line_id) return null;
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("id", sculpture.product_line_id)
-        .single();
-      
-      if (error) throw error;
-      return data as ProductLine;
-    },
-    enabled: !!sculpture.product_line_id,
-  });
-
-  const handleDownloadImage = () => {
+  const handleDownload = () => {
     if (sculpture?.image_url) {
       const link = document.createElement("a");
       link.href = sculpture.image_url;
@@ -101,107 +89,61 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
-  const handleRegenerate = async () => {
-    setIsRegenerating(true);
-    try {
-      await regenerateImage(sculpture.id);
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      toast({
-        title: "Success",
-        description: "Image regenerated successfully.",
-      });
-    } catch (error) {
-      console.error("Error regenerating:", error);
-      toast({
-        title: "Error",
-        description: "Failed to regenerate. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex-1 min-w-0">
-          <div className="group inline-flex items-center">
-            <EditableField
-              value={sculpture.ai_generated_name || "Untitled Sculpture"}
-              type="input"
-              sculptureId={sculpture.id}
-              field="ai_generated_name"
-              className="text-4xl font-bold tracking-tight truncate"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="outline"
-            size="default"
-            className="gap-2 bg-neutral-900 text-white hover:bg-neutral-800"
-          >
-            FF
-          </Button>
-          <SculptureStatus
-            sculptureId={sculpture.id}
-            status={sculpture.status}
-          />
-          <Button
-            variant="outline"
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="default"
+        className="gap-2 bg-neutral-900 text-white hover:bg-neutral-800"
+      >
+        FF
+      </Button>
+      <SculptureStatus
+        sculptureId={sculpture.id}
+        status={sculpture.status}
+      />
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleRegenerate}
+        disabled={isRegenerating}
+        className="bg-neutral-900 text-white hover:bg-neutral-800"
+      >
+        <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setIsRegenerationSheetOpen(true)}
+        className="bg-neutral-900 text-white hover:bg-neutral-800"
+      >
+        <ShuffleIcon className="h-4 w-4" />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="outline" 
             size="icon"
-            onClick={handleRegenerate}
-            disabled={isRegenerating}
             className="bg-neutral-900 text-white hover:bg-neutral-800"
           >
-            <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+            <MoreHorizontalIcon className="h-4 w-4" />
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsRegenerationSheetOpen(true)}
-            className="bg-neutral-900 text-white hover:bg-neutral-800"
-          >
-            <ShuffleIcon className="h-4 w-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="bg-neutral-900 text-white hover:bg-neutral-800"
-              >
-                <MoreHorizontalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={handleDownloadImage}>
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Download Image
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadPDF}>
-                <FileIcon className="h-4 w-4 mr-2" />
-                Download Spec Sheet
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                <Trash2Icon className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <div>
-        <EditableField
-          value={sculpture.ai_description || "Sculpture description not defined"}
-          type="textarea"
-          sculptureId={sculpture.id}
-          field="ai_description"
-          className="text-muted-foreground italic"
-        />
-      </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={handleDownload}>
+            <ImageIcon className="h-4 w-4 mr-2" />
+            Download Image
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDownloadPDF}>
+            <FileIcon className="h-4 w-4 mr-2" />
+            Download Spec Sheet
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+            <Trash2Icon className="h-4 w-4 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
