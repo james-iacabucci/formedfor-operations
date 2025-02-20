@@ -139,7 +139,7 @@ const Index = () => {
                 pressed={isGridView}
                 onPressedChange={() => setIsGridView(true)}
                 size="sm"
-                className="data-[state=on]:bg-muted"
+                className="data-[state=on]:bg-muted h-8 w-8"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
@@ -147,7 +147,7 @@ const Index = () => {
                 pressed={!isGridView}
                 onPressedChange={() => setIsGridView(false)}
                 size="sm"
-                className="data-[state=on]:bg-muted"
+                className="data-[state=on]:bg-muted h-8 w-8"
               >
                 <List className="h-4 w-4" />
               </Toggle>
@@ -166,7 +166,7 @@ const Index = () => {
                     value={pl.id}
                     variant="outline"
                     size="sm"
-                    className="px-2 py-1 text-xs"
+                    className="px-2 py-1 text-xs h-8"
                   >
                     {pl.product_line_code || pl.name}
                   </ToggleGroupItem>
@@ -189,24 +189,25 @@ const Index = () => {
                 <Search className="h-4 w-4 absolute left-2 top-2 text-muted-foreground" />
               </div>
             ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleSearchClick}
-              >
-                <Search className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleSearchClick}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsViewSettingsOpen(true)}
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsViewSettingsOpen(true)}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
 
             <SelectedFilters
               viewSettings={viewSettings}
@@ -220,14 +221,14 @@ const Index = () => {
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
               variant="outline"
-              className="gap-2"
+              className="gap-2 h-8"
             >
               <UploadIcon className="h-4 w-4" />
               Add
             </Button>
             <Button 
               onClick={() => setIsCreateSheetOpen(true)}
-              className="gap-2"
+              className="gap-2 h-8"
             >
               <PlusIcon className="h-4 w-4" />
               Create
