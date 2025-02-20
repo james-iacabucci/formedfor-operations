@@ -99,7 +99,7 @@ export function FileUploadField({
         variant: "destructive",
       });
     } finally {
-      // Reset the input value and loading state
+      // Only reset the loading state AFTER all operations are complete
       const input = document.getElementById(`${label}-upload`) as HTMLInputElement;
       if (input) {
         input.value = '';
