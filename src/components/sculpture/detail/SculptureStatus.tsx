@@ -42,9 +42,10 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
         <Button 
           ref={buttonRef}
           variant="outline" 
+          size="default"
           className={cn(
-            variant === "small" ? "h-5 px-1.5 text-[10px]" : "h-9 px-4",
-            "capitalize focus:bg-background focus:text-foreground"
+            "bg-neutral-900 text-white hover:bg-neutral-800 capitalize w-24",
+            variant === "small" && "h-5 px-1.5 text-[10px]"
           )}
         >
           {status}

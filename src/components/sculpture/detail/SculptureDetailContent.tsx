@@ -53,7 +53,7 @@ export function SculptureDetailContent({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between border-b pb-6">
+      <div className="flex items-center justify-between pb-6">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -80,6 +80,7 @@ export function SculptureDetailContent({
               sculptureId={sculpture.id}
               userId={sculpture.user_id}
               onRegenerate={handleRegenerate}
+              hideButtons={true}
             />
           </AspectRatio>
           <div>
