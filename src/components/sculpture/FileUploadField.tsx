@@ -105,14 +105,14 @@ export function FileUploadField({
         accept={acceptTypes}
         onChange={handleFileChange}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {isUploading && uploadingFile && (
-          <Card className="overflow-hidden">
-            <div className="flex">
-              <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center">
+          <Card className="aspect-square overflow-hidden">
+            <div className="relative w-full h-full">
+              <div className="absolute inset-0 bg-muted flex items-center justify-center">
                 <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-              <div className="p-4 flex-1">
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm">
                 <div className="mb-2">
                   <span className="text-sm font-medium truncate block">
                     Uploading {uploadingFile.name}...
@@ -129,49 +129,40 @@ export function FileUploadField({
         {files.map((file, index) => (
           <Card
             key={file.id}
-            className="overflow-hidden cursor-pointer group"
+            className="aspect-square overflow-hidden cursor-pointer group relative"
             onClick={() => setSelectedFileIndex(index)}
           >
-            <div className="flex">
-              <div className="w-32 h-32 flex-shrink-0 relative">
-                {isImage(file.name) ? (
-                  <img 
-                    src={file.url} 
-                    alt="" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <FileIcon className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
-                  onClick={(e) => handleRemoveFile(e, file.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+            {isImage(file.name) ? (
+              <img 
+                src={file.url} 
+                alt="" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <FileIcon className="h-12 w-12 text-muted-foreground" />
               </div>
-              <div className="p-4 flex-1">
-                <div className="mb-2">
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-blue-500 hover:underline truncate block"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {file.name}
-                  </a>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
-                </p>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mb-2">
+                <span className="text-sm font-medium truncate block">
+                  {file.name}
+                </span>
               </div>
+              <p className="text-xs text-white/70">
+                Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
+              </p>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
+              onClick={(e) => handleRemoveFile(e, file.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </Card>
         ))}
       </div>
