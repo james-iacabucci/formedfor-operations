@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,9 +5,9 @@ import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureD
 import { Sculpture, FileUpload } from "@/types/sculpture";
 import { Button } from "@/components/ui/button";
 import { 
-  ArrowLeft, 
-  PlusIcon, 
+  ArrowLeft,
   UploadIcon,
+  PlusIcon,
 } from "lucide-react";
 import { UserMenu } from "@/components/UserMenu";
 import { useState } from "react";
@@ -116,19 +115,30 @@ export default function SculptureDetail() {
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="mx-auto max-w-7xl p-6">
           <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-2xl font-bold shrink-0">Sculptify</h1>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => navigate("/")}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <h1 className="text-2xl font-bold">Sculptify</h1>
+            </div>
             <div className="flex items-center gap-4 ml-auto">
               <Button 
                 onClick={() => setIsAddSheetOpen(true)}
                 variant="outline"
-                className="gap-2 shrink-0"
+                className="gap-2"
               >
                 <UploadIcon className="h-4 w-4" />
                 Add
               </Button>
               <Button 
                 onClick={() => setIsCreateSheetOpen(true)}
-                className="gap-2 shrink-0"
+                variant="default"
+                className="gap-2 bg-white text-black hover:bg-gray-100"
               >
                 <PlusIcon className="h-4 w-4" />
                 Create
@@ -139,19 +149,6 @@ export default function SculptureDetail() {
         </div>
       </div>
       
-      <div className="mx-auto max-w-7xl px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sculptures
-          </Button>
-        </div>
-      </div>
-
       <div className="mx-auto max-w-7xl p-6">
         <SculptureDetailContent
           sculpture={sculpture}

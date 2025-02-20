@@ -124,7 +124,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center">
         <div className="flex-1 min-w-0">
           <div className="group inline-flex items-center">
             <EditableField
@@ -137,13 +137,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <ProductLineButton
-            sculptureId={sculpture.id}
-            productLineId={sculpture.product_line_id}
-            productLines={productLines}
-            currentProductLine={currentProductLine}
-            variant="large"
-          />
+          <Button
+            variant="outline"
+            size="default"
+            className="gap-2 bg-neutral-900 text-white hover:bg-neutral-800"
+          >
+            FF
+          </Button>
           <SculptureStatus
             sculptureId={sculpture.id}
             status={sculpture.status}
@@ -153,6 +153,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
             size="icon"
             onClick={handleRegenerate}
             disabled={isRegenerating}
+            className="bg-neutral-900 text-white hover:bg-neutral-800"
           >
             <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
           </Button>
@@ -160,12 +161,17 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
             variant="outline"
             size="icon"
             onClick={() => setIsRegenerationSheetOpen(true)}
+            className="bg-neutral-900 text-white hover:bg-neutral-800"
           >
             <ShuffleIcon className="h-4 w-4" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="bg-neutral-900 text-white hover:bg-neutral-800"
+              >
                 <MoreHorizontalIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
