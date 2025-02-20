@@ -2,8 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { MessageCircle } from "lucide-react";
 
 interface Message {
   id: string;
@@ -22,6 +25,9 @@ interface MessageListProps {
 }
 
 export function MessageList({ threadId }: MessageListProps) {
+  const queryClient = useQueryClient();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const { data: messages } = useQuery({
     queryKey: ["messages", threadId],
     queryFn: async () => {
@@ -41,7 +47,6 @@ export function MessageList({ threadId }: MessageListProps) {
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true });
 
-      // Type assertion to ensure the data matches our Message interface
       if (data) {
         return data.map(message => ({
           ...message,
@@ -52,13 +57,56 @@ export function MessageList({ threadId }: MessageListProps) {
     },
   });
 
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `thread_id=eq.${threadId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["messages", threadId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [threadId, queryClient]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollArea = scrollAreaRef.current;
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+  }, [messages]);
+
+  if (!messages?.length) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        <div className="flex flex-col items-center gap-2">
+          <MessageCircle className="h-8 w-8" />
+          <p>No messages yet</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <ScrollArea className="flex-1 p-4">
+    <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
       <div className="space-y-4">
-        {messages?.map((message) => (
+        {messages.map((message) => (
           <div key={message.id} className="flex items-start gap-3">
             <Avatar className="w-8 h-8">
-              <img src={message.user?.avatar_url || ""} alt={message.user?.username || "User"} />
+              <AvatarImage src={message.user?.avatar_url || ""} alt={message.user?.username || "User"} />
+              <AvatarFallback>{(message.user?.username?.[0] || "U").toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -72,7 +120,7 @@ export function MessageList({ threadId }: MessageListProps) {
                   <span className="text-xs text-muted-foreground">(edited)</span>
                 )}
               </div>
-              <p className="mt-1 text-sm">{message.content}</p>
+              <p className="mt-1 text-sm text-foreground">{message.content}</p>
             </div>
           </div>
         ))}
