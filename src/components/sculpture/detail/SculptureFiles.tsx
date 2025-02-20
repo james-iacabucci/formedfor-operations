@@ -21,6 +21,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           files={renderings}
           icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
           acceptTypes="image/*"
+          sculptureId={sculptureId}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')
@@ -38,6 +39,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           label="3D Models"
           files={models}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
+          sculptureId={sculptureId}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')
@@ -55,6 +57,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           label="Specifications"
           files={dimensions}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
+          sculptureId={sculptureId}
           onFilesChange={async (files) => {
             const { error } = await supabase
               .from('sculptures')
@@ -71,4 +74,3 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
     </div>
   );
 }
-
