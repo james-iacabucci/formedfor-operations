@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -11,6 +10,8 @@ import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
+import { useState } from "react";
+import { RegenerationSheet } from "@/components/RegenerationSheet";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -29,7 +30,8 @@ export function SculptureDetailContent({
 }: SculptureDetailContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { regenerateImage, isRegenerating } = useSculptureRegeneration();
+  const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
+  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id)) return;
@@ -51,10 +53,35 @@ export function SculptureDetailContent({
     }
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
+  const handleGenerateVariant = async (options: {
+    creativity: "none" | "small" | "medium" | "large";
+    changes?: string;
+    updateExisting: boolean;
+    regenerateImage: boolean;
+    regenerateMetadata: boolean;
+  }) => {
+    try {
+      await generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options);
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      
+      toast({
+        title: "Success",
+        description: options.updateExisting 
+          ? "Updates generated successfully." 
+          : "Variation created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate variant. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleManageTags = () => {
     // This will be implemented when we add tag management functionality
     console.log("Manage tags clicked");
-    // For now, just show a toast to indicate the action
     toast({
       title: "Coming Soon",
       description: "Tag management will be available soon.",
@@ -119,6 +146,14 @@ export function SculptureDetailContent({
           </div>
         </div>
       </div>
+
+      <RegenerationSheet
+        open={isRegenerationSheetOpen}
+        onOpenChange={setIsRegenerationSheetOpen}
+        onRegenerate={handleGenerateVariant}
+        isRegenerating={isRegenerating(sculpture.id)}
+        defaultPrompt={sculpture.prompt}
+      />
     </div>
   );
 }
