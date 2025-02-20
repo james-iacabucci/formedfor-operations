@@ -125,18 +125,18 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
-        <div className="flex items-start gap-2 flex-1">
+        <div className="flex-1 min-w-0">
           <div className="group inline-flex items-center">
             <EditableField
               value={sculpture.ai_generated_name || "Untitled Sculpture"}
               type="input"
               sculptureId={sculpture.id}
               field="ai_generated_name"
-              className="text-4xl font-bold tracking-tight"
+              className="text-4xl font-bold tracking-tight truncate"
             />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <ProductLineButton
             sculptureId={sculpture.id}
             productLineId={sculpture.product_line_id}
