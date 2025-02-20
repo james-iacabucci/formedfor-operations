@@ -39,14 +39,14 @@ export function FileUploadField({
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
-      // Upload the file to Supabase storage
+      // Upload the file to Supabase storage and wait for completion
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL for the uploaded file
+      // Get the public URL and ensure it's available
       const { data: { publicUrl } } = supabase.storage
         .from('sculpture_files')
         .getPublicUrl(fileName);
@@ -59,14 +59,38 @@ export function FileUploadField({
         created_at: new Date().toISOString(),
       };
 
-      // Update the files array with the new file
-      const updatedFiles = [...files, newFile];
-      onFilesChange(updatedFiles);
+      // Ensure the file is accessible before updating UI
+      const checkFileAvailability = async (url: string): Promise<boolean> => {
+        try {
+          const response = await fetch(url, { method: 'HEAD' });
+          return response.ok;
+        } catch {
+          return false;
+        }
+      };
 
-      toast({
-        title: "Success",
-        description: "File uploaded successfully.",
-      });
+      // Wait for the file to be available
+      let attempts = 0;
+      const maxAttempts = 10;
+      while (attempts < maxAttempts) {
+        if (await checkFileAvailability(publicUrl)) {
+          // Update the files array with the new file
+          const updatedFiles = [...files, newFile];
+          await onFilesChange(updatedFiles);
+          
+          toast({
+            title: "Success",
+            description: "File uploaded successfully.",
+          });
+          break;
+        }
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between checks
+      }
+
+      if (attempts >= maxAttempts) {
+        throw new Error("File upload succeeded but file is not yet accessible");
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       toast({
@@ -75,7 +99,7 @@ export function FileUploadField({
         variant: "destructive",
       });
     } finally {
-      // Reset the input value so the same file can be uploaded again if needed
+      // Reset the input value and loading state
       const input = document.getElementById(`${label}-upload`) as HTMLInputElement;
       if (input) {
         input.value = '';
