@@ -44,7 +44,7 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
           variant="outline" 
           size="default"
           className={cn(
-            "capitalize min-w-[80px]",
+            "capitalize",
             variant === "small" && "h-5 px-1.5 text-[10px]"
           )}
         >
