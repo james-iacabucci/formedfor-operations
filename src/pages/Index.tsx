@@ -139,7 +139,7 @@ const Index = () => {
                 pressed={isGridView}
                 onPressedChange={() => setIsGridView(true)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-8 w-8"
+                className="data-[state=on]:bg-muted h-10 w-10"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
@@ -147,7 +147,7 @@ const Index = () => {
                 pressed={!isGridView}
                 onPressedChange={() => setIsGridView(false)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-8 w-8"
+                className="data-[state=on]:bg-muted h-10 w-10"
               >
                 <List className="h-4 w-4" />
               </Toggle>
@@ -166,7 +166,7 @@ const Index = () => {
                     value={pl.id}
                     variant="outline"
                     size="sm"
-                    className="px-2 py-1 text-xs h-8"
+                    className="px-2 py-1 text-xs h-10"
                   >
                     {pl.product_line_code || pl.name}
                   </ToggleGroupItem>
@@ -182,18 +182,18 @@ const Index = () => {
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  className="h-8 w-[200px] pl-8"
+                  className="h-10 w-[200px] pl-8"
                   onBlur={() => !searchValue && setIsSearchExpanded(false)}
                   placeholder="Search sculptures..."
                 />
-                <Search className="h-4 w-4 absolute left-2 top-2 text-muted-foreground" />
+                <Search className="h-4 w-4 absolute left-2 top-3 text-muted-foreground" />
               </div>
             ) : (
               <div className="flex gap-1">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10"
                   onClick={handleSearchClick}
                 >
                   <Search className="h-4 w-4" />
@@ -201,7 +201,7 @@ const Index = () => {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10"
                   onClick={() => setIsViewSettingsOpen(true)}
                 >
                   <Settings2 className="h-4 w-4" />
@@ -221,14 +221,14 @@ const Index = () => {
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
               variant="outline"
-              className="gap-2 h-8"
+              className="gap-2 h-10"
             >
               <UploadIcon className="h-4 w-4" />
               Add
             </Button>
             <Button 
               onClick={() => setIsCreateSheetOpen(true)}
-              className="gap-2 h-8"
+              className="gap-2 h-10"
             >
               <PlusIcon className="h-4 w-4" />
               Create
