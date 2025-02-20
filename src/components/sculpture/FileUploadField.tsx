@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
@@ -15,6 +14,7 @@ interface FileUploadFieldProps {
   icon?: React.ReactNode;
   acceptTypes?: string;
   onFilesChange: (files: FileUpload[]) => void;
+  sculptureId: string; // Added sculptureId prop
 }
 
 export function FileUploadField({
@@ -23,6 +23,7 @@ export function FileUploadField({
   icon,
   acceptTypes,
   onFilesChange,
+  sculptureId, // Added sculptureId prop
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
@@ -76,7 +77,19 @@ export function FileUploadField({
         if (await checkFileAvailability(publicUrl)) {
           // Update the files array with the new file
           const updatedFiles = [...files, newFile];
-          await onFilesChange(updatedFiles);
+          
+          // Update the Supabase sculpture record first
+          const { error: updateError } = await supabase
+            .from('sculptures')
+            .update({ 
+              [label.toLowerCase()]: updatedFiles 
+            })
+            .eq('id', sculptureId);
+
+          if (updateError) throw updateError;
+
+          // Then update the local state through the callback
+          onFilesChange(updatedFiles);
           
           toast({
             title: "Success",
@@ -99,7 +112,6 @@ export function FileUploadField({
         variant: "destructive",
       });
     } finally {
-      // Only reset the loading state AFTER all operations are complete
       const input = document.getElementById(`${label}-upload`) as HTMLInputElement;
       if (input) {
         input.value = '';
@@ -118,12 +130,23 @@ export function FileUploadField({
         .from('sculpture_files')
         .remove([fileId]);
 
-      if (deleteError) {
-        throw deleteError;
-      }
+      if (deleteError) throw deleteError;
 
-      // Then update the files list
-      onFilesChange(files.filter(f => f.id !== fileId));
+      // Update filtered files list
+      const updatedFiles = files.filter(f => f.id !== fileId);
+
+      // Update the Supabase sculpture record first
+      const { error: updateError } = await supabase
+        .from('sculptures')
+        .update({ 
+          [label.toLowerCase()]: updatedFiles 
+        })
+        .eq('id', sculptureId);
+
+      if (updateError) throw updateError;
+
+      // Then update the local state through the callback
+      onFilesChange(updatedFiles);
 
       toast({
         title: "File deleted",
