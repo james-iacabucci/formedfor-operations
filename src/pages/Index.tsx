@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -5,7 +6,18 @@ import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
+import { 
+  AlertCircle, 
+  CheckCircle, 
+  Clock,
+  LayoutGrid, 
+  List, 
+  PlusIcon, 
+  Search, 
+  Settings2, 
+  UploadIcon, 
+  XCircle 
+} from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
@@ -14,6 +26,7 @@ import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -36,6 +49,7 @@ const Index = () => {
   const [searchValue, setSearchValue] = useState("");
   const [previousSearchValue, setPreviousSearchValue] = useState("");
   const [selectedProductLines, setSelectedProductLines] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
     sortOrder: 'desc',
@@ -80,11 +94,7 @@ const Index = () => {
   });
 
   const handleViewSettingsChange = (newSettings: ViewSettings) => {
-    const newSettingsWithProductLine = {
-      ...newSettings,
-      productLineId: selectedProductLines.length === 1 ? selectedProductLines[0] : null
-    };
-    setViewSettings(newSettingsWithProductLine);
+    setViewSettings(newSettings);
   };
 
   const handleSearchClick = () => {
@@ -112,9 +122,13 @@ const Index = () => {
 
   const handleProductLineChange = (values: string[]) => {
     setSelectedProductLines(values);
+  };
+
+  const handleStatusChange = (value: string | null) => {
+    setSelectedStatus(value);
     setViewSettings(prev => ({
       ...prev,
-      productLineId: values.length === 1 ? values[0] : null
+      status: value
     }));
   };
 
@@ -173,6 +187,69 @@ const Index = () => {
                 ))}
               </ToggleGroup>
             )}
+
+            <ToggleGroup
+              type="single"
+              value={selectedStatus || ""}
+              onValueChange={handleStatusChange}
+              className="flex gap-1"
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value="ideas"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Clock className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>Ideas</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value="pending_additions"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>Pending Additions</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value="approved"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>Approved</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value="archived"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>Archived</TooltipContent>
+              </Tooltip>
+            </ToggleGroup>
             
             <Button
               variant="outline"
