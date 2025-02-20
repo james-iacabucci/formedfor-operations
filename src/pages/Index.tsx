@@ -223,6 +223,7 @@ const Index = () => {
               viewSettings={viewSettings} 
               isGridView={isGridView}
               selectedProductLines={selectedProductLines}
+              searchQuery={searchValue}
             />
           </CardContent>
         </Card>

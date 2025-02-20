@@ -24,20 +24,26 @@ interface SculpturesListProps {
   isGridView: boolean;
   selectedTagId?: string | null;
   selectedProductLines?: string[];
+  searchQuery?: string;
 }
 
 export function SculpturesList({ 
   viewSettings, 
   isGridView, 
   selectedTagId,
-  selectedProductLines = []
+  selectedProductLines = [],
+  searchQuery = ""
 }: SculpturesListProps) {
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
-  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(viewSettings, selectedProductLines);
+  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(
+    viewSettings, 
+    selectedProductLines,
+    searchQuery
+  );
 
   if (isLoading) {
     return <div>Loading...</div>;

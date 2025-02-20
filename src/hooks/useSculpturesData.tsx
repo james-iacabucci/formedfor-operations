@@ -14,10 +14,14 @@ interface ViewSettings {
   heightUnit: 'in' | 'cm';
 }
 
-export function useSculpturesData(viewSettings: ViewSettings, selectedProductLines: string[] = []) {
+export function useSculpturesData(
+  viewSettings: ViewSettings, 
+  selectedProductLines: string[] = [],
+  searchQuery: string = ""
+) {
   // Query to fetch sculptures
   const { data: sculptures, isLoading } = useQuery({
-    queryKey: ["sculptures", viewSettings, selectedProductLines],
+    queryKey: ["sculptures", viewSettings, selectedProductLines, searchQuery],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("No user found");
@@ -33,6 +37,11 @@ export function useSculpturesData(viewSettings: ViewSettings, selectedProductLin
       } else {
         // When no product lines are selected, show sculptures with no assigned product line
         query = query.is('product_line_id', null);
+      }
+
+      // Apply search filter if query exists
+      if (searchQuery) {
+        query = query.or(`ai_generated_name.ilike.%${searchQuery}%,manual_name.ilike.%${searchQuery}%`);
       }
 
       // Apply other filters
