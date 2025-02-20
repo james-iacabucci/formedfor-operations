@@ -28,14 +28,6 @@ export function SelectedFilters({
 }: SelectedFiltersProps) {
   const filters: { id: string; label: string }[] = [];
 
-  // Add selected product line
-  if (viewSettings.productLineId) {
-    const productLine = productLines.find(pl => pl.id === viewSettings.productLineId);
-    if (productLine) {
-      filters.push({ id: `pl-${productLine.id}`, label: productLine.name });
-    }
-  }
-
   // Add selected materials
   viewSettings.materialIds.forEach(materialId => {
     const material = materials.find(m => m.id === materialId);
