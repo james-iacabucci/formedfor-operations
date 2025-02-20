@@ -34,6 +34,7 @@ const Index = () => {
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [previousSearchValue, setPreviousSearchValue] = useState("");
   const [selectedProductLines, setSelectedProductLines] = useState<string[]>([]);
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
@@ -88,12 +89,25 @@ const Index = () => {
 
   const handleSearchClick = () => {
     setIsSearchExpanded(true);
+    setPreviousSearchValue(searchValue);
     setTimeout(() => {
       const searchInput = document.getElementById('sculpture-search');
       if (searchInput) {
         searchInput.focus();
       }
     }, 100);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    } else if (e.key === 'Escape') {
+      setSearchValue(previousSearchValue);
+      e.currentTarget.blur();
+      if (!previousSearchValue) {
+        setIsSearchExpanded(false);
+      }
+    }
   };
 
   const handleProductLineChange = (values: string[]) => {
@@ -138,66 +152,70 @@ const Index = () => {
                 <List className="h-4 w-4" />
               </Toggle>
             </div>
-            <div className="flex items-center gap-2">
-              {isSearchExpanded ? (
-                <div className="relative">
-                  <Input
-                    id="sculpture-search"
-                    type="text"
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    className="h-8 w-[200px] pl-8"
-                    onBlur={() => !searchValue && setIsSearchExpanded(false)}
-                    placeholder="Search sculptures..."
-                  />
-                  <Search className="h-4 w-4 absolute left-2 top-2 text-muted-foreground" />
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={handleSearchClick}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              )}
-              {productLines && productLines.length > 0 && (
-                <ToggleGroup 
-                  type="multiple"
-                  value={selectedProductLines}
-                  onValueChange={handleProductLineChange}
-                  className="flex flex-wrap gap-1"
-                >
-                  {productLines.map((pl) => (
-                    <ToggleGroupItem
-                      key={pl.id}
-                      value={pl.id}
-                      variant="outline"
-                      size="sm"
-                      className="px-2 py-1 text-xs"
-                    >
-                      {pl.product_line_code || pl.name}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setIsViewSettingsOpen(true)}
+            
+            {productLines && productLines.length > 0 && (
+              <ToggleGroup 
+                type="multiple"
+                value={selectedProductLines}
+                onValueChange={handleProductLineChange}
+                className="flex flex-wrap gap-1"
               >
-                <Settings2 className="h-4 w-4" />
-              </Button>
-            </div>
+                {productLines.map((pl) => (
+                  <ToggleGroupItem
+                    key={pl.id}
+                    value={pl.id}
+                    variant="outline"
+                    size="sm"
+                    className="px-2 py-1 text-xs"
+                  >
+                    {pl.product_line_code || pl.name}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            )}
+            
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsViewSettingsOpen(true)}
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+
             <SelectedFilters
               viewSettings={viewSettings}
               productLines={productLines}
               materials={materials}
               tags={tags}
             />
+
+            {isSearchExpanded ? (
+              <div className="relative">
+                <Input
+                  id="sculpture-search"
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="h-8 w-[200px] pl-8"
+                  onBlur={() => !searchValue && setIsSearchExpanded(false)}
+                  placeholder="Search sculptures..."
+                />
+                <Search className="h-4 w-4 absolute left-2 top-2 text-muted-foreground" />
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleSearchClick}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            )}
           </div>
+
           <div className="flex items-center gap-2">
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
