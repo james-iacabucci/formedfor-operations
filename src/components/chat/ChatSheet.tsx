@@ -5,6 +5,7 @@ import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatSheetProps {
   open: boolean;
@@ -16,51 +17,71 @@ type ChatTopic = 'pricing' | 'fabrication' | 'operations';
 
 export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
   const [threads, setThreads] = useState<Record<ChatTopic, string>>({} as Record<ChatTopic, string>);
+  const { toast } = useToast();
   
   useEffect(() => {
     if (open && sculptureId) {
       const initializeThreads = async () => {
-        // Create threads if they don't exist
-        const topics: ChatTopic[] = ['pricing', 'fabrication', 'operations'];
-        for (const topic of topics) {
-          const { data: existing } = await supabase
-            .from('chat_threads')
-            .select('id')
-            .eq('sculpture_id', sculptureId)
-            .eq('topic', topic)
-            .single();
-
-          if (!existing) {
-            const { data: newThread } = await supabase
+        try {
+          // Create threads if they don't exist
+          const topics: ChatTopic[] = ['pricing', 'fabrication', 'operations'];
+          
+          for (const topic of topics) {
+            // Check if thread exists
+            const { data: existing } = await supabase
               .from('chat_threads')
-              .insert({
-                sculpture_id: sculptureId,
-                topic: topic as ChatTopic,
-              })
               .select('id')
+              .eq('sculpture_id', sculptureId)
+              .eq('topic', topic)
               .single();
 
-            if (newThread) {
-              const user = await supabase.auth.getUser();
-              // Add current user as participant
-              await supabase
-                .from('chat_thread_participants')
+            if (!existing) {
+              // Create new thread
+              const { data: newThread, error: threadError } = await supabase
+                .from('chat_threads')
                 .insert({
-                  thread_id: newThread.id,
-                  user_id: user.data.user?.id,
-                });
-              
-              setThreads(prev => ({ ...prev, [topic]: newThread.id }));
+                  sculpture_id: sculptureId,
+                  topic: topic,
+                })
+                .select('id')
+                .single();
+
+              if (threadError) {
+                console.error('Error creating thread:', threadError);
+                continue;
+              }
+
+              if (newThread) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                  // Add current user as participant
+                  await supabase
+                    .from('chat_thread_participants')
+                    .insert({
+                      thread_id: newThread.id,
+                      user_id: user.id,
+                    });
+                  
+                  setThreads(prev => ({ ...prev, [topic]: newThread.id }));
+                }
+              }
+            } else {
+              setThreads(prev => ({ ...prev, [topic]: existing.id }));
             }
-          } else {
-            setThreads(prev => ({ ...prev, [topic]: existing.id }));
           }
+        } catch (error) {
+          console.error('Error initializing threads:', error);
+          toast({
+            title: "Error",
+            description: "Failed to initialize chat threads",
+            variant: "destructive",
+          });
         }
       };
 
       initializeThreads();
     }
-  }, [open, sculptureId]);
+  }, [open, sculptureId, toast]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -75,28 +96,28 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <TabsContent value="pricing" className="h-full m-0">
+            <TabsContent value="pricing" className="h-full m-0 flex flex-col">
               {threads.pricing && (
-                <div className="flex flex-col h-full">
+                <>
                   <MessageList threadId={threads.pricing} />
                   <MessageInput threadId={threads.pricing} />
-                </div>
+                </>
               )}
             </TabsContent>
-            <TabsContent value="fabrication" className="h-full m-0">
+            <TabsContent value="fabrication" className="h-full m-0 flex flex-col">
               {threads.fabrication && (
-                <div className="flex flex-col h-full">
+                <>
                   <MessageList threadId={threads.fabrication} />
                   <MessageInput threadId={threads.fabrication} />
-                </div>
+                </>
               )}
             </TabsContent>
-            <TabsContent value="operations" className="h-full m-0">
+            <TabsContent value="operations" className="h-full m-0 flex flex-col">
               {threads.operations && (
-                <div className="flex flex-col h-full">
+                <>
                   <MessageList threadId={threads.operations} />
                   <MessageInput threadId={threads.operations} />
-                </div>
+                </>
               )}
             </TabsContent>
           </div>
