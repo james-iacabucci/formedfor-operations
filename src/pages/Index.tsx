@@ -164,7 +164,7 @@ const Index = () => {
                   <ToggleGroupItem
                     key={pl.id}
                     value={pl.id}
-                    variant="outline"
+                    variant="primary"
                     size="sm"
                     className="px-2 py-1 text-xs h-10"
                   >
