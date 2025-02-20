@@ -52,8 +52,8 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between pb-6">
+    <div className="space-y-4"> {/* Changed from space-y-8 to space-y-4 */}
+      <div className="flex items-center justify-between pb-4"> {/* Changed from pb-6 to pb-4 */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
