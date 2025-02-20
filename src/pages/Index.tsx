@@ -173,7 +173,14 @@ const Index = () => {
                 ))}
               </ToggleGroup>
             )}
-            
+
+            <SelectedFilters
+              viewSettings={viewSettings}
+              productLines={productLines}
+              materials={materials}
+              tags={tags}
+            />
+
             <Button
               variant="outline"
               size="icon"
@@ -182,13 +189,6 @@ const Index = () => {
             >
               <Settings2 className="h-4 w-4" />
             </Button>
-
-            <SelectedFilters
-              viewSettings={viewSettings}
-              productLines={productLines}
-              materials={materials}
-              tags={tags}
-            />
 
             {isSearchExpanded ? (
               <div className="relative">
