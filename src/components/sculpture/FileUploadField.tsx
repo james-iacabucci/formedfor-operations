@@ -16,6 +16,11 @@ interface FileUploadFieldProps {
   onFilesChange: (files: FileUpload[]) => void;
 }
 
+interface UploadingFile {
+  file: File;
+  previewUrl?: string;
+}
+
 export function FileUploadField({
   label,
   files,
@@ -24,14 +29,20 @@ export function FileUploadField({
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState<File | null>(null);
+  const [uploadingFile, setUploadingFile] = useState<UploadingFile | null>(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     const file = e.target.files[0];
-    setUploadingFile(file);
+    
+    // Create a preview URL for images
+    const previewUrl = file.type.startsWith('image/') 
+      ? URL.createObjectURL(file)
+      : undefined;
+    
+    setUploadingFile({ file, previewUrl });
     setIsUploading(true);
 
     try {
@@ -59,6 +70,10 @@ export function FileUploadField({
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
+      // Clean up the preview URL
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setIsUploading(false);
       setUploadingFile(null);
     }
@@ -110,13 +125,26 @@ export function FileUploadField({
         {isUploading && uploadingFile && (
           <Card className="aspect-square overflow-hidden">
             <div className="relative w-full h-full">
-              <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
+              {uploadingFile.previewUrl ? (
+                <div className="relative w-full h-full">
+                  <img 
+                    src={uploadingFile.previewUrl} 
+                    alt="" 
+                    className="w-full h-full object-cover opacity-50"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                </div>
+              ) : (
+                <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                  <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm">
                 <div className="mb-2">
                   <span className="text-sm font-medium truncate block">
-                    Uploading {uploadingFile.name}...
+                    Uploading {uploadingFile.file.name}...
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
