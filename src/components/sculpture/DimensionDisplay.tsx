@@ -32,8 +32,12 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     e.stopPropagation();
   };
 
+  const handleTabTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" onClick={handleTabClick}>
       <span>
         {formatDimensionString(height, width, depth, unit)}
       </span>
@@ -41,11 +45,22 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
         value={unit}
         onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
         className="h-5"
-        onClick={handleTabClick}
       >
         <TabsList className="h-5 p-0.5">
-          <TabsTrigger value="inches" className="h-4 px-2 text-xs">in</TabsTrigger>
-          <TabsTrigger value="centimeters" className="h-4 px-2 text-xs">cm</TabsTrigger>
+          <TabsTrigger 
+            value="inches" 
+            className="h-4 px-2 text-xs"
+            onClick={handleTabTriggerClick}
+          >
+            in
+          </TabsTrigger>
+          <TabsTrigger 
+            value="centimeters" 
+            className="h-4 px-2 text-xs"
+            onClick={handleTabTriggerClick}
+          >
+            cm
+          </TabsTrigger>
         </TabsList>
       </Tabs>
     </div>
