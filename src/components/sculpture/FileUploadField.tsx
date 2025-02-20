@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
@@ -106,23 +105,23 @@ export function FileUploadField({
         accept={acceptTypes}
         onChange={handleFileChange}
       />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isUploading && uploadingFile && (
           <Card className="overflow-hidden">
-            <div className="relative">
-              <div className="aspect-video w-full bg-muted flex items-center justify-center">
+            <div className="flex">
+              <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center">
                 <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            </div>
-            <div className="p-4">
-              <div className="mb-2">
-                <span className="text-sm font-medium truncate block">
-                  Uploading {uploadingFile.name}...
-                </span>
+              <div className="p-4 flex-1">
+                <div className="mb-2">
+                  <span className="text-sm font-medium truncate block">
+                    Uploading {uploadingFile.name}...
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Please wait...
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Please wait...
-              </p>
             </div>
           </Card>
         )}
@@ -133,45 +132,45 @@ export function FileUploadField({
             className="overflow-hidden cursor-pointer group"
             onClick={() => setSelectedFileIndex(index)}
           >
-            <div className="relative">
-              {isImage(file.name) ? (
-                <div className="aspect-video w-full">
+            <div className="flex">
+              <div className="w-32 h-32 flex-shrink-0 relative">
+                {isImage(file.name) ? (
                   <img 
                     src={file.url} 
                     alt="" 
                     className="w-full h-full object-cover"
                   />
-                </div>
-              ) : (
-                <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                  <FileIcon className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
-                onClick={(e) => handleRemoveFile(e, file.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-4">
-              <div className="mb-2">
-                <a
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-blue-500 hover:underline truncate block"
-                  onClick={e => e.stopPropagation()}
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <FileIcon className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
+                  onClick={(e) => handleRemoveFile(e, file.id)}
                 >
-                  {file.name}
-                </a>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
-              </p>
+              <div className="p-4 flex-1">
+                <div className="mb-2">
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-blue-500 hover:underline truncate block"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {file.name}
+                  </a>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
+                </p>
+              </div>
             </div>
           </Card>
         ))}
@@ -188,4 +187,3 @@ export function FileUploadField({
     </div>
   );
 }
-
