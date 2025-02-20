@@ -54,7 +54,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
         />
 
         <FileUploadField
-          label="Specifications"
+          label="Dimensions"
           files={dimensions}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
