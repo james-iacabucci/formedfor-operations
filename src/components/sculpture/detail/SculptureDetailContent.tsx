@@ -52,24 +52,26 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between pb-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="default"
-            size="icon"
-            onClick={onBack}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-2xl font-bold">
-            {sculpture.ai_generated_name || "Untitled Sculpture"}
+    <div>
+      <div className="sticky top-[73px] bg-background z-10 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="default"
+              size="icon"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-2xl font-bold">
+              {sculpture.ai_generated_name || "Untitled Sculpture"}
+            </div>
           </div>
+          <SculptureHeader sculpture={sculpture} />
         </div>
-        <SculptureHeader sculpture={sculpture} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
           <AspectRatio ratio={1}>
             <SculptureDetailImage
