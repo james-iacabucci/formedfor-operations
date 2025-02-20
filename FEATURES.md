@@ -5,40 +5,40 @@ This file tracks potential improvements and features that could be implemented i
 
 ## Pending Improvements
 
-### User Management System
-- [ ] Add comprehensive user roles system (admin, manager, user, etc.)
-- [ ] Implement role-based permissions management
-- [ ] Create admin interface for user management
-- [ ] Add user activity logging and audit trails
+### 1. User Management System
+1.1. Add comprehensive user roles system (admin, manager, user, etc.)
+1.2. Implement role-based permissions management
+1.3. Create admin interface for user management
+1.4. Add user activity logging and audit trails
 
-### Project Management
-- [ ] Implement client projects system
-  - [ ] Add project metadata (location, client info, trade contact)
-  - [ ] Enable adding sculptures from library
-  - [ ] Implement smart copy system for library items
-  - [ ] Add branching logic for project-specific variants vs library variants
-  - [ ] Add project status tracking
-  - [ ] Create project dashboard
+### 2. Project Management
+2.1. Implement client projects system
+  2.1.1. Add project metadata (location, client info, trade contact)
+  2.1.2. Enable adding sculptures from library
+  2.1.3. Implement smart copy system for library items
+  2.1.4. Add branching logic for project-specific variants vs library variants
+  2.1.5. Add project status tracking
+  2.1.6. Create project dashboard
 
-### Sculpture Features
-- [ ] Enhance variant generation system
-  - [ ] Generate multiple variants simultaneously (grid of 10)
-  - [ ] Add batch selection interface
-  - [ ] Implement bulk save functionality
-  - [ ] Add regenerate all capability
-- [ ] Add 3D model preview functionality
-- [ ] Implement PDF export system
-  - [ ] Sales presentation format
-  - [ ] Marketing collateral format
-  - [ ] Technical specifications format
+### 3. Sculpture Features
+3.1. Enhance variant generation system
+  3.1.1. Generate multiple variants simultaneously (grid of 10)
+  3.1.2. Add batch selection interface
+  3.1.3. Implement bulk save functionality
+  3.1.4. Add regenerate all capability
+3.2. Add 3D model preview functionality
+3.3. Implement PDF export system
+  3.3.1. Sales presentation format
+  3.3.2. Marketing collateral format
+  3.3.3. Technical specifications format
 
-### Regeneration System
-- [ ] Refactor `use-sculpture-regeneration.ts` into smaller, more focused hooks (current file is over 200 lines)
-- [ ] Add loading states and better error handling for regeneration processes
-- [ ] Add confirmation dialog before regeneration to prevent accidental triggers
-- [ ] Implement retry logic for failed regenerations
-- [ ] Add progress indicators for multi-step regeneration processes
-- [ ] Improve visual feedback during regeneration states
+### 4. Regeneration System
+4.1. Refactor `use-sculpture-regeneration.ts` into smaller, more focused hooks (current file is over 200 lines)
+4.2. Add loading states and better error handling for regeneration processes
+4.3. Add confirmation dialog before regeneration to prevent accidental triggers
+4.4. Implement retry logic for failed regenerations
+4.5. Add progress indicators for multi-step regeneration processes
+4.6. Improve visual feedback during regeneration states
 
 ## Implemented Features
 *(Most recently implemented at the top)*
@@ -51,11 +51,10 @@ When working with the AI assistant:
 1. To view the list: Ask to "show the FEATURES.md file"
 2. To add items: Ask to "add X to FEATURES.md"
 3. To implement: Ask to implement any specific item from the list
+4. To reference an item: Use its number (e.g., "implement feature 3.1.2")
 
 ## Notes
 
 - This list is maintained across conversations through the codebase
 - Items are moved to "Implemented Features" section once completed
 - Each item should be specific and actionable
-
-
