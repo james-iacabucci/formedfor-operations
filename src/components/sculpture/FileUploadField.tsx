@@ -14,7 +14,7 @@ interface FileUploadFieldProps {
   icon?: React.ReactNode;
   acceptTypes?: string;
   onFilesChange: (files: FileUpload[]) => void;
-  sculptureId?: string; // Make sculptureId optional
+  sculptureId?: string;
 }
 
 export function FileUploadField({
@@ -74,10 +74,16 @@ export function FileUploadField({
           
           // Only update Supabase if we have a sculptureId
           if (sculptureId) {
+            // Map the display label to the database column name
+            const columnName = label.toLowerCase() === "models" ? "models" : 
+                             label.toLowerCase() === "renderings" ? "renderings" : 
+                             label.toLowerCase() === "dimensions" ? "dimensions" : 
+                             label.toLowerCase();
+            
             const { error: updateError } = await supabase
               .from('sculptures')
               .update({ 
-                [label.toLowerCase()]: updatedFiles 
+                [columnName]: updatedFiles 
               })
               .eq('id', sculptureId);
 
