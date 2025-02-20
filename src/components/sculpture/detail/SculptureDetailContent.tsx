@@ -53,13 +53,14 @@ export function SculptureDetailContent({
 
   return (
     <div>
-      <div className="sticky top-[73px] bg-background z-10 pb-4">
+      <div className="fixed top-[73px] left-0 right-0 bg-background z-10 pb-4 px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
-              variant="default"
+              variant="outline"
               size="icon"
               onClick={onBack}
+              className="focus:bg-background focus:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -71,7 +72,7 @@ export function SculptureDetailContent({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="mt-[88px] grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
           <AspectRatio ratio={1}>
             <SculptureDetailImage
