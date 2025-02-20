@@ -87,8 +87,6 @@ export function SculptureDetailImage({
     }
   };
 
-  const showRegenerateButton = status === "idea";
-
   return (
     <>
       <BaseSculptureImage
@@ -99,7 +97,7 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            {showRegenerateButton && (
+            {status === "idea" && (
               <Button
                 size="icon"
                 variant="secondary"
