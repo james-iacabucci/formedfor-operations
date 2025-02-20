@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -7,7 +6,8 @@ import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
-import { Toggle, ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle";
+import { Toggle } from "@/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
@@ -106,7 +106,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* App Header */}
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="mx-auto max-w-7xl p-6">
           <div className="flex items-center gap-4">
@@ -119,7 +118,6 @@ const Index = () => {
       </div>
 
       <div className="mx-auto max-w-7xl p-6 pt-6">
-        {/* Sculpture Listing Toolbar */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex gap-2 border rounded-md p-0.5">
