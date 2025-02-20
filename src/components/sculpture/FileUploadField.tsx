@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
@@ -29,6 +30,15 @@ export function FileUploadField({
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const { toast } = useToast();
+
+  // Helper function to map display label to database column name
+  const getColumnName = (label: string): string => {
+    const normalizedLabel = label.toLowerCase();
+    if (normalizedLabel === "models") return "models";
+    if (normalizedLabel === "renderings") return "renderings";
+    if (normalizedLabel === "dimensions") return "dimensions";
+    return normalizedLabel;
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -74,11 +84,7 @@ export function FileUploadField({
           
           // Only update Supabase if we have a sculptureId
           if (sculptureId) {
-            // Map the display label to the database column name
-            const columnName = label.toLowerCase() === "models" ? "models" : 
-                             label.toLowerCase() === "renderings" ? "renderings" : 
-                             label.toLowerCase() === "dimensions" ? "dimensions" : 
-                             label.toLowerCase();
+            const columnName = getColumnName(label);
             
             const { error: updateError } = await supabase
               .from('sculptures')
@@ -136,10 +142,12 @@ export function FileUploadField({
 
       // Only update Supabase if we have a sculptureId
       if (sculptureId) {
+        const columnName = getColumnName(label);
+        
         const { error: updateError } = await supabase
           .from('sculptures')
           .update({ 
-            [label.toLowerCase()]: updatedFiles 
+            [columnName]: updatedFiles 
           })
           .eq('id', sculptureId);
 
