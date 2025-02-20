@@ -71,3 +71,4 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
     </div>
   );
 }
+

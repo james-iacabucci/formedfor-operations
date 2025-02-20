@@ -106,7 +106,7 @@ export function FileUploadField({
         accept={acceptTypes}
         onChange={handleFileChange}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {isUploading && uploadingFile && (
           <Card className="overflow-hidden">
             <div className="relative">
@@ -188,3 +188,4 @@ export function FileUploadField({
     </div>
   );
 }
+
