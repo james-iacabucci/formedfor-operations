@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { useState } from "react";
-import { RegenerationSheet } from "@/components/RegenerationSheet";
+import { RegenerationSheet } from "../RegenerationSheet";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
