@@ -10,6 +10,21 @@ This file tracks potential improvements and features that could be implemented i
 1.2. Implement role-based permissions management
 1.3. Create admin interface for user management
 1.4. Add user activity logging and audit trails
+1.5. Trade Partner Portal
+  1.5.1. Browse all sculptures
+  1.5.2. Manage projects
+  1.5.3. Request quotes
+  1.5.4. Place and track orders
+1.6. Fabricator Portal
+  1.6.1. View and respond to quote requests
+  1.6.2. Bilingual chat system (English/Chinese) for quote discussions
+  1.6.3. Purchase order management with chat functionality
+  1.6.4. Track order progress and shipping updates
+1.7. User Onboarding Workflow
+  1.7.1. Initial signup process
+  1.7.2. Trade partner information collection
+  1.7.3. Admin review and approval system
+  1.7.4. Public access until approved for trade access
 
 ### 2. Project Management
 2.1. Implement client projects system
@@ -21,11 +36,26 @@ This file tracks potential improvements and features that could be implemented i
   2.1.6. Create project dashboard
 
 ### 3. Sculpture Features
+3.1. Public Sculpture Gallery
+  3.1.1. Public/private visibility controls
+  3.1.2. Public browsing interface
+  3.1.3. SEO optimization for public sculptures
 3.2. Add 3D model preview functionality
 3.3. Implement PDF export system
   3.3.1. Sales presentation format
   3.3.2. Marketing collateral format
   3.3.3. Technical specifications format
+
+### 4. Marketing & Communications
+4.1. Social Media Integration
+  4.1.1. Create and schedule social media posts
+  4.1.2. Multi-platform posting capability
+  4.1.3. Post performance tracking
+4.2. Email Marketing
+  4.2.1. Create email campaigns from selected sculptures
+  4.2.2. Email template management
+  4.2.3. Campaign performance tracking
+  4.2.4. Subscriber list management
 
 ## Implemented Features
 *(Most recently implemented at the top)*
@@ -55,3 +85,4 @@ When working with the AI assistant:
 - This list is maintained across conversations through the codebase
 - Items are moved to "Implemented Features" section once completed
 - Each item should be specific and actionable
+
