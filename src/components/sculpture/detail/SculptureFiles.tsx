@@ -12,6 +12,13 @@ interface SculptureFilesProps {
 }
 
 export function SculptureFiles({ sculptureId, models, renderings, dimensions }: SculptureFilesProps) {
+  console.log('SculptureFiles - Current values:', {
+    sculptureId,
+    models: models?.length,
+    renderings: renderings?.length,
+    dimensions: dimensions?.length
+  });
+
   return (
     <div>
       <h2 className="text-lg font-semibold mb-2">Attachments</h2>
@@ -23,6 +30,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           acceptTypes="image/*"
           sculptureId={sculptureId}
           onFilesChange={async (files) => {
+            console.log('Updating renderings:', files.length);
             const { error } = await supabase
               .from('sculptures')
               .update({ renderings: files })
@@ -41,6 +49,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
           onFilesChange={async (files) => {
+            console.log('Updating models:', files.length);
             const { error } = await supabase
               .from('sculptures')
               .update({ models: files })
@@ -59,6 +68,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
           onFilesChange={async (files) => {
+            console.log('Updating dimensions:', files.length);
             const { error } = await supabase
               .from('sculptures')
               .update({ dimensions: files })

@@ -33,10 +33,13 @@ export function FileUploadField({
 
   // Helper function to map display label to database column name
   const getColumnName = (label: string): string => {
+    console.log('getColumnName input:', label);
     const normalizedLabel = label.toLowerCase();
+    console.log('normalized label:', normalizedLabel);
     if (normalizedLabel === "models") return "models";
     if (normalizedLabel === "renderings") return "renderings";
     if (normalizedLabel === "dimensions") return "dimensions";
+    console.log('returning normalized label:', normalizedLabel);
     return normalizedLabel;
   };
 
@@ -44,21 +47,30 @@ export function FileUploadField({
     if (!e.target.files || e.target.files.length === 0) return;
 
     const file = e.target.files[0];
+    console.log('Uploading file:', file.name);
     setIsUploading(true);
 
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      console.log('Generated filename:', fileName);
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded to storage successfully');
 
       const { data: { publicUrl } } = supabase.storage
         .from('sculpture_files')
         .getPublicUrl(fileName);
+
+      console.log('Public URL generated:', publicUrl);
 
       const newFile: FileUpload = {
         id: fileName,
@@ -66,6 +78,8 @@ export function FileUploadField({
         url: publicUrl,
         created_at: new Date().toISOString(),
       };
+
+      console.log('New file object created:', newFile);
 
       const checkFileAvailability = async (url: string): Promise<boolean> => {
         try {
@@ -81,11 +95,20 @@ export function FileUploadField({
       while (attempts < maxAttempts) {
         if (await checkFileAvailability(publicUrl)) {
           const updatedFiles = [...files, newFile];
+          console.log('Files array after adding new file:', updatedFiles);
           
           // Only update Supabase if we have a sculptureId
           if (sculptureId) {
+            console.log('Current label:', label);
             const columnName = getColumnName(label);
+            console.log('Mapped column name:', columnName);
             
+            console.log('Attempting to update sculpture with:', {
+              sculptureId,
+              columnName,
+              filesCount: updatedFiles.length
+            });
+
             const { error: updateError } = await supabase
               .from('sculptures')
               .update({ 
@@ -93,7 +116,10 @@ export function FileUploadField({
               })
               .eq('id', sculptureId);
 
-            if (updateError) throw updateError;
+            if (updateError) {
+              console.error('Database update error:', updateError);
+              throw updateError;
+            }
           }
 
           onFilesChange(updatedFiles);
