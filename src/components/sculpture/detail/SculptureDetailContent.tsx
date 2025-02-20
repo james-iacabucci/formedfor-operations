@@ -53,8 +53,8 @@ export function SculptureDetailContent({
 
   return (
     <div>
-      <div className="fixed top-[72px] left-0 right-0 bg-background z-10 border-b">
-        <div className="px-8 py-4 flex items-center justify-between">
+      <div className="fixed top-[72px] left-0 right-0 bg-background z-10 border-y">
+        <div className="container flex items-center justify-between h-[72px]">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -72,7 +72,7 @@ export function SculptureDetailContent({
         </div>
       </div>
 
-      <div className="mt-[72px] grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="mt-[72px] container grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
           <AspectRatio ratio={1}>
             <SculptureDetailImage
