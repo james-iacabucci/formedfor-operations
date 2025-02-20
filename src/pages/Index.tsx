@@ -1,8 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { AddSculptureSheet } from "@/components/AddSculptureSheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
@@ -66,6 +67,33 @@ const Index = () => {
     },
   });
 
+  // Load saved product line selection or set default to "FF"
+  useEffect(() => {
+    if (productLines) {
+      const savedSelection = localStorage.getItem('selectedProductLines');
+      if (savedSelection) {
+        const parsed = JSON.parse(savedSelection);
+        setSelectedProductLines(parsed);
+        setViewSettings(prev => ({
+          ...prev,
+          productLineId: parsed.length === 1 ? parsed[0] : null
+        }));
+      } else {
+        // Find FF product line and set as default
+        const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
+        if (ffProductLine) {
+          const defaultSelection = [ffProductLine.id];
+          setSelectedProductLines(defaultSelection);
+          setViewSettings(prev => ({
+            ...prev,
+            productLineId: ffProductLine.id
+          }));
+          localStorage.setItem('selectedProductLines', JSON.stringify(defaultSelection));
+        }
+      }
+    }
+  }, [productLines]);
+
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
     queryFn: async () => {
@@ -116,6 +144,7 @@ const Index = () => {
       ...prev,
       productLineId: values.length === 1 ? values[0] : null
     }));
+    localStorage.setItem('selectedProductLines', JSON.stringify(values));
   };
 
   return (
