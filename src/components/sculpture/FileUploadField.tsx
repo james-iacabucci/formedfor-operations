@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
@@ -151,7 +152,7 @@ export function FileUploadField({
                 </span>
               </div>
               <p className="text-xs text-white/70">
-                Uploaded on {format(new Date(file.created_at), 'MMM d, yyyy')}
+                Uploaded on {format(new Date(file.created_at), 'MM/dd/yy')}
               </p>
             </div>
             <Button
