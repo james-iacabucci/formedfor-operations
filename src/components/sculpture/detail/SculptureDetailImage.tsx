@@ -16,7 +16,8 @@ interface SculptureDetailImageProps {
   sculptureId: string;
   userId: string;
   onRegenerate: () => Promise<void>;
-  hideButtons?: boolean;  // Added this prop definition
+  hideButtons?: boolean;  
+  status?: "idea" | "pending" | "approved" | "archived";
 }
 
 export function SculptureDetailImage({
@@ -26,7 +27,8 @@ export function SculptureDetailImage({
   sculptureId,
   userId,
   onRegenerate,
-  hideButtons = false,  // Added with a default value
+  hideButtons = false,
+  status,
 }: SculptureDetailImageProps) {
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const navigate = useNavigate();
@@ -85,6 +87,8 @@ export function SculptureDetailImage({
     }
   };
 
+  const showRegenerateButton = status === "idea";
+
   return (
     <>
       <BaseSculptureImage
@@ -95,14 +99,16 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            <Button
-              size="icon"
-              variant="secondary"
-              className="bg-black/30 hover:bg-black/50 text-white border-0"
-              onClick={() => setIsRegenerationSheetOpen(true)}
-            >
-              <PlusIcon className="h-4 w-4" />
-            </Button>
+            {showRegenerateButton && (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="bg-black/30 hover:bg-black/50 text-white border-0"
+                onClick={() => setIsRegenerationSheetOpen(true)}
+              >
+                <PlusIcon className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               size="icon"
               variant="secondary"
