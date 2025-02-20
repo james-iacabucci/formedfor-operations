@@ -53,8 +53,8 @@ export function SculptureDetailContent({
 
   return (
     <div>
-      <div className="fixed top-[72px] left-0 right-0 bg-background z-10 border-y">
-        <div className="container flex items-center justify-between h-[72px]">
+      <div className="fixed top-[72px] left-0 right-0 bg-background z-10 border-t border-b">
+        <div className="container h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -72,38 +72,40 @@ export function SculptureDetailContent({
         </div>
       </div>
 
-      <div className="mt-[72px] container grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
-          <AspectRatio ratio={1}>
-            <SculptureDetailImage
-              imageUrl={sculpture.image_url}
-              prompt={sculpture.prompt}
-              isRegenerating={isRegenerating(sculpture.id)}
+      <div className="mt-[64px] container">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <AspectRatio ratio={1}>
+              <SculptureDetailImage
+                imageUrl={sculpture.image_url}
+                prompt={sculpture.prompt}
+                isRegenerating={isRegenerating(sculpture.id)}
+                sculptureId={sculpture.id}
+                userId={sculpture.user_id}
+                onRegenerate={handleRegenerate}
+                hideButtons={true}
+              />
+            </AspectRatio>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground">
+                {sculpture.ai_description || "No description available"}
+              </p>
+            </div>
+            <SculptureFiles
               sculptureId={sculpture.id}
-              userId={sculpture.user_id}
-              onRegenerate={handleRegenerate}
-              hideButtons={true}
+              models={sculpture.models}
+              renderings={sculpture.renderings}
+              dimensions={sculpture.dimensions}
             />
-          </AspectRatio>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-muted-foreground">
-              {sculpture.ai_description || "No description available"}
-            </p>
           </div>
-          <SculptureFiles
-            sculptureId={sculpture.id}
-            models={sculpture.models}
-            renderings={sculpture.renderings}
-            dimensions={sculpture.dimensions}
-          />
-        </div>
-        <div>
-          <SculptureAttributes
-            sculpture={sculpture}
-            originalSculpture={originalSculpture}
-            tags={tags}
-          />
+          <div>
+            <SculptureAttributes
+              sculpture={sculpture}
+              originalSculpture={originalSculpture}
+              tags={tags}
+            />
+          </div>
         </div>
       </div>
     </div>
