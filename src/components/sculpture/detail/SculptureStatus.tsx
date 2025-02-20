@@ -44,7 +44,7 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
           variant="outline" 
           size="default"
           className={cn(
-            "bg-neutral-900 text-white hover:bg-neutral-800 capitalize w-24",
+            "capitalize w-24",
             variant === "small" && "h-5 px-1.5 text-[10px]"
           )}
         >
