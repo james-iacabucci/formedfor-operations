@@ -33,14 +33,22 @@ export function MessageList({ threadId }: MessageListProps) {
           created_at,
           edited_at,
           user_id,
-          user:profiles!user_id(
+          user:profiles(
             username,
             avatar_url
           )
         `)
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true });
-      return data as Message[];
+
+      // Type assertion to ensure the data matches our Message interface
+      if (data) {
+        return data.map(message => ({
+          ...message,
+          user: message.user || { username: null, avatar_url: null }
+        })) as Message[];
+      }
+      return [];
     },
   });
 
