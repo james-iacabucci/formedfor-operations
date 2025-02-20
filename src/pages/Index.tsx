@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -5,13 +6,14 @@ import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, PlusIcon, Settings2, UploadIcon } from "lucide-react";
+import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -30,6 +32,8 @@ const Index = () => {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
     sortOrder: 'desc',
@@ -77,6 +81,16 @@ const Index = () => {
     setViewSettings(newSettings);
   };
 
+  const handleSearchClick = () => {
+    setIsSearchExpanded(true);
+    setTimeout(() => {
+      const searchInput = document.getElementById('sculpture-search');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* App Header */}
@@ -113,14 +127,39 @@ const Index = () => {
                 <List className="h-4 w-4" />
               </Toggle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsViewSettingsOpen(true)}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {isSearchExpanded ? (
+                <div className="relative">
+                  <Input
+                    id="sculpture-search"
+                    type="text"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    className="h-8 w-[200px] pl-8"
+                    onBlur={() => !searchValue && setIsSearchExpanded(false)}
+                    placeholder="Search sculptures..."
+                  />
+                  <Search className="h-4 w-4 absolute left-2 top-2 text-muted-foreground" />
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleSearchClick}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsViewSettingsOpen(true)}
+              >
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </div>
             <SelectedFilters
               viewSettings={viewSettings}
               productLines={productLines}
