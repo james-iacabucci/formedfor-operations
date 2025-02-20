@@ -51,6 +51,16 @@ export function SculptureDetailContent({
     }
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
+  const handleManageTags = () => {
+    // This will be implemented when we add tag management functionality
+    console.log("Manage tags clicked");
+    // For now, just show a toast to indicate the action
+    toast({
+      title: "Coming Soon",
+      description: "Tag management will be available soon.",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-4">
@@ -81,6 +91,7 @@ export function SculptureDetailContent({
               onRegenerate={handleRegenerate}
               hideButtons={false}
               status={sculpture.status}
+              onManageTags={handleManageTags}
             />
           </AspectRatio>
           <div>
