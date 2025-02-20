@@ -25,6 +25,7 @@ export function FileUploadField({
   onFilesChange,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
@@ -85,6 +86,7 @@ export function FileUploadField({
 
   const handleRemoveFile = async (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation();
+    setDeletingFileId(fileId);
     
     try {
       // First, delete from storage
@@ -110,6 +112,8 @@ export function FileUploadField({
         description: "There was an error deleting the file. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setDeletingFileId(null);
     }
   };
 
@@ -192,8 +196,13 @@ export function FileUploadField({
               size="icon"
               className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm hover:bg-background/80"
               onClick={(e) => handleRemoveFile(e, file.id)}
+              disabled={deletingFileId === file.id}
             >
-              <Trash2 className="h-4 w-4" />
+              {deletingFileId === file.id ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
             </Button>
           </Card>
         ))}
