@@ -94,7 +94,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       <Button
         variant="outline"
         size="default"
-        className="gap-2 bg-neutral-900 text-white hover:bg-neutral-800"
+        className="gap-2 font-mono uppercase"
       >
         FF
       </Button>
@@ -107,7 +107,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         size="icon"
         onClick={handleRegenerate}
         disabled={isRegenerating}
-        className="bg-neutral-900 text-white hover:bg-neutral-800"
       >
         <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
       </Button>
@@ -115,7 +114,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         variant="outline"
         size="icon"
         onClick={() => setIsRegenerationSheetOpen(true)}
-        className="bg-neutral-900 text-white hover:bg-neutral-800"
       >
         <ShuffleIcon className="h-4 w-4" />
       </Button>
@@ -124,7 +122,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           <Button 
             variant="outline" 
             size="icon"
-            className="bg-neutral-900 text-white hover:bg-neutral-800"
           >
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>
