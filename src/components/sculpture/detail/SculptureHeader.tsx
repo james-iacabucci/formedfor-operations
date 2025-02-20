@@ -8,17 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon, ImageIcon, MoreHorizontalIcon, RefreshCwIcon, Trash2Icon, Wand2Icon } from "lucide-react";
+import { FileIcon, ImageIcon, MessageCircleIcon, MoreHorizontalIcon, RefreshCwIcon, Trash2Icon, Wand2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ProductLine } from "@/types/product-line";
-import { ProductLineButton } from "./ProductLineButton";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { useQueryClient } from "@tanstack/react-query";
 import { SCULPTURE_STATUS } from "@/lib/status";
 import { RegenerationSheet } from "../RegenerationSheet";
+import { ChatSheet } from "@/components/chat/ChatSheet";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -28,6 +25,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const { toast } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
 
@@ -123,6 +121,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
         </Button>
       )}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setIsChatSheetOpen(true)}
+      >
+        <MessageCircleIcon className="h-4 w-4" />
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
@@ -154,6 +159,12 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         onRegenerate={(options) => generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options)}
         isRegenerating={isRegenerating}
         defaultPrompt={sculpture.prompt}
+      />
+
+      <ChatSheet
+        open={isChatSheetOpen}
+        onOpenChange={setIsChatSheetOpen}
+        sculptureId={sculpture.id}
       />
     </div>
   );

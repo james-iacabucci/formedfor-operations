@@ -9,6 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          attachments: Json[] | null
+          content: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          mentions: Json[] | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json[] | null
+          content: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          mentions?: Json[] | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json[] | null
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          mentions?: Json[] | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_thread_participants: {
+        Row: {
+          can_view: boolean
+          can_write: boolean
+          created_at: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          can_view?: boolean
+          can_write?: boolean
+          created_at?: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          can_view?: boolean
+          can_write?: boolean
+          created_at?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_thread_participants_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_threads: {
+        Row: {
+          created_at: string
+          id: string
+          sculpture_id: string
+          topic: Database["public"]["Enums"]["chat_topic"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sculpture_id: string
+          topic: Database["public"]["Enums"]["chat_topic"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sculpture_id?: string
+          topic?: Database["public"]["Enums"]["chat_topic"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_threads_sculpture_id_fkey"
+            columns: ["sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fabrication_quotes: {
         Row: {
           created_at: string
@@ -401,6 +503,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      chat_topic: "pricing" | "fabrication" | "operations"
       value_list_type:
         | "finish"
         | "material"
