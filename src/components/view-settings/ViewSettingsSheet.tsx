@@ -45,22 +45,6 @@ export function ViewSettingsSheet({
   });
   const { tags } = useTagsManagement(undefined);
 
-  const { data: productLines } = useQuery({
-    queryKey: ["product_lines"],
-    queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
     queryFn: async () => {
@@ -93,20 +77,6 @@ export function ViewSettingsSheet({
     }
   };
 
-  const handleProductLineSelection = (productLineId: string, checked: boolean) => {
-    if (productLineId === 'all') {
-      setSettings(prev => ({
-        ...prev,
-        productLineId: checked ? null : undefined
-      }));
-    } else {
-      setSettings(prev => ({
-        ...prev,
-        productLineId: checked ? productLineId : null
-      }));
-    }
-  };
-
   const handleStatusSelection = (status: string, checked: boolean) => {
     if (status === 'all') {
       setSettings(prev => ({
@@ -136,11 +106,6 @@ export function ViewSettingsSheet({
     ...(tags || [])
   ];
 
-  const allProductLines = [
-    { id: 'all', name: 'All Product Lines' },
-    ...(productLines || [])
-  ];
-
   const allStatuses = [
     { id: 'all', name: 'All Statuses' },
     { id: 'idea', name: 'Idea' },
@@ -167,13 +132,6 @@ export function ViewSettingsSheet({
               sortOrder={settings.sortOrder}
               onSortByChange={(value) => setSettings(prev => ({ ...prev, sortBy: value }))}
               onSortOrderChange={(value) => setSettings(prev => ({ ...prev, sortOrder: value }))}
-            />
-
-            <FilterOptionsSection
-              title="Product Line"
-              options={allProductLines}
-              selectedIds={settings.productLineId ? [settings.productLineId] : ['all']}
-              onSelectionChange={handleProductLineSelection}
             />
 
             <FilterOptionsSection
