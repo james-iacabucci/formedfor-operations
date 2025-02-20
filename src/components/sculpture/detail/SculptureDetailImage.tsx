@@ -87,8 +87,6 @@ export function SculptureDetailImage({
     }
   };
 
-  console.log("Current status:", status); // Add this to debug
-
   return (
     <>
       <BaseSculptureImage
@@ -99,7 +97,7 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            {status?.toLowerCase() === "idea" && (
+            {status === "idea" && (
               <Button
                 size="icon"
                 variant="secondary"
