@@ -174,22 +174,6 @@ const Index = () => {
               </ToggleGroup>
             )}
 
-            <SelectedFilters
-              viewSettings={viewSettings}
-              productLines={productLines}
-              materials={materials}
-              tags={tags}
-            />
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsViewSettingsOpen(true)}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-
             {isSearchExpanded ? (
               <div className="relative">
                 <Input
@@ -214,6 +198,22 @@ const Index = () => {
                 <Search className="h-4 w-4" />
               </Button>
             )}
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsViewSettingsOpen(true)}
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+
+            <SelectedFilters
+              viewSettings={viewSettings}
+              productLines={productLines}
+              materials={materials}
+              tags={tags}
+            />
           </div>
 
           <div className="flex items-center gap-2">
