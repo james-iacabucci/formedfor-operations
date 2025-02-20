@@ -200,21 +200,18 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             <FileUploadField
               label="Models"
               files={models}
-              sculptureId={sculpture?.id || ''}
               onFilesChange={setModels}
             />
 
             <FileUploadField
               label="Renderings"
               files={renderings}
-              sculptureId={sculpture?.id || ''}
               onFilesChange={setRenderings}
             />
 
             <FileUploadField
               label="Dimensions"
               files={dimensions}
-              sculptureId={sculpture?.id || ''}
               onFilesChange={setDimensions}
             />
 

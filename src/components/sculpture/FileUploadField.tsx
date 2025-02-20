@@ -14,7 +14,7 @@ interface FileUploadFieldProps {
   icon?: React.ReactNode;
   acceptTypes?: string;
   onFilesChange: (files: FileUpload[]) => void;
-  sculptureId: string; // Added sculptureId prop
+  sculptureId?: string; // Make sculptureId optional
 }
 
 export function FileUploadField({
@@ -23,7 +23,7 @@ export function FileUploadField({
   icon,
   acceptTypes,
   onFilesChange,
-  sculptureId, // Added sculptureId prop
+  sculptureId,
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
@@ -40,19 +40,16 @@ export function FileUploadField({
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
-      // Upload the file to Supabase storage and wait for completion
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL and ensure it's available
       const { data: { publicUrl } } = supabase.storage
         .from('sculpture_files')
         .getPublicUrl(fileName);
 
-      // Create the new file object
       const newFile: FileUpload = {
         id: fileName,
         name: file.name,
@@ -60,7 +57,6 @@ export function FileUploadField({
         created_at: new Date().toISOString(),
       };
 
-      // Ensure the file is accessible before updating UI
       const checkFileAvailability = async (url: string): Promise<boolean> => {
         try {
           const response = await fetch(url, { method: 'HEAD' });
@@ -70,25 +66,24 @@ export function FileUploadField({
         }
       };
 
-      // Wait for the file to be available
       let attempts = 0;
       const maxAttempts = 10;
       while (attempts < maxAttempts) {
         if (await checkFileAvailability(publicUrl)) {
-          // Update the files array with the new file
           const updatedFiles = [...files, newFile];
           
-          // Update the Supabase sculpture record first
-          const { error: updateError } = await supabase
-            .from('sculptures')
-            .update({ 
-              [label.toLowerCase()]: updatedFiles 
-            })
-            .eq('id', sculptureId);
+          // Only update Supabase if we have a sculptureId
+          if (sculptureId) {
+            const { error: updateError } = await supabase
+              .from('sculptures')
+              .update({ 
+                [label.toLowerCase()]: updatedFiles 
+              })
+              .eq('id', sculptureId);
 
-          if (updateError) throw updateError;
+            if (updateError) throw updateError;
+          }
 
-          // Then update the local state through the callback
           onFilesChange(updatedFiles);
           
           toast({
@@ -98,7 +93,7 @@ export function FileUploadField({
           break;
         }
         attempts++;
-        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between checks
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       if (attempts >= maxAttempts) {
@@ -125,27 +120,26 @@ export function FileUploadField({
     setDeletingFileId(fileId);
     
     try {
-      // First, delete from storage
       const { error: deleteError } = await supabase.storage
         .from('sculpture_files')
         .remove([fileId]);
 
       if (deleteError) throw deleteError;
 
-      // Update filtered files list
       const updatedFiles = files.filter(f => f.id !== fileId);
 
-      // Update the Supabase sculpture record first
-      const { error: updateError } = await supabase
-        .from('sculptures')
-        .update({ 
-          [label.toLowerCase()]: updatedFiles 
-        })
-        .eq('id', sculptureId);
+      // Only update Supabase if we have a sculptureId
+      if (sculptureId) {
+        const { error: updateError } = await supabase
+          .from('sculptures')
+          .update({ 
+            [label.toLowerCase()]: updatedFiles 
+          })
+          .eq('id', sculptureId);
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+      }
 
-      // Then update the local state through the callback
       onFilesChange(updatedFiles);
 
       toast({
