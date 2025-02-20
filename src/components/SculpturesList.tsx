@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Sculpture } from "@/types/sculpture";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
@@ -24,15 +23,21 @@ interface SculpturesListProps {
   viewSettings: ViewSettings;
   isGridView: boolean;
   selectedTagId?: string | null;
+  selectedProductLines?: string[];
 }
 
-export function SculpturesList({ viewSettings, isGridView, selectedTagId }: SculpturesListProps) {
+export function SculpturesList({ 
+  viewSettings, 
+  isGridView, 
+  selectedTagId,
+  selectedProductLines = []
+}: SculpturesListProps) {
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
-  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(viewSettings);
+  const { sculptures, isLoading, sculptureTagRelations, tags } = useSculpturesData(viewSettings, selectedProductLines);
 
   if (isLoading) {
     return <div>Loading...</div>;

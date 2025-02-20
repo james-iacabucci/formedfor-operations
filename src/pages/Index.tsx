@@ -221,7 +221,8 @@ const Index = () => {
           <CardContent className="p-0">
             <SculpturesList 
               viewSettings={viewSettings} 
-              isGridView={isGridView} 
+              isGridView={isGridView}
+              selectedProductLines={selectedProductLines}
             />
           </CardContent>
         </Card>
