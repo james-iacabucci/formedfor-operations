@@ -1,3 +1,4 @@
+
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon, ImageIcon, MoreHorizontalIcon, RefreshCwIcon, ShuffleIcon, Trash2Icon } from "lucide-react";
+import { FileIcon, ImageIcon, MoreHorizontalIcon, RefreshCwIcon, Trash2Icon, Wand2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,7 @@ import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { useQueryClient } from "@tanstack/react-query";
 import { SCULPTURE_STATUS } from "@/lib/status";
+import { RegenerationSheet } from "../RegenerationSheet";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -27,7 +29,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { regenerateImage } = useSculptureRegeneration();
+  const { regenerateImage, generateVariant } = useSculptureRegeneration();
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -104,6 +106,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         sculptureId={sculpture.id}
         status={sculpture.status}
       />
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setIsRegenerationSheetOpen(true)}
+      >
+        <Wand2Icon className="h-4 w-4" />
+      </Button>
       {showRegenerateButton && (
         <Button
           variant="outline"
@@ -114,13 +123,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
         </Button>
       )}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setIsRegenerationSheetOpen(true)}
-      >
-        <ShuffleIcon className="h-4 w-4" />
-      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
@@ -145,6 +147,14 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <RegenerationSheet
+        open={isRegenerationSheetOpen}
+        onOpenChange={setIsRegenerationSheetOpen}
+        onRegenerate={(options) => generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options)}
+        isRegenerating={isRegenerating}
+        defaultPrompt={sculpture.prompt}
+      />
     </div>
   );
 }

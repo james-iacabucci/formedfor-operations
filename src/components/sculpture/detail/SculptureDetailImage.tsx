@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, TagIcon, Wand2 } from "lucide-react";
+import { DownloadIcon, TagIcon } from "lucide-react";
 import { BaseSculptureImage } from "../BaseSculptureImage";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
@@ -100,14 +100,6 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            <Button
-              variant="secondary"
-              size="icon"
-              className="bg-black/30 hover:bg-black/50 text-white border-0"
-              onClick={() => setIsRegenerationSheetOpen(true)}
-            >
-              <Wand2 className="h-4 w-4" />
-            </Button>
             <Button
               size="icon"
               variant="secondary"
