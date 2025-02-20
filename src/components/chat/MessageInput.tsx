@@ -22,11 +22,15 @@ export function MessageInput({ threadId }: MessageInputProps) {
 
     setIsSubmitting(true);
     try {
+      const user = await supabase.auth.getUser();
+      if (!user.data.user?.id) throw new Error("Not authenticated");
+
       const { error } = await supabase
         .from("chat_messages")
         .insert({
           thread_id: threadId,
           content: content.trim(),
+          user_id: user.data.user.id,
         });
 
       if (error) throw error;

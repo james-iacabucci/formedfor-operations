@@ -29,7 +29,7 @@ export function MessageList({ threadId }: MessageListProps) {
         .from("chat_messages")
         .select(`
           *,
-          profiles:user_id (
+          profiles:profiles (
             username,
             avatar_url
           )

@@ -12,14 +12,16 @@ interface ChatSheetProps {
   sculptureId: string;
 }
 
+type ChatTopic = 'pricing' | 'fabrication' | 'operations';
+
 export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
-  const [threads, setThreads] = useState<Record<string, string>>({});
+  const [threads, setThreads] = useState<Record<ChatTopic, string>>({} as Record<ChatTopic, string>);
   
   useEffect(() => {
     if (open && sculptureId) {
       const initializeThreads = async () => {
         // Create threads if they don't exist
-        const topics = ['pricing', 'fabrication', 'operations'];
+        const topics: ChatTopic[] = ['pricing', 'fabrication', 'operations'];
         for (const topic of topics) {
           const { data: existing } = await supabase
             .from('chat_threads')
@@ -33,18 +35,19 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
               .from('chat_threads')
               .insert({
                 sculpture_id: sculptureId,
-                topic: topic,
+                topic: topic as ChatTopic,
               })
               .select('id')
               .single();
 
             if (newThread) {
+              const user = await supabase.auth.getUser();
               // Add current user as participant
               await supabase
                 .from('chat_thread_participants')
                 .insert({
                   thread_id: newThread.id,
-                  user_id: (await supabase.auth.getUser()).data.user?.id,
+                  user_id: user.data.user?.id,
                 });
               
               setThreads(prev => ({ ...prev, [topic]: newThread.id }));
