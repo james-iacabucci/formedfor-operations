@@ -4,6 +4,7 @@ import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, PlusIcon } from "luci
 import { BaseSculptureImage } from "./BaseSculptureImage";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { SCULPTURE_STATUS, SculptureStatusCode } from "@/lib/status";
 
 interface SculptureCardImageProps {
   imageUrl: string | null;
@@ -15,6 +16,7 @@ interface SculptureCardImageProps {
   onGenerateVariant: () => void;
   onDownload: () => void;
   onClick?: () => void;
+  status?: SculptureStatusCode;
 }
 
 export function SculptureCardImage({
@@ -27,6 +29,7 @@ export function SculptureCardImage({
   onGenerateVariant,
   onDownload,
   onClick,
+  status,
 }: SculptureCardImageProps) {
   return (
     <div
@@ -82,25 +85,27 @@ export function SculptureCardImage({
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
-                  disabled={isRegenerating}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRegenerate();
-                  }}
-                >
-                  <RefreshCwIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Regenerate image</p>
-              </TooltipContent>
-            </Tooltip>
+            {(!status || status === SCULPTURE_STATUS.IDEA.code) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+                    disabled={isRegenerating}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRegenerate();
+                    }}
+                  >
+                    <RefreshCwIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Regenerate image</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             <Tooltip>
               <TooltipTrigger asChild>
