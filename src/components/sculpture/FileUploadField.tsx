@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/types/sculpture";
@@ -39,8 +38,7 @@ export function FileUploadField({
     if (normalizedLabel === "models") return "models";
     if (normalizedLabel === "renderings") return "renderings";
     if (normalizedLabel === "dimensions") return "dimensions";
-    console.log('returning normalized label:', normalizedLabel);
-    return normalizedLabel;
+    throw new Error(`Invalid column name mapping for label: ${label}`);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
