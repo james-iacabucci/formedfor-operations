@@ -28,8 +28,12 @@ export function MessageList({ threadId }: MessageListProps) {
       const { data } = await supabase
         .from("chat_messages")
         .select(`
-          *,
-          profiles:profiles (
+          id,
+          content,
+          created_at,
+          edited_at,
+          user_id,
+          profiles (
             username,
             avatar_url
           )
