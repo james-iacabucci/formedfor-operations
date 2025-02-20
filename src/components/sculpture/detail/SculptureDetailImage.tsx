@@ -98,7 +98,7 @@ export function SculptureDetailImage({
       >
         {!hideButtons && (
           <div className="absolute top-2 right-2 flex gap-2">
-            {status === SCULPTURE_STATUS.IDEA.code && (
+            {(!status || status === SCULPTURE_STATUS.IDEA.code) && (
               <Button
                 size="icon"
                 variant="secondary"
