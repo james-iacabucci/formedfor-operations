@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { PromptSection } from "./sculpture/create/PromptSection";
 import { GenerateActions } from "./sculpture/create/GenerateActions";
 import { useSculptureGeneration } from "@/hooks/use-sculpture-generation";
+import { useQuery } from "@tanstack/react-query";
 
 interface CreateSculptureSheetProps {
   open: boolean;
@@ -28,6 +30,23 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [isPromptUpdated, setIsPromptUpdated] = useState(false);
+  const [selectedProductLineId, setSelectedProductLineId] = useState<string | "unassigned">("unassigned");
+
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -104,7 +123,8 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 image_url: publicUrl,
                 creativity_level: creativity,
                 ai_generated_name: aiName,
-                ai_description: aiDescription
+                ai_description: aiDescription,
+                product_line_id: selectedProductLineId === "unassigned" ? null : selectedProductLineId
               }
             ]);
 
@@ -153,6 +173,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       setGeneratedImages([]);
       clearSelection();
       setIsSaving(false);
+      setSelectedProductLineId("unassigned");
     }
   }, [open]);
 
@@ -175,6 +196,17 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 <TabsTrigger value="low">Low Creativity</TabsTrigger>
                 <TabsTrigger value="medium">Medium Creativity</TabsTrigger>
                 <TabsTrigger value="high">High Creativity</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId}>
+              <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(100px,1fr))]">
+                <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
+                {productLines?.map((pl) => (
+                  <TabsTrigger key={pl.id} value={pl.id}>
+                    {pl.name}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
           </div>
