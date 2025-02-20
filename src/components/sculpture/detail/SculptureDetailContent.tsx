@@ -52,16 +52,15 @@ export function SculptureDetailContent({
   }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
 
   return (
-    <div className="space-y-4"> {/* Changed from space-y-8 to space-y-4 */}
-      <div className="flex items-center justify-between pb-4"> {/* Changed from pb-6 to pb-4 */}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between pb-4">
         <div className="flex items-center gap-4">
           <Button
-            variant="outline"
-            className="flex items-center gap-2"
+            variant="default"
+            size="icon"
             onClick={onBack}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
           </Button>
           <div className="text-2xl font-bold">
             {sculpture.ai_generated_name || "Untitled Sculpture"}
