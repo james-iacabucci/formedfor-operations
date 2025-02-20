@@ -62,57 +62,61 @@ export function SculptureDetailContent({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between pb-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onBack}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-2xl font-bold">
-            {sculpture.ai_generated_name || "Untitled Sculpture"}
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 bg-background z-10 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-2xl font-bold">
+              {sculpture.ai_generated_name || "Untitled Sculpture"}
+            </div>
           </div>
+          <SculptureHeader sculpture={sculpture} />
         </div>
-        <SculptureHeader sculpture={sculpture} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
-          <AspectRatio ratio={1}>
-            <SculptureDetailImage
-              imageUrl={sculpture.image_url}
-              prompt={sculpture.prompt}
-              isRegenerating={isRegenerating(sculpture.id)}
+      <div className="overflow-y-auto flex-1 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <AspectRatio ratio={1}>
+              <SculptureDetailImage
+                imageUrl={sculpture.image_url}
+                prompt={sculpture.prompt}
+                isRegenerating={isRegenerating(sculpture.id)}
+                sculptureId={sculpture.id}
+                userId={sculpture.user_id}
+                onRegenerate={handleRegenerate}
+                hideButtons={false}
+                status={sculpture.status}
+                onManageTags={handleManageTags}
+              />
+            </AspectRatio>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground">
+                {sculpture.ai_description || "No description available"}
+              </p>
+            </div>
+            <SculptureFiles
               sculptureId={sculpture.id}
-              userId={sculpture.user_id}
-              onRegenerate={handleRegenerate}
-              hideButtons={false}
-              status={sculpture.status}
-              onManageTags={handleManageTags}
+              models={sculpture.models}
+              renderings={sculpture.renderings}
+              dimensions={sculpture.dimensions}
             />
-          </AspectRatio>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-muted-foreground">
-              {sculpture.ai_description || "No description available"}
-            </p>
           </div>
-          <SculptureFiles
-            sculptureId={sculpture.id}
-            models={sculpture.models}
-            renderings={sculpture.renderings}
-            dimensions={sculpture.dimensions}
-          />
-        </div>
-        <div>
-          <SculptureAttributes
-            sculpture={sculpture}
-            originalSculpture={originalSculpture}
-            tags={tags}
-          />
+          <div>
+            <SculptureAttributes
+              sculpture={sculpture}
+              originalSculpture={originalSculpture}
+              tags={tags}
+            />
+          </div>
         </div>
       </div>
     </div>
