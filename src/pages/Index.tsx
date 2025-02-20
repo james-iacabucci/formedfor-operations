@@ -7,7 +7,7 @@ import { useState } from "react";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle, ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
@@ -34,6 +34,7 @@ const Index = () => {
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [selectedProductLines, setSelectedProductLines] = useState<string[]>([]);
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
     sortOrder: 'desc',
@@ -78,7 +79,11 @@ const Index = () => {
   });
 
   const handleViewSettingsChange = (newSettings: ViewSettings) => {
-    setViewSettings(newSettings);
+    const newSettingsWithProductLine = {
+      ...newSettings,
+      productLineId: selectedProductLines.length === 1 ? selectedProductLines[0] : null
+    };
+    setViewSettings(newSettingsWithProductLine);
   };
 
   const handleSearchClick = () => {
@@ -89,6 +94,14 @@ const Index = () => {
         searchInput.focus();
       }
     }, 100);
+  };
+
+  const handleProductLineChange = (values: string[]) => {
+    setSelectedProductLines(values);
+    setViewSettings(prev => ({
+      ...prev,
+      productLineId: values.length === 1 ? values[0] : null
+    }));
   };
 
   return (
@@ -150,6 +163,26 @@ const Index = () => {
                 >
                   <Search className="h-4 w-4" />
                 </Button>
+              )}
+              {productLines && productLines.length > 0 && (
+                <ToggleGroup 
+                  type="multiple"
+                  value={selectedProductLines}
+                  onValueChange={handleProductLineChange}
+                  className="flex flex-wrap gap-1"
+                >
+                  {productLines.map((pl) => (
+                    <ToggleGroupItem
+                      key={pl.id}
+                      value={pl.id}
+                      variant="outline"
+                      size="sm"
+                      className="px-2 py-1 text-xs"
+                    >
+                      {pl.product_line_code || pl.name}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               )}
               <Button
                 variant="outline"
