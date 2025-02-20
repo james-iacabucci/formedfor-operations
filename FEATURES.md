@@ -21,28 +21,25 @@ This file tracks potential improvements and features that could be implemented i
   2.1.6. Create project dashboard
 
 ### 3. Sculpture Features
-3.1. Enhance variant generation system
-  3.1.1. Generate multiple variants simultaneously (grid of 10)
-  3.1.2. Add batch selection interface
-  3.1.3. Implement bulk save functionality
-  3.1.4. Add regenerate all capability
 3.2. Add 3D model preview functionality
 3.3. Implement PDF export system
   3.3.1. Sales presentation format
   3.3.2. Marketing collateral format
   3.3.3. Technical specifications format
 
-### 4. Regeneration System
-4.1. Refactor `use-sculpture-regeneration.ts` into smaller, more focused hooks (current file is over 200 lines)
-4.2. Add loading states and better error handling for regeneration processes
-4.3. Add confirmation dialog before regeneration to prevent accidental triggers
-4.4. Implement retry logic for failed regenerations
-4.5. Add progress indicators for multi-step regeneration processes
-4.6. Improve visual feedback during regeneration states
-
 ## Implemented Features
 *(Most recently implemented at the top)*
 
+- [x] 4.6. Improve visual feedback during regeneration states
+- [x] 4.5. Add progress indicators for multi-step regeneration processes
+- [x] 4.4. Implement retry logic for failed regenerations
+- [x] 4.3. Add confirmation dialog before regeneration to prevent accidental triggers
+- [x] 4.2. Add loading states and better error handling for regeneration processes
+- [x] 4.1. Refactor `use-sculpture-regeneration.ts` into smaller, more focused hooks
+- [x] 3.1.4. Add regenerate all capability
+- [x] 3.1.3. Implement bulk save functionality
+- [x] 3.1.2. Add batch selection interface
+- [x] 3.1.1. Generate multiple variants simultaneously (grid of 10)
 - [x] Fix React queue error in useToast hook
 
 ## How to Use This List
