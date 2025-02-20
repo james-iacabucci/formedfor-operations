@@ -23,7 +23,12 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
     if (open && sculptureId) {
       const initializeThreads = async () => {
         try {
-          // Create threads if they don't exist
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            console.error('No authenticated user found');
+            return;
+          }
+
           const topics: ChatTopic[] = ['pricing', 'fabrication', 'operations'];
           
           for (const topic of topics) {
@@ -52,20 +57,45 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
               }
 
               if (newThread) {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                  // Add current user as participant
-                  await supabase
-                    .from('chat_thread_participants')
-                    .insert({
-                      thread_id: newThread.id,
-                      user_id: user.id,
-                    });
-                  
-                  setThreads(prev => ({ ...prev, [topic]: newThread.id }));
+                // Add current user as participant
+                const { error: participantError } = await supabase
+                  .from('chat_thread_participants')
+                  .insert({
+                    thread_id: newThread.id,
+                    user_id: user.id,
+                  });
+
+                if (participantError) {
+                  console.error('Error adding participant:', participantError);
+                  continue;
                 }
+                
+                setThreads(prev => ({ ...prev, [topic]: newThread.id }));
               }
             } else {
+              // Check if user is already a participant
+              const { data: existingParticipant } = await supabase
+                .from('chat_thread_participants')
+                .select('thread_id')
+                .eq('thread_id', existing.id)
+                .eq('user_id', user.id)
+                .single();
+
+              if (!existingParticipant) {
+                // Add user as participant to existing thread
+                const { error: participantError } = await supabase
+                  .from('chat_thread_participants')
+                  .insert({
+                    thread_id: existing.id,
+                    user_id: user.id,
+                  });
+
+                if (participantError) {
+                  console.error('Error adding participant:', participantError);
+                  continue;
+                }
+              }
+
               setThreads(prev => ({ ...prev, [topic]: existing.id }));
             }
           }
