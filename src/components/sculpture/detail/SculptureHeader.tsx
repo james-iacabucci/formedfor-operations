@@ -1,4 +1,3 @@
-
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
@@ -90,6 +89,8 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
+  const showRegenerateButton = !sculpture.status || sculpture.status === "idea";
+
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -103,7 +104,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         sculptureId={sculpture.id}
         status={sculpture.status}
       />
-      {(!sculpture.status || sculpture.status === SCULPTURE_STATUS.IDEA.code) && (
+      {showRegenerateButton && (
         <Button
           variant="outline"
           size="icon"

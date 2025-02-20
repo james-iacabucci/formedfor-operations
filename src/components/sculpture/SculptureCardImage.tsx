@@ -31,6 +31,8 @@ export function SculptureCardImage({
   onClick,
   status,
 }: SculptureCardImageProps) {
+  const showRegenerateButton = !status || status === "idea";
+
   return (
     <div
       className="relative w-full h-full cursor-pointer rounded-t-lg"
@@ -85,7 +87,7 @@ export function SculptureCardImage({
               </TooltipContent>
             </Tooltip>
 
-            {(!status || status === SCULPTURE_STATUS.IDEA.code) && (
+            {showRegenerateButton && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
