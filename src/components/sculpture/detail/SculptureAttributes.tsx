@@ -1,11 +1,10 @@
+
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
-import { SculptureHeader } from "./SculptureHeader";
 import { SculpturePrompt } from "./SculpturePrompt";
-import { SculptureStatus } from "./SculptureStatus";
 import { SculptureDimensions } from "./SculptureDimensions";
 import { SculptureFiles } from "./SculptureFiles";
 import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
@@ -40,10 +39,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <SculptureHeader sculpture={sculpture} />
-      </div>
-
       <div className="space-y-6">
         <div>
           <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
