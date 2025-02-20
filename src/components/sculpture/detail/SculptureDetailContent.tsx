@@ -79,7 +79,7 @@ export function SculptureDetailContent({
               sculptureId={sculpture.id}
               userId={sculpture.user_id}
               onRegenerate={handleRegenerate}
-              hideButtons={true}
+              hideButtons={false}
               status={sculpture.status}
             />
           </AspectRatio>
