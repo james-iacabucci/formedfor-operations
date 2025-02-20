@@ -11,7 +11,7 @@ interface Message {
   user_id: string;
   created_at: string;
   edited_at: string | null;
-  profiles: {
+  user: {
     username: string | null;
     avatar_url: string | null;
   } | null;
@@ -33,7 +33,7 @@ export function MessageList({ threadId }: MessageListProps) {
           created_at,
           edited_at,
           user_id,
-          profiles:user_id (
+          user:profiles (
             username,
             avatar_url
           )
@@ -50,12 +50,12 @@ export function MessageList({ threadId }: MessageListProps) {
         {messages?.map((message) => (
           <div key={message.id} className="flex items-start gap-3">
             <Avatar className="w-8 h-8">
-              <img src={message.profiles?.avatar_url || ""} alt={message.profiles?.username || "User"} />
+              <img src={message.user?.avatar_url || ""} alt={message.user?.username || "User"} />
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">
-                  {message.profiles?.username || "Unknown User"}
+                  {message.user?.username || "Unknown User"}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
