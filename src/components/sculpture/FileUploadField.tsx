@@ -38,16 +38,19 @@ export function FileUploadField({
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
+      // Upload the file to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('sculpture_files')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('sculpture_files')
         .getPublicUrl(fileName);
 
+      // Create the new file object
       const newFile: FileUpload = {
         id: fileName,
         name: file.name,
@@ -55,7 +58,10 @@ export function FileUploadField({
         created_at: new Date().toISOString(),
       };
 
-      onFilesChange([...files, newFile]);
+      // Update the files array with the new file
+      const updatedFiles = [...files, newFile];
+      onFilesChange(updatedFiles);
+
       toast({
         title: "Success",
         description: "File uploaded successfully.",
@@ -68,6 +74,11 @@ export function FileUploadField({
         variant: "destructive",
       });
     } finally {
+      // Reset the input value so the same file can be uploaded again if needed
+      const input = document.getElementById(`${label}-upload`) as HTMLInputElement;
+      if (input) {
+        input.value = '';
+      }
       setIsUploading(false);
     }
   };
