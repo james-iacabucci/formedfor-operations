@@ -82,7 +82,10 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
               created_at: new Date().toISOString(),
               content: '',
               user_id: user.id,
-              profiles: user.user_metadata,
+              profiles: {
+                username: user.user_metadata?.username || user.email || 'User',
+                avatar_url: user.user_metadata?.avatar_url || null
+              },
               attachments: [],
               mentions: [],
               edited_at: null,
