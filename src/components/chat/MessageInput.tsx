@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageInputProps {
   threadId: string;
@@ -24,7 +25,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [attachments, setAttachments] = useState<FileUpload[]>([]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +85,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
       }
 
       setPendingFiles([]);
-      return uploads;
+      return uploads as unknown as Json[];
     } catch (error) {
       console.error('Error uploading file:', error);
       toast({

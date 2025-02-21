@@ -7,6 +7,7 @@ import { MessageSquare, User, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Json } from "@/integrations/supabase/types";
 
 interface FileAttachment {
   name: string;
@@ -25,7 +26,7 @@ interface Message {
     avatar_url: string | null;
   } | null;
   attachments: FileAttachment[];
-  mentions: any[];
+  mentions: Json[];
   edited_at: string | null;
   thread_id: string;
 }
@@ -61,7 +62,12 @@ export function MessageList({ threadId }: MessageListProps) {
 
       if (error) throw error;
 
-      return data as Message[];
+      // Transform the data to ensure type compatibility
+      return data.map(message => ({
+        ...message,
+        attachments: (message.attachments || []) as FileAttachment[],
+        mentions: (message.mentions || []) as Json[],
+      })) as Message[];
     },
     refetchInterval: 1000,
   });
