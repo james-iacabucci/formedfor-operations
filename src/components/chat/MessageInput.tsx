@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,7 +68,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
     const newAttachments: FileUpload[] = [];
     const files = Array.from(e.target.files);
     
-    // Create uploading file entries
     const uploadingFileEntries = files.map(file => ({
       id: crypto.randomUUID(),
       name: file.name,
@@ -87,9 +85,11 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-        // Create upload options with progress tracking
-        const options = {
-          onUploadProgress: (progress: number) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const progress = (event.loaded / event.total) * 100;
             setUploadingFiles(prev => 
               prev.map(f => 
                 f.id === uploadingFile.id 
@@ -97,18 +97,12 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
                   : f
               )
             );
-          },
-        };
+          }
+        });
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat_attachments')
-          .upload(fileName, file, {
-            ...options,
-            onUploadProgress: (event) => {
-              const progress = (event.loaded / event.total) * 100;
-              options.onUploadProgress(progress);
-            },
-          });
+          .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
@@ -123,7 +117,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
           size: file.size,
         });
 
-        // Remove the uploading file entry once complete
         setUploadingFiles(prev => prev.filter(f => f.id !== uploadingFile.id));
       }
 
@@ -139,7 +132,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
         description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
-      // Clear uploading files on error
       setUploadingFiles([]);
     } finally {
       setIsUploading(false);

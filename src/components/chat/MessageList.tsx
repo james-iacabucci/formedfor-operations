@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, User, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Json } from "@/integrations/supabase/types";
 
 interface FileAttachment {
   name: string;
@@ -24,7 +25,7 @@ interface Message {
     avatar_url: string | null;
   } | null;
   attachments: FileAttachment[];
-  mentions: any[];
+  mentions: Json[];
   edited_at: string | null;
   thread_id: string;
 }
@@ -69,7 +70,11 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       if (error) throw error;
 
-      return data as Message[];
+      // Cast the attachments from Json[] to FileAttachment[]
+      return (data || []).map(message => ({
+        ...message,
+        attachments: (message.attachments || []) as FileAttachment[],
+      })) as Message[];
     },
     refetchInterval: 1000,
   });

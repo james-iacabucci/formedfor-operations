@@ -1,7 +1,8 @@
-import { MessageInput } from "./MessageInput";
-import { MessageList } from "./MessageList";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MessageInput } from "./MessageInput";
+import { MessageList } from "./MessageList";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { MessageSquare } from "lucide-react";
 
