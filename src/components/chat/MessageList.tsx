@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Message {
   id: string;
@@ -75,17 +76,12 @@ export function MessageList({ threadId }: MessageListProps) {
       <div className="space-y-4">
         {messages.map((message) => (
           <div key={message.id} className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-              {message.profiles?.avatar_url ? (
-                <img
-                  src={message.profiles.avatar_url}
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <User className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={message.profiles?.avatar_url || undefined} />
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1">
               <div className="flex items-baseline gap-2">
                 <span className="font-semibold text-sm">
