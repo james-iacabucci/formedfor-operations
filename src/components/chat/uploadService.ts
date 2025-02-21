@@ -6,7 +6,7 @@ import { Json } from "@/integrations/supabase/types";
 export async function uploadFiles(
   files: File[], 
   onProgress: (fileId: string, progress: number) => void
-): Promise<FileUpload[]> {
+): Promise<Json[]> {
   const uploads: FileUpload[] = [];
 
   for (const file of files) {
@@ -35,5 +35,6 @@ export async function uploadFiles(
     });
   }
 
-  return uploads;
+  // Convert FileUpload[] to Json[]
+  return uploads as unknown as Json[];
 }

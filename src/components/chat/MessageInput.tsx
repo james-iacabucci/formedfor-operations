@@ -65,14 +65,16 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         ));
       });
 
+      const messageData = {
+        thread_id: threadId,
+        user_id: user.id,
+        content: message.trim(),
+        attachments: uploadedFiles,
+      };
+
       const { error } = await supabase
         .from("chat_messages")
-        .insert({
-          thread_id: threadId,
-          user_id: user.id,
-          content: message.trim(),
-          attachments: uploadedFiles,
-        });
+        .insert(messageData);
 
       if (error) throw error;
 
