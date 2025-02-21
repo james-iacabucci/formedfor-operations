@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Smile, Image } from "lucide-react";
+import { Send, Smile, Image, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,10 +12,20 @@ interface MessageInputProps {
   autoFocus?: boolean;
 }
 
+interface FileUpload {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
 export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [attachments, setAttachments] = useState<FileUpload[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -39,9 +49,58 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files.length) return;
+    
+    setIsUploading(true);
+    const newAttachments: FileUpload[] = [];
+
+    try {
+      for (const file of Array.from(e.target.files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('chat_attachments')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('chat_attachments')
+          .getPublicUrl(fileName);
+
+        newAttachments.push({
+          name: file.name,
+          url: publicUrl,
+          type: file.type,
+          size: file.size,
+        });
+      }
+
+      setAttachments(prev => [...prev, ...newAttachments]);
+      toast({
+        title: "Files attached",
+        description: `${newAttachments.length} file(s) attached successfully.`,
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload files. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !user) return;
+    if ((!message.trim() && attachments.length === 0) || !user) return;
 
     setIsSending(true);
     try {
@@ -51,11 +110,18 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
           thread_id: threadId,
           user_id: user.id,
           content: message.trim(),
+          attachments: attachments.map(attachment => ({
+            name: attachment.name,
+            url: attachment.url,
+            type: attachment.type,
+            size: attachment.size,
+          })),
         });
 
       if (error) throw error;
 
       setMessage("");
+      setAttachments([]);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -81,6 +147,24 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
       <div className="relative flex flex-col gap-2">
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-muted/30">
+            {attachments.map((file, index) => (
+              <div key={index} className="flex items-center gap-2 px-2 py-1 text-sm bg-background rounded border">
+                <span className="truncate max-w-[200px]">{file.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}
+                >
+                  ×
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="relative">
           <Textarea
             ref={textareaRef}
@@ -102,22 +186,35 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
             >
               <Smile className="h-4 w-4 text-muted-foreground" />
             </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+            />
             <Button
               type="button"
               size="icon"
               variant="ghost"
-              className="h-8 w-8 shrink-0 rounded-full"
-              disabled={isSending}
-              title="Attach files (coming soon)"
+              className="h-8 w-8 shrink-0 rounded-full relative"
+              disabled={isSending || isUploading}
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach files"
             >
-              <Image className="h-4 w-4 text-muted-foreground" />
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Image className="h-4 w-4 text-muted-foreground" />
+              )}
             </Button>
             <div className="mx-1 h-4 w-px bg-border" />
             <Button
               type="submit"
               size="icon"
               className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-              disabled={isSending || !message.trim()}
+              disabled={isSending || (isUploading || (!message.trim() && attachments.length === 0))}
             >
               <Send className="h-4 w-4" />
             </Button>
