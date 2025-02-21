@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -139,8 +138,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      <div className="w-32">
-                        <Label className="mb-2 block">Profile Image</Label>
+                      <div className="h-[114px]">
                         <ImageUpload 
                           previewUrl={profileData.avatar_url || ""}
                           onFileChange={handleImageUpload}
