@@ -6,7 +6,6 @@ export interface FileAttachment {
   url: string;
   type: string;
   size: number;
-  created_at?: string;
 }
 
 export interface UploadingFile {
