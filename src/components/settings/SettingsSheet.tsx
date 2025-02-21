@@ -30,17 +30,15 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!open) {
       setShowCreateForm(false);
       
-      // Cleanup any lingering portals
+      // Cleanup portals safely
       setTimeout(() => {
         try {
           const portals = document.querySelectorAll('[data-state="closed"]');
           portals.forEach(portal => {
-            // Only target Settings-related portals
-            if (portal.textContent?.includes('Settings')) {
-              const parent = portal.parentNode;
-              if (parent && parent.contains(portal)) {
-                parent.removeChild(portal);
-              }
+            if (portal instanceof HTMLElement && 
+                portal.closest('[role="dialog"]') && 
+                portal.textContent?.includes('Settings')) {
+              portal.remove();
             }
           });
         } catch (error) {
