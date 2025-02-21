@@ -33,7 +33,7 @@ export function MessageList({ threadId }: MessageListProps) {
           created_at,
           content,
           user_id,
-          profiles:profiles!user_id(
+          profiles (
             username,
             avatar_url
           )
