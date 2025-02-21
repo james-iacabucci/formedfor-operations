@@ -14,7 +14,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { FileAttachment, isFileAttachment } from "./types";
-import { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/components/AuthProvider";
 import {
   AlertDialog,
@@ -87,12 +86,11 @@ export function FileList({ threadId }: FileListProps) {
         throw new Error("Message not found");
       }
 
-      const updatedAttachments = (message.attachments || []).filter(
-        (attachment) => {
-          if (!isFileAttachment(attachment as Json)) return true;
-          return (attachment as FileAttachment).url !== deleteFile.url;
-        }
-      );
+      const updatedAttachments = message.attachments
+        ?.filter(attachment => {
+          if (!isFileAttachment(attachment)) return true;
+          return attachment.url !== deleteFile.url;
+        }) ?? [];
 
       const { error: updateError } = await supabase
         .from("chat_messages")
@@ -122,13 +120,10 @@ export function FileList({ threadId }: FileListProps) {
   const files = messages.flatMap((message) => {
     return (message.attachments || [])
       .filter((attachment): attachment is FileAttachment => 
-        isFileAttachment(attachment as Json)
+        isFileAttachment(attachment)
       )
-      .map((file): ExtendedFileAttachment => ({
-        name: file.name,
-        url: file.url,
-        type: file.type,
-        size: file.size,
+      .map((file) => ({
+        ...file,
         user: message.profiles,
         userId: message.user_id,
         messageId: message.id,
