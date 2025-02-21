@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -15,7 +14,6 @@ import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppearanceSection } from "../settings/AppearanceSection";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -135,36 +133,34 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
               
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Profile</h3>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex gap-6">
-                      <div className="h-20">
-                        <ImageUpload 
-                          previewUrl={profileData.avatar_url || ""}
-                          onFileChange={handleImageUpload}
-                          className="hover:opacity-90 transition-opacity cursor-pointer"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <Input
-                          id="name"
-                          value={profileData.username || ""}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                          placeholder="Your name"
-                          className="focus:ring-2 focus:ring-primary"
-                        />
-                        <Input
-                          id="phone"
-                          value={profileData.phone || ""}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                          placeholder="Your phone number"
-                          type="tel"
-                          className="focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
+                <div className="rounded-xl bg-muted/30 p-6">
+                  <div className="flex gap-6">
+                    <div className="h-24 w-24">
+                      <ImageUpload 
+                        previewUrl={profileData.avatar_url || ""}
+                        onFileChange={handleImageUpload}
+                        className="hover:opacity-90 transition-opacity cursor-pointer"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex-1 space-y-3">
+                      <Input
+                        id="name"
+                        value={profileData.username || ""}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                        placeholder="Your name"
+                        className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                      />
+                      <Input
+                        id="phone"
+                        value={profileData.phone || ""}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="Your phone number"
+                        type="tel"
+                        className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
