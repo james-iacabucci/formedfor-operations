@@ -78,14 +78,14 @@ export function MessageList({ threadId }: MessageListProps) {
 
       if (error) throw error;
 
-      // Transform the data to ensure type compatibility
-      return data.map(message => ({
+      // Transform the data to ensure type compatibility by first casting to unknown
+      return (data as unknown[]).map(message => ({
         ...message,
-        attachments: (message.attachments || [])
-          .filter((attachment): attachment is FileAttachment => 
+        attachments: ((message as any).attachments || [])
+          .filter((attachment): attachment is Record<string, Json> & FileAttachment => 
             isFileAttachment(attachment as Json)
           ),
-        mentions: (message.mentions || []) as Json[],
+        mentions: ((message as any).mentions || []) as Json[],
       })) as Message[];
     },
     refetchInterval: 1000,
