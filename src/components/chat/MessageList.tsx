@@ -14,6 +14,10 @@ interface Message {
     username: string | null;
     avatar_url: string | null;
   } | null;
+  attachments: any[];
+  mentions: any[];
+  edited_at: string | null;
+  thread_id: string;
 }
 
 interface MessageListProps {
@@ -30,7 +34,7 @@ export function MessageList({ threadId }: MessageListProps) {
         .from("chat_messages")
         .select(`
           *,
-          profiles:user_id(
+          profiles(
             username,
             avatar_url
           )
