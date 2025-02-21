@@ -11,7 +11,7 @@ interface Message {
   content: string;
   user_id: string;
   profiles?: {
-    full_name: string | null;
+    username: string | null;
     avatar_url: string | null;
   } | null;
 }
@@ -33,8 +33,8 @@ export function MessageList({ threadId }: MessageListProps) {
           created_at,
           content,
           user_id,
-          profiles:user_id (
-            full_name,
+          profiles:profiles!user_id(
+            username,
             avatar_url
           )
         `)
@@ -80,7 +80,7 @@ export function MessageList({ threadId }: MessageListProps) {
             <div className="flex-1">
               <div className="flex items-baseline gap-2">
                 <span className="font-semibold text-sm">
-                  {message.profiles?.full_name || "User"}
+                  {message.profiles?.username || "User"}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {new Date(message.created_at).toLocaleTimeString()}
