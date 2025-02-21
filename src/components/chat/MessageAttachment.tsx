@@ -3,6 +3,7 @@ import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@/lib/utils";
 import { FileAttachment } from "./types";
+import { format } from "date-fns";
 
 interface MessageAttachmentProps {
   attachment: FileAttachment;
@@ -11,39 +12,50 @@ interface MessageAttachmentProps {
 export function MessageAttachment({ attachment }: MessageAttachmentProps) {
   const isImageFile = (type: string) => type.startsWith('image/');
 
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = document.createElement('a');
+    link.href = attachment.url;
+    link.download = attachment.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePreview = () => {
+    window.open(attachment.url, '_blank');
+  };
+
   if (isImageFile(attachment.type)) {
     return (
-      <div className="group/image relative inline-block">
-        <img 
-          src={attachment.url} 
-          alt={attachment.name}
-          className="max-w-[300px] max-h-[200px] rounded-lg object-cover border border-border hover:border-primary/50 transition-colors"
-        />
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/image:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white/10 hover:bg-white/20"
-              onClick={() => window.open(attachment.url, '_blank')}
-            >
-              View
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white/10 hover:bg-white/20"
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = attachment.url;
-                link.download = attachment.name;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            >
-              Download
-            </Button>
+      <div className="group relative inline-block max-w-sm">
+        <div 
+          className="rounded-lg overflow-hidden border border-border cursor-pointer"
+          onClick={handlePreview}
+        >
+          <img 
+            src={attachment.url} 
+            alt={attachment.name}
+            className="max-h-[300px] object-cover w-full"
+          />
+        </div>
+        <div className="mt-1 px-1">
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="h-4 w-4 shrink-0" />
+              <span className="truncate">{attachment.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>{formatFileSize(attachment.size)}</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 text-xs"
+                onClick={handleDownload}
+              >
+                Download
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -51,29 +63,28 @@ export function MessageAttachment({ attachment }: MessageAttachmentProps) {
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors max-w-md group/file">
+    <div 
+      className="flex items-center gap-3 p-3 rounded-lg border bg-muted/40 hover:bg-muted/60 transition-colors max-w-md cursor-pointer group"
+      onClick={handlePreview}
+    >
       <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
-        <FileText className="h-5 w-5 text-foreground/70" />
+        <FileText className="h-5 w-5 text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">{attachment.name}</div>
-        <div className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</div>
+        <div className="text-xs text-muted-foreground flex items-center gap-2">
+          <span>{formatFileSize(attachment.size)}</span>
+          <span>•</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-6 px-2 text-xs"
+            onClick={handleDownload}
+          >
+            Download
+          </Button>
+        </div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="opacity-0 group-hover/file:opacity-100 transition-opacity"
-        onClick={() => {
-          const link = document.createElement('a');
-          link.href = attachment.url;
-          link.download = attachment.name;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }}
-      >
-        Download
-      </Button>
     </div>
   );
 }
