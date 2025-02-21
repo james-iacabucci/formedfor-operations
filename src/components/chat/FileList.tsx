@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -50,7 +51,7 @@ export function FileList({ threadId }: FileListProps) {
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
 
-  const { data: messages = [], refetch } = useQuery({
+  const { data: messagesData = [], refetch } = useQuery({
     queryKey: ["messages", threadId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,7 +70,7 @@ export function FileList({ threadId }: FileListProps) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -118,24 +119,27 @@ export function FileList({ threadId }: FileListProps) {
     setDeleteFile(null);
   };
 
-  const files = messages.flatMap((message) => {
-    const validAttachments = (message.attachments || [])
-      .filter(isFileAttachment) as (Json & FileAttachment)[];
+  // Ensure messages is an array and process files
+  const files = Array.isArray(messagesData) 
+    ? messagesData.flatMap((message) => {
+        const validAttachments = (message.attachments || [])
+          .filter(isFileAttachment) as (Json & FileAttachment)[];
 
-    return validAttachments.map((file) => {
-      const extendedFile: ExtendedFileAttachment = {
-        name: file.name,
-        url: file.url,
-        type: file.type,
-        size: file.size,
-        user: message.profiles,
-        userId: message.user_id,
-        messageId: message.id,
-        uploadedAt: message.created_at
-      };
-      return extendedFile;
-    });
-  });
+        return validAttachments.map((file) => {
+          const extendedFile: ExtendedFileAttachment = {
+            name: file.name,
+            url: file.url,
+            type: file.type,
+            size: file.size,
+            user: message.profiles,
+            userId: message.user_id,
+            messageId: message.id,
+            uploadedAt: message.created_at
+          };
+          return extendedFile;
+        });
+      })
+    : [];
 
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
