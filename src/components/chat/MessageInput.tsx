@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Smile, Image, Loader2 } from "lucide-react";
+import { Send, PaperclipIcon, X, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface MessageInputProps {
   threadId: string;
@@ -24,6 +25,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [attachments, setAttachments] = useState<FileUpload[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
@@ -42,7 +44,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
     const adjustHeight = () => {
       textarea.style.height = "0";
-      textarea.style.height = `${textarea.scrollHeight}px`;
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     };
 
     textarea.addEventListener("input", adjustHeight);
@@ -51,12 +53,16 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files.length) return;
-    
+    setPendingFiles(Array.from(e.target.files));
+  };
+
+  const uploadFiles = async () => {
+    if (!pendingFiles.length) return [];
     setIsUploading(true);
-    const newAttachments: FileUpload[] = [];
+    const uploads: FileUpload[] = [];
 
     try {
-      for (const file of Array.from(e.target.files)) {
+      for (const file of pendingFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -70,7 +76,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
           .from('chat_attachments')
           .getPublicUrl(fileName);
 
-        newAttachments.push({
+        uploads.push({
           name: file.name,
           url: publicUrl,
           type: file.type,
@@ -78,11 +84,8 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         });
       }
 
-      setAttachments(prev => [...prev, ...newAttachments]);
-      toast({
-        title: "Files attached",
-        description: `${newAttachments.length} file(s) attached successfully.`,
-      });
+      setPendingFiles([]);
+      return uploads;
     } catch (error) {
       console.error('Error uploading file:', error);
       toast({
@@ -90,6 +93,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
+      return [];
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -98,30 +102,30 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     }
   };
 
+  const handleRemovePendingFile = (index: number) => {
+    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!message.trim() && attachments.length === 0) || !user) return;
+    if (!user || (!message.trim() && !pendingFiles.length)) return;
 
     setIsSending(true);
     try {
+      const uploadedFiles = await uploadFiles();
       const { error } = await supabase
         .from("chat_messages")
         .insert({
           thread_id: threadId,
           user_id: user.id,
           content: message.trim(),
-          attachments: attachments.map(attachment => ({
-            name: attachment.name,
-            url: attachment.url,
-            type: attachment.type,
-            size: attachment.size,
-          })),
+          attachments: uploadedFiles,
         });
 
       if (error) throw error;
 
       setMessage("");
-      setAttachments([]);
+      setPendingFiles([]);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -147,77 +151,79 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
       <div className="relative flex flex-col gap-2">
-        {attachments.length > 0 && (
+        {/* Pending Files Preview */}
+        {pendingFiles.length > 0 && (
           <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-muted/30">
-            {attachments.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 px-2 py-1 text-sm bg-background rounded border">
+            {pendingFiles.map((file, index) => (
+              <div 
+                key={index} 
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1 text-sm bg-background rounded border",
+                  isUploading && "opacity-50"
+                )}
+              >
                 <span className="truncate max-w-[200px]">{file.name}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 hover:bg-transparent"
-                  onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}
-                >
-                  ×
-                </Button>
+                {!isUploading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 hover:bg-transparent"
+                    onClick={() => handleRemovePendingFile(index)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             ))}
           </div>
         )}
-        <div className="relative">
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="min-h-[44px] pr-[120px] resize-none rounded-xl py-3 text-sm overflow-hidden"
-            rows={1}
-          />
-          <div className="absolute right-2 bottom-2 flex items-center gap-0.5">
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0 rounded-full"
-              disabled={isSending}
-              title="Add emoji (coming soon)"
-            >
-              <Smile className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleFileSelect}
-              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0 rounded-full relative"
+        
+        {/* Message Input Area */}
+        <div className="relative flex items-end gap-2">
+          <div className="flex-1">
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
               disabled={isSending || isUploading}
-              onClick={() => fileInputRef.current?.click()}
-              title="Attach files"
-            >
-              {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Image className="h-4 w-4 text-muted-foreground" />
-              )}
-            </Button>
-            <div className="mx-1 h-4 w-px bg-border" />
-            <Button
-              type="submit"
-              size="icon"
-              className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-              disabled={isSending || (isUploading || (!message.trim() && attachments.length === 0))}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+            />
+            <div className="absolute right-2 bottom-2 flex items-center gap-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileSelect}
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                disabled={isSending || isUploading}
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 shrink-0 rounded-full"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSending || isUploading}
+              >
+                <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <Button
+                type="submit"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
+                disabled={isSending || isUploading || (!message.trim() && !pendingFiles.length)}
+              >
+                {isSending || isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
