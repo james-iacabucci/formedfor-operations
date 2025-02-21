@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import { User } from "lucide-react";
+import { User, PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
@@ -12,18 +12,27 @@ interface ImageUploadProps {
 export function ImageUpload({ previewUrl, onFileChange, className }: ImageUploadProps) {
   return (
     <div className={cn(
-      "relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
+      "group relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
       className
     )}>
       {previewUrl ? (
-        <img
-          src={previewUrl}
-          alt="Profile"
-          className="object-cover w-full h-full"
-        />
+        <>
+          <img
+            src={previewUrl}
+            alt="Profile"
+            className="object-cover w-full h-full"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 text-white">
+              <PencilIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">Edit picture</span>
+            </div>
+          </div>
+        </>
       ) : (
-        <div className="flex items-center justify-center h-full">
+        <div className="flex flex-col items-center justify-center h-full gap-2">
           <User className="w-12 h-12 text-muted-foreground/40" />
+          <span className="text-sm text-muted-foreground">Add picture</span>
         </div>
       )}
       <Input
