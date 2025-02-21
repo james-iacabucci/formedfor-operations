@@ -46,15 +46,15 @@ export interface RawMessage {
 
 export type FileUpload = FileAttachment;
 
-export function isFileAttachment(obj: Json): obj is FileAttachment {
-  if (typeof obj !== 'object' || obj === null) return false;
+export function isFileAttachment(value: Json): value is Json & FileAttachment {
+  if (typeof value !== 'object' || value === null) return false;
   
-  const candidate = obj as Record<string, unknown>;
+  const obj = value as Record<string, Json>;
   
   return (
-    typeof candidate.name === 'string' &&
-    typeof candidate.url === 'string' &&
-    typeof candidate.type === 'string' &&
-    typeof candidate.size === 'number'
+    typeof obj.name === 'string' &&
+    typeof obj.url === 'string' &&
+    typeof obj.type === 'string' &&
+    typeof obj.size === 'number'
   );
 }

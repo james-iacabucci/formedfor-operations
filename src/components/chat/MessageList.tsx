@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,9 +67,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         page.map(message => ({
           ...message,
           attachments: (message.attachments || [])
-            .filter((attachment): attachment is FileAttachment => 
-              isFileAttachment(attachment)
-            ),
+            .filter(isFileAttachment) as FileAttachment[],
           mentions: message.mentions || [],
         }))
       ),

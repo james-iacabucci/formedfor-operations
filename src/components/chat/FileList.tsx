@@ -120,9 +120,7 @@ export function FileList({ threadId }: FileListProps) {
 
   const files = messages.flatMap((message) => {
     const validAttachments = (message.attachments || [])
-      .filter((attachment): attachment is FileAttachment => 
-        isFileAttachment(attachment)
-      );
+      .filter(isFileAttachment) as (Json & FileAttachment)[];
 
     return validAttachments.map((file) => {
       const extendedFile: ExtendedFileAttachment = {
