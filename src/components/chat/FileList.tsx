@@ -45,13 +45,24 @@ interface ExtendedFileAttachment extends FileAttachment {
   uploadedAt: string;
 }
 
+interface MessageData {
+  id: string;
+  created_at: string;
+  attachments: Json[];
+  user_id: string;
+  profiles: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
 export function FileList({ threadId }: FileListProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
 
-  const { data: messagesData } = useQuery({
+  const { data: messagesData } = useQuery<MessageData[]>({
     queryKey: ["messages", threadId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -74,7 +85,7 @@ export function FileList({ threadId }: FileListProps) {
         return [];
       }
       
-      return data || [];
+      return data;
     },
   });
 
@@ -163,24 +174,26 @@ export function FileList({ threadId }: FileListProps) {
     }
   };
 
-  const files = (messagesData || []).flatMap((message) => {
-    const validAttachments = (message.attachments || [])
-      .filter((attachment): attachment is Json & FileAttachment => {
-        if (!isFileAttachment(attachment)) return false;
-        return true;
-      });
+  const files = Array.isArray(messagesData) 
+    ? messagesData.flatMap((message: MessageData) => {
+        const validAttachments = (message.attachments || [])
+          .filter((attachment): attachment is Json & FileAttachment => {
+            if (!isFileAttachment(attachment)) return false;
+            return true;
+          });
 
-    return validAttachments.map((file) => ({
-      name: file.name,
-      url: file.url,
-      type: file.type,
-      size: file.size,
-      user: message.profiles,
-      userId: message.user_id,
-      messageId: message.id,
-      uploadedAt: message.created_at
-    }));
-  });
+        return validAttachments.map((file) => ({
+          name: file.name,
+          url: file.url,
+          type: file.type,
+          size: file.size,
+          user: message.profiles,
+          userId: message.user_id,
+          messageId: message.id,
+          uploadedAt: message.created_at
+        }));
+      })
+    : [];
 
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
