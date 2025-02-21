@@ -3,10 +3,11 @@ import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, User, FileText } from "lucide-react";
+import { MessageSquare, User, FileText, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Json } from "@/integrations/supabase/types";
 
 interface FileAttachment {
@@ -14,6 +15,12 @@ interface FileAttachment {
   url: string;
   type: string;
   size: number;
+}
+
+interface UploadingFile {
+  id: string;
+  file: File;
+  progress: number;
 }
 
 interface Message {
@@ -48,9 +55,9 @@ interface RawMessage {
 
 interface MessageListProps {
   threadId: string;
+  uploadingFiles?: UploadingFile[];
 }
 
-// Type guard to validate if an object is a FileAttachment
 function isFileAttachment(obj: Json): obj is Record<string, Json> & FileAttachment {
   return (
     typeof obj === 'object' &&
@@ -66,7 +73,7 @@ function isFileAttachment(obj: Json): obj is Record<string, Json> & FileAttachme
   );
 }
 
-export function MessageList({ threadId }: MessageListProps) {
+export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useQuery({
@@ -93,7 +100,6 @@ export function MessageList({ threadId }: MessageListProps) {
 
       if (error) throw error;
 
-      // Transform the data to ensure type compatibility
       return (data as RawMessage[]).map(message => ({
         ...message,
         attachments: (message.attachments || [])
@@ -110,9 +116,45 @@ export function MessageList({ threadId }: MessageListProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, uploadingFiles]);
 
   const isImageFile = (type: string) => type.startsWith('image/');
+
+  const renderUploadingFiles = () => {
+    if (!uploadingFiles.length) return null;
+
+    return (
+      <div className="space-y-4 mb-4">
+        {uploadingFiles.map((file) => (
+          <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 max-w-md">
+            <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
+              {isImageFile(file.file.type) ? (
+                <div className="relative w-full h-full overflow-hidden rounded-lg">
+                  <img
+                    src={URL.createObjectURL(file.file)}
+                    alt={file.file.name}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ) : (
+                <FileText className="h-5 w-5 text-foreground/70" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm truncate">{file.file.name}</div>
+              <div className="text-xs text-muted-foreground">{formatFileSize(file.file.size)}</div>
+              <div className="mt-2">
+                <Progress value={file.progress} className="h-1" />
+              </div>
+            </div>
+            <div className="flex items-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -225,6 +267,7 @@ export function MessageList({ threadId }: MessageListProps) {
             </div>
           </div>
         ))}
+        {renderUploadingFiles()}
       </div>
     </ScrollArea>
   );

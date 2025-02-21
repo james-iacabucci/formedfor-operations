@@ -21,11 +21,16 @@ interface FileUpload {
   size: number;
 }
 
+interface UploadingFile {
+  id: string;
+  file: File;
+  progress: number;
+}
+
 export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
@@ -53,22 +58,34 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files.length) return;
-    setPendingFiles(Array.from(e.target.files));
+    const newFiles = Array.from(e.target.files).map(file => ({
+      id: crypto.randomUUID(),
+      file,
+      progress: 0
+    }));
+    setUploadingFiles(prev => [...prev, ...newFiles]);
   };
 
   const uploadFiles = async () => {
-    if (!pendingFiles.length) return [];
-    setIsUploading(true);
+    if (!uploadingFiles.length) return [];
     const uploads: FileUpload[] = [];
 
     try {
-      for (const file of pendingFiles) {
+      for (const uploadingFile of uploadingFiles) {
+        const file = uploadingFile.file;
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat_attachments')
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            onUploadProgress: (progress) => {
+              const percent = (progress.loaded / progress.total) * 100;
+              setUploadingFiles(prev => prev.map(f => 
+                f.id === uploadingFile.id ? { ...f, progress: percent } : f
+              ));
+            }
+          });
 
         if (uploadError) throw uploadError;
 
@@ -84,7 +101,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         });
       }
 
-      setPendingFiles([]);
+      setUploadingFiles([]);
       return uploads as unknown as Json[];
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -95,20 +112,19 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
       });
       return [];
     } finally {
-      setIsUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
   };
 
-  const handleRemovePendingFile = (index: number) => {
-    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  const handleRemovePendingFile = (id: string) => {
+    setUploadingFiles(prev => prev.filter(f => f.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || (!message.trim() && !pendingFiles.length)) return;
+    if (!user || (!message.trim() && !uploadingFiles.length)) return;
 
     setIsSending(true);
     try {
@@ -125,7 +141,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
       if (error) throw error;
 
       setMessage("");
-      setPendingFiles([]);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -152,24 +167,24 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
       <div className="relative flex flex-col gap-2">
         {/* Pending Files Preview */}
-        {pendingFiles.length > 0 && (
+        {uploadingFiles.length > 0 && (
           <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-muted/30">
-            {pendingFiles.map((file, index) => (
+            {uploadingFiles.map((file) => (
               <div 
-                key={index} 
+                key={file.id} 
                 className={cn(
                   "flex items-center gap-2 px-2 py-1 text-sm bg-background rounded border",
-                  isUploading && "opacity-50"
+                  isSending && "opacity-50"
                 )}
               >
-                <span className="truncate max-w-[200px]">{file.name}</span>
-                {!isUploading && (
+                <span className="truncate max-w-[200px]">{file.file.name}</span>
+                {!isSending && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="h-4 w-4 p-0 hover:bg-transparent"
-                    onClick={() => handleRemovePendingFile(index)}
+                    onClick={() => handleRemovePendingFile(file.id)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -189,7 +204,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
-              disabled={isSending || isUploading}
+              disabled={isSending}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
               <input
@@ -199,7 +214,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
                 className="hidden"
                 onChange={handleFileSelect}
                 accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                disabled={isSending || isUploading}
+                disabled={isSending}
               />
               <Button
                 type="button"
@@ -207,7 +222,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
                 variant="ghost"
                 className="h-8 w-8 shrink-0 rounded-full"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isSending || isUploading}
+                disabled={isSending}
               >
                 <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
               </Button>
@@ -215,9 +230,9 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
                 type="submit"
                 size="icon"
                 className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-                disabled={isSending || isUploading || (!message.trim() && !pendingFiles.length)}
+                disabled={isSending || (!message.trim() && !uploadingFiles.length)}
               >
-                {isSending || isUploading ? (
+                {isSending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
