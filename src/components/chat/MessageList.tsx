@@ -74,19 +74,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       return (data || []).map(message => ({
         ...message,
         attachments: (message.attachments as unknown[] || []).map((attachment): FileAttachment => {
-          if (typeof attachment === 'object' && attachment !== null) {
-            return {
-              name: String(attachment.name || ''),
-              url: String(attachment.url || ''),
-              type: String(attachment.type || ''),
-              size: Number(attachment.size || 0)
-            };
-          }
+          const attachmentObj = attachment as Record<string, unknown>;
           return {
-            name: '',
-            url: '',
-            type: '',
-            size: 0
+            name: String(attachmentObj?.name || ''),
+            url: String(attachmentObj?.url || ''),
+            type: String(attachmentObj?.type || ''),
+            size: Number(attachmentObj?.size || 0)
           };
         })
       })) as Message[];
