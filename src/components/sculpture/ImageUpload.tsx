@@ -1,24 +1,29 @@
 
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   previewUrl: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
 }
 
-export function ImageUpload({ previewUrl, onFileChange }: ImageUploadProps) {
+export function ImageUpload({ previewUrl, onFileChange, className }: ImageUploadProps) {
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+    <div className={cn(
+      "relative aspect-square w-full overflow-hidden rounded-lg bg-muted",
+      className
+    )}>
       {previewUrl ? (
         <img
           src={previewUrl}
-          alt="Selected sculpture"
+          alt="Profile"
           className="object-cover w-full h-full"
         />
       ) : (
-        <div className="flex items-center justify-center h-full">
-          <Plus className="w-12 h-12 text-muted-foreground" />
+        <div className="flex items-center justify-center h-full bg-muted">
+          <User className="w-8 h-8 text-muted-foreground" />
         </div>
       )}
       <Input
@@ -26,7 +31,6 @@ export function ImageUpload({ previewUrl, onFileChange }: ImageUploadProps) {
         type="file"
         accept="image/*"
         onChange={onFileChange}
-        required
         className="absolute inset-0 opacity-0 cursor-pointer"
       />
     </div>

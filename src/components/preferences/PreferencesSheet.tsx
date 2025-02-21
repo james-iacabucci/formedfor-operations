@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -141,6 +142,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                         <ImageUpload 
                           previewUrl={profileData.avatar_url || ""}
                           onFileChange={handleImageUpload}
+                          className="hover:opacity-90 transition-opacity cursor-pointer"
                         />
                       </div>
                       <div className="flex-1 space-y-2">
@@ -148,14 +150,16 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                           id="name"
                           value={profileData.username || ""}
                           onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                          placeholder="Enter your name"
+                          placeholder="Your name"
+                          className="focus:ring-2 focus:ring-primary"
                         />
                         <Input
                           id="phone"
                           value={profileData.phone || ""}
                           onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                          placeholder="Enter your phone number"
+                          placeholder="Your phone number"
                           type="tel"
+                          className="focus:ring-2 focus:ring-primary"
                         />
                       </div>
                     </div>
