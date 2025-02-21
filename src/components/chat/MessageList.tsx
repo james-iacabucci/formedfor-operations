@@ -3,10 +3,8 @@ import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, User, FileText } from "lucide-react";
+import { MessageSquare, User, FileText, Image as ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Json } from "@/integrations/supabase/types";
 
 interface FileAttachment {
   name: string;
@@ -25,25 +23,16 @@ interface Message {
     avatar_url: string | null;
   } | null;
   attachments: FileAttachment[];
-  mentions: Json[];
+  mentions: any[];
   edited_at: string | null;
   thread_id: string;
 }
 
-interface UploadingFile {
-  id: string;
-  name: string;
-  progress: number;
-  type: string;
-  size: number;
-}
-
 interface MessageListProps {
   threadId: string;
-  uploadingFiles?: UploadingFile[];
 }
 
-export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
+export function MessageList({ threadId }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useQuery({
@@ -70,28 +59,16 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       if (error) throw error;
 
-      // Cast the attachments from Json[] to FileAttachment[] with proper type checking
-      return (data || []).map(message => ({
-        ...message,
-        attachments: (message.attachments as unknown[] || []).map((attachment): FileAttachment => {
-          const attachmentObj = attachment as Record<string, unknown>;
-          return {
-            name: String(attachmentObj?.name || ''),
-            url: String(attachmentObj?.url || ''),
-            type: String(attachmentObj?.type || ''),
-            size: Number(attachmentObj?.size || 0)
-          };
-        })
-      })) as Message[];
+      return data as Message[];
     },
-    refetchInterval: 1000,
+    refetchInterval: 1000, // Poll for new messages every second
   });
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, uploadingFiles]);
+  }, [messages]);
 
   const isImageFile = (type: string) => type.startsWith('image/');
 
@@ -161,34 +138,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
             </div>
           </div>
         ))}
-        
-        {/* Uploading Files Section */}
-        {uploadingFiles.length > 0 && (
-          <div className="flex items-start gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2">
-                <span className="font-semibold text-sm">Uploading files...</span>
-              </div>
-              <div className="mt-2 space-y-3">
-                {uploadingFiles.map((file) => (
-                  <div key={file.id} className="bg-muted/30 rounded-lg p-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{file.name}</span>
-                    </div>
-                    <Progress value={file.progress} className="h-1" />
-                    <span className="text-xs text-muted-foreground">{Math.round(file.progress)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </ScrollArea>
   );

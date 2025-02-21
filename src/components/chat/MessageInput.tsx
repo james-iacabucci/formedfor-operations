@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
-  onUploadProgress: (uploads: UploadingFile[]) => void;
 }
 
 interface FileUpload {
@@ -19,19 +19,10 @@ interface FileUpload {
   size: number;
 }
 
-interface UploadingFile {
-  id: string;
-  name: string;
-  progress: number;
-  type: string;
-  size: number;
-}
-
-export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: MessageInputProps) {
+export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [attachments, setAttachments] = useState<FileUpload[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +35,7 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
     }
   }, [autoFocus]);
 
+  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -57,48 +49,16 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
-  useEffect(() => {
-    onUploadProgress(uploadingFiles);
-  }, [uploadingFiles, onUploadProgress]);
-
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files.length) return;
     
     setIsUploading(true);
     const newAttachments: FileUpload[] = [];
-    const files = Array.from(e.target.files);
-    
-    const uploadingFileEntries = files.map(file => ({
-      id: crypto.randomUUID(),
-      name: file.name,
-      progress: 0,
-      type: file.type,
-      size: file.size,
-    }));
-    
-    setUploadingFiles(prev => [...prev, ...uploadingFileEntries]);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const uploadingFile = uploadingFileEntries[i];
+      for (const file of Array.from(e.target.files)) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const progress = (event.loaded / event.total) * 100;
-            setUploadingFiles(prev => 
-              prev.map(f => 
-                f.id === uploadingFile.id 
-                  ? { ...f, progress } 
-                  : f
-              )
-            );
-          }
-        });
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat_attachments')
@@ -116,8 +76,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
           type: file.type,
           size: file.size,
         });
-
-        setUploadingFiles(prev => prev.filter(f => f.id !== uploadingFile.id));
       }
 
       setAttachments(prev => [...prev, ...newAttachments]);
@@ -132,7 +90,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: 
         description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
-      setUploadingFiles([]);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
