@@ -31,6 +31,21 @@ interface Message {
   thread_id: string;
 }
 
+interface RawMessage {
+  id: string;
+  created_at: string;
+  content: string;
+  user_id: string;
+  profiles: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+  attachments: Json[];
+  mentions: Json[];
+  edited_at: string | null;
+  thread_id: string;
+}
+
 interface MessageListProps {
   threadId: string;
 }
@@ -78,14 +93,14 @@ export function MessageList({ threadId }: MessageListProps) {
 
       if (error) throw error;
 
-      // Transform the data to ensure type compatibility by first casting to unknown
-      return (data as unknown[]).map(message => ({
+      // Transform the data to ensure type compatibility
+      return (data as RawMessage[]).map(message => ({
         ...message,
-        attachments: ((message as any).attachments || [])
+        attachments: (message.attachments || [])
           .filter((attachment): attachment is Record<string, Json> & FileAttachment => 
             isFileAttachment(attachment as Json)
           ),
-        mentions: ((message as any).mentions || []) as Json[],
+        mentions: message.mentions || [],
       })) as Message[];
     },
     refetchInterval: 1000,
