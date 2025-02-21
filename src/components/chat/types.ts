@@ -46,7 +46,7 @@ export interface RawMessage {
 
 export type FileUpload = FileAttachment;
 
-export function isFileAttachment(obj: unknown): obj is FileAttachment {
+export function isFileAttachment(obj: Json): obj is FileAttachment {
   if (typeof obj !== 'object' || obj === null) return false;
   
   const candidate = obj as Record<string, unknown>;

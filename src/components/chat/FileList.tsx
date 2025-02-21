@@ -14,6 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { FileAttachment, isFileAttachment } from "./types";
+import { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/components/AuthProvider";
 import {
   AlertDialog,
@@ -118,17 +119,24 @@ export function FileList({ threadId }: FileListProps) {
   };
 
   const files = messages.flatMap((message) => {
-    return (message.attachments || [])
+    const validAttachments = (message.attachments || [])
       .filter((attachment): attachment is FileAttachment => 
         isFileAttachment(attachment)
-      )
-      .map((file) => ({
-        ...file,
+      );
+
+    return validAttachments.map((file) => {
+      const extendedFile: ExtendedFileAttachment = {
+        name: file.name,
+        url: file.url,
+        type: file.type,
+        size: file.size,
         user: message.profiles,
         userId: message.user_id,
         messageId: message.id,
         uploadedAt: message.created_at
-      }));
+      };
+      return extendedFile;
+    });
   });
 
   const sortedFiles = [...files].sort((a, b) => {

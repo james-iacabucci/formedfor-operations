@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { MessageSquare, Loader2 } from "lucide-react";
 import { MessageItem } from "./MessageItem";
 import { UploadingFilesList } from "./UploadingFilesList";
 import { UploadingFile, RawMessage, Message, FileAttachment, isFileAttachment } from "./types";
+import { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/components/AuthProvider";
 
 interface MessageListProps {
@@ -65,10 +67,10 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       pages: data.pages.map(page => 
         page.map(message => ({
           ...message,
-          attachments: message.attachments
-            ?.filter((attachment): attachment is FileAttachment => 
+          attachments: (message.attachments || [])
+            .filter((attachment): attachment is FileAttachment => 
               isFileAttachment(attachment)
-            ) ?? [],
+            ),
           mentions: message.mentions || [],
         }))
       ),
