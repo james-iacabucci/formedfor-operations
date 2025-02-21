@@ -48,7 +48,6 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
         for (const topic of topics) {
           console.log(`Initializing thread for topic: ${topic}`);
           
-          // First try to find existing thread
           const { data: existing, error: findError } = await supabase
             .from('chat_threads')
             .select('id')
@@ -67,7 +66,6 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
             console.log(`Found existing thread for ${topic}:`, existing.id);
             threadId = existing.id;
           } else {
-            // Create new thread
             console.log(`Creating new thread for ${topic}`);
             const { data: newThread, error: createError } = await supabase
               .from('chat_threads')
@@ -92,7 +90,6 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
             console.log(`Created new thread for ${topic}:`, threadId);
           }
 
-          // Ensure user is a participant
           const { data: existingParticipant } = await supabase
             .from('chat_thread_participants')
             .select('thread_id')
@@ -142,7 +139,7 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
           onValueChange={(value) => setActiveTab(value as ChatTopic)}
           className="flex flex-col h-full"
         >
-          <div className="px-6 py-4 border-b">
+          <div className="px-6 py-4 border-b bg-muted/30">
             <TabsList className="w-full">
               <TabsTrigger value="pricing" className="flex-1">Pricing</TabsTrigger>
               <TabsTrigger value="fabrication" className="flex-1">Fabrication</TabsTrigger>
@@ -150,7 +147,7 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-background">
             {isLoading ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin" />
@@ -165,8 +162,14 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
                   >
                     {threadId ? (
                       <>
-                        <MessageList threadId={threadId} />
-                        <MessageInput threadId={threadId} />
+                        <MessageList 
+                          threadId={threadId} 
+                          key={threadId} // Force remount when thread changes
+                        />
+                        <MessageInput 
+                          threadId={threadId} 
+                          autoFocus={open} 
+                        />
                       </>
                     ) : (
                       <div className="h-full flex items-center justify-center text-muted-foreground">

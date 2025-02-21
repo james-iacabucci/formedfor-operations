@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
@@ -9,13 +9,21 @@ import { useToast } from "@/hooks/use-toast";
 
 interface MessageInputProps {
   threadId: string;
+  autoFocus?: boolean;
 }
 
-export function MessageInput({ threadId }: MessageInputProps) {
+export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [autoFocus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,18 +54,28 @@ export function MessageInput({ threadId }: MessageInputProps) {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t">
-      <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
+      <div className="flex gap-2 items-end">
         <Textarea
+          ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="min-h-[80px] flex-1"
+          className="min-h-[44px] max-h-[200px] flex-1 resize-none rounded-lg border-muted"
         />
         <Button 
           type="submit" 
-          size="icon" 
+          size="icon"
+          className="h-[44px] w-[44px] bg-primary hover:bg-primary/90"
           disabled={isSending || !message.trim()}
         >
           <Send className="h-4 w-4" />
