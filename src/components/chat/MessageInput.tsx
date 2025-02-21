@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, Smile, Image, Plus, Attachment } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -63,24 +63,67 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
-      <div className="flex gap-2 items-start">
+      <div className="relative flex flex-col gap-2">
         <Textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
-          className="min-h-[96px] max-h-[200px] flex-1 resize-none rounded-lg border-muted"
-          rows={3}
+          placeholder="Type a message..."
+          className="min-h-[44px] max-h-[200px] pr-[120px] resize-none rounded-full py-2.5 text-sm"
+          rows={1}
         />
-        <Button 
-          type="submit" 
-          size="icon"
-          className="h-[96px] w-[44px] bg-primary hover:bg-primary/90"
-          disabled={isSending || !message.trim()}
-        >
-          <Send className="h-4 w-4" />
-        </Button>
+        <div className="absolute right-2 top-1 flex items-center gap-0.5">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0 rounded-full"
+            disabled={isSending}
+            title="Format text (coming soon)"
+          >
+            <Attachment className="h-4 w-4 text-muted-foreground" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0 rounded-full"
+            disabled={isSending}
+            title="Add emoji (coming soon)"
+          >
+            <Smile className="h-4 w-4 text-muted-foreground" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0 rounded-full"
+            disabled={isSending}
+            title="Attach files (coming soon)"
+          >
+            <Image className="h-4 w-4 text-muted-foreground" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0 rounded-full"
+            disabled={isSending}
+            title="More options (coming soon)"
+          >
+            <Plus className="h-4 w-4 text-muted-foreground" />
+          </Button>
+          <div className="mx-1 h-4 w-px bg-border" />
+          <Button
+            type="submit"
+            size="icon"
+            className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
+            disabled={isSending || !message.trim()}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </form>
   );
