@@ -9,7 +9,6 @@ import { User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/sculpture/ImageUpload";
 import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
@@ -138,32 +137,26 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      <div className="h-[114px]">
+                      <div className="h-20">
                         <ImageUpload 
                           previewUrl={profileData.avatar_url || ""}
                           onFileChange={handleImageUpload}
                         />
                       </div>
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <Label htmlFor="name">Name</Label>
-                          <Input
-                            id="name"
-                            value={profileData.username || ""}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                            placeholder="Enter your name"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            id="phone"
-                            value={profileData.phone || ""}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                            placeholder="Enter your phone number"
-                            type="tel"
-                          />
-                        </div>
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          id="name"
+                          value={profileData.username || ""}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                          placeholder="Enter your name"
+                        />
+                        <Input
+                          id="phone"
+                          value={profileData.phone || ""}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Enter your phone number"
+                          type="tel"
+                        />
                       </div>
                     </div>
                   </CardContent>
