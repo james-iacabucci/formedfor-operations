@@ -2,90 +2,67 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { PaperclipIcon, SendIcon } from "lucide-react";
 
 interface MessageInputProps {
   threadId: string;
 }
 
 export function MessageInput({ threadId }: MessageInputProps) {
-  const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const handleSubmit = async () => {
-    if (!content.trim()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || !user) return;
 
-    setIsSubmitting(true);
+    setIsSending(true);
     try {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user?.id) throw new Error("Not authenticated");
-
       const { error } = await supabase
         .from("chat_messages")
         .insert({
           thread_id: threadId,
-          content: content.trim(),
-          user_id: user.data.user.id,
+          user_id: user.id,
+          content: message.trim(),
         });
 
       if (error) throw error;
 
-      setContent("");
-      queryClient.invalidateQueries({ queryKey: ["messages", threadId] });
+      setMessage("");
     } catch (error) {
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "Failed to send message",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSending(false);
     }
   };
 
   return (
-    <div className="p-4 border-t">
+    <form onSubmit={handleSubmit} className="p-4 border-t">
       <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="shrink-0"
-          onClick={() => {
-            toast({
-              title: "Coming soon",
-              description: "File attachments will be available soon.",
-            });
-          }}
-        >
-          <PaperclipIcon className="h-4 w-4" />
-        </Button>
         <Textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Type a message..."
-          className="min-h-[2.5rem] max-h-32"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit();
-            }
-          }}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type your message..."
+          className="min-h-[80px] flex-1"
         />
         <Button 
-          variant="default"
-          size="icon"
-          className="shrink-0"
-          disabled={isSubmitting || !content.trim()}
-          onClick={handleSubmit}
+          type="submit" 
+          size="icon" 
+          disabled={isSending || !message.trim()}
         >
-          <SendIcon className="h-4 w-4" />
+          <Send className="h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </form>
   );
 }
