@@ -44,6 +44,40 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
+  // Handle clipboard paste
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageItems = items.filter(item => item.type.startsWith('image/'));
+    
+    if (imageItems.length > 0) {
+      e.preventDefault(); // Prevent the default paste for images
+      
+      const newFiles: UploadingFile[] = await Promise.all(
+        imageItems.map(async (item) => {
+          const file = item.getAsFile();
+          if (!file) return null;
+          
+          // Create a proper filename for the pasted image
+          const ext = file.type.split('/')[1] || 'png';
+          const newFile = new File([file], `pasted-image-${Date.now()}.${ext}`, {
+            type: file.type
+          });
+          
+          return {
+            id: crypto.randomUUID(),
+            file: newFile,
+            progress: 0
+          };
+        })
+      );
+      
+      const validFiles = newFiles.filter((file): file is UploadingFile => file !== null);
+      if (validFiles.length > 0) {
+        setUploadingFiles(prev => [...prev, ...validFiles]);
+      }
+    }
+  };
+
   const handleFilesSelected = (files: UploadingFile[]) => {
     setUploadingFiles(prev => [...prev, ...files]);
   };
@@ -118,6 +152,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
               placeholder="Type a message..."
               className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
               disabled={isSending}
