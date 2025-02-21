@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Smile, Image, Plus, Attachment } from "lucide-react";
+import { Send, Smile, Image, Plus, FileText } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -82,7 +82,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
             disabled={isSending}
             title="Format text (coming soon)"
           >
-            <Attachment className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </Button>
           <Button
             type="button"

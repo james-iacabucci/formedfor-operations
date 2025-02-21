@@ -33,8 +33,15 @@ export function MessageList({ threadId }: MessageListProps) {
       const { data, error } = await supabase
         .from("chat_messages")
         .select(`
-          *,
-          profiles(
+          id,
+          created_at,
+          content,
+          user_id,
+          attachments,
+          mentions,
+          edited_at,
+          thread_id,
+          user:user_id (
             username,
             avatar_url
           )
@@ -43,7 +50,12 @@ export function MessageList({ threadId }: MessageListProps) {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data as Message[];
+
+      // Transform the data to match our Message interface
+      return (data || []).map(message => ({
+        ...message,
+        profiles: message.user
+      })) as Message[];
     },
     refetchInterval: 1000, // Poll for new messages every second
   });
