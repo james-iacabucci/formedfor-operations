@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { MessageItem } from "./MessageItem";
 import { UploadingFilesList } from "./UploadingFilesList";
 import { UploadingFile, RawMessage, Message, FileAttachment, isFileAttachment } from "./types";
 import { Json } from "@/integrations/supabase/types";
+import { useAuth } from "@/components/AuthProvider";
 
 interface MessageListProps {
   threadId: string;
@@ -15,6 +17,7 @@ interface MessageListProps {
 
 export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["messages", threadId],
@@ -72,7 +75,23 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         {messages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))}
-        <UploadingFilesList files={uploadingFiles} />
+        {uploadingFiles.length > 0 && user && (
+          <MessageItem
+            message={{
+              id: 'uploading',
+              created_at: new Date().toISOString(),
+              content: '',
+              user_id: user.id,
+              profiles: user.user_metadata,
+              attachments: [],
+              mentions: [],
+              edited_at: null,
+              thread_id: threadId,
+            }}
+          >
+            <UploadingFilesList files={uploadingFiles} />
+          </MessageItem>
+        )}
       </div>
     </ScrollArea>
   );

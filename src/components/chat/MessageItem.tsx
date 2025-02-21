@@ -6,9 +6,10 @@ import { MessageAttachment } from "./MessageAttachment";
 
 interface MessageItemProps {
   message: Message;
+  children?: React.ReactNode;
 }
 
-export function MessageItem({ message }: MessageItemProps) {
+export function MessageItem({ message, children }: MessageItemProps) {
   return (
     <div className="group relative">
       <div className="flex items-start gap-3">
@@ -41,6 +42,8 @@ export function MessageItem({ message }: MessageItemProps) {
               ))}
             </div>
           )}
+
+          {children}
         </div>
       </div>
     </div>

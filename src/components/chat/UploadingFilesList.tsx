@@ -14,7 +14,7 @@ export function UploadingFilesList({ files }: UploadingFilesListProps) {
   const isImageFile = (type: string) => type.startsWith('image/');
 
   return (
-    <div className="space-y-4 mb-4">
+    <div className="space-y-2">
       {files.map((file) => (
         <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 max-w-md">
           <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
