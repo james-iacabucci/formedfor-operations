@@ -178,24 +178,28 @@ export function FileList({ threadId }: FileListProps) {
 
   console.log("Current messagesData:", messagesData);
 
-  const files = (Array.isArray(messagesData) ? messagesData : []).reduce<ExtendedFileAttachment[]>((acc, message) => {
-    if (!message?.attachments) return acc;
-    
-    const validAttachments = message.attachments
-      .filter(isFileAttachment)
-      .map((file): ExtendedFileAttachment => ({
-        name: file.name,
-        url: file.url,
-        type: file.type,
-        size: file.size,
-        user: message.profiles,
-        userId: message.user_id,
-        messageId: message.id,
-        uploadedAt: message.created_at
-      }));
-    
-    return [...acc, ...validAttachments];
-  }, []);
+  const files: ExtendedFileAttachment[] = [];
+  
+  if (Array.isArray(messagesData)) {
+    for (const message of messagesData) {
+      if (message?.attachments && Array.isArray(message.attachments)) {
+        const validAttachments = message.attachments
+          .filter(isFileAttachment)
+          .map((file): ExtendedFileAttachment => ({
+            name: file.name,
+            url: file.url,
+            type: file.type,
+            size: file.size,
+            user: message.profiles,
+            userId: message.user_id,
+            messageId: message.id,
+            uploadedAt: message.created_at
+          }));
+          
+        files.push(...validAttachments);
+      }
+    }
+  }
 
   console.log("Processed files:", files);
 
