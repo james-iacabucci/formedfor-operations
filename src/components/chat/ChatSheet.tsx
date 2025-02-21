@@ -1,8 +1,10 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { MessageSquare, Files } from "lucide-react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
+import { FileList } from "./FileList";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +17,7 @@ interface ChatSheetProps {
 }
 
 type ChatTopic = 'pricing' | 'fabrication' | 'operations';
+type ViewMode = 'messages' | 'files';
 
 export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
   const [threads, setThreads] = useState<Record<ChatTopic, string | null>>({
@@ -25,7 +28,8 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<ChatTopic>('pricing');
-  
+  const [viewMode, setViewMode] = useState<ViewMode>('messages');
+
   useEffect(() => {
     const initializeThreads = async () => {
       if (!open || !sculptureId) return;
@@ -140,11 +144,27 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
           className="flex flex-col h-full"
         >
           <div className="px-6 py-4 border-b bg-muted/30">
-            <TabsList className="w-full">
-              <TabsTrigger value="pricing" className="flex-1">Pricing</TabsTrigger>
-              <TabsTrigger value="fabrication" className="flex-1">Fabrication</TabsTrigger>
-              <TabsTrigger value="operations" className="flex-1">Operations</TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between gap-4">
+              <TabsList className="w-full">
+                <TabsTrigger value="pricing" className="flex-1">Pricing</TabsTrigger>
+                <TabsTrigger value="fabrication" className="flex-1">Fabrication</TabsTrigger>
+                <TabsTrigger value="operations" className="flex-1">Operations</TabsTrigger>
+              </TabsList>
+
+              <ToggleGroup 
+                type="single" 
+                value={viewMode}
+                onValueChange={(value) => value && setViewMode(value as ViewMode)}
+                className="bg-muted p-1 rounded-md"
+              >
+                <ToggleGroupItem value="messages" size="sm">
+                  <MessageSquare className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="files" size="sm">
+                  <Files className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
 
           <div className="flex-1 overflow-hidden bg-background">
@@ -161,16 +181,14 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
                     className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
                   >
                     {threadId ? (
-                      <>
-                        <MessageList 
-                          threadId={threadId} 
-                          key={threadId} // Force remount when thread changes
-                        />
-                        <MessageInput 
-                          threadId={threadId} 
-                          autoFocus={open} 
-                        />
-                      </>
+                      viewMode === 'messages' ? (
+                        <>
+                          <MessageList threadId={threadId} />
+                          <MessageInput threadId={threadId} autoFocus={open} />
+                        </>
+                      ) : (
+                        <FileList threadId={sculptureId} />
+                      )
                     ) : (
                       <div className="h-full flex items-center justify-center text-muted-foreground">
                         <p>Failed to load chat</p>
