@@ -41,7 +41,7 @@ export function MessageList({ threadId }: MessageListProps) {
           mentions,
           edited_at,
           thread_id,
-          profiles!chat_messages_user_id_fkey (
+          profiles (
             username,
             avatar_url
           )
