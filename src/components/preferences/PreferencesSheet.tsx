@@ -136,7 +136,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                 <h3 className="text-lg font-medium">Profile</h3>
                 <div className="rounded-xl border border-muted p-6">
                   <div className="flex gap-6">
-                    <div className="h-24 w-24">
+                    <div className="h-[108px] w-[108px]">
                       <ImageUpload 
                         previewUrl={profileData.avatar_url || ""}
                         onFileChange={handleImageUpload}
