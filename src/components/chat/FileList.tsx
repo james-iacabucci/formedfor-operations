@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MessageSquare, Download, FileText } from "lucide-react";
+import { MessageSquare, Download, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +15,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { FileAttachment, isFileAttachment } from "./types";
 import { Json } from "@/integrations/supabase/types";
+import { useAuth } from "@/components/AuthProvider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 type SortBy = "modified" | "uploaded" | "user";
 
@@ -33,9 +45,12 @@ interface ExtendedFileAttachment extends FileAttachment {
 }
 
 export function FileList({ threadId }: FileListProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
 
-  const { data: messages = [] } = useQuery({
+  const { data: messages = [], refetch } = useQuery({
     queryKey: ["messages", threadId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,7 +73,52 @@ export function FileList({ threadId }: FileListProps) {
     },
   });
 
-  // Extract all files from messages
+  const handleDeleteFile = async () => {
+    if (!deleteFile || !user) return;
+
+    try {
+      const { data: message } = await supabase
+        .from("chat_messages")
+        .select("attachments")
+        .eq("id", deleteFile.messageId)
+        .single();
+
+      if (!message) {
+        throw new Error("Message not found");
+      }
+
+      const updatedAttachments = (message.attachments || []).filter(
+        (attachment) => {
+          if (!isFileAttachment(attachment as Json)) return true;
+          return (attachment as FileAttachment).url !== deleteFile.url;
+        }
+      );
+
+      const { error: updateError } = await supabase
+        .from("chat_messages")
+        .update({ attachments: updatedAttachments })
+        .eq("id", deleteFile.messageId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "File deleted",
+        description: "The file has been removed from the chat history.",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the file. Please try again.",
+        variant: "destructive",
+      });
+    }
+
+    setDeleteFile(null);
+  };
+
   const files = messages.flatMap((message) => {
     return (message.attachments || [])
       .filter(isFileAttachment)
@@ -74,7 +134,6 @@ export function FileList({ threadId }: FileListProps) {
       }));
   });
 
-  // Sort files based on selected criteria
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
       case "modified":
@@ -112,91 +171,118 @@ export function FileList({ threadId }: FileListProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
-      <Tabs defaultValue="modified" className="w-full">
-        <div className="px-4 py-2 border-b">
-          <TabsList>
-            <TabsTrigger value="modified">Last Modified</TabsTrigger>
-            <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
-            <TabsTrigger value="user">User</TabsTrigger>
-          </TabsList>
-        </div>
-
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            {sortedFiles.map((file) => (
-              <div 
-                key={`${file.messageId}-${file.name}`}
-                className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={file.user?.avatar_url || ""} />
-                  <AvatarFallback>
-                    {file.user?.username?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-
-                {file.type?.startsWith('image/') ? (
-                  <div className="h-16 w-16 rounded overflow-hidden bg-background border">
-                    <img 
-                      src={file.url} 
-                      alt={file.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-16 w-16 rounded flex items-center justify-center bg-background border">
-                    <FileText className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
-
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{file.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {format(new Date(file.uploadedAt), 'MMM d, yyyy h:mm a')}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = file.url;
-                      link.download = file.name;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        Attach to Sculpture
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => attachToSculpture(file, "models")}>
-                        Models
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => attachToSculpture(file, "renderings")}>
-                        Renderings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => attachToSculpture(file, "dimensions")}>
-                        Dimensions
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
+    <>
+      <div className="flex-1 flex flex-col">
+        <Tabs defaultValue="modified" className="w-full">
+          <div className="px-4 py-2 border-b">
+            <TabsList>
+              <TabsTrigger value="modified">Last Modified</TabsTrigger>
+              <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
+              <TabsTrigger value="user">User</TabsTrigger>
+            </TabsList>
           </div>
-        </ScrollArea>
-      </Tabs>
-    </div>
+
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {sortedFiles.map((file) => (
+                <div 
+                  key={`${file.messageId}-${file.name}`}
+                  className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={file.user?.avatar_url || ""} />
+                    <AvatarFallback>
+                      {file.user?.username?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {file.type?.startsWith('image/') ? (
+                    <div className="h-16 w-16 rounded overflow-hidden bg-background border">
+                      <img 
+                        src={file.url} 
+                        alt={file.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-16 w-16 rounded flex items-center justify-center bg-background border">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{file.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(new Date(file.uploadedAt), 'MMM d, yyyy h:mm a')}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = file.url;
+                        link.download = file.name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+
+                    {user?.id === file.userId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteFile(file)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Attach to Sculpture
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => attachToSculpture(file, "models")}>
+                          Models
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => attachToSculpture(file, "renderings")}>
+                          Renderings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => attachToSculpture(file, "dimensions")}>
+                          Dimensions
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </Tabs>
+      </div>
+
+      <AlertDialog open={!!deleteFile} onOpenChange={() => setDeleteFile(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete File</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this file? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFile}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
