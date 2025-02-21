@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -187,7 +188,7 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
                           <MessageInput threadId={threadId} autoFocus={open} />
                         </>
                       ) : (
-                        <FileList threadId={sculptureId} />
+                        <FileList threadId={threadId} />
                       )
                     ) : (
                       <div className="h-full flex items-center justify-center text-muted-foreground">
