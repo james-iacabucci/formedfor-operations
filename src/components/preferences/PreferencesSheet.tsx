@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -133,7 +134,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
               
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Profile</h3>
-                <div className="rounded-xl bg-muted/30 p-6">
+                <div className="rounded-xl border border-muted p-6">
                   <div className="flex gap-6">
                     <div className="h-24 w-24">
                       <ImageUpload 

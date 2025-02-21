@@ -12,7 +12,7 @@ interface ImageUploadProps {
 export function ImageUpload({ previewUrl, onFileChange, className }: ImageUploadProps) {
   return (
     <div className={cn(
-      "relative aspect-square w-full overflow-hidden rounded-xl bg-muted/50",
+      "relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
       className
     )}>
       {previewUrl ? (
