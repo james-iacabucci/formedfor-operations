@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -56,19 +56,26 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       if (error) throw error;
 
-      return (data as RawMessage[]).map(message => ({
-        ...message,
-        attachments: (message.attachments || [])
-          .filter((attachment): attachment is Record<string, Json> & FileAttachment => 
-            isFileAttachment(attachment as Json)
-          ),
-        mentions: message.mentions || [],
-      })) as Message[];
+      return (data || []) as RawMessage[];
     },
     getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage) return undefined;
       return lastPage.length === PAGE_SIZE ? allPages.length : undefined;
     },
     initialPageParam: 0,
+    select: (data) => ({
+      pages: data.pages.map(page => 
+        page.map(message => ({
+          ...message,
+          attachments: (message.attachments || [])
+            .filter((attachment): attachment is FileAttachment => 
+              isFileAttachment(attachment as Json)
+            ),
+          mentions: message.mentions || [],
+        }))
+      ),
+      pageParams: data.pageParams,
+    }),
   });
 
   useEffect(() => {
@@ -89,7 +96,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
-    if (scrollRef.current && isInitialScroll) {
+    if (scrollRef.current && isInitialScroll && data?.pages[0]?.length) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       setIsInitialScroll(false);
     }
