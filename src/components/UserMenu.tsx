@@ -11,6 +11,7 @@ import { Settings, User, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState } from "react";
 import { SettingsSheet } from "./settings/SettingsSheet";
+import { PreferencesSheet } from "./preferences/PreferencesSheet";
 import { useTheme } from "./ThemeProvider";
 
 export function UserMenu() {
@@ -18,6 +19,7 @@ export function UserMenu() {
   const { theme, setTheme } = useTheme();
   const email = user?.email || "User";
   const [showSettings, setShowSettings] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   return (
     <>
@@ -29,9 +31,9 @@ export function UserMenu() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowPreferences(true)}>
             <User className="mr-2 h-4 w-4" />
-            Profile
+            Preferences
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowSettings(true)}>
             <Settings className="mr-2 h-4 w-4" />
@@ -56,6 +58,11 @@ export function UserMenu() {
       <SettingsSheet 
         open={showSettings} 
         onOpenChange={setShowSettings}
+      />
+
+      <PreferencesSheet
+        open={showPreferences}
+        onOpenChange={setShowPreferences}
       />
     </>
   );
