@@ -33,7 +33,6 @@ export function FileUpload({ disabled, onFilesSelected }: FileUploadProps) {
         multiple
         className="hidden"
         onChange={handleFileSelect}
-        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
         disabled={disabled}
       />
       <Button
