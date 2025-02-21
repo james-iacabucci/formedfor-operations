@@ -94,20 +94,35 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     if (!file || !user) return;
 
     try {
+      // Create storage bucket if it doesn't exist
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Attempting to upload file:', {
+        fileName: file.name,
+        fileType: file.type,
+        filePath: filePath
+      });
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded successfully:', uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
+      console.log('Generated public URL:', publicUrl);
+
       setProfileData(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast.success("Profile picture uploaded successfully");
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error("Failed to upload image");
@@ -138,7 +153,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                   <div className="flex gap-6">
                     <div className="h-[108px] w-[108px]">
                       <ImageUpload 
-                        previewUrl={profileData.avatar_url || ""}
+                        previewUrl={profileData.avatar_url || null}
                         onFileChange={handleImageUpload}
                         className="hover:opacity-90 transition-opacity cursor-pointer"
                       />
