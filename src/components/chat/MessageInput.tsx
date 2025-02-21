@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Smile, Image, Plus, FileText } from "lucide-react";
+import { Send, Smile, Image } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -98,16 +98,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
               variant="ghost"
               className="h-8 w-8 shrink-0 rounded-full"
               disabled={isSending}
-              title="Format text (coming soon)"
-            >
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0 rounded-full"
-              disabled={isSending}
               title="Add emoji (coming soon)"
             >
               <Smile className="h-4 w-4 text-muted-foreground" />
@@ -121,16 +111,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
               title="Attach files (coming soon)"
             >
               <Image className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0 rounded-full"
-              disabled={isSending}
-              title="More options (coming soon)"
-            >
-              <Plus className="h-4 w-4 text-muted-foreground" />
             </Button>
             <div className="mx-1 h-4 w-px bg-border" />
             <Button
