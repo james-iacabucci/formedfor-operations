@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,10 +59,10 @@ export function FileList({ threadId }: FileListProps) {
   });
 
   // Extract all files from messages
-  const files = messages.flatMap((message): ExtendedFileAttachment[] => 
-    (message.attachments || [])
-      .filter((att): att is FileAttachment => isFileAttachment(att))
-      .map(file => ({
+  const files = messages.flatMap((message) => {
+    return (message.attachments || [])
+      .filter(isFileAttachment)
+      .map((file): ExtendedFileAttachment => ({
         name: file.name,
         url: file.url,
         type: file.type,
@@ -72,8 +71,8 @@ export function FileList({ threadId }: FileListProps) {
         userId: message.user_id,
         messageId: message.id,
         uploadedAt: message.created_at
-      }))
-  );
+      }));
+  });
 
   // Sort files based on selected criteria
   const sortedFiles = [...files].sort((a, b) => {
