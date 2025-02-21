@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,21 +59,25 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       return (data || []) as RawMessage[];
     },
     getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage) return undefined;
-      return lastPage.length === PAGE_SIZE ? allPages.length : undefined;
+      if (!lastPage || !Array.isArray(lastPage)) return undefined;
+      return lastPage.length >= PAGE_SIZE ? allPages.length : undefined;
     },
     initialPageParam: 0,
-    select: (data) => ({
-      pages: data.pages.map(page => 
-        page.map(message => ({
-          ...message,
-          attachments: (message.attachments || [])
-            .filter(isFileAttachment) as FileAttachment[],
-          mentions: message.mentions || [],
-        }))
-      ),
-      pageParams: data.pageParams,
-    }),
+    select: (data) => {
+      if (!data?.pages) return { pages: [], pageParams: [] };
+      
+      return {
+        pages: data.pages.map(page => 
+          (Array.isArray(page) ? page : []).map(message => ({
+            ...message,
+            attachments: (message.attachments || [])
+              .filter(isFileAttachment) as FileAttachment[],
+            mentions: message.mentions || [],
+          }))
+        ),
+        pageParams: data.pageParams,
+      };
+    },
   });
 
   useEffect(() => {
