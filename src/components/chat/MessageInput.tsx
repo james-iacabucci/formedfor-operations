@@ -76,18 +76,21 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
+        // Start by updating progress to show upload has begun
+        setUploadingFiles(prev => prev.map(f => 
+          f.id === uploadingFile.id ? { ...f, progress: 10 } : f
+        ));
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat_attachments')
-          .upload(fileName, file, {
-            onUploadProgress: (progress) => {
-              const percent = (progress.loaded / progress.total) * 100;
-              setUploadingFiles(prev => prev.map(f => 
-                f.id === uploadingFile.id ? { ...f, progress: percent } : f
-              ));
-            }
-          });
+          .upload(fileName, file);
 
         if (uploadError) throw uploadError;
+
+        // Update progress to show upload is complete
+        setUploadingFiles(prev => prev.map(f => 
+          f.id === uploadingFile.id ? { ...f, progress: 100 } : f
+        ));
 
         const { data: { publicUrl } } = supabase.storage
           .from('chat_attachments')
