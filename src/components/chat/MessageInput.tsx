@@ -25,6 +25,20 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     }
   }, [autoFocus]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const adjustHeight = () => {
+      textarea.style.height = "0";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    };
+
+    textarea.addEventListener("input", adjustHeight);
+    return () => textarea.removeEventListener("input", adjustHeight);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !user) return;
@@ -42,6 +56,9 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
       if (error) throw error;
 
       setMessage("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -64,65 +81,67 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
       <div className="relative flex flex-col gap-2">
-        <Textarea
-          ref={textareaRef}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="min-h-[44px] max-h-[200px] pr-[120px] resize-none rounded-full py-2.5 text-sm"
-          rows={1}
-        />
-        <div className="absolute right-2 top-1 flex items-center gap-0.5">
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 rounded-full"
-            disabled={isSending}
-            title="Format text (coming soon)"
-          >
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 rounded-full"
-            disabled={isSending}
-            title="Add emoji (coming soon)"
-          >
-            <Smile className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 rounded-full"
-            disabled={isSending}
-            title="Attach files (coming soon)"
-          >
-            <Image className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 rounded-full"
-            disabled={isSending}
-            title="More options (coming soon)"
-          >
-            <Plus className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <div className="mx-1 h-4 w-px bg-border" />
-          <Button
-            type="submit"
-            size="icon"
-            className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-            disabled={isSending || !message.trim()}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="relative">
+          <Textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            className="min-h-[44px] pr-[120px] resize-none rounded-xl py-3 text-sm overflow-hidden"
+            rows={1}
+          />
+          <div className="absolute right-2 bottom-2 flex items-center gap-0.5">
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full"
+              disabled={isSending}
+              title="Format text (coming soon)"
+            >
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full"
+              disabled={isSending}
+              title="Add emoji (coming soon)"
+            >
+              <Smile className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full"
+              disabled={isSending}
+              title="Attach files (coming soon)"
+            >
+              <Image className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full"
+              disabled={isSending}
+              title="More options (coming soon)"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            <div className="mx-1 h-4 w-px bg-border" />
+            <Button
+              type="submit"
+              size="icon"
+              className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
+              disabled={isSending || !message.trim()}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </form>
