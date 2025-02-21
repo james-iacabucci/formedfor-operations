@@ -98,10 +98,24 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
-    if (scrollRef.current && isInitialScroll && data?.pages[0]?.length) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      setIsInitialScroll(false);
-    }
+    // Scroll to bottom when messages are loaded
+    const scrollToBottom = () => {
+      if (scrollRef.current && isInitialScroll) {
+        const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollElement) {
+          scrollElement.scrollTop = scrollElement.scrollHeight;
+          setIsInitialScroll(false);
+        }
+      }
+    };
+
+    // Try to scroll immediately if content is already loaded
+    scrollToBottom();
+
+    // Also try after a short delay to ensure content is rendered
+    const timeoutId = setTimeout(scrollToBottom, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [data, isInitialScroll]);
 
   if (isLoading) {
