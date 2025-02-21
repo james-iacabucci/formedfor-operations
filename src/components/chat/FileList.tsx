@@ -51,7 +51,7 @@ export function FileList({ threadId }: FileListProps) {
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
 
-  const { data: messagesData = [], refetch } = useQuery({
+  const { data: messagesData } = useQuery({
     queryKey: ["messages", threadId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,7 +69,11 @@ export function FileList({ threadId }: FileListProps) {
         .eq("thread_id", threadId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return [];
+      }
+      
       return data || [];
     },
   });
@@ -88,11 +92,11 @@ export function FileList({ threadId }: FileListProps) {
         throw new Error("Message not found");
       }
 
-      const updatedAttachments = message.attachments
-        ?.filter(attachment => {
+      const updatedAttachments = (message.attachments || [])
+        .filter(attachment => {
           if (!isFileAttachment(attachment)) return true;
           return attachment.url !== deleteFile.url;
-        }) ?? [];
+        });
 
       const { error: updateError } = await supabase
         .from("chat_messages")
@@ -105,8 +109,6 @@ export function FileList({ threadId }: FileListProps) {
         title: "File deleted",
         description: "The file has been removed from the chat history.",
       });
-
-      refetch();
     } catch (error) {
       console.error("Error deleting file:", error);
       toast({
@@ -119,32 +121,28 @@ export function FileList({ threadId }: FileListProps) {
     setDeleteFile(null);
   };
 
-  // Ensure messages is an array and process files
-  const files = Array.isArray(messagesData) 
-    ? messagesData.flatMap((message) => {
-        const validAttachments = (message.attachments || [])
-          .filter(isFileAttachment) as (Json & FileAttachment)[];
+  const files = (messagesData || []).flatMap((message) => {
+    const validAttachments = (message.attachments || [])
+      .filter((attachment): attachment is Json & FileAttachment => {
+        if (!isFileAttachment(attachment)) return false;
+        return true;
+      });
 
-        return validAttachments.map((file) => {
-          const extendedFile: ExtendedFileAttachment = {
-            name: file.name,
-            url: file.url,
-            type: file.type,
-            size: file.size,
-            user: message.profiles,
-            userId: message.user_id,
-            messageId: message.id,
-            uploadedAt: message.created_at
-          };
-          return extendedFile;
-        });
-      })
-    : [];
+    return validAttachments.map((file) => ({
+      name: file.name,
+      url: file.url,
+      type: file.type,
+      size: file.size,
+      user: message.profiles,
+      userId: message.user_id,
+      messageId: message.id,
+      uploadedAt: message.created_at
+    }));
+  });
 
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
       case "modified":
-        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
       case "uploaded":
         return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
       case "user":
@@ -154,127 +152,102 @@ export function FileList({ threadId }: FileListProps) {
     }
   });
 
-  const attachToSculpture = async (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions") => {
-    const { data: sculpture } = await supabase
-      .from("sculptures")
-      .select(category)
-      .eq("id", threadId)
-      .single();
-
-    if (!sculpture) return;
-
-    const existingFiles = sculpture[category] || [];
-    const newFile = {
-      id: file.messageId,
-      name: file.name,
-      url: file.url,
-      created_at: new Date().toISOString()
-    };
-
-    await supabase
-      .from("sculptures")
-      .update({ [category]: [...existingFiles, newFile] })
-      .eq("id", threadId);
-  };
-
   return (
-    <>
-      <div className="flex-1 flex flex-col">
-        <Tabs defaultValue="modified" className="w-full">
-          <div className="px-4 py-2 border-b">
-            <TabsList>
-              <TabsTrigger value="modified">Last Modified</TabsTrigger>
-              <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
-              <TabsTrigger value="user">User</TabsTrigger>
-            </TabsList>
-          </div>
+    <div className="flex-1 flex flex-col">
+      <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+        <div className="px-4 py-2 border-b">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="modified">Last Modified</TabsTrigger>
+            <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
+            <TabsTrigger value="user">User</TabsTrigger>
+          </TabsList>
+        </div>
 
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {sortedFiles.map((file) => (
-                <div 
-                  key={`${file.messageId}-${file.name}`}
-                  className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30"
-                >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={file.user?.avatar_url || ""} />
-                    <AvatarFallback>
-                      {file.user?.username?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {sortedFiles.map((file) => (
+              <div 
+                key={`${file.messageId}-${file.name}`}
+                className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={file.user?.avatar_url || ""} />
+                  <AvatarFallback>
+                    {file.user?.username?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
 
-                  {file.type?.startsWith('image/') ? (
-                    <div className="h-16 w-16 rounded overflow-hidden bg-background border">
-                      <img 
-                        src={file.url} 
-                        alt={file.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-16 w-16 rounded flex items-center justify-center bg-background border">
-                      <FileText className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{file.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(new Date(file.uploadedAt), 'MMM d, yyyy h:mm a')}
-                    </div>
+                {file.type?.startsWith('image/') ? (
+                  <div className="h-16 w-16 rounded overflow-hidden bg-background border">
+                    <img 
+                      src={file.url} 
+                      alt={file.name}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
+                ) : (
+                  <div className="h-16 w-16 rounded flex items-center justify-center bg-background border">
+                    <FileText className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
 
-                  <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{file.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {format(new Date(file.uploadedAt), 'MMM d, yyyy h:mm a')}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = file.url;
+                      link.download = file.name;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+
+                  {user?.id === file.userId && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = file.url;
-                        link.download = file.name;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }}
+                      onClick={() => setDeleteFile(file)}
                     >
-                      <Download className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
+                  )}
 
-                    {user?.id === file.userId && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteFile(file)}
-                      >
-                        <Trash2 className="h-4 w-4" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Attach to Sculpture
                       </Button>
-                    )}
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          Attach to Sculpture
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => attachToSculpture(file, "models")}>
-                          Models
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => attachToSculpture(file, "renderings")}>
-                          Renderings
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => attachToSculpture(file, "dimensions")}>
-                          Dimensions
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => attachToSculpture(file, "models")}>
+                        Models
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => attachToSculpture(file, "renderings")}>
+                        Renderings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => attachToSculpture(file, "dimensions")}>
+                        Dimensions
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </Tabs>
-      </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </Tabs>
 
       <AlertDialog open={!!deleteFile} onOpenChange={() => setDeleteFile(null)}>
         <AlertDialogContent>
@@ -290,6 +263,6 @@ export function FileList({ threadId }: FileListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
