@@ -22,10 +22,16 @@ interface PreferencesSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface ProfileData {
+  username: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+}
+
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
     phone: "",
     avatar_url: ""
@@ -43,14 +49,14 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
         .from('profiles')
         .select('username, avatar_url, phone')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (data) {
         setProfileData({
-          username: data.username || "",
-          phone: data.phone || "",
-          avatar_url: data.avatar_url || ""
+          username: data.username,
+          phone: data.phone,
+          avatar_url: data.avatar_url
         });
       }
     } catch (error) {
@@ -131,7 +137,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                   <div>
                     <Label>Profile Image</Label>
                     <ImageUpload 
-                      previewUrl={profileData.avatar_url}
+                      previewUrl={profileData.avatar_url || ""}
                       onFileChange={handleImageUpload}
                     />
                   </div>
@@ -139,7 +145,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                     <Label htmlFor="name">Name</Label>
                     <Input
                       id="name"
-                      value={profileData.username}
+                      value={profileData.username || ""}
                       onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
                       placeholder="Enter your name"
                     />
@@ -148,7 +154,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
-                      value={profileData.phone}
+                      value={profileData.phone || ""}
                       onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="Enter your phone number"
                       type="tel"
