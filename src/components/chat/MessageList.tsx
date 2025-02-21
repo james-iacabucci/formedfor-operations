@@ -10,7 +10,7 @@ interface Message {
   created_at: string;
   content: string;
   user_id: string;
-  profiles?: {
+  profiles: {
     username: string | null;
     avatar_url: string | null;
   } | null;
@@ -29,11 +29,8 @@ export function MessageList({ threadId }: MessageListProps) {
       const { data, error } = await supabase
         .from("chat_messages")
         .select(`
-          id,
-          created_at,
-          content,
-          user_id,
-          profiles (
+          *,
+          profiles:user_id(
             username,
             avatar_url
           )
