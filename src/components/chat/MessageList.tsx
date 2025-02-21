@@ -41,7 +41,7 @@ export function MessageList({ threadId }: MessageListProps) {
           mentions,
           edited_at,
           thread_id,
-          user:user_id (
+          profiles!chat_messages_user_id_fkey (
             username,
             avatar_url
           )
@@ -51,11 +51,7 @@ export function MessageList({ threadId }: MessageListProps) {
 
       if (error) throw error;
 
-      // Transform the data to match our Message interface
-      return (data || []).map(message => ({
-        ...message,
-        profiles: message.user
-      })) as Message[];
+      return data as Message[];
     },
     refetchInterval: 1000, // Poll for new messages every second
   });
