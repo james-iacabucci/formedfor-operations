@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +29,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     }
   }, [autoFocus]);
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -44,20 +42,18 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
-  // Handle clipboard paste
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = Array.from(e.clipboardData.items);
     const imageItems = items.filter(item => item.type.startsWith('image/'));
     
     if (imageItems.length > 0) {
-      e.preventDefault(); // Prevent the default paste for images
+      e.preventDefault();
       
       const newFiles: UploadingFile[] = await Promise.all(
         imageItems.map(async (item) => {
           const file = item.getAsFile();
           if (!file) return null;
           
-          // Create a proper filename for the pasted image
           const ext = file.type.split('/')[1] || 'png';
           const newFile = new File([file], `pasted-image-${Date.now()}.${ext}`, {
             type: file.type
@@ -137,47 +133,45 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t bg-background">
-      <div className="relative flex flex-col gap-2">
-        <PendingFiles 
-          files={uploadingFiles}
-          isSending={isSending}
-          onRemove={handleRemovePendingFile}
-        />
-        
-        <div className="relative flex items-end gap-2">
-          <div className="flex-1">
-            <Textarea
-              ref={textareaRef}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              placeholder="Type a message..."
-              className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
+    <form onSubmit={handleSubmit} className="p-4 border-t bg-background space-y-2">
+      <div className="relative flex items-end gap-2">
+        <div className="flex-1">
+          <Textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            placeholder="Type a message..."
+            className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
+            disabled={isSending}
+          />
+          <div className="absolute right-2 bottom-2 flex items-center gap-1">
+            <FileUpload 
               disabled={isSending}
+              onFilesSelected={handleFilesSelected}
             />
-            <div className="absolute right-2 bottom-2 flex items-center gap-1">
-              <FileUpload 
-                disabled={isSending}
-                onFilesSelected={handleFilesSelected}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-                disabled={isSending || (!message.trim() && !uploadingFiles.length)}
-              >
-                {isSending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              size="icon"
+              className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
+              disabled={isSending || (!message.trim() && !uploadingFiles.length)}
+            >
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
       </div>
+      
+      <PendingFiles 
+        files={uploadingFiles}
+        isSending={isSending}
+        onRemove={handleRemovePendingFile}
+      />
     </form>
   );
 }

@@ -17,17 +17,17 @@ export function PendingFiles({ files, isSending, onRemove }: PendingFilesProps) 
   const isImageFile = (type: string) => type.startsWith('image/');
 
   return (
-    <div className="flex flex-col gap-2 p-2 border rounded-lg bg-muted/30">
+    <div className="flex flex-col gap-2">
       {files.map((file) => (
         <div 
           key={file.id} 
           className={cn(
-            "flex items-center gap-3 p-2 bg-background rounded border",
+            "flex items-center gap-3 p-2 bg-muted/30 rounded-lg border",
             isSending && "opacity-50"
           )}
         >
           {/* Thumbnail or File Icon */}
-          <div className="h-12 w-12 shrink-0 rounded overflow-hidden bg-muted/30">
+          <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-background border">
             {isImageFile(file.file.type) ? (
               <img
                 src={URL.createObjectURL(file.file)}
