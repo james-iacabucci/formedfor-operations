@@ -36,7 +36,7 @@ interface MessageListProps {
 }
 
 // Type guard to validate if an object is a FileAttachment
-function isFileAttachment(obj: Json): obj is FileAttachment {
+function isFileAttachment(obj: Json): obj is Record<string, Json> & FileAttachment {
   return (
     typeof obj === 'object' &&
     obj !== null &&
