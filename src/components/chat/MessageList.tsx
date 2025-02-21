@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare } from "lucide-react";
 import { MessageItem } from "./MessageItem";
 import { UploadingFilesList } from "./UploadingFilesList";
-import { UploadingFile, RawMessage, Message, isFileAttachment } from "./types";
+import { UploadingFile, RawMessage, Message, FileAttachment, isFileAttachment } from "./types";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageListProps {
   threadId: string;

@@ -44,6 +44,8 @@ export interface RawMessage {
   thread_id: string;
 }
 
+export type FileUpload = FileAttachment;
+
 export function isFileAttachment(obj: Json): obj is Record<string, Json> & FileAttachment {
   return (
     typeof obj === 'object' &&
