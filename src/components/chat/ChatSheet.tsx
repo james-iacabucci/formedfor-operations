@@ -46,37 +46,30 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
         };
         
         for (const topic of topics) {
+          console.log(`Initializing thread for topic: ${topic}`);
+          
           // First try to find existing thread
-          const { data: existing } = await supabase
+          const { data: existing, error: findError } = await supabase
             .from('chat_threads')
             .select('id')
             .eq('sculpture_id', sculptureId)
             .eq('topic', topic)
             .maybeSingle();
 
-          if (existing) {
-            // Thread exists, check if user is participant
-            const { data: participant } = await supabase
-              .from('chat_thread_participants')
-              .select('thread_id')
-              .eq('thread_id', existing.id)
-              .eq('user_id', user.id)
-              .maybeSingle();
+          if (findError) {
+            console.error(`Error finding thread for ${topic}:`, findError);
+            continue;
+          }
 
-            if (!participant) {
-              // Add user as participant
-              await supabase
-                .from('chat_thread_participants')
-                .insert({
-                  thread_id: existing.id,
-                  user_id: user.id
-                });
-            }
-            
-            newThreads[topic] = existing.id;
+          let threadId: string;
+
+          if (existing) {
+            console.log(`Found existing thread for ${topic}:`, existing.id);
+            threadId = existing.id;
           } else {
             // Create new thread
-            const { data: newThread, error: threadError } = await supabase
+            console.log(`Creating new thread for ${topic}`);
+            const { data: newThread, error: createError } = await supabase
               .from('chat_threads')
               .insert({
                 sculpture_id: sculptureId,
@@ -85,28 +78,44 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
               .select('id')
               .single();
 
-            if (threadError) {
-              console.error(`Error creating thread for ${topic}:`, threadError);
+            if (createError) {
+              console.error(`Error creating thread for ${topic}:`, createError);
               continue;
             }
 
-            if (newThread) {
-              // Add user as participant
-              const { error: participantError } = await supabase
-                .from('chat_thread_participants')
-                .insert({
-                  thread_id: newThread.id,
-                  user_id: user.id
-                });
+            if (!newThread) {
+              console.error(`Failed to create thread for ${topic}`);
+              continue;
+            }
 
-              if (participantError) {
-                console.error(`Error adding participant for ${topic}:`, participantError);
-                continue;
-              }
+            threadId = newThread.id;
+            console.log(`Created new thread for ${topic}:`, threadId);
+          }
 
-              newThreads[topic] = newThread.id;
+          // Ensure user is a participant
+          const { data: existingParticipant } = await supabase
+            .from('chat_thread_participants')
+            .select('thread_id')
+            .eq('thread_id', threadId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (!existingParticipant) {
+            console.log(`Adding user as participant to thread ${threadId}`);
+            const { error: participantError } = await supabase
+              .from('chat_thread_participants')
+              .insert({
+                thread_id: threadId,
+                user_id: user.id
+              });
+
+            if (participantError) {
+              console.error(`Error adding participant for ${topic}:`, participantError);
+              continue;
             }
           }
+
+          newThreads[topic] = threadId;
         }
 
         setThreads(newThreads);
@@ -148,39 +157,24 @@ export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
               </div>
             ) : (
               <>
-                <TabsContent 
-                  value="pricing" 
-                  className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
-                >
-                  {threads.pricing && (
-                    <>
-                      <MessageList threadId={threads.pricing} />
-                      <MessageInput threadId={threads.pricing} />
-                    </>
-                  )}
-                </TabsContent>
-                <TabsContent 
-                  value="fabrication" 
-                  className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
-                >
-                  {threads.fabrication && (
-                    <>
-                      <MessageList threadId={threads.fabrication} />
-                      <MessageInput threadId={threads.fabrication} />
-                    </>
-                  )}
-                </TabsContent>
-                <TabsContent 
-                  value="operations" 
-                  className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
-                >
-                  {threads.operations && (
-                    <>
-                      <MessageList threadId={threads.operations} />
-                      <MessageInput threadId={threads.operations} />
-                    </>
-                  )}
-                </TabsContent>
+                {Object.entries(threads).map(([topic, threadId]) => (
+                  <TabsContent 
+                    key={topic}
+                    value={topic} 
+                    className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
+                  >
+                    {threadId ? (
+                      <>
+                        <MessageList threadId={threadId} />
+                        <MessageInput threadId={threadId} />
+                      </>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-muted-foreground">
+                        <p>Failed to load chat</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                ))}
               </>
             )}
           </div>
