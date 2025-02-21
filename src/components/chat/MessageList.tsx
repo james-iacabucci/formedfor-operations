@@ -35,6 +35,22 @@ interface MessageListProps {
   threadId: string;
 }
 
+// Type guard to validate if an object is a FileAttachment
+function isFileAttachment(obj: Json): obj is FileAttachment {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'name' in obj &&
+    'url' in obj &&
+    'type' in obj &&
+    'size' in obj &&
+    typeof obj.name === 'string' &&
+    typeof obj.url === 'string' &&
+    typeof obj.type === 'string' &&
+    typeof obj.size === 'number'
+  );
+}
+
 export function MessageList({ threadId }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +81,10 @@ export function MessageList({ threadId }: MessageListProps) {
       // Transform the data to ensure type compatibility
       return data.map(message => ({
         ...message,
-        attachments: (message.attachments || []) as FileAttachment[],
+        attachments: (message.attachments || [])
+          .filter((attachment): attachment is FileAttachment => 
+            isFileAttachment(attachment as Json)
+          ),
         mentions: (message.mentions || []) as Json[],
       })) as Message[];
     },
