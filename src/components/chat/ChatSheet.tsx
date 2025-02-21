@@ -1,187 +1,45 @@
-
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { MessageList } from "./MessageList";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { MessageSquare } from "lucide-react";
 
-interface ChatSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  sculptureId: string;
+interface UploadingFile {
+  id: string;
+  name: string;
+  progress: number;
+  type: string;
+  size: number;
 }
 
-type ChatTopic = 'pricing' | 'fabrication' | 'operations';
-
-export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
-  const [threads, setThreads] = useState<Record<ChatTopic, string | null>>({
-    pricing: null,
-    fabrication: null,
-    operations: null
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<ChatTopic>('pricing');
-  
-  useEffect(() => {
-    const initializeThreads = async () => {
-      if (!open || !sculptureId) return;
-      
-      setIsLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.error('No authenticated user found');
-          return;
-        }
-
-        const topics: ChatTopic[] = ['pricing', 'fabrication', 'operations'];
-        const newThreads: Record<ChatTopic, string | null> = {
-          pricing: null,
-          fabrication: null,
-          operations: null
-        };
-        
-        for (const topic of topics) {
-          console.log(`Initializing thread for topic: ${topic}`);
-          
-          const { data: existing, error: findError } = await supabase
-            .from('chat_threads')
-            .select('id')
-            .eq('sculpture_id', sculptureId)
-            .eq('topic', topic)
-            .maybeSingle();
-
-          if (findError) {
-            console.error(`Error finding thread for ${topic}:`, findError);
-            continue;
-          }
-
-          let threadId: string;
-
-          if (existing) {
-            console.log(`Found existing thread for ${topic}:`, existing.id);
-            threadId = existing.id;
-          } else {
-            console.log(`Creating new thread for ${topic}`);
-            const { data: newThread, error: createError } = await supabase
-              .from('chat_threads')
-              .insert({
-                sculpture_id: sculptureId,
-                topic: topic
-              })
-              .select('id')
-              .single();
-
-            if (createError) {
-              console.error(`Error creating thread for ${topic}:`, createError);
-              continue;
-            }
-
-            if (!newThread) {
-              console.error(`Failed to create thread for ${topic}`);
-              continue;
-            }
-
-            threadId = newThread.id;
-            console.log(`Created new thread for ${topic}:`, threadId);
-          }
-
-          const { data: existingParticipant } = await supabase
-            .from('chat_thread_participants')
-            .select('thread_id')
-            .eq('thread_id', threadId)
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          if (!existingParticipant) {
-            console.log(`Adding user as participant to thread ${threadId}`);
-            const { error: participantError } = await supabase
-              .from('chat_thread_participants')
-              .insert({
-                thread_id: threadId,
-                user_id: user.id
-              });
-
-            if (participantError) {
-              console.error(`Error adding participant for ${topic}:`, participantError);
-              continue;
-            }
-          }
-
-          newThreads[topic] = threadId;
-        }
-
-        setThreads(newThreads);
-      } catch (error) {
-        console.error('Error initializing threads:', error);
-        toast({
-          title: "Error",
-          description: "Failed to initialize chat threads",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeThreads();
-  }, [open, sculptureId, toast]);
+export function ChatSheet() {
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const threadId = "your-thread-id"; // Replace with actual thread ID logic
+  const hasUnreadMessages = false; // Replace with actual unread message logic
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl p-0 flex flex-col">
-        <Tabs 
-          value={activeTab} 
-          onValueChange={(value) => setActiveTab(value as ChatTopic)}
-          className="flex flex-col h-full"
-        >
-          <div className="px-6 py-4 border-b bg-muted/30">
-            <TabsList className="w-full">
-              <TabsTrigger value="pricing" className="flex-1">Pricing</TabsTrigger>
-              <TabsTrigger value="fabrication" className="flex-1">Fabrication</TabsTrigger>
-              <TabsTrigger value="operations" className="flex-1">Operations</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <div className="flex-1 overflow-hidden bg-background">
-            {isLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            ) : (
-              <>
-                {Object.entries(threads).map(([topic, threadId]) => (
-                  <TabsContent 
-                    key={topic}
-                    value={topic} 
-                    className="h-full m-0 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden"
-                  >
-                    {threadId ? (
-                      <>
-                        <MessageList 
-                          threadId={threadId} 
-                          key={threadId} // Force remount when thread changes
-                        />
-                        <MessageInput 
-                          threadId={threadId} 
-                          autoFocus={open} 
-                        />
-                      </>
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-muted-foreground">
-                        <p>Failed to load chat</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-              </>
-            )}
-          </div>
-        </Tabs>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="relative">
+          <MessageSquare className="h-4 w-4" />
+          {hasUnreadMessages && (
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+          )}
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-full sm:max-w-xl">
+        <SheetHeader className="pb-4">
+          <SheetTitle>Chat</SheetTitle>
+        </SheetHeader>
+        <div className="flex flex-col h-[calc(100vh-8rem)]">
+          <MessageList threadId={threadId} uploadingFiles={uploadingFiles} />
+          <MessageInput 
+            threadId={threadId} 
+            autoFocus
+            onUploadProgress={setUploadingFiles} 
+          />
+        </div>
       </SheetContent>
     </Sheet>
   );

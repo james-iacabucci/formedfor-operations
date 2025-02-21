@@ -3,8 +3,9 @@ import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, User, FileText, Image as ImageIcon } from "lucide-react";
+import { MessageSquare, User, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 
 interface FileAttachment {
   name: string;
@@ -28,11 +29,20 @@ interface Message {
   thread_id: string;
 }
 
-interface MessageListProps {
-  threadId: string;
+interface UploadingFile {
+  id: string;
+  name: string;
+  progress: number;
+  type: string;
+  size: number;
 }
 
-export function MessageList({ threadId }: MessageListProps) {
+interface MessageListProps {
+  threadId: string;
+  uploadingFiles?: UploadingFile[];
+}
+
+export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useQuery({
@@ -61,14 +71,14 @@ export function MessageList({ threadId }: MessageListProps) {
 
       return data as Message[];
     },
-    refetchInterval: 1000, // Poll for new messages every second
+    refetchInterval: 1000,
   });
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, uploadingFiles]);
 
   const isImageFile = (type: string) => type.startsWith('image/');
 
@@ -138,6 +148,34 @@ export function MessageList({ threadId }: MessageListProps) {
             </div>
           </div>
         ))}
+        
+        {/* Uploading Files Section */}
+        {uploadingFiles.length > 0 && (
+          <div className="flex items-start gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-baseline gap-2">
+                <span className="font-semibold text-sm">Uploading files...</span>
+              </div>
+              <div className="mt-2 space-y-3">
+                {uploadingFiles.map((file) => (
+                  <div key={file.id} className="bg-muted/30 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{file.name}</span>
+                    </div>
+                    <Progress value={file.progress} className="h-1" />
+                    <span className="text-xs text-muted-foreground">{Math.round(file.progress)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ScrollArea>
   );

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
+  onUploadProgress: (uploads: UploadingFile[]) => void;
 }
 
 interface FileUpload {
@@ -19,10 +20,19 @@ interface FileUpload {
   size: number;
 }
 
-export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
+interface UploadingFile {
+  id: string;
+  name: string;
+  progress: number;
+  type: string;
+  size: number;
+}
+
+export function MessageInput({ threadId, autoFocus = false, onUploadProgress }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [attachments, setAttachments] = useState<FileUpload[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +45,6 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     }
   }, [autoFocus]);
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -49,20 +58,57 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
+  useEffect(() => {
+    onUploadProgress(uploadingFiles);
+  }, [uploadingFiles, onUploadProgress]);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files.length) return;
     
     setIsUploading(true);
     const newAttachments: FileUpload[] = [];
+    const files = Array.from(e.target.files);
+    
+    // Create uploading file entries
+    const uploadingFileEntries = files.map(file => ({
+      id: crypto.randomUUID(),
+      name: file.name,
+      progress: 0,
+      type: file.type,
+      size: file.size,
+    }));
+    
+    setUploadingFiles(prev => [...prev, ...uploadingFileEntries]);
 
     try {
-      for (const file of Array.from(e.target.files)) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadingFile = uploadingFileEntries[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
+        // Create upload options with progress tracking
+        const options = {
+          onUploadProgress: (progress: number) => {
+            setUploadingFiles(prev => 
+              prev.map(f => 
+                f.id === uploadingFile.id 
+                  ? { ...f, progress } 
+                  : f
+              )
+            );
+          },
+        };
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('chat_attachments')
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            ...options,
+            onUploadProgress: (event) => {
+              const progress = (event.loaded / event.total) * 100;
+              options.onUploadProgress(progress);
+            },
+          });
 
         if (uploadError) throw uploadError;
 
@@ -76,6 +122,9 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
           type: file.type,
           size: file.size,
         });
+
+        // Remove the uploading file entry once complete
+        setUploadingFiles(prev => prev.filter(f => f.id !== uploadingFile.id));
       }
 
       setAttachments(prev => [...prev, ...newAttachments]);
@@ -90,6 +139,8 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
+      // Clear uploading files on error
+      setUploadingFiles([]);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
