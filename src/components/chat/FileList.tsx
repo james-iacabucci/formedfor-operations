@@ -178,7 +178,7 @@ export function FileList({ threadId }: FileListProps) {
 
   console.log("Current messagesData:", messagesData);
 
-  const files = (messagesData ?? []).reduce<ExtendedFileAttachment[]>((acc, message) => {
+  const files = (Array.isArray(messagesData) ? messagesData : []).reduce<ExtendedFileAttachment[]>((acc, message) => {
     if (!message?.attachments) return acc;
     
     const validAttachments = message.attachments
