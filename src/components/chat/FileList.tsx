@@ -121,6 +121,48 @@ export function FileList({ threadId }: FileListProps) {
     setDeleteFile(null);
   };
 
+  const attachToSculpture = async (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions") => {
+    try {
+      const { data: sculpture, error: fetchError } = await supabase
+        .from("sculptures")
+        .select(category)
+        .eq("id", threadId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const existingFiles = sculpture?.[category] || [];
+      const newFile = {
+        name: file.name,
+        url: file.url,
+        type: file.type,
+        size: file.size,
+        created_at: new Date().toISOString()
+      };
+
+      const { error: updateError } = await supabase
+        .from("sculptures")
+        .update({ 
+          [category]: [...existingFiles, newFile] 
+        })
+        .eq("id", threadId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "File attached",
+        description: `The file has been attached to the sculpture's ${category}.`
+      });
+    } catch (error) {
+      console.error("Error attaching file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to attach the file to the sculpture.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const files = (messagesData || []).flatMap((message) => {
     const validAttachments = (message.attachments || [])
       .filter((attachment): attachment is Json & FileAttachment => {
