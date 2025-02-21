@@ -13,7 +13,7 @@ interface Message {
   profiles?: {
     full_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 interface MessageListProps {
@@ -33,7 +33,7 @@ export function MessageList({ threadId }: MessageListProps) {
           created_at,
           content,
           user_id,
-          profiles (
+          profiles:user_id (
             full_name,
             avatar_url
           )
