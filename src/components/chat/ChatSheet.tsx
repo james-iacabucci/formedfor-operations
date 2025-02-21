@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -14,13 +14,19 @@ interface UploadingFile {
   size: number;
 }
 
-export function ChatSheet() {
+interface ChatSheetProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  sculptureId?: string;
+}
+
+export function ChatSheet({ open, onOpenChange, sculptureId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
-  const threadId = "your-thread-id"; // Replace with actual thread ID logic
-  const hasUnreadMessages = false; // Replace with actual unread message logic
+  const threadId = sculptureId || "default-thread"; // Use sculptureId as threadId if provided
+  const hasUnreadMessages = false;
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
           <MessageSquare className="h-4 w-4" />

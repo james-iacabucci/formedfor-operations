@@ -70,10 +70,25 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       if (error) throw error;
 
-      // Cast the attachments from Json[] to FileAttachment[]
+      // Cast the attachments from Json[] to FileAttachment[] with proper type checking
       return (data || []).map(message => ({
         ...message,
-        attachments: (message.attachments || []) as FileAttachment[],
+        attachments: (message.attachments as unknown[] || []).map((attachment): FileAttachment => {
+          if (typeof attachment === 'object' && attachment !== null) {
+            return {
+              name: String(attachment.name || ''),
+              url: String(attachment.url || ''),
+              type: String(attachment.type || ''),
+              size: Number(attachment.size || 0)
+            };
+          }
+          return {
+            name: '',
+            url: '',
+            type: '',
+            size: 0
+          };
+        })
       })) as Message[];
     },
     refetchInterval: 1000,
