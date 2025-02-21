@@ -14,12 +14,23 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { FileAttachment } from "./types";
+import { FileAttachment, isFileAttachment } from "./types";
+import { Json } from "@/integrations/supabase/types";
 
 type SortBy = "modified" | "uploaded" | "user";
 
 interface FileListProps {
   threadId: string;
+}
+
+interface ExtendedFileAttachment extends FileAttachment {
+  user: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+  userId: string;
+  messageId: string;
+  uploadedAt: string;
 }
 
 export function FileList({ threadId }: FileListProps) {
@@ -49,16 +60,14 @@ export function FileList({ threadId }: FileListProps) {
   });
 
   // Extract all files from messages
-  const files = messages.flatMap((message) => 
+  const files = messages.flatMap((message): ExtendedFileAttachment[] => 
     (message.attachments || [])
-      .filter((att): att is FileAttachment => 
-        typeof att === 'object' && 
-        att !== null && 
-        'url' in att && 
-        'name' in att
-      )
+      .filter((att): att is FileAttachment => isFileAttachment(att))
       .map(file => ({
-        ...file,
+        name: file.name,
+        url: file.url,
+        type: file.type,
+        size: file.size,
         user: message.profiles,
         userId: message.user_id,
         messageId: message.id,
@@ -80,7 +89,7 @@ export function FileList({ threadId }: FileListProps) {
     }
   });
 
-  const attachToSculpture = async (file: FileAttachment & { messageId: string }, category: "models" | "renderings" | "dimensions") => {
+  const attachToSculpture = async (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions") => {
     const { data: sculpture } = await supabase
       .from("sculptures")
       .select(category)
