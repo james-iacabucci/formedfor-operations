@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 
 export interface FileAttachment {
@@ -57,4 +56,25 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
     typeof obj.type === 'string' &&
     typeof obj.size === 'number'
   );
+}
+
+export interface ExtendedFileAttachment extends FileAttachment {
+  user: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+  userId: string;
+  messageId: string;
+  uploadedAt: string;
+}
+
+export interface MessageData {
+  id: string;
+  created_at: string;
+  attachments: Json[];
+  user_id: string;
+  profiles: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
