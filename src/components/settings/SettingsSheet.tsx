@@ -11,7 +11,6 @@ import { ManageTagsSection } from "./ManageTagsSection";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { AppearanceSection } from "./AppearanceSection";
 import { AIContextSection } from "./AIContextSection";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
@@ -86,11 +85,10 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
-              <AppearanceSection />
               <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
+              <ManageTagsSection />
               <ValueListsSection />
               <ProductLinesSection />
-              <ManageTagsSection />
             </div>
           </div>
 
