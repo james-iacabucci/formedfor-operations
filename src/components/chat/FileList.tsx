@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MessageSquare, Download, FileText, Trash2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Download, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -65,6 +65,7 @@ export function FileList({ threadId }: FileListProps) {
   const { data: messagesData } = useQuery<MessageData[]>({
     queryKey: ["messages", threadId],
     queryFn: async () => {
+      console.log("Fetching messages for thread:", threadId);
       const { data, error } = await supabase
         .from("chat_messages")
         .select(`
@@ -85,7 +86,8 @@ export function FileList({ threadId }: FileListProps) {
         return [];
       }
       
-      return data;
+      console.log("Fetched messages data:", data);
+      return data ?? [];
     },
   });
 
@@ -174,26 +176,28 @@ export function FileList({ threadId }: FileListProps) {
     }
   };
 
-  const files = Array.isArray(messagesData) 
-    ? messagesData.flatMap((message: MessageData) => {
-        const validAttachments = (message.attachments || [])
-          .filter((attachment): attachment is Json & FileAttachment => {
-            if (!isFileAttachment(attachment)) return false;
-            return true;
-          });
+  console.log("Current messagesData:", messagesData);
 
-        return validAttachments.map((file) => ({
-          name: file.name,
-          url: file.url,
-          type: file.type,
-          size: file.size,
-          user: message.profiles,
-          userId: message.user_id,
-          messageId: message.id,
-          uploadedAt: message.created_at
-        }));
-      })
-    : [];
+  const files = (messagesData ?? []).reduce<ExtendedFileAttachment[]>((acc, message) => {
+    if (!message?.attachments) return acc;
+    
+    const validAttachments = message.attachments
+      .filter(isFileAttachment)
+      .map((file): ExtendedFileAttachment => ({
+        name: file.name,
+        url: file.url,
+        type: file.type,
+        size: file.size,
+        user: message.profiles,
+        userId: message.user_id,
+        messageId: message.id,
+        uploadedAt: message.created_at
+      }));
+    
+    return [...acc, ...validAttachments];
+  }, []);
+
+  console.log("Processed files:", files);
 
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
