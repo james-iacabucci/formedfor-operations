@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { User, PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 interface ImageUploadProps {
   previewUrl: string | null;
@@ -10,11 +11,20 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ previewUrl, onFileChange, className }: ImageUploadProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <div className={cn(
-      "group relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
-      className
-    )}>
+    <div 
+      onClick={handleClick}
+      className={cn(
+        "group relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
+        className
+      )}
+    >
       {previewUrl ? (
         <>
           <img
@@ -36,11 +46,12 @@ export function ImageUpload({ previewUrl, onFileChange, className }: ImageUpload
         </div>
       )}
       <Input
+        ref={fileInputRef}
         id="image"
         type="file"
         accept="image/*"
         onChange={onFileChange}
-        className="absolute inset-0 opacity-0 cursor-pointer"
+        className="hidden"
       />
     </div>
   );
