@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppearanceSection } from "../settings/AppearanceSection";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -131,39 +132,45 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
           
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
+              <AppearanceSection />
+              
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Profile</h3>
-                <div className="space-y-4 max-w-sm">
-                  <div>
-                    <Label>Profile Image</Label>
-                    <ImageUpload 
-                      previewUrl={profileData.avatar_url || ""}
-                      onFileChange={handleImageUpload}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={profileData.username || ""}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="Enter your name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      value={profileData.phone || ""}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="Enter your phone number"
-                      type="tel"
-                    />
-                  </div>
-                </div>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex gap-6">
+                      <div className="w-32">
+                        <Label className="mb-2 block">Profile Image</Label>
+                        <ImageUpload 
+                          previewUrl={profileData.avatar_url || ""}
+                          onFileChange={handleImageUpload}
+                        />
+                      </div>
+                      <div className="flex-1 space-y-4">
+                        <div>
+                          <Label htmlFor="name">Name</Label>
+                          <Input
+                            id="name"
+                            value={profileData.username || ""}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                            placeholder="Enter your name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input
+                            id="phone"
+                            value={profileData.phone || ""}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                            placeholder="Enter your phone number"
+                            type="tel"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              
-              <AppearanceSection />
             </div>
           </div>
 
