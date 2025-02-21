@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -14,7 +13,7 @@ import { ImageUpload } from "@/components/sculpture/ImageUpload";
 import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { AppearanceSection } from "../settings/AppearanceSection";
+import { AppearanceSection } from "./AppearanceSection";
 
 interface PreferencesSheetProps {
   open: boolean;
