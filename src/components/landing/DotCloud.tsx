@@ -1,8 +1,6 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,63 +17,63 @@ export const DotCloud = () => {
     renderer.setClearColor(0x000000);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Create text geometry
-    const loader = new FontLoader();
-    const particles: THREE.Points[] = [];
+    // Create particles
+    const pointsGeometry = new THREE.BufferGeometry();
+    const pointsCount = 5000; // Increased number of points for better effect
+    const positions = new Float32Array(pointsCount * 3);
     
-    loader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
-      const textGeometry = new TextGeometry('Formed For', {
-        font,
-        size: 3,
-        height: 0.2,
-        curveSegments: 12,
-      });
+    for (let i = 0; i < pointsCount; i++) {
+      // Create a more focused cloud shape
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI * 2;
+      const r = Math.random() * 20;
 
-      textGeometry.center();
+      positions[i * 3] = r * Math.sin(theta) * Math.cos(phi);     // X
+      positions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi); // Y
+      positions[i * 3 + 2] = r * Math.cos(theta);                 // Z
+    }
 
-      // Sample points from text geometry
-      const pointsGeometry = new THREE.BufferGeometry();
-      const pointsCount = 2000;
-      const positions = new Float32Array(pointsCount * 3);
-      
-      for (let i = 0; i < pointsCount; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 50;     // Scattered X
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 50; // Scattered Y
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 50; // Scattered Z
-      }
+    pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-      pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-      // Create particles
-      const pointsMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.05,
-        sizeAttenuation: true,
-      });
-
-      const points = new THREE.Points(pointsGeometry, pointsMaterial);
-      particles.push(points);
-      scene.add(points);
+    // Create particles with improved visual style
+    const pointsMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.1,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.8,
     });
 
-    // Position camera
-    camera.position.z = 15;
+    const points = new THREE.Points(pointsGeometry, pointsMaterial);
+    scene.add(points);
+
+    // Position camera for better view
+    camera.position.z = 30;
 
     // Animation
     const animate = () => {
       requestAnimationFrame(animate);
 
-      particles.forEach(points => {
-        points.rotation.y += 0.001; // Slow rotation
+      // Rotate the entire cloud
+      points.rotation.y += 0.001;
+      points.rotation.x += 0.0005;
+      
+      // Breathing effect
+      const time = Date.now() * 0.001;
+      const positions = points.geometry.attributes.position.array as Float32Array;
+      
+      for (let i = 0; i < positions.length; i += 3) {
+        const initialX = positions[i];
+        const initialY = positions[i + 1];
+        const initialZ = positions[i + 2];
         
-        // Breathing effect
-        const positions = points.geometry.attributes.position.array as Float32Array;
-        for (let i = 0; i < positions.length; i += 3) {
-          positions[i] += Math.sin(Date.now() * 0.001 + i) * 0.001;
-          positions[i + 1] += Math.cos(Date.now() * 0.001 + i) * 0.001;
-        }
-        points.geometry.attributes.position.needsUpdate = true;
-      });
+        // Add subtle wave motion
+        positions[i] = initialX + Math.sin(time + i * 0.1) * 0.1;
+        positions[i + 1] = initialY + Math.cos(time + i * 0.1) * 0.1;
+        positions[i + 2] = initialZ + Math.sin(time + i * 0.05) * 0.1;
+      }
+      
+      points.geometry.attributes.position.needsUpdate = true;
 
       renderer.render(scene, camera);
     };
