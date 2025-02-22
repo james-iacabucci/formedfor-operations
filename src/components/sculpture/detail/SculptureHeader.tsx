@@ -164,7 +164,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       <ChatSheet
         open={isChatSheetOpen}
         onOpenChange={setIsChatSheetOpen}
-        sculptureId={sculpture.id}
+        threadId={sculpture.id}
       />
     </div>
   );
