@@ -1,5 +1,5 @@
 
-import { Download, Save, Trash2 } from "lucide-react";
+import { Download, Save, Trash2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@/lib/utils";
 import { FileAttachment } from "./types";
