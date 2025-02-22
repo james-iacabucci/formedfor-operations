@@ -52,11 +52,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) throw error;
       
-      navigate('/login');
+      navigate('/');
       toast.success("Signed out successfully");
       
     } catch (error) {
-      navigate('/login');
+      navigate('/');
       toast.error("An error occurred, but you've been signed out locally");
     }
   };
