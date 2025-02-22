@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -22,6 +22,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     data,
@@ -52,16 +53,14 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: true }) // Changed to ascending order
+        .order("created_at", { ascending: true })
         .range(from, to);
 
       if (error) throw error;
 
-      // Ensure we always return an array, even if empty
       return data || [];
     },
     getNextPageParam: (lastPage, allPages) => {
-      // Return undefined if lastPage is undefined or not an array, or if it's shorter than PAGE_SIZE
       if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
         return undefined;
       }
@@ -83,8 +82,8 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         pageParams: data.pageParams,
       };
     },
-    staleTime: 0, // Disable caching to ensure fresh data
-    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 
   // Set up real-time subscription for new messages
@@ -99,7 +98,9 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           table: 'chat_messages',
           filter: `thread_id=eq.${threadId}`
         },
-        () => {
+        (payload) => {
+          // Invalidate and refetch the query when a new message is received
+          queryClient.invalidateQueries({ queryKey: ["messages", threadId] });
           setShouldScrollToBottom(true);
         }
       )
@@ -108,7 +109,40 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [threadId]);
+  }, [threadId, queryClient]);
+
+  // Handle scrolling
+  useEffect(() => {
+    const scrollToBottom = () => {
+      if (!scrollRef.current) return;
+      
+      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        const shouldScroll = isInitialScroll || shouldScrollToBottom;
+        
+        if (shouldScroll) {
+          const scrollHeight = scrollElement.scrollHeight;
+          const clientHeight = scrollElement.clientHeight;
+          
+          scrollElement.scrollTo({
+            top: scrollHeight - clientHeight,
+            behavior: 'smooth'
+          });
+          
+          setIsInitialScroll(false);
+          setShouldScrollToBottom(false);
+        }
+      }
+    };
+
+    // Initial scroll
+    scrollToBottom();
+    
+    // Additional check after content might have been painted
+    const timeoutId = setTimeout(scrollToBottom, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   useEffect(() => {
     const intersectionObserver = new IntersectionObserver((entries) => {
@@ -126,29 +160,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       intersectionObserver.disconnect();
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // Handle scrolling
-  useEffect(() => {
-    const scrollToBottom = () => {
-      if (!scrollRef.current) return;
-      
-      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement && (isInitialScroll || shouldScrollToBottom)) {
-        requestAnimationFrame(() => {
-          scrollElement.scrollTop = scrollElement.scrollHeight;
-          setIsInitialScroll(false);
-          setShouldScrollToBottom(false);
-        });
-      }
-    };
-
-    scrollToBottom();
-    
-    // Additional check after content might have been painted
-    const timeoutId = setTimeout(scrollToBottom, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   if (isLoading) {
     return (
