@@ -1,6 +1,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { FontLoader } from 'three-stdlib';
+import { TextGeometry } from 'three-stdlib';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,63 +19,100 @@ export const DotCloud = () => {
     renderer.setClearColor(0x000000);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Create particles
-    const pointsGeometry = new THREE.BufferGeometry();
-    const pointsCount = 5000; // Increased number of points for better effect
-    const positions = new Float32Array(pointsCount * 3);
+    // Create initial scattered points
+    const pointsCount = 5000;
+    const scatteredGeometry = new THREE.BufferGeometry();
+    const scatteredPositions = new Float32Array(pointsCount * 3);
     
     for (let i = 0; i < pointsCount; i++) {
-      // Create a more focused cloud shape
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI * 2;
-      const r = Math.random() * 20;
-
-      positions[i * 3] = r * Math.sin(theta) * Math.cos(phi);     // X
-      positions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi); // Y
-      positions[i * 3 + 2] = r * Math.cos(theta);                 // Z
+      scatteredPositions[i * 3] = (Math.random() - 0.5) * 100;
+      scatteredPositions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+      scatteredPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
     }
-
-    pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    // Create particles with improved visual style
+    
+    scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
+    
+    // Create points material
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.1,
+      size: 0.15,
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
     });
 
-    const points = new THREE.Points(pointsGeometry, pointsMaterial);
+    // Create points system
+    const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Position camera for better view
-    camera.position.z = 30;
+    // Load font and create text geometry
+    const loader = new FontLoader();
+    let targetPositions: Float32Array | null = null;
+    
+    // Load the font and create text
+    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+      const textGeometry = new TextGeometry('Formed For', {
+        font: font,
+        size: 10,
+        height: 0,
+        curveSegments: 4,
+      });
 
-    // Animation
-    const animate = () => {
-      requestAnimationFrame(animate);
+      textGeometry.center();
 
-      // Rotate the entire cloud
-      points.rotation.y += 0.001;
-      points.rotation.x += 0.0005;
+      // Sample points from the text geometry
+      const textPoints = generatePointsFromGeometry(textGeometry, pointsCount);
+      targetPositions = new Float32Array(textPoints.flat());
       
-      // Breathing effect
-      const time = Date.now() * 0.001;
-      const positions = points.geometry.attributes.position.array as Float32Array;
+      // Update the geometry with initial positions
+      points.geometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
+    });
+
+    // Helper function to generate points from geometry
+    function generatePointsFromGeometry(geometry: THREE.BufferGeometry, count: number) {
+      const points: number[][] = [];
+      const vertices = geometry.attributes.position.array;
       
-      for (let i = 0; i < positions.length; i += 3) {
-        const initialX = positions[i];
-        const initialY = positions[i + 1];
-        const initialZ = positions[i + 2];
-        
-        // Add subtle wave motion
-        positions[i] = initialX + Math.sin(time + i * 0.1) * 0.1;
-        positions[i + 1] = initialY + Math.cos(time + i * 0.1) * 0.1;
-        positions[i + 2] = initialZ + Math.sin(time + i * 0.05) * 0.1;
+      for (let i = 0; i < count; i++) {
+        const vertexIndex = Math.floor(Math.random() * (vertices.length / 3)) * 3;
+        points.push([
+          vertices[vertexIndex],
+          vertices[vertexIndex + 1],
+          vertices[vertexIndex + 2]
+        ]);
       }
       
-      points.geometry.attributes.position.needsUpdate = true;
+      return points;
+    }
+
+    // Position camera
+    camera.position.z = 50;
+
+    // Animation
+    let time = 0;
+    const animate = () => {
+      requestAnimationFrame(animate);
+      time += 0.005;
+
+      if (targetPositions) {
+        const positions = points.geometry.attributes.position.array as Float32Array;
+        
+        for (let i = 0; i < positions.length; i += 3) {
+          // Interpolate between current and target positions
+          positions[i] += (targetPositions[i] - positions[i]) * 0.02;
+          positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
+          positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+
+          // Add some wave motion
+          positions[i] += Math.sin(time + i) * 0.03;
+          positions[i + 1] += Math.cos(time + i) * 0.03;
+        }
+        
+        points.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Slow rotation
+      points.rotation.y += 0.001;
 
       renderer.render(scene, camera);
     };
