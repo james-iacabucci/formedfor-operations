@@ -45,9 +45,9 @@ export function MessageAttachment({
   if (isImageFile) {
     return (
       <>
-        <div className="group relative inline-block max-w-sm">
+        <div className="relative inline-block max-w-sm">
           <div 
-            className="rounded-lg overflow-hidden border border-border cursor-pointer"
+            className="group relative rounded-lg overflow-hidden border border-border cursor-pointer"
             onClick={handlePreview}
           >
             <img 
@@ -56,11 +56,11 @@ export function MessageAttachment({
               className="max-h-[300px] object-cover w-full"
             />
             {/* Overlay with actions */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="icon"
-                className="text-white hover:text-white hover:bg-white/20"
+                className="bg-black/30 hover:bg-black/50 text-white border-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDownload(e);
@@ -71,9 +71,9 @@ export function MessageAttachment({
               
               {canDelete && (
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="icon"
-                  className="text-white hover:text-white hover:bg-white/20"
+                  className="bg-black/30 hover:bg-black/50 text-white border-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowDeleteDialog(true);
@@ -86,9 +86,9 @@ export function MessageAttachment({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
-                    className="text-white hover:text-white hover:bg-white/20"
+                    className="bg-black/30 hover:bg-black/50 text-white border-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Save className="h-4 w-4" />
