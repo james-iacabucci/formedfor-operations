@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,6 +113,7 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
       setUploadingFiles([]);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
+        textareaRef.current.focus();
       }
     } catch (error) {
       console.error("Error sending message:", error);

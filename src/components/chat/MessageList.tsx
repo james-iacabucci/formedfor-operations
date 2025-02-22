@@ -21,6 +21,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
 
   const {
     data,
@@ -51,12 +52,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: false }) // Changed to fetch newest first
+        .order("created_at", { ascending: false })
         .range(from, to);
 
       if (error) throw error;
 
-      return (data || []).reverse() as RawMessage[]; // Reverse to maintain chronological order in UI
+      return (data || []).reverse();
     },
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || !Array.isArray(lastPage)) return undefined;
@@ -80,6 +81,29 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     },
   });
 
+  // Set up real-time subscription for new messages
+  useEffect(() => {
+    const channel = supabase
+      .channel('chat_messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `thread_id=eq.${threadId}`
+        },
+        () => {
+          setShouldScrollToBottom(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [threadId]);
+
   useEffect(() => {
     const intersectionObserver = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -97,26 +121,28 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // Handle scrolling
   useEffect(() => {
     const scrollToBottom = () => {
-      if (!scrollRef.current || !isInitialScroll) return;
+      if (!scrollRef.current) return;
       
       const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement && !isLoading && data?.pages?.[0]?.length) {
+      if (scrollElement && (isInitialScroll || shouldScrollToBottom)) {
         requestAnimationFrame(() => {
           scrollElement.scrollTop = scrollElement.scrollHeight;
           setIsInitialScroll(false);
+          setShouldScrollToBottom(false);
         });
       }
     };
 
     scrollToBottom();
-
+    
     // Additional check after content might have been painted
     const timeoutId = setTimeout(scrollToBottom, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [data, isLoading, isInitialScroll]);
+  }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   if (isLoading) {
     return (
