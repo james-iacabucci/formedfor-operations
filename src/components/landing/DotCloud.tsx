@@ -1,6 +1,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,11 +20,11 @@ export const DotCloud = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Create text geometry
-    const loader = new THREE.FontLoader();
+    const loader = new FontLoader();
     const particles: THREE.Points[] = [];
     
     loader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
-      const textGeometry = new THREE.TextGeometry('Formed For', {
+      const textGeometry = new TextGeometry('Formed For', {
         font,
         size: 3,
         height: 0.2,
