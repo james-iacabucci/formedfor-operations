@@ -29,10 +29,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     isLoading,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    refetch
   } = useInfiniteQuery({
     queryKey: ["messages", threadId],
     queryFn: async ({ pageParam = 0 }) => {
+      console.log('Fetching messages for thread:', threadId, 'page:', pageParam);
       const from = pageParam * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
@@ -56,8 +58,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         .order("created_at", { ascending: true })
         .range(from, to);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
 
+      console.log('Fetched messages:', data);
       return data || [];
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -88,8 +94,10 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
   // Set up real-time subscription for new messages
   useEffect(() => {
+    console.log('Setting up real-time subscription for thread:', threadId);
+    
     const channel = supabase
-      .channel('chat_messages')
+      .channel(`room_${threadId}`) // Give unique name to avoid conflicts
       .on(
         'postgres_changes',
         {
@@ -99,17 +107,21 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           filter: `thread_id=eq.${threadId}`
         },
         (payload) => {
-          // Invalidate and refetch the query when a new message is received
-          queryClient.invalidateQueries({ queryKey: ["messages", threadId] });
+          console.log('Received new message:', payload);
+          // Force refetch instead of just invalidating
+          refetch();
           setShouldScrollToBottom(true);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription for thread:', threadId);
       supabase.removeChannel(channel);
     };
-  }, [threadId, queryClient]);
+  }, [threadId, refetch]);
 
   // Handle scrolling
   useEffect(() => {
