@@ -51,12 +51,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false }) // Changed to fetch newest first
         .range(from, to);
 
       if (error) throw error;
 
-      return (data || []) as RawMessage[];
+      return (data || []).reverse() as RawMessage[]; // Reverse to maintain chronological order in UI
     },
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || !Array.isArray(lastPage)) return undefined;
@@ -98,25 +98,25 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
-    // Scroll to bottom when messages are loaded
     const scrollToBottom = () => {
-      if (scrollRef.current && isInitialScroll) {
-        const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollElement) {
+      if (!scrollRef.current || !isInitialScroll) return;
+      
+      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement && !isLoading && data?.pages?.[0]?.length) {
+        requestAnimationFrame(() => {
           scrollElement.scrollTop = scrollElement.scrollHeight;
           setIsInitialScroll(false);
-        }
+        });
       }
     };
 
-    // Try to scroll immediately if content is already loaded
     scrollToBottom();
 
-    // Also try after a short delay to ensure content is rendered
+    // Additional check after content might have been painted
     const timeoutId = setTimeout(scrollToBottom, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [data, isInitialScroll]);
+  }, [data, isLoading, isInitialScroll]);
 
   if (isLoading) {
     return (
