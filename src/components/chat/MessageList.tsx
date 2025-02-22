@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,7 +91,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     refetchOnWindowFocus: false,
   });
 
-  // Set up real-time subscription for new messages
   useEffect(() => {
     console.log('Setting up real-time subscription for thread:', threadId);
     
@@ -123,7 +121,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     };
   }, [threadId, refetch]);
 
-  // Handle scrolling
   useEffect(() => {
     const scrollToBottom = () => {
       if (!scrollRef.current) return;
@@ -133,27 +130,32 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         const shouldScroll = isInitialScroll || shouldScrollToBottom;
         
         if (shouldScroll) {
-          const scrollHeight = scrollElement.scrollHeight;
-          const clientHeight = scrollElement.clientHeight;
-          
-          scrollElement.scrollTo({
-            top: scrollHeight - clientHeight,
-            behavior: 'smooth'
+          requestAnimationFrame(() => {
+            const scrollHeight = scrollElement.scrollHeight;
+            const clientHeight = scrollElement.clientHeight;
+            
+            scrollElement.scrollTo({
+              top: scrollHeight - clientHeight,
+              behavior: 'smooth'
+            });
+            
+            setTimeout(() => {
+              if (scrollElement.scrollTop + clientHeight < scrollHeight) {
+                scrollElement.scrollTo({
+                  top: scrollHeight - clientHeight,
+                  behavior: 'auto'
+                });
+              }
+              setIsInitialScroll(false);
+              setShouldScrollToBottom(false);
+            }, 300);
           });
-          
-          setIsInitialScroll(false);
-          setShouldScrollToBottom(false);
         }
       }
     };
 
-    // Initial scroll
     scrollToBottom();
     
-    // Additional check after content might have been painted
-    const timeoutId = setTimeout(scrollToBottom, 100);
-
-    return () => clearTimeout(timeoutId);
   }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   useEffect(() => {
