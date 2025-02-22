@@ -89,25 +89,38 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
     setIsSending(true);
     try {
-      const filesToUpload = uploadingFiles.map(f => f.file);
-      const uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
-        setUploadingFiles(prev => prev.map(f => 
-          f.id === fileId ? { ...f, progress } : f
-        ));
-      });
-
-      const messageData = {
-        thread_id: threadId,
-        user_id: user.id,
-        content: message.trim(),
-        attachments: uploadedFiles,
-      };
-
-      const { error } = await supabase
+      // First, insert the message immediately with empty attachments
+      const { error: messageError } = await supabase
         .from("chat_messages")
-        .insert(messageData);
+        .insert({
+          thread_id: threadId,
+          user_id: user.id,
+          content: message.trim(),
+          attachments: []
+        });
 
-      if (error) throw error;
+      if (messageError) throw messageError;
+
+      // Then start uploading files if any
+      if (uploadingFiles.length > 0) {
+        const filesToUpload = uploadingFiles.map(f => f.file);
+        const uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
+          setUploadingFiles(prev => prev.map(f => 
+            f.id === fileId ? { ...f, progress } : f
+          ));
+        });
+
+        // Update the message with the uploaded files
+        const { error: updateError } = await supabase
+          .from("chat_messages")
+          .update({ attachments: uploadedFiles })
+          .eq("thread_id", threadId)
+          .eq("user_id", user.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (updateError) throw updateError;
+      }
 
       setMessage("");
       setUploadingFiles([]);
