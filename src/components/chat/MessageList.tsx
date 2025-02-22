@@ -57,11 +57,15 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       if (error) throw error;
 
+      // Ensure we always return an array, even if empty
       return (data || []).reverse();
     },
     getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage || !Array.isArray(lastPage)) return undefined;
-      return lastPage.length >= PAGE_SIZE ? allPages.length : undefined;
+      // Return undefined if lastPage is undefined or not an array, or if it's shorter than PAGE_SIZE
+      if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
+        return undefined;
+      }
+      return allPages.length;
     },
     initialPageParam: 0,
     select: (data) => {
@@ -79,6 +83,8 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         pageParams: data.pageParams,
       };
     },
+    staleTime: 0, // Disable caching to ensure fresh data
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
   // Set up real-time subscription for new messages
@@ -152,7 +158,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     );
   }
 
-  const allMessages = data?.pages.flatMap(page => page) ?? [];
+  const allMessages = data?.pages?.flatMap(page => page || []) ?? [];
 
   return (
     <ScrollArea ref={scrollRef} className="flex-1 p-4">
