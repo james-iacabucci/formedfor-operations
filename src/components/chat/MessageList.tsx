@@ -52,13 +52,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: true }) // Changed to ascending order
         .range(from, to);
 
       if (error) throw error;
 
       // Ensure we always return an array, even if empty
-      return (data || []).reverse();
+      return data || [];
     },
     getNextPageParam: (lastPage, allPages) => {
       // Return undefined if lastPage is undefined or not an array, or if it's shorter than PAGE_SIZE
