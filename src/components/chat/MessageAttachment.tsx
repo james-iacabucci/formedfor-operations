@@ -68,20 +68,6 @@ export function MessageAttachment({
               >
                 <Download className="h-4 w-4" />
               </Button>
-              
-              {canDelete && (
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="bg-black/30 hover:bg-black/50 text-white border-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowDeleteDialog(true);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -109,6 +95,20 @@ export function MessageAttachment({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {canDelete && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="bg-black/30 hover:bg-black/50 text-white border-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteDialog(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           <div className="mt-1 px-1 flex items-center justify-between gap-2">
