@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,15 +13,20 @@ import { uploadFiles } from "./uploadService";
 interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
+  onUploadingFiles: (files: UploadingFile[]) => void;
 }
 
-export function MessageInput({ threadId, autoFocus = false }: MessageInputProps) {
+export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    onUploadingFiles(uploadingFiles);
+  }, [uploadingFiles, onUploadingFiles]);
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
@@ -89,7 +93,8 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
     setIsSending(true);
     try {
-      // First, insert the message immediately with empty attachments
+      const currentUploadingFiles = [...uploadingFiles];
+
       const { error: messageError } = await supabase
         .from("chat_messages")
         .insert({
@@ -101,16 +106,20 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
 
       if (messageError) throw messageError;
 
-      // Then start uploading files if any
-      if (uploadingFiles.length > 0) {
-        const filesToUpload = uploadingFiles.map(f => f.file);
+      setMessage("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.focus();
+      }
+
+      if (currentUploadingFiles.length > 0) {
+        const filesToUpload = currentUploadingFiles.map(f => f.file);
         const uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
           setUploadingFiles(prev => prev.map(f => 
             f.id === fileId ? { ...f, progress } : f
           ));
         });
 
-        // Update the message with the uploaded files
         const { error: updateError } = await supabase
           .from("chat_messages")
           .update({ attachments: uploadedFiles })
@@ -122,12 +131,9 @@ export function MessageInput({ threadId, autoFocus = false }: MessageInputProps)
         if (updateError) throw updateError;
       }
 
-      setMessage("");
-      setUploadingFiles([]);
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-        textareaRef.current.focus();
-      }
+      setUploadingFiles(prev => prev.filter(f => 
+        !currentUploadingFiles.some(cf => cf.id === f.id)
+      ));
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
