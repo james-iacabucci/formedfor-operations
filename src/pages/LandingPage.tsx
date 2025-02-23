@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 export const LandingPage = () => {
@@ -40,13 +41,28 @@ export const LandingPage = () => {
       </div>
 
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
-        <DialogContent className="sm:max-w-md bg-background">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Welcome back</DialogTitle>
+            <DialogDescription>
+              Sign in to your account to continue
+            </DialogDescription>
           </DialogHeader>
           <Auth
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{ 
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#000000',
+                    brandAccent: '#404040',
+                    inputBackground: 'white',
+                    inputText: 'black',
+                  }
+                }
+              }
+            }}
             theme="light"
             providers={[]}
           />
