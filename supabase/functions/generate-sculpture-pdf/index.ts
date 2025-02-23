@@ -201,8 +201,10 @@ serve(async (req) => {
       font: normalFont,
     });
 
+    // Add more space after the name (increased from -20 to -40)
+    currentY -= 40;
+
     // Price row (if applicable)
-    currentY -= 20;
     if (pricingMode !== 'none' && sculpture.fabrication_quotes?.[0]) {
       const quote = sculpture.fabrication_quotes[0];
       const tradePrice = calculateTradePrice(quote);
@@ -222,10 +224,12 @@ serve(async (req) => {
         size: 10.5,
         font: normalFont,
       });
+
+      // Add more space after the price (increased from -20 to -40)
+      currentY -= 40;
     }
 
     // Material
-    currentY -= 20;
     const materialText = sculpture.material?.name || 'Not specified';
     const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5);
     page.drawText(materialText, {
