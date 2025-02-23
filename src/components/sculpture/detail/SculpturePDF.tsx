@@ -12,9 +12,12 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   const handleDownload = async () => {
     setIsGenerating(true);
     try {
+      console.log("Calling generate-sculpture-pdf function with ID:", sculpture.id);
       const { data, error } = await supabase.functions.invoke('generate-sculpture-pdf', {
         body: { sculptureId: sculpture.id }
       });
+
+      console.log("Response from edge function:", { data, error });
 
       if (error) {
         console.error('PDF generation error:', error);
