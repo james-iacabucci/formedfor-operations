@@ -10,14 +10,24 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleDownload = async () => {
+    console.log("Button clicked - starting download process");
     setIsGenerating(true);
-    try {
-      console.log("Calling generate-sculpture-pdf function with ID:", sculpture.id);
-      const { data, error } = await supabase.functions.invoke('generate-sculpture-pdf', {
-        body: { sculptureId: sculpture.id }
-      });
 
-      console.log("Response from edge function:", { data, error });
+    try {
+      // Log the Supabase client to verify it's properly initialized
+      console.log("Supabase client:", supabase);
+      console.log("Functions client:", supabase.functions);
+      
+      console.log("About to call edge function with sculpture:", sculpture.id);
+      
+      const { data, error } = await supabase.functions.invoke(
+        'generate-sculpture-pdf',
+        {
+          body: { sculptureId: sculpture.id },
+        }
+      );
+
+      console.log("Edge function response:", { data, error });
 
       if (error) {
         console.error('PDF generation error:', error);
@@ -38,6 +48,8 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${sculpture.ai_generated_name || 'sculpture'}.pdf`);
+      
+      console.log("Created download link:", url);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -45,7 +57,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
 
       toast.success("PDF generated successfully");
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error('Detailed PDF generation error:', error);
       toast.error("Failed to generate PDF");
     } finally {
       setIsGenerating(false);
