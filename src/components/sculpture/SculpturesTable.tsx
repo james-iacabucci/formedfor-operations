@@ -9,12 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLineSelector } from "./table/ProductLineSelector";
 import { SculptureActions } from "./table/SculptureActions";
+import { SculpturePreview } from "./table/SculpturePreview";
 import { ProductLine } from "@/types/product-line";
 
 interface SculpturesTableProps {
@@ -23,7 +25,6 @@ interface SculpturesTableProps {
   sculptureTagRelations: Array<{ sculpture_id: string; tag_id: string; }> | undefined;
   onDelete: (sculpture: Sculpture) => void;
   onManageTags: (sculpture: Sculpture) => void;
-  onSculptureClick: (sculptureId: string) => void;
 }
 
 export function SculpturesTable({ 
@@ -31,93 +32,125 @@ export function SculpturesTable({
   tags, 
   sculptureTagRelations,
   onDelete,
-  onManageTags,
-  onSculptureClick
+  onManageTags 
 }: SculpturesTableProps) {
+  const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const { data: productLines } = useQuery({
-    queryKey: ["product-lines"],
+    queryKey: ["product_lines"],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("product_lines")
-        .select("*");
+        .select("*")
+        .eq("user_id", user.user.id);
 
       if (error) throw error;
       return data as ProductLine[];
     },
   });
 
+  const formatDimensions = (sculpture: Sculpture) => {
+    if (!sculpture.height_in && !sculpture.width_in && !sculpture.depth_in) {
+      return "Not specified";
+    }
+    return `${sculpture.height_in || 0}h - ${sculpture.width_in || 0}w - ${sculpture.depth_in || 0}d (in)`;
+  };
+
+  const handlePrevious = () => {
+    if (selectedIndex === null) return;
+    setSelectedIndex(selectedIndex > 0 ? selectedIndex - 1 : sculptures.length - 1);
+  };
+
+  const handleNext = () => {
+    if (selectedIndex === null) return;
+    setSelectedIndex(selectedIndex < sculptures.length - 1 ? selectedIndex + 1 : 0);
+  };
+
+  const previewFiles = sculptures.map(sculpture => ({
+    id: sculpture.id,
+    name: sculpture.ai_generated_name || "Untitled Sculpture",
+    url: sculpture.image_url || "",
+    created_at: sculpture.created_at,
+  }));
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[180px]">Name</TableHead>
-            <TableHead>Product Line</TableHead>
-            <TableHead>Material</TableHead>
-            <TableHead>Tags</TableHead>
+            <TableHead>Preview</TableHead>
+            <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Dimensions</TableHead>
+            <TableHead>Product Line</TableHead>
+            <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sculptures.map((sculpture, index) => {
-            const sculptureSpecificTags = tags?.filter(tag => 
-              sculptureTagRelations?.some(relation => 
-                relation.sculpture_id === sculpture.id && relation.tag_id === tag.id
-              )
-            ) || [];
-            const productLine = productLines?.find(pl => pl.id === sculpture.product_line_id);
-            
-            return (
-              <TableRow key={sculpture.id}>
-                <TableCell>
-                  <div 
-                    className="font-medium cursor-pointer hover:text-primary"
-                    onClick={() => onSculptureClick(sculpture.id)}
-                  >
-                    {sculpture.ai_generated_name || "Untitled Sculpture"}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <ProductLineSelector
-                    sculptureId={sculpture.id}
-                    productLineId={sculpture.product_line_id}
-                    productLines={productLines || []}
-                  />
-                </TableCell>
-                <TableCell>Material Here</TableCell>
-                <TableCell>
-                  <div className="flex gap-1 flex-wrap">
-                    {sculptureSpecificTags.map((tag) => (
-                      <Badge key={tag.id} variant="outline">{tag.name}</Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>{sculpture.status}</TableCell>
-                <TableCell>
-                  {new Date(sculpture.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <SculptureActions
-                    sculpture={sculpture}
-                    onDelete={() => onDelete(sculpture)}
-                    onPreview={() => setSelectedIndex(index)}
-                    onManageTags={() => onManageTags(sculpture)}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {sculptures.map((sculpture, index) => (
+            <TableRow key={sculpture.id}>
+              <TableCell>
+                <SculpturePreview
+                  imageUrl={sculpture.image_url}
+                  prompt={sculpture.prompt}
+                  onClick={() => setSelectedIndex(index)}
+                />
+              </TableCell>
+              <TableCell>
+                <div 
+                  className="font-medium cursor-pointer hover:text-primary"
+                  onClick={() => navigate(`/sculpture/${sculpture.id}`)}
+                >
+                  {sculpture.ai_generated_name || "Untitled Sculpture"}
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge
+                  variant={
+                    sculpture.status === "approved" 
+                      ? "default" 
+                      : sculpture.status === "pending" 
+                        ? "secondary" 
+                        : "outline"
+                  }
+                  className="capitalize"
+                >
+                  {sculpture.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="font-mono text-sm">
+                {formatDimensions(sculpture)}
+              </TableCell>
+              <TableCell>
+                <ProductLineSelector
+                  sculptureId={sculpture.id}
+                  productLineId={sculpture.product_line_id}
+                  productLines={productLines}
+                />
+              </TableCell>
+              <TableCell>
+                <SculptureActions
+                  sculpture={sculpture}
+                  onManageTags={onManageTags}
+                  onDelete={onDelete}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
 
       <SculpturePreviewDialog
+        files={previewFiles}
+        selectedIndex={selectedIndex}
         open={selectedIndex !== null}
         onOpenChange={(open) => !open && setSelectedIndex(null)}
-        sculpture={selectedIndex !== null ? sculptures[selectedIndex] : null}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
       />
     </div>
   );

@@ -12,7 +12,6 @@ interface SculptureCardProps {
   tags: Array<{ id: string; name: string }>;
   onDelete: () => void;
   onManageTags: () => void;
-  onClick: () => void;
   showAIContent?: boolean;
 }
 
@@ -21,9 +20,9 @@ export function SculptureCard({
   tags,
   onDelete,
   onManageTags,
-  onClick,
   showAIContent,
 }: SculptureCardProps) {
+  const navigate = useNavigate();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { isRegenerating, regenerateImage, generateVariant } = useSculptureRegeneration();
 
@@ -43,7 +42,7 @@ export function SculptureCard({
     }
     
     if (sculpture.image_url) {
-      onClick();
+      navigate(`/sculpture/${sculpture.id}`);
     }
   };
 

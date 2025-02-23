@@ -208,6 +208,7 @@ export default function SculptureDetail() {
           originalSculpture={originalSculpture}
           tags={tags || []}
           onUpdate={refetch}
+          onBack={() => navigate("/")}
         />
       </div>
 

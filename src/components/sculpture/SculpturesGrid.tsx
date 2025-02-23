@@ -8,7 +8,6 @@ interface SculpturesGridProps {
   sculptureTagRelations: Array<{ sculpture_id: string; tag_id: string; }> | undefined;
   onDelete: (sculpture: Sculpture) => void;
   onManageTags: (sculpture: Sculpture) => void;
-  onSculptureClick: (sculptureId: string) => void;
 }
 
 export function SculpturesGrid({ 
@@ -16,8 +15,7 @@ export function SculpturesGrid({
   tags, 
   sculptureTagRelations,
   onDelete,
-  onManageTags,
-  onSculptureClick
+  onManageTags 
 }: SculpturesGridProps) {
   return (
     <div className="grid animate-fade-in grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -35,7 +33,6 @@ export function SculpturesGrid({
             tags={sculptureSpecificTags}
             onDelete={() => onDelete(sculpture)}
             onManageTags={() => onManageTags(sculpture)}
-            onClick={() => onSculptureClick(sculpture.id)}
           />
         );
       })}

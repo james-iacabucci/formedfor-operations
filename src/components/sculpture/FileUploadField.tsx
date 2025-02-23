@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
-import { FilePreviewDialog } from "./FilePreviewDialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface FileUploadFieldProps {
@@ -31,6 +30,7 @@ export function FileUploadField({
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
+  // Helper function to map display label to database column name
   const getColumnName = (label: string): string => {
     console.log('getColumnName input:', label);
     const normalizedLabel = label.toLowerCase();
@@ -95,6 +95,7 @@ export function FileUploadField({
           const updatedFiles = [...files, newFile];
           console.log('Files array after adding new file:', updatedFiles);
           
+          // Only update Supabase if we have a sculptureId
           if (sculptureId) {
             console.log('Current label:', label);
             const columnName = getColumnName(label);
@@ -163,6 +164,7 @@ export function FileUploadField({
 
       const updatedFiles = files.filter(f => f.id !== fileId);
 
+      // Only update Supabase if we have a sculptureId
       if (sculptureId) {
         const columnName = getColumnName(label);
         
@@ -285,7 +287,7 @@ export function FileUploadField({
         ))}
       </div>
 
-      <FilePreviewDialog
+      <SculpturePreviewDialog
         files={files}
         selectedIndex={selectedFileIndex}
         open={selectedFileIndex !== null}

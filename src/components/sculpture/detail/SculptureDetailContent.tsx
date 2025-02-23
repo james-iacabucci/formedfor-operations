@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -9,31 +8,26 @@ import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
-
-interface Tag {
-  id: string;
-  name: string;
-}
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
-  originalSculpture: Sculpture | null | undefined;
-  tags: Tag[];
   onUpdate: () => void;
+  originalSculpture: Sculpture | null;
+  tags: Array<{ id: string; name: string }>;
+  onBack: () => void;
 }
 
 export function SculptureDetailContent({
   sculpture,
+  onUpdate,
   originalSculpture,
   tags,
-  onUpdate,
+  onBack,
 }: SculptureDetailContentProps) {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
@@ -95,17 +89,23 @@ export function SculptureDetailContent({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/')}
-          className="mr-2"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <SculptureHeader sculpture={sculpture} />
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 bg-background z-10 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-2xl font-bold">
+              {sculpture.ai_generated_name || "Untitled Sculpture"}
+            </div>
+          </div>
+          <SculptureHeader sculpture={sculpture} />
+        </div>
       </div>
 
       <div className="overflow-y-auto flex-1 space-y-4">
