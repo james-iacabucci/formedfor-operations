@@ -60,19 +60,20 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       setIsGeneratingPDF(true);
       console.log("Starting PDF generation for sculpture:", sculpture.id);
       
-      const { data, error } = await supabase.functions.invoke(
+      const { data: response, error } = await supabase.functions.invoke(
         'generate-sculpture-pdf',
         {
           body: { sculptureId: sculpture.id },
         }
       );
 
-      console.log("Edge function response:", { data, error });
+      console.log("Edge function response:", { data: response, error });
 
       if (error) throw error;
+      if (!response?.data) throw new Error("No PDF data received");
 
       // Convert base64 to blob
-      const byteCharacters = atob(data as string);
+      const byteCharacters = atob(response.data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
