@@ -15,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLineSelector } from "./table/ProductLineSelector";
 import { SculptureActions } from "./table/SculptureActions";
-import { SculpturePreview } from "./table/SculpturePreview";
 import { ProductLine } from "@/types/product-line";
 
 interface SculpturesTableProps {
@@ -84,9 +83,9 @@ export function SculpturesTable({
                 </TableCell>
                 <TableCell>
                   <ProductLineSelector
+                    sculptureId={sculpture.id}
+                    productLineId={sculpture.product_line_id}
                     productLines={productLines || []}
-                    selectedProductLineId={sculpture.product_line_id}
-                    onSelect={() => {}}
                   />
                 </TableCell>
                 <TableCell>Material Here</TableCell>

@@ -7,15 +7,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sculpture } from "@/types/sculpture";
-import { MoreHorizontal, TagIcon, Trash2 } from "lucide-react";
+import { MoreHorizontal, TagIcon, Trash2, ZoomIn } from "lucide-react";
 
 interface SculptureActionsProps {
   sculpture: Sculpture;
   onManageTags: (sculpture: Sculpture) => void;
   onDelete: (sculpture: Sculpture) => void;
+  onPreview: () => void;
 }
 
-export function SculptureActions({ sculpture, onManageTags, onDelete }: SculptureActionsProps) {
+export function SculptureActions({ sculpture, onManageTags, onDelete, onPreview }: SculptureActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,6 +25,10 @@ export function SculptureActions({ sculpture, onManageTags, onDelete }: Sculptur
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onPreview}>
+          <ZoomIn className="mr-2 h-4 w-4" />
+          Preview
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onManageTags(sculpture)}>
           <TagIcon className="mr-2 h-4 w-4" />
           Manage Tags

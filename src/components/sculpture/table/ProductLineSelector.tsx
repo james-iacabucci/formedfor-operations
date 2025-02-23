@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ProductLineSelectorProps {
   sculptureId: string;
   productLineId: string | null;
-  productLines: ProductLine[] | undefined;
+  productLines: ProductLine[];
 }
 
 export function ProductLineSelector({ sculptureId, productLineId, productLines }: ProductLineSelectorProps) {
