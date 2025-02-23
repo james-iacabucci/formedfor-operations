@@ -19,9 +19,9 @@ export const LandingPage = () => {
     <div className="min-h-screen bg-black relative">
       <DotCloud />
       
-      {/* Logo text */}
-      <div className="absolute top-6 left-6">
-        <h1 className="text-white font-bold text-4xl">
+      {/* Centered hero text */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <h1 className="text-white font-bold text-8xl tracking-tight z-10 mix-blend-difference">
           Formed For
         </h1>
       </div>

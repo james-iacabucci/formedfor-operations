@@ -23,28 +23,29 @@ export const DotCloud = () => {
     let targetRotationX = 0;
     let targetRotationY = 0;
 
-    // Create points in a uniform grid pattern
+    // Create points in a uniform grid pattern with varying Z depths
     const gridSize = 100; // Number of points along each axis
     const pointsCount = gridSize * gridSize;
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
-    // Create initial grid positions
+    // Create initial grid positions with varying Z depths
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
         const index = (i * gridSize + j) * 3;
         scatteredPositions[index] = (i - gridSize/2) * 0.5;
         scatteredPositions[index + 1] = (j - gridSize/2) * 0.5;
-        scatteredPositions[index + 2] = 0;
+        // Distribute points in front and behind the text
+        scatteredPositions[index + 2] = (Math.random() - 0.5) * 50;
       }
     }
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material with smaller, denser points
+    // Create points material with depth-based size variation
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.05, // Smaller point size for more precise look
+      size: 0.05,
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
@@ -125,7 +126,7 @@ export const DotCloud = () => {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
-    // Position camera
+    // Position camera to ensure proper depth perspective
     camera.position.z = 50;
 
     // Animation
@@ -138,7 +139,7 @@ export const DotCloud = () => {
       
       for (let i = 0; i < positions.length; i += 3) {
         // More dramatic interpolation between current and target positions
-        positions[i] += (targetPositions[i] - positions[i]) * 0.04; // Faster morphing
+        positions[i] += (targetPositions[i] - positions[i]) * 0.04;
         positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.04;
         positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.04;
 
@@ -156,10 +157,9 @@ export const DotCloud = () => {
 
       // Enhanced automatic rotation when not interacting
       if (!isMouseDown) {
-        points.rotation.y += 0.003; // Faster base rotation
-        points.rotation.x = Math.sin(time * 0.5) * 0.2; // Add gentle wave motion to rotation
+        points.rotation.y += 0.003;
+        points.rotation.x = Math.sin(time * 0.5) * 0.2;
       } else {
-        // Smooth rotation based on mouse interaction
         points.rotation.y += (targetRotationY - points.rotation.y) * 0.1;
         points.rotation.x += (targetRotationX - points.rotation.x) * 0.1;
       }
