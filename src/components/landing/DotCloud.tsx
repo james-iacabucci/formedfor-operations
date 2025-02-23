@@ -17,6 +17,13 @@ export const DotCloud = () => {
     renderer.setClearColor(0x000000);
     containerRef.current.appendChild(renderer.domElement);
 
+    // Mouse interaction state
+    let isMouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+
     // Create initial scattered points
     const pointsCount = 15000;
     const scatteredGeometry = new THREE.BufferGeometry();
@@ -48,24 +55,20 @@ export const DotCloud = () => {
       const positions = new Float32Array(pointsCount * 3);
       const scale = 15;
       const frequency = 0.05;
+      const time = Date.now() * 0.001;
       
       for (let i = 0; i < pointsCount; i++) {
-        // Generate a point on a sphere
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos((Math.random() * 2) - 1);
-        const r = 10 + Math.random() * 5; // Base radius with some variation
+        const r = 10 + Math.random() * 5;
         
-        // Add some organic variation using multiple sine waves
-        const time = Date.now() * 0.001;
         const distortion = Math.sin(theta * 4 + time) * Math.cos(phi * 3) * 2;
         const finalRadius = r + distortion;
         
-        // Convert to Cartesian coordinates
         positions[i * 3] = finalRadius * Math.sin(phi) * Math.cos(theta);
         positions[i * 3 + 1] = finalRadius * Math.sin(phi) * Math.sin(theta);
         positions[i * 3 + 2] = finalRadius * Math.cos(phi);
         
-        // Add additional organic deformation
         positions[i * 3] += Math.sin(positions[i * 3 + 1] * frequency) * scale;
         positions[i * 3 + 1] += Math.sin(positions[i * 3 + 2] * frequency) * scale;
         positions[i * 3 + 2] += Math.sin(positions[i * 3] * frequency) * scale;
@@ -74,7 +77,38 @@ export const DotCloud = () => {
       return positions;
     };
 
-    const targetPositions = generateOrganicPositions();
+    let targetPositions = generateOrganicPositions();
+
+    // Mouse event handlers
+    const onMouseDown = (event: MouseEvent) => {
+      isMouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      // Generate new organic shape when clicked
+      targetPositions = generateOrganicPositions();
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!isMouseDown) return;
+      
+      const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
+      
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      
+      targetRotationY += deltaX * 0.005;
+      targetRotationX += deltaY * 0.005;
+    };
+
+    const onMouseUp = () => {
+      isMouseDown = false;
+    };
+
+    // Add event listeners
+    containerRef.current.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
 
     // Position camera
     camera.position.z = 50;
@@ -101,8 +135,9 @@ export const DotCloud = () => {
       
       points.geometry.attributes.position.needsUpdate = true;
 
-      // Slow rotation
-      points.rotation.y += 0.001;
+      // Smooth rotation based on mouse interaction
+      points.rotation.y += (targetRotationY - points.rotation.y) * 0.1;
+      points.rotation.x += (targetRotationX - points.rotation.x) * 0.1;
 
       renderer.render(scene, camera);
     };
@@ -121,10 +156,20 @@ export const DotCloud = () => {
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      containerRef.current?.removeChild(renderer.domElement);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      if (containerRef.current) {
+        containerRef.current.removeEventListener('mousedown', onMouseDown);
+        containerRef.current.removeChild(renderer.domElement);
+      }
       scene.clear();
     };
   }, []);
 
-  return <div ref={containerRef} className="absolute inset-0" />;
+  return (
+    <div 
+      ref={containerRef} 
+      className="absolute inset-0 cursor-grab active:cursor-grabbing"
+    />
+  );
 };
