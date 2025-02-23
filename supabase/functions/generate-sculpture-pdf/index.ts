@@ -105,6 +105,7 @@ serve(async (req) => {
     const imageWidth = width * 0.5;
     const textStartX = imageWidth + 40;
     const contentWidth = width - textStartX - 40;
+    const contentCenterX = textStartX + (contentWidth / 2);
 
     // Add images with proper error handling
     try {
@@ -129,19 +130,20 @@ serve(async (req) => {
         }
       }
 
-      // Product line logo - top right
+      // Product line logo - centered and twice as large
       if (sculpture.product_line?.black_logo_url) {
         const logoBytes = await fetchImageAsBytes(sculpture.product_line.black_logo_url);
         if (logoBytes) {
           const logo = await pdfDoc.embedPng(logoBytes);
-          const logoMaxWidth = width * 0.15;
-          const logoMaxHeight = height * 0.1;
+          const logoMaxWidth = width * 0.3; // Doubled from previous 0.15
+          const logoMaxHeight = height * 0.2; // Doubled from previous 0.1
           const logoScale = Math.min(logoMaxWidth / logo.width, logoMaxHeight / logo.height);
+          const scaledLogoWidth = logo.width * logoScale;
           
           page.drawImage(logo, {
-            x: width - (logo.width * logoScale) - 40,
+            x: contentCenterX - (scaledLogoWidth / 2), // Center in content area
             y: height - (logo.height * logoScale) - 40,
-            width: logo.width * logoScale,
+            width: scaledLogoWidth,
             height: logo.height * logoScale,
           });
         }
@@ -150,32 +152,26 @@ serve(async (req) => {
       console.error('Error processing images:', imageError);
     }
 
-    let currentY = height - 60;
+    // Start content layout from top
+    let currentY = height - 140; // Adjusted to account for larger logo
 
-    // Sculpture name - large, at the top
+    // Sculpture name - below logo
     const name = sculpture.ai_generated_name || 'Untitled';
+    const nameWidth = boldFont.widthOfTextAtSize(name.toUpperCase(), 24);
     page.drawText(name.toUpperCase(), {
-      x: textStartX,
+      x: contentCenterX - (nameWidth / 2), // Center text
       y: currentY,
       size: 24,
       font: boldFont,
     });
 
-    currentY -= 60;
+    currentY -= 40;
 
-    // Material section
-    page.drawText('MATERIAL', {
-      x: textStartX,
-      y: currentY,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-    
-    currentY -= 25;
-    
-    page.drawText(sculpture.material?.name || 'Not specified', {
-      x: textStartX,
+    // Material - centered below name
+    const materialText = sculpture.material?.name || 'Not specified';
+    const materialWidth = normalFont.widthOfTextAtSize(materialText, 14);
+    page.drawText(materialText, {
+      x: contentCenterX - (materialWidth / 2),
       y: currentY,
       size: 14,
       font: normalFont,
@@ -183,46 +179,19 @@ serve(async (req) => {
 
     currentY -= 40;
 
-    // Dimensions section
-    page.drawText('DIMENSIONS', {
-      x: textStartX,
+    // Dimensions - HWD format, centered
+    const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0}`;
+    const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 14);
+    page.drawText(dimensionsText, {
+      x: contentCenterX - (dimensionsWidth / 2),
       y: currentY,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.5, 0.5, 0.5),
+      size: 14,
+      font: normalFont,
     });
 
-    currentY -= 25;
-
-    const dimensions = [
-      `H: ${sculpture.height_in || 0} in (${sculpture.height_cm || 0}cm)`,
-      `W: ${sculpture.width_in || 0} in (${sculpture.width_cm || 0}cm)`,
-      `D: ${sculpture.depth_in || 0} in (${sculpture.depth_cm || 0}cm)`,
-    ];
-
-    dimensions.forEach((dim) => {
-      page.drawText(dim, {
-        x: textStartX,
-        y: currentY,
-        size: 14,
-        font: normalFont,
-      });
-      currentY -= 20;
-    });
-
-    currentY -= 20;
-
-    // Description section
+    // Description
     if (sculpture.ai_description) {
-      page.drawText('DESCRIPTION', {
-        x: textStartX,
-        y: currentY,
-        size: 12,
-        font: boldFont,
-        color: rgb(0.5, 0.5, 0.5),
-      });
-
-      currentY -= 25;
+      currentY -= 40;
 
       const words = sculpture.ai_description.split(' ');
       let line = '';
@@ -232,8 +201,9 @@ serve(async (req) => {
         const textWidth = normalFont.widthOfTextAtSize(testLine, 14);
         
         if (textWidth > contentWidth && line.length > 0) {
+          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 14);
           page.drawText(line.trim(), {
-            x: textStartX,
+            x: contentCenterX - (lineWidth / 2),
             y: currentY,
             size: 14,
             font: normalFont,
@@ -246,8 +216,9 @@ serve(async (req) => {
       }
       
       if (line.length > 0) {
+        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 14);
         page.drawText(line.trim(), {
-          x: textStartX,
+          x: contentCenterX - (finalLineWidth / 2),
           y: currentY,
           size: 14,
           font: normalFont,
@@ -257,16 +228,20 @@ serve(async (req) => {
 
     // Edition information at the bottom
     const editionY = 80;
-    page.drawText('LIMITED EDITION OF 33', {
-      x: textStartX,
+    const editionText = 'LIMITED EDITION OF 33';
+    const editionWidth = boldFont.widthOfTextAtSize(editionText, 14);
+    page.drawText(editionText, {
+      x: contentCenterX - (editionWidth / 2),
       y: editionY,
       size: 14,
       font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
-    page.drawText('(available in multiple finishes and sizes)', {
-      x: textStartX,
+    const subEditionText = '(available in multiple finishes and sizes)';
+    const subEditionWidth = normalFont.widthOfTextAtSize(subEditionText, 12);
+    page.drawText(subEditionText, {
+      x: contentCenterX - (subEditionWidth / 2),
       y: editionY - 25,
       size: 12,
       font: normalFont,
@@ -308,3 +283,4 @@ serve(async (req) => {
     );
   }
 });
+
