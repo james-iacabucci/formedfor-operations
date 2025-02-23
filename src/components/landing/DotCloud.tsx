@@ -1,6 +1,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { FontLoader } from 'three-stdlib';
+import { TextGeometry } from 'three-stdlib';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,7 +20,7 @@ export const DotCloud = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Create initial scattered points
-    const pointsCount = 12000; // Increased for better detail
+    const pointsCount = 20000; // Increased for better detail
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
@@ -30,67 +32,90 @@ export const DotCloud = () => {
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material with a warm copper color
+    // Create points material with bright white color for clarity
     const pointsMaterial = new THREE.PointsMaterial({
-      color: 0xcd7f32, // Copper color
-      size: 0.08, // Smaller points for better detail
+      color: 0xffffff,
+      size: 0.05, // Smaller points for sharper detail
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.9,
     });
 
     // Create points system
     const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Create the sculpture shape using curves
-    const curve1 = new THREE.CubicBezierCurve3(
-      new THREE.Vector3(-10, -15, 0),
-      new THREE.Vector3(-15, 0, 10),
-      new THREE.Vector3(-5, 15, -10),
-      new THREE.Vector3(0, 15, 0)
-    );
+    // Load font and create text geometry
+    const loader = new FontLoader();
+    let targetPositions: Float32Array | null = null;
+    
+    // Load the font and create text
+    loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+      // Create "FORMED" text
+      const textGeometry1 = new TextGeometry('FORMED', {
+        font: font,
+        size: 8,
+        height: 2, // Increased depth for 3D effect
+        curveSegments: 12, // Increased for smoother curves
+        bevelEnabled: true,
+        bevelThickness: 0.3,
+        bevelSize: 0.2,
+        bevelOffset: 0,
+        bevelSegments: 5
+      });
 
-    const curve2 = new THREE.CubicBezierCurve3(
-      new THREE.Vector3(10, -15, 0),
-      new THREE.Vector3(15, 0, -10),
-      new THREE.Vector3(5, 15, 10),
-      new THREE.Vector3(0, 15, 0)
-    );
+      // Create "FOR" text
+      const textGeometry2 = new TextGeometry('FOR', {
+        font: font,
+        size: 8,
+        height: 2, // Increased depth for 3D effect
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.3,
+        bevelSize: 0.2,
+        bevelOffset: 0,
+        bevelSegments: 5
+      });
 
-    // Generate points along the curves
-    const positions: number[] = [];
-    const curvePoints1 = curve1.getPoints(200);
-    const curvePoints2 = curve2.getPoints(200);
+      // Center and position the text geometries
+      textGeometry1.center();
+      textGeometry2.center();
+      textGeometry1.translate(-12, 4, 0); // Move "FORMED" up and left
+      textGeometry2.translate(8, -4, 0);  // Move "FOR" down and right
 
-    // Function to generate points around a curve point
-    const generatePointsAroundCurve = (point: THREE.Vector3, radius: number, count: number) => {
+      // Sample points from both text geometries
+      const points1 = generatePointsFromGeometry(textGeometry1, pointsCount * 0.6);
+      const points2 = generatePointsFromGeometry(textGeometry2, pointsCount * 0.4);
+      
+      // Combine the points
+      targetPositions = new Float32Array([...points1, ...points2]);
+    });
+
+    // Helper function to generate points from geometry
+    function generatePointsFromGeometry(geometry: THREE.BufferGeometry, count: number) {
+      const positions: number[] = [];
+      const positionAttribute = geometry.attributes.position;
+      
       for (let i = 0; i < count; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI * 2;
-        const r = Math.random() * radius;
-
+        // Get random vertex from geometry
+        const vertexIndex = Math.floor(Math.random() * (positionAttribute.count));
+        const x = positionAttribute.getX(vertexIndex);
+        const y = positionAttribute.getY(vertexIndex);
+        const z = positionAttribute.getZ(vertexIndex);
+        
+        // Add some randomness within the volume of the text
         positions.push(
-          point.x + r * Math.sin(theta) * Math.cos(phi),
-          point.y + r * Math.sin(theta) * Math.sin(phi),
-          point.z + r * Math.cos(theta)
+          x + (Math.random() - 0.5) * 0.1, // Small random offset for volume
+          y + (Math.random() - 0.5) * 0.1,
+          z + (Math.random() - 0.5) * 0.1
         );
       }
-    };
-
-    // Generate points for both curves
-    curvePoints1.forEach((point) => {
-      generatePointsAroundCurve(point, 3, 30);
-    });
-
-    curvePoints2.forEach((point) => {
-      generatePointsAroundCurve(point, 3, 30);
-    });
-
-    const targetPositions = new Float32Array(positions);
+      
+      return positions;
+    }
 
     // Position camera
-    camera.position.set(0, 0, 60);
+    camera.position.z = 50;
 
     // Animation
     let time = 0;
@@ -98,26 +123,28 @@ export const DotCloud = () => {
       requestAnimationFrame(animate);
       time += 0.003;
 
-      const positions = points.geometry.attributes.position.array as Float32Array;
-      
-      for (let i = 0; i < positions.length; i += 3) {
-        // Interpolate between current and target positions
-        if (i < targetPositions.length) {
-          positions[i] += (targetPositions[i] - positions[i]) * 0.02;
-          positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
-          positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+      if (targetPositions) {
+        const positions = points.geometry.attributes.position.array as Float32Array;
+        
+        for (let i = 0; i < positions.length; i += 3) {
+          // Interpolate between current and target positions
+          if (i < targetPositions.length) {
+            positions[i] += (targetPositions[i] - positions[i]) * 0.02;
+            positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
+            positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+          }
+
+          // Add very subtle wave motion
+          positions[i] += Math.sin(time + i * 0.1) * 0.01;
+          positions[i + 1] += Math.cos(time + i * 0.1) * 0.01;
+          positions[i + 2] += Math.sin(time + i * 0.05) * 0.01;
         }
-
-        // Add subtle wave motion
-        positions[i] += Math.sin(time + i * 0.1) * 0.03;
-        positions[i + 1] += Math.cos(time + i * 0.1) * 0.03;
-        positions[i + 2] += Math.sin(time + i * 0.05) * 0.03;
+        
+        points.geometry.attributes.position.needsUpdate = true;
       }
-      
-      points.geometry.attributes.position.needsUpdate = true;
 
-      // Slow rotation
-      points.rotation.y += 0.002;
+      // Very slow rotation for depth perception
+      points.rotation.y += 0.001;
 
       renderer.render(scene, camera);
     };
