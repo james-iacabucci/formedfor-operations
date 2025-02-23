@@ -75,11 +75,15 @@ export function ProductLineButton({
           {currentProductLine?.product_line_code?.slice(0, 2) || "--"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent 
+        align="end" 
+        className="bg-popover border border-border shadow-md"
+      >
         {productLines?.map((productLine) => (
           <DropdownMenuItem
             key={productLine.id}
             onClick={() => handleProductLineChange(productLine.id)}
+            className="cursor-pointer"
           >
             {productLine.name}
           </DropdownMenuItem>
