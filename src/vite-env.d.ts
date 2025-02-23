@@ -43,6 +43,15 @@ declare module '@react-pdf/renderer' {
     children?: (props: { loading: boolean; error?: Error }) => ReactNode;
   }
 
+  export interface FontRegisterOptions {
+    family: string;
+    fonts: Array<{
+      src: string;
+      fontWeight?: number;
+      fontStyle?: string;
+    }>;
+  }
+
   export const Document: ComponentType<DocumentProps>;
   export const Page: ComponentType<PageProps>;
   export const View: ComponentType<ViewProps>;
@@ -52,5 +61,8 @@ declare module '@react-pdf/renderer' {
   export const PDFDownloadLink: ComponentType<PDFDownloadLinkProps>;
   export const StyleSheet: {
     create: <T extends { [key: string]: any }>(styles: T) => T;
+  };
+  export const Font: {
+    register: (options: FontRegisterOptions) => void;
   };
 }
