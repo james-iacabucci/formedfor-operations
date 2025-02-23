@@ -4,7 +4,10 @@ import { SculptureDocumentProps } from "./types";
 import { styles } from "./styles";
 
 export const SculptureDocument = ({ sculpture }: SculptureDocumentProps) => {
-  console.log('SculptureDocument: Attempting to render PDF');
+  console.log('SculptureDocument: Starting PDF generation', {
+    hasName: !!sculpture.ai_generated_name,
+    sculptureId: sculpture.id
+  });
   
   return (
     <Document>
@@ -13,6 +16,9 @@ export const SculptureDocument = ({ sculpture }: SculptureDocumentProps) => {
         <View style={styles.rightSection}>
           <Text style={styles.title}>
             {sculpture.ai_generated_name || "Untitled Sculpture"}
+          </Text>
+          <Text style={styles.subtitle}>
+            ID: {sculpture.id}
           </Text>
         </View>
       </Page>

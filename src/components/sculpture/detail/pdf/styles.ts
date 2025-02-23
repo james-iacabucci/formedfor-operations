@@ -23,4 +23,11 @@ export const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     textAlign: 'center',
   },
+  subtitle: {
+    fontSize: 12,
+    marginBottom: 10,
+    fontFamily: 'Helvetica',
+    textAlign: 'center',
+    color: '#666666',
+  },
 });

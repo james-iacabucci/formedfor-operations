@@ -1,51 +1,43 @@
 
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { usePDF } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SculptureDocument } from "./pdf/SculptureDocument";
 import { SculpturePDFProps } from "./pdf/types";
+import { toast } from "sonner";
 
 export function SculpturePDF({ sculpture }: SculpturePDFProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [instance, updateInstance] = usePDF({ document: <SculptureDocument sculpture={sculpture} /> });
 
-  if (error) {
-    return (
-      <Button disabled variant="outline" size="sm" className="gap-2">
-        <FileIcon className="h-4 w-4" />
-        PDF Error
-      </Button>
-    );
-  }
+  useEffect(() => {
+    if (instance.error) {
+      console.error('PDF generation error:', instance.error);
+      toast.error("Failed to generate PDF");
+    }
+  }, [instance.error]);
+
+  const handleDownload = () => {
+    if (!instance.url) return;
+    
+    const link = document.createElement('a');
+    link.href = instance.url;
+    link.download = `${sculpture.ai_generated_name || "sculpture"}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <PDFDownloadLink
-      document={<SculptureDocument sculpture={sculpture} />}
-      fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
+    <Button
+      variant="outline"
+      size="sm"
+      className="gap-2"
+      disabled={instance.loading || !instance.url}
+      onClick={handleDownload}
     >
-      {({ loading, error }) => {
-        if (error) {
-          console.error('PDF generation error:', error);
-          return (
-            <Button disabled variant="outline" size="sm" className="gap-2">
-              <FileIcon className="h-4 w-4" />
-              PDF Error
-            </Button>
-          );
-        }
-
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            disabled={loading}
-          >
-            <FileIcon className="h-4 w-4" />
-            {loading ? "Generating PDF..." : "Download Spec Sheet"}
-          </Button>
-        );
-      }}
-    </PDFDownloadLink>
+      <FileIcon className="h-4 w-4" />
+      {instance.loading ? "Generating PDF..." : "Download Spec Sheet"}
+    </Button>
   );
 }
