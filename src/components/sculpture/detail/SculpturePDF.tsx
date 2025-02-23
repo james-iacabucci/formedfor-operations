@@ -4,7 +4,7 @@ import { FileIcon } from "lucide-react";
 import { SculpturePDFProps } from "./pdf/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,23 +12,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   // Add immediate console log to verify component mounting
   console.log("SculpturePDF component mounted with sculpture:", sculpture);
 
-  const handleDownload = () => {  // Remove async for now to simplify debugging
-    console.log("Button clicked!");  // Basic click verification
-    
-    // Add a manual click test
-    alert("Button clicked - starting PDF generation");
-    
-    setIsGenerating(true);
-    
-    // Wrap the async operations in a separate function
-    generatePDF().catch(error => {
-      console.error("PDF generation failed:", error);
-      toast.error("Failed to generate PDF");
-      setIsGenerating(false);
-    });
-  };
-
-  const generatePDF = async () => {
+  const generatePDF = useCallback(async () => {
     try {
       console.log("Starting PDF generation for sculpture:", sculpture.id);
       
@@ -67,24 +51,37 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       window.URL.revokeObjectURL(url);
 
       toast.success("PDF generated successfully");
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      toast.error("Failed to generate PDF");
     } finally {
       setIsGenerating(false);
+    }
+  }, [sculpture]);
+
+  // Create a simple native button handler for testing
+  const handleButtonClick = (e: React.MouseEvent) => {
+    console.log("Native button click detected");
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Force an alert to verify the click is registered
+    window.alert("Button clicked!");
+    
+    if (!isGenerating) {
+      setIsGenerating(true);
+      generatePDF();
     }
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-2"
-      onClick={() => {
-        console.log("Button clicked through onClick prop");
-        handleDownload();
-      }}
+    <button
+      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 rounded-md px-3"
+      onClick={handleButtonClick}
       disabled={isGenerating}
     >
       <FileIcon className="h-4 w-4" />
-      {isGenerating ? "Generating PDF..." : "Download Spec Sheet"}
-    </Button>
+      <span>{isGenerating ? "Generating PDF..." : "Download Spec Sheet"}</span>
+    </button>
   );
 }
