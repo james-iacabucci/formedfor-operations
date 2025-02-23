@@ -38,7 +38,7 @@ export const LandingPage = () => {
       </div>
 
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-background">
           <DialogHeader>
             <DialogTitle>Welcome back</DialogTitle>
           </DialogHeader>
