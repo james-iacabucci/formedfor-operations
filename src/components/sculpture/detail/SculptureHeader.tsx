@@ -12,10 +12,6 @@ import { PDFGeneratorButton } from "./components/PDFGeneratorButton";
 import { ActionsDropdown } from "./components/ActionsDropdown";
 import { RegenerateButton } from "./components/RegenerateButton";
 import { useToast } from "@/hooks/use-toast";
-import { ProductLineButton } from "./ProductLineButton";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ProductLine } from "@/types/product-line";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -28,37 +24,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
-
-  // Add queries for product lines
-  const { data: productLines } = useQuery({
-    queryKey: ["product_lines"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      return data as ProductLine[];
-    },
-  });
-
-  const { data: currentProductLine } = useQuery({
-    queryKey: ["product_line", sculpture.product_line_id],
-    queryFn: async () => {
-      if (!sculpture.product_line_id) return null;
-
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .eq("id", sculpture.product_line_id)
-        .single();
-
-      if (error) throw error;
-      return data as ProductLine;
-    },
-    enabled: !!sculpture.product_line_id,
-  });
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -101,12 +66,9 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       >
         FF
       </Button>
-      <ProductLineButton
+      <SculptureStatus
         sculptureId={sculpture.id}
-        productLineId={sculpture.product_line_id}
-        productLines={productLines}
-        currentProductLine={currentProductLine}
-        variant="large"
+        status={sculpture.status}
       />
       <Button
         variant="outline"
