@@ -8,10 +8,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function fetchAndResizeImage(url: string): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  return arrayBuffer;
+async function fetchImageAsBytes(url: string): Promise<Uint8Array | null> {
+  try {
+    console.log('Fetching image:', url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error('Failed to fetch image:', response.statusText);
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -55,36 +65,38 @@ serve(async (req) => {
     // Add images with proper error handling
     try {
       if (sculpture.image_url) {
-        const imageBytes = await fetchAndResizeImage(sculpture.image_url);
-        const image = await pdfDoc.embedJpg(imageBytes);
-        const scale = Math.min(250 / image.width, 300 / image.height);
-        const scaledWidth = image.width * scale;
-        const scaledHeight = image.height * scale;
-        
-        page.drawImage(image, {
-          x: 50,
-          y: height - 350,
-          width: scaledWidth,
-          height: scaledHeight,
-        });
+        const imageBytes = await fetchImageAsBytes(sculpture.image_url);
+        if (imageBytes) {
+          const image = await pdfDoc.embedJpg(imageBytes);
+          const scale = Math.min(250 / image.width, 300 / image.height);
+          const scaledWidth = image.width * scale;
+          const scaledHeight = image.height * scale;
+          
+          page.drawImage(image, {
+            x: 50,
+            y: height - 350,
+            width: scaledWidth,
+            height: scaledHeight,
+          });
+        }
       }
 
-      // Add logo with proper scaling
       if (sculpture.product_line?.black_logo_url) {
-        const logoBytes = await fetchAndResizeImage(sculpture.product_line.black_logo_url);
-        const logo = await pdfDoc.embedPng(logoBytes);
-        const logoScale = Math.min(100 / logo.width, 50 / logo.height);
-        
-        page.drawImage(logo, {
-          x: width - 150,
-          y: height - 80,
-          width: logo.width * logoScale,
-          height: logo.height * logoScale,
-        });
+        const logoBytes = await fetchImageAsBytes(sculpture.product_line.black_logo_url);
+        if (logoBytes) {
+          const logo = await pdfDoc.embedPng(logoBytes);
+          const logoScale = Math.min(100 / logo.width, 50 / logo.height);
+          
+          page.drawImage(logo, {
+            x: width - 150,
+            y: height - 80,
+            width: logo.width * logoScale,
+            height: logo.height * logoScale,
+          });
+        }
       }
     } catch (imageError) {
       console.error('Error processing images:', imageError);
-      // Continue without images if there's an error
     }
 
     // Add text content
@@ -115,7 +127,7 @@ serve(async (req) => {
       font: helvetica,
     });
 
-    // Dimensions
+    // Dimensions (using 'in' instead of ″ to avoid encoding issues)
     page.drawText('DIMENSIONS', {
       x: width - 200,
       y: height - 200,
@@ -125,9 +137,9 @@ serve(async (req) => {
     });
 
     const dimensions = [
-      `H: ${sculpture.height_in || 0}″ (${sculpture.height_cm || 0}cm)`,
-      `W: ${sculpture.width_in || 0}″ (${sculpture.width_cm || 0}cm)`,
-      `D: ${sculpture.depth_in || 0}″ (${sculpture.depth_cm || 0}cm)`,
+      `H: ${sculpture.height_in || 0} in (${sculpture.height_cm || 0}cm)`,
+      `W: ${sculpture.width_in || 0} in (${sculpture.width_cm || 0}cm)`,
+      `D: ${sculpture.depth_in || 0} in (${sculpture.depth_cm || 0}cm)`,
     ];
 
     dimensions.forEach((dim, index) => {
