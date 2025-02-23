@@ -22,9 +22,9 @@ export const LandingPage = () => {
       {/* Centered logo */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <img 
-          src="/your-logo.png" // Replace with your actual logo path
+          src="/lovable-uploads/1d896fe1-615b-480a-afe2-43eb55e0c16f.png"
           alt="Formed For Logo"
-          className="w-[400px] mix-blend-difference" // Adjust width as needed
+          className="w-[300px] invert mix-blend-difference" // Using invert since the logo is white on black
         />
       </div>
 
