@@ -8,6 +8,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function fetchAndResizeImage(url: string): Promise<ArrayBuffer> {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  return arrayBuffer;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -44,103 +50,165 @@ serve(async (req) => {
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4 size
-    const { height } = page.getSize();
+    const { width, height } = page.getSize();
 
-    // Embed the main image
-    let imageBytes;
-    if (sculpture.image_url) {
-      const imageResponse = await fetch(sculpture.image_url);
-      imageBytes = await imageResponse.arrayBuffer();
-      const image = await pdfDoc.embedJpg(imageBytes);
-      const imageDims = image.scale(0.5); // Scale image to fit page
-      page.drawImage(image, {
-        x: 50,
-        y: height - 400,
-        width: 250,
-        height: 300,
-      });
-    }
+    // Add images with proper error handling
+    try {
+      if (sculpture.image_url) {
+        const imageBytes = await fetchAndResizeImage(sculpture.image_url);
+        const image = await pdfDoc.embedJpg(imageBytes);
+        const scale = Math.min(250 / image.width, 300 / image.height);
+        const scaledWidth = image.width * scale;
+        const scaledHeight = image.height * scale;
+        
+        page.drawImage(image, {
+          x: 50,
+          y: height - 350,
+          width: scaledWidth,
+          height: scaledHeight,
+        });
+      }
 
-    // Add product line logo if available
-    if (sculpture.product_line?.black_logo_url) {
-      const logoResponse = await fetch(sculpture.product_line.black_logo_url);
-      const logoBytes = await logoResponse.arrayBuffer();
-      const logo = await pdfDoc.embedPng(logoBytes);
-      const logoDims = logo.scale(0.3);
-      page.drawImage(logo, {
-        x: 400,
-        y: height - 100,
-        width: logoDims.width,
-        height: logoDims.height,
-      });
+      // Add logo with proper scaling
+      if (sculpture.product_line?.black_logo_url) {
+        const logoBytes = await fetchAndResizeImage(sculpture.product_line.black_logo_url);
+        const logo = await pdfDoc.embedPng(logoBytes);
+        const logoScale = Math.min(100 / logo.width, 50 / logo.height);
+        
+        page.drawImage(logo, {
+          x: width - 150,
+          y: height - 80,
+          width: logo.width * logoScale,
+          height: logo.height * logoScale,
+        });
+      }
+    } catch (imageError) {
+      console.error('Error processing images:', imageError);
+      // Continue without images if there's an error
     }
 
     // Add text content
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontSize = 12;
+    const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // Sculpture name
     page.drawText(sculpture.ai_generated_name || 'Untitled', {
-      x: 400,
-      y: height - 200,
+      x: 50,
+      y: height - 50,
       size: 24,
-      font,
+      font: helveticaBold,
     });
 
-    // Material
-    page.drawText(sculpture.material?.name || 'Material not specified', {
-      x: 400,
-      y: height - 250,
-      size: fontSize,
-      font,
+    // Material info
+    page.drawText('MATERIAL', {
+      x: width - 200,
+      y: height - 150,
+      size: 10,
+      font: helveticaBold,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+    
+    page.drawText(sculpture.material?.name || 'Not specified', {
+      x: width - 200,
+      y: height - 170,
+      size: 12,
+      font: helvetica,
     });
 
     // Dimensions
-    const dimensionsText = `Height: ${sculpture.height_in || 0} in (${sculpture.height_cm || 0} cm)\n` +
-      `Width: ${sculpture.width_in || 0} in (${sculpture.width_cm || 0} cm)\n` +
-      `Depth: ${sculpture.depth_in || 0} in (${sculpture.depth_cm || 0} cm)`;
+    page.drawText('DIMENSIONS', {
+      x: width - 200,
+      y: height - 200,
+      size: 10,
+      font: helveticaBold,
+      color: rgb(0.5, 0.5, 0.5),
+    });
 
-    page.drawText(dimensionsText, {
-      x: 400,
-      y: height - 300,
-      size: fontSize,
-      font,
-      lineHeight: 15,
+    const dimensions = [
+      `H: ${sculpture.height_in || 0}″ (${sculpture.height_cm || 0}cm)`,
+      `W: ${sculpture.width_in || 0}″ (${sculpture.width_cm || 0}cm)`,
+      `D: ${sculpture.depth_in || 0}″ (${sculpture.depth_cm || 0}cm)`,
+    ];
+
+    dimensions.forEach((dim, index) => {
+      page.drawText(dim, {
+        x: width - 200,
+        y: height - 220 - (index * 20),
+        size: 12,
+        font: helvetica,
+      });
     });
 
     // Description
     if (sculpture.ai_description) {
-      const description = sculpture.ai_description;
-      page.drawText(description, {
-        x: 400,
-        y: height - 400,
-        size: fontSize,
-        font,
-        maxWidth: 150,
-        lineHeight: 15,
+      page.drawText('DESCRIPTION', {
+        x: width - 200,
+        y: height - 300,
+        size: 10,
+        font: helveticaBold,
+        color: rgb(0.5, 0.5, 0.5),
       });
+
+      const words = sculpture.ai_description.split(' ');
+      let line = '';
+      let yPos = height - 320;
+      const maxWidth = 180;
+
+      for (const word of words) {
+        const testLine = line + word + ' ';
+        const textWidth = helvetica.widthOfTextAtSize(testLine, 12);
+        
+        if (textWidth > maxWidth && line.length > 0) {
+          page.drawText(line.trim(), {
+            x: width - 200,
+            y: yPos,
+            size: 12,
+            font: helvetica,
+          });
+          line = word + ' ';
+          yPos -= 20;
+        } else {
+          line = testLine;
+        }
+      }
+      
+      if (line.length > 0) {
+        page.drawText(line.trim(), {
+          x: width - 200,
+          y: yPos,
+          size: 12,
+          font: helvetica,
+        });
+      }
     }
 
-    // Add edition information
+    // Edition information at the bottom
     page.drawText('LIMITED EDITION OF 33', {
-      x: 400,
-      y: height - 500,
-      size: fontSize,
-      font,
+      x: width - 200,
+      y: 100,
+      size: 12,
+      font: helveticaBold,
       color: rgb(0.5, 0.5, 0.5),
     });
 
     page.drawText('(available in multiple finishes and sizes)', {
-      x: 400,
-      y: height - 520,
-      size: fontSize - 2,
-      font,
+      x: width - 200,
+      y: 80,
+      size: 10,
+      font: helvetica,
       color: rgb(0.5, 0.5, 0.5),
     });
 
     // Serialize the PDF to bytes
     const pdfBytes = await pdfDoc.save();
-    const base64PDF = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+    
+    // Convert to base64 in chunks to avoid stack overflow
+    const chunkSize = 8192;
+    const chunks = [];
+    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+      chunks.push(String.fromCharCode.apply(null, pdfBytes.subarray(i, i + chunkSize)));
+    }
+    const base64PDF = btoa(chunks.join(''));
 
     return new Response(
       JSON.stringify({ data: base64PDF }),
