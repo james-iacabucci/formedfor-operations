@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -64,23 +63,29 @@ export const DotCloud = () => {
         for (let j = 0; j < gridSize; j++) {
           const index = (i * gridSize + j) * 3;
           
-          // Create base sphere coordinates
+          // Create base sphere coordinates with more dramatic variations
           const phi = (i / gridSize) * Math.PI;
           const theta = (j / gridSize) * Math.PI * 2;
           
-          // Add organized variation
-          const radius = 15 + Math.cos(phi * 3 + time) * 2;
-          const distortion = Math.sin(theta * 4 + phi * 4 + time) * 0.5;
+          // Add more dramatic organized variation
+          const radius = 15 + Math.cos(phi * 5 + time) * 4; // Increased amplitude
+          const distortion = Math.sin(theta * 6 + phi * 6 + time) * 2; // More dramatic distortion
           
           // Convert to Cartesian coordinates while maintaining grid structure
           positions[index] = (radius + distortion) * Math.sin(phi) * Math.cos(theta);
           positions[index + 1] = (radius + distortion) * Math.sin(phi) * Math.sin(theta);
           positions[index + 2] = (radius + distortion) * Math.cos(phi);
           
-          // Add subtle grid-preserving displacement
-          positions[index] += Math.sin(phi * 8) * 0.2;
-          positions[index + 1] += Math.sin(theta * 8) * 0.2;
-          positions[index + 2] += Math.cos((phi + theta) * 4) * 0.2;
+          // Add more pronounced grid-preserving displacement
+          positions[index] += Math.sin(phi * 10) * 0.8;
+          positions[index + 1] += Math.sin(theta * 10) * 0.8;
+          positions[index + 2] += Math.cos((phi + theta) * 6) * 0.8;
+          
+          // Add clay-like bulging effect
+          const bulge = Math.sin(phi * 3) * Math.cos(theta * 3) * 2;
+          positions[index] *= 1 + bulge * 0.1;
+          positions[index + 1] *= 1 + bulge * 0.1;
+          positions[index + 2] *= 1 + bulge * 0.1;
         }
       }
       
@@ -132,26 +137,32 @@ export const DotCloud = () => {
       const positions = points.geometry.attributes.position.array as Float32Array;
       
       for (let i = 0; i < positions.length; i += 3) {
-        // Interpolate between current and target positions
-        positions[i] += (targetPositions[i] - positions[i]) * 0.02;
-        positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
-        positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+        // More dramatic interpolation between current and target positions
+        positions[i] += (targetPositions[i] - positions[i]) * 0.04; // Faster morphing
+        positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.04;
+        positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.04;
 
         // Add very subtle flowing motion while preserving grid structure
         const gridX = Math.floor(i / 3) % gridSize;
         const gridY = Math.floor((i / 3) / gridSize);
         const waveOffset = Math.sin(time + gridX * 0.1) * Math.cos(time + gridY * 0.1);
         
-        positions[i] += waveOffset * 0.01;
-        positions[i + 1] += waveOffset * 0.01;
-        positions[i + 2] += waveOffset * 0.01;
+        positions[i] += waveOffset * 0.02;
+        positions[i + 1] += waveOffset * 0.02;
+        positions[i + 2] += waveOffset * 0.02;
       }
       
       points.geometry.attributes.position.needsUpdate = true;
 
-      // Smooth rotation based on mouse interaction
-      points.rotation.y += (targetRotationY - points.rotation.y) * 0.1;
-      points.rotation.x += (targetRotationX - points.rotation.x) * 0.1;
+      // Enhanced automatic rotation when not interacting
+      if (!isMouseDown) {
+        points.rotation.y += 0.003; // Faster base rotation
+        points.rotation.x = Math.sin(time * 0.5) * 0.2; // Add gentle wave motion to rotation
+      } else {
+        // Smooth rotation based on mouse interaction
+        points.rotation.y += (targetRotationY - points.rotation.y) * 0.1;
+        points.rotation.x += (targetRotationX - points.rotation.x) * 0.1;
+      }
 
       renderer.render(scene, camera);
     };
