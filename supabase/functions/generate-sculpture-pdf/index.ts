@@ -116,12 +116,19 @@ serve(async (req) => {
 
     // Create PDF document with 16:9 aspect ratio
     const pdfDoc = await PDFDocument.create();
-    
-    // Register fontkit
     pdfDoc.registerFontkit(fontkit);
     
     const page = pdfDoc.addPage([960, 540]);
     const { width, height } = page.getSize();
+
+    // Draw off-white background for content area
+    page.drawRectangle({
+      x: width * 0.5, // Start at the middle of the page
+      y: 0,
+      width: width * 0.5, // Cover right half of the page
+      height: height,
+      color: rgb(0.97, 0.97, 0.97) // Off-white color matching the image
+    });
 
     // Fetch and embed Montserrat fonts
     console.log('Fetching fonts...');
@@ -188,8 +195,8 @@ serve(async (req) => {
       console.error('Error processing images:', imageError);
     }
 
-    // Start content layout from top, moved down two rows
-    let currentY = height - 200; // Keep this the same to maintain logo position
+    // Start content layout from top
+    let currentY = height - 200;
 
     // Sculpture name - below logo, in proper case with thinner font
     const name = sculpture.ai_generated_name || 'Untitled';
@@ -201,7 +208,7 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    // Add more space after the name (increased from -20 to -40)
+    // Add space after the name
     currentY -= 40;
 
     // Price row (if applicable)
@@ -225,11 +232,11 @@ serve(async (req) => {
         font: normalFont,
       });
 
-      // Add more space after the price (increased from -20 to -40)
-      currentY -= 40;
+      // Add space after the price
+      currentY -= 30;
     }
 
-    // Material
+    // Material (centered between price and HWD)
     const materialText = sculpture.material?.name || 'Not specified';
     const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5);
     page.drawText(materialText, {
@@ -239,9 +246,10 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    currentY -= 20; // Reduced from 40 to move HWD closer
+    // Add space after material, before HWD
+    currentY -= 30;
 
-    // Dimensions - HWD format with both units, centered
+    // Dimensions - HWD format with both units
     const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0} (in) | ${(sculpture.height_in || 0) * 2.54} × ${(sculpture.width_in || 0) * 2.54} × ${(sculpture.depth_in || 0) * 2.54} (cm)`;
     const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 10.5);
     page.drawText(dimensionsText, {
