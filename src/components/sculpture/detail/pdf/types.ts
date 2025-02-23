@@ -8,11 +8,4 @@ export interface SculpturePDFProps {
 
 export interface SculptureDocumentProps {
   sculpture: Sculpture;
-  materialName?: string;
-  selectedQuote?: {
-    tradePrice: number;
-    retailPrice: number;
-  } | null;
-  logoBase64?: string;
-  sculptureImageBase64?: string;
 }
