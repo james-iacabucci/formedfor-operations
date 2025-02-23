@@ -1,8 +1,6 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { FontLoader } from 'three-stdlib';
-import { TextGeometry } from 'three-stdlib';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +18,7 @@ export const DotCloud = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Create initial scattered points
-    const pointsCount = 20000; // Increased for better detail
+    const pointsCount = 15000;
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
@@ -32,87 +30,51 @@ export const DotCloud = () => {
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material with bright white color for clarity
+    // Create points material
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.05, // Smaller points for sharper detail
+      size: 0.08,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.8,
     });
 
     // Create points system
     const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Load font and create text geometry
-    const loader = new FontLoader();
-    let targetPositions: Float32Array | null = null;
-    
-    // Load the font and create text
-    loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', (font) => {
-      // Create "FORMED" text
-      const textGeometry1 = new TextGeometry('FORMED', {
-        font: font,
-        size: 8,
-        height: 2, // Increased depth for 3D effect
-        curveSegments: 12, // Increased for smoother curves
-        bevelEnabled: true,
-        bevelThickness: 0.3,
-        bevelSize: 0.2,
-        bevelOffset: 0,
-        bevelSegments: 5
-      });
-
-      // Create "FOR" text
-      const textGeometry2 = new TextGeometry('FOR', {
-        font: font,
-        size: 8,
-        height: 2, // Increased depth for 3D effect
-        curveSegments: 12,
-        bevelEnabled: true,
-        bevelThickness: 0.3,
-        bevelSize: 0.2,
-        bevelOffset: 0,
-        bevelSegments: 5
-      });
-
-      // Center and position the text geometries
-      textGeometry1.center();
-      textGeometry2.center();
-      textGeometry1.translate(-12, 4, 0); // Move "FORMED" up and left
-      textGeometry2.translate(8, -4, 0);  // Move "FOR" down and right
-
-      // Sample points from both text geometries
-      const points1 = generatePointsFromGeometry(textGeometry1, pointsCount * 0.6);
-      const points2 = generatePointsFromGeometry(textGeometry2, pointsCount * 0.4);
+    // Generate organic target positions
+    const generateOrganicPositions = () => {
+      const positions = new Float32Array(pointsCount * 3);
+      const scale = 15;
+      const frequency = 0.05;
       
-      // Combine the points
-      targetPositions = new Float32Array([...points1, ...points2]);
-    });
-
-    // Helper function to generate points from geometry
-    function generatePointsFromGeometry(geometry: THREE.BufferGeometry, count: number) {
-      const positions: number[] = [];
-      const positionAttribute = geometry.attributes.position;
-      
-      for (let i = 0; i < count; i++) {
-        // Get random vertex from geometry
-        const vertexIndex = Math.floor(Math.random() * (positionAttribute.count));
-        const x = positionAttribute.getX(vertexIndex);
-        const y = positionAttribute.getY(vertexIndex);
-        const z = positionAttribute.getZ(vertexIndex);
+      for (let i = 0; i < pointsCount; i++) {
+        // Generate a point on a sphere
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        const r = 10 + Math.random() * 5; // Base radius with some variation
         
-        // Add some randomness within the volume of the text
-        positions.push(
-          x + (Math.random() - 0.5) * 0.1, // Small random offset for volume
-          y + (Math.random() - 0.5) * 0.1,
-          z + (Math.random() - 0.5) * 0.1
-        );
+        // Add some organic variation using multiple sine waves
+        const time = Date.now() * 0.001;
+        const distortion = Math.sin(theta * 4 + time) * Math.cos(phi * 3) * 2;
+        const finalRadius = r + distortion;
+        
+        // Convert to Cartesian coordinates
+        positions[i * 3] = finalRadius * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = finalRadius * Math.sin(phi) * Math.sin(theta);
+        positions[i * 3 + 2] = finalRadius * Math.cos(phi);
+        
+        // Add additional organic deformation
+        positions[i * 3] += Math.sin(positions[i * 3 + 1] * frequency) * scale;
+        positions[i * 3 + 1] += Math.sin(positions[i * 3 + 2] * frequency) * scale;
+        positions[i * 3 + 2] += Math.sin(positions[i * 3] * frequency) * scale;
       }
       
       return positions;
-    }
+    };
+
+    const targetPositions = generateOrganicPositions();
 
     // Position camera
     camera.position.z = 50;
@@ -123,27 +85,23 @@ export const DotCloud = () => {
       requestAnimationFrame(animate);
       time += 0.003;
 
-      if (targetPositions) {
-        const positions = points.geometry.attributes.position.array as Float32Array;
-        
-        for (let i = 0; i < positions.length; i += 3) {
-          // Interpolate between current and target positions
-          if (i < targetPositions.length) {
-            positions[i] += (targetPositions[i] - positions[i]) * 0.02;
-            positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
-            positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
-          }
+      const positions = points.geometry.attributes.position.array as Float32Array;
+      
+      for (let i = 0; i < positions.length; i += 3) {
+        // Interpolate between current and target positions
+        positions[i] += (targetPositions[i] - positions[i]) * 0.02;
+        positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
+        positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
 
-          // Add very subtle wave motion
-          positions[i] += Math.sin(time + i * 0.1) * 0.01;
-          positions[i + 1] += Math.cos(time + i * 0.1) * 0.01;
-          positions[i + 2] += Math.sin(time + i * 0.05) * 0.01;
-        }
-        
-        points.geometry.attributes.position.needsUpdate = true;
+        // Add flowing motion
+        positions[i] += Math.sin(time + i * 0.1) * 0.03;
+        positions[i + 1] += Math.cos(time + i * 0.1) * 0.03;
+        positions[i + 2] += Math.sin(time + i * 0.05) * 0.03;
       }
+      
+      points.geometry.attributes.position.needsUpdate = true;
 
-      // Very slow rotation for depth perception
+      // Slow rotation
       points.rotation.y += 0.001;
 
       renderer.render(scene, camera);
