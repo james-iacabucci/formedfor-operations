@@ -9,16 +9,28 @@ import { useState } from "react";
 export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleDownload = async () => {
-    console.log("Button clicked - starting download process");
-    setIsGenerating(true);
+  // Add immediate console log to verify component mounting
+  console.log("SculpturePDF component mounted with sculpture:", sculpture);
 
+  const handleDownload = () => {  // Remove async for now to simplify debugging
+    console.log("Button clicked!");  // Basic click verification
+    
+    // Add a manual click test
+    alert("Button clicked - starting PDF generation");
+    
+    setIsGenerating(true);
+    
+    // Wrap the async operations in a separate function
+    generatePDF().catch(error => {
+      console.error("PDF generation failed:", error);
+      toast.error("Failed to generate PDF");
+      setIsGenerating(false);
+    });
+  };
+
+  const generatePDF = async () => {
     try {
-      // Log the Supabase client to verify it's properly initialized
-      console.log("Supabase client:", supabase);
-      console.log("Functions client:", supabase.functions);
-      
-      console.log("About to call edge function with sculpture:", sculpture.id);
+      console.log("Starting PDF generation for sculpture:", sculpture.id);
       
       const { data, error } = await supabase.functions.invoke(
         'generate-sculpture-pdf',
@@ -30,7 +42,6 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       console.log("Edge function response:", { data, error });
 
       if (error) {
-        console.error('PDF generation error:', error);
         throw error;
       }
 
@@ -56,9 +67,6 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       window.URL.revokeObjectURL(url);
 
       toast.success("PDF generated successfully");
-    } catch (error) {
-      console.error('Detailed PDF generation error:', error);
-      toast.error("Failed to generate PDF");
     } finally {
       setIsGenerating(false);
     }
@@ -69,7 +77,10 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       variant="outline"
       size="sm"
       className="gap-2"
-      onClick={handleDownload}
+      onClick={() => {
+        console.log("Button clicked through onClick prop");
+        handleDownload();
+      }}
       disabled={isGenerating}
     >
       <FileIcon className="h-4 w-4" />
