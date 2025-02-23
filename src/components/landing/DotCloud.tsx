@@ -18,7 +18,7 @@ export const DotCloud = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Create initial scattered points
-    const pointsCount = 8000; // Increased for better detail
+    const pointsCount = 12000; // Increased for better detail
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
@@ -30,10 +30,10 @@ export const DotCloud = () => {
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material
+    // Create points material with a warm copper color
     const pointsMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.12, // Smaller points for better detail
+      color: 0xcd7f32, // Copper color
+      size: 0.08, // Smaller points for better detail
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
@@ -43,111 +43,81 @@ export const DotCloud = () => {
     const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Define logo paths
-    const shape = new THREE.Shape();
-    
-    // Outer rounded rectangle (border)
-    const width = 20;
-    const height = 30;
-    const radius = 5;
-    
-    shape.moveTo(-width/2, -height/2 + radius);
-    shape.lineTo(-width/2, height/2 - radius);
-    shape.quadraticCurveTo(-width/2, height/2, -width/2 + radius, height/2);
-    shape.lineTo(width/2 - radius, height/2);
-    shape.quadraticCurveTo(width/2, height/2, width/2, height/2 - radius);
-    shape.lineTo(width/2, -height/2 + radius);
-    shape.quadraticCurveTo(width/2, -height/2, width/2 - radius, -height/2);
-    shape.lineTo(-width/2 + radius, -height/2);
-    shape.quadraticCurveTo(-width/2, -height/2, -width/2, -height/2 + radius);
+    // Create the sculpture shape using curves
+    const curve1 = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(-10, -15, 0),
+      new THREE.Vector3(-15, 0, 10),
+      new THREE.Vector3(-5, 15, -10),
+      new THREE.Vector3(0, 15, 0)
+    );
 
-    // Add the F shapes and horizontal line
-    const fShape = new THREE.Shape();
-    // Top F
-    fShape.moveTo(-5, 5);
-    fShape.lineTo(-5, 12);
-    fShape.lineTo(5, 12);
-    fShape.lineTo(5, 10);
-    fShape.lineTo(-3, 10);
-    fShape.lineTo(-3, 8);
-    fShape.lineTo(4, 8);
-    fShape.lineTo(4, 6);
-    fShape.lineTo(-3, 6);
-    fShape.lineTo(-3, 5);
-    fShape.lineTo(-5, 5);
+    const curve2 = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(10, -15, 0),
+      new THREE.Vector3(15, 0, -10),
+      new THREE.Vector3(5, 15, 10),
+      new THREE.Vector3(0, 15, 0)
+    );
 
-    // Bottom F (inverted)
-    fShape.moveTo(-5, -5);
-    fShape.lineTo(-5, -12);
-    fShape.lineTo(5, -12);
-    fShape.lineTo(5, -10);
-    fShape.lineTo(-3, -10);
-    fShape.lineTo(-3, -8);
-    fShape.lineTo(4, -8);
-    fShape.lineTo(4, -6);
-    fShape.lineTo(-3, -6);
-    fShape.lineTo(-3, -5);
-    fShape.lineTo(-5, -5);
-
-    // Horizontal line
-    fShape.moveTo(-8, 0.75);
-    fShape.lineTo(8, 0.75);
-    fShape.lineTo(8, -0.75);
-    fShape.lineTo(-8, -0.75);
-    fShape.lineTo(-8, 0.75);
-
-    // Generate geometry from shapes
-    const geometry = new THREE.ShapeGeometry(shape);
-    const fGeometry = new THREE.ShapeGeometry(fShape);
-
-    // Combine geometries
-    const combinedGeometry = new THREE.BufferGeometry();
+    // Generate points along the curves
     const positions: number[] = [];
-    
-    // Sample points from both geometries
-    const sampleGeometry = (geo: THREE.BufferGeometry, count: number) => {
-      const vertices = geo.attributes.position.array;
+    const curvePoints1 = curve1.getPoints(200);
+    const curvePoints2 = curve2.getPoints(200);
+
+    // Function to generate points around a curve point
+    const generatePointsAroundCurve = (point: THREE.Vector3, radius: number, count: number) => {
       for (let i = 0; i < count; i++) {
-        const vertexIndex = Math.floor(Math.random() * (vertices.length / 3)) * 3;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI * 2;
+        const r = Math.random() * radius;
+
         positions.push(
-          vertices[vertexIndex],
-          vertices[vertexIndex + 1],
-          vertices[vertexIndex + 2]
+          point.x + r * Math.sin(theta) * Math.cos(phi),
+          point.y + r * Math.sin(theta) * Math.sin(phi),
+          point.z + r * Math.cos(theta)
         );
       }
     };
 
-    sampleGeometry(geometry, pointsCount / 3);
-    sampleGeometry(fGeometry, (pointsCount * 2) / 3);
+    // Generate points for both curves
+    curvePoints1.forEach((point) => {
+      generatePointsAroundCurve(point, 3, 30);
+    });
+
+    curvePoints2.forEach((point) => {
+      generatePointsAroundCurve(point, 3, 30);
+    });
 
     const targetPositions = new Float32Array(positions);
 
     // Position camera
-    camera.position.z = 50;
+    camera.position.set(0, 0, 60);
 
     // Animation
     let time = 0;
     const animate = () => {
       requestAnimationFrame(animate);
-      time += 0.005;
+      time += 0.003;
 
       const positions = points.geometry.attributes.position.array as Float32Array;
       
       for (let i = 0; i < positions.length; i += 3) {
         // Interpolate between current and target positions
-        positions[i] += (targetPositions[i % targetPositions.length] - positions[i]) * 0.02;
-        positions[i + 1] += (targetPositions[(i + 1) % targetPositions.length] - positions[i + 1]) * 0.02;
-        positions[i + 2] += (targetPositions[(i + 2) % targetPositions.length] - positions[i + 2]) * 0.02;
+        if (i < targetPositions.length) {
+          positions[i] += (targetPositions[i] - positions[i]) * 0.02;
+          positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
+          positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+        }
 
         // Add subtle wave motion
-        positions[i] += Math.sin(time + i) * 0.02;
-        positions[i + 1] += Math.cos(time + i) * 0.02;
+        positions[i] += Math.sin(time + i * 0.1) * 0.03;
+        positions[i + 1] += Math.cos(time + i * 0.1) * 0.03;
+        positions[i + 2] += Math.sin(time + i * 0.05) * 0.03;
       }
       
       points.geometry.attributes.position.needsUpdate = true;
 
       // Slow rotation
-      points.rotation.y += 0.001;
+      points.rotation.y += 0.002;
 
       renderer.render(scene, camera);
     };
