@@ -10,8 +10,8 @@ export const createPointCloud = () => {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
       const index = (i * gridSize + j) * 3;
-      scatteredPositions[index] = (i - gridSize/2) * 0.7;
-      scatteredPositions[index + 1] = (j - gridSize/2) * 0.7;
+      scatteredPositions[index] = (i - gridSize/2) * 0.9; // Increased spacing
+      scatteredPositions[index + 1] = (j - gridSize/2) * 0.9; // Increased spacing
       scatteredPositions[index + 2] = (Math.random() - 0.5) * 50;
     }
   }
@@ -20,7 +20,7 @@ export const createPointCloud = () => {
   
   const pointsMaterial = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 0.1,
+    size: 0.2, // Doubled from 0.1 to 0.2
     sizeAttenuation: true,
     transparent: true,
     opacity: 0.8,
