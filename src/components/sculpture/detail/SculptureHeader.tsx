@@ -16,13 +16,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
 }
 
 export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
-  const { toast } = useToast();
+  const { toast: useToastHook } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
@@ -35,13 +36,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     try {
       await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      toast({
+      useToastHook({
         title: "Success",
         description: "Image regenerated successfully.",
       });
     } catch (error) {
       console.error("Error regenerating:", error);
-      toast({
+      useToastHook({
         title: "Error",
         description: "Failed to regenerate. Please try again.",
         variant: "destructive",
@@ -91,10 +92,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      toast.success("PDF generated successfully");
+      toast("PDF generated successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
-      toast.error("Failed to generate PDF");
+      toast("Failed to generate PDF", {
+        description: "Please try again later",
+        error: true
+      });
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -108,7 +112,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast({
+      useToastHook({
         title: "Download started",
         description: "Your image download has started.",
       });
