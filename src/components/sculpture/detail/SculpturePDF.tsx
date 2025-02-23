@@ -2,12 +2,15 @@
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
-import { useState } from "react";
 import { SculptureDocument } from "./pdf/SculptureDocument";
 import { SculpturePDFProps } from "./pdf/types";
 import { toast } from "sonner";
 
 export function SculpturePDF({ sculpture }: SculpturePDFProps) {
+  console.log('SculpturePDF: Rendering component', {
+    sculptureId: sculpture.id
+  });
+
   return (
     <PDFDownloadLink
       document={<SculptureDocument sculpture={sculpture} />}
