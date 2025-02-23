@@ -1,7 +1,7 @@
 
-import { serve } from 'https://deno.fresh.dev/std@v1/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import PDFDocument from 'https://esm.sh/pdfkit@0.13.0';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import PDFDocument from "https://esm.sh/pdfkit@0.13.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -98,14 +98,19 @@ serve(async (req) => {
 
     // Combine chunks into a single Uint8Array
     const pdfBytes = new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []));
+    
+    // Convert to base64 for transmission
+    const base64 = btoa(String.fromCharCode.apply(null, [...pdfBytes]));
 
-    return new Response(pdfBytes, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${sculpture.ai_generated_name || 'sculpture'}.pdf"`,
-      },
-    });
+    return new Response(
+      JSON.stringify(base64),
+      { 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   } catch (error) {
     console.error('Error generating PDF:', error);
     return new Response(
