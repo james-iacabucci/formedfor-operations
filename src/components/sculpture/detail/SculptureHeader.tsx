@@ -13,9 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { useQueryClient } from "@tanstack/react-query";
-import { SCULPTURE_STATUS } from "@/lib/status";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -26,6 +26,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
 
@@ -50,6 +51,55 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
+  const handleDownloadSpec = async () => {
+    console.log("Download spec button clicked");
+    if (isGeneratingPDF) return;
+
+    try {
+      setIsGeneratingPDF(true);
+      console.log("Starting PDF generation for sculpture:", sculpture.id);
+      
+      const { data, error } = await supabase.functions.invoke(
+        'generate-sculpture-pdf',
+        {
+          body: { sculptureId: sculpture.id },
+        }
+      );
+
+      console.log("Edge function response:", { data, error });
+
+      if (error) throw error;
+
+      // Convert base64 to blob
+      const byteCharacters = atob(data as string);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${sculpture.ai_generated_name || 'sculpture'}.pdf`);
+      
+      console.log("Created download link:", url);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("PDF generated successfully");
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      toast.error("Failed to generate PDF");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleDownload = () => {
     if (sculpture?.image_url) {
       const link = document.createElement("a");
@@ -61,21 +111,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       toast({
         title: "Download started",
         description: "Your image download has started.",
-      });
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    if (sculpture) {
-      const link = document.createElement("a");
-      link.href = `/sculpture-spec/${sculpture.id}.pdf`;
-      link.download = `${sculpture.ai_generated_name || 'sculpture'}-spec.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast({
-        title: "Download started",
-        description: "Your spec sheet download has started.",
       });
     }
   };
@@ -124,6 +159,14 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       <Button
         variant="outline"
         size="icon"
+        onClick={handleDownloadSpec}
+        disabled={isGeneratingPDF}
+      >
+        <FileIcon className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => setIsChatSheetOpen(true)}
       >
         <MessageCircleIcon className="h-4 w-4" />
@@ -141,10 +184,6 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           <DropdownMenuItem onClick={handleDownload}>
             <ImageIcon className="h-4 w-4 mr-2" />
             Download Image
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownloadPDF}>
-            <FileIcon className="h-4 w-4 mr-2" />
-            Download Spec Sheet
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleDelete} className="text-destructive">
             <Trash2Icon className="h-4 w-4 mr-2" />
