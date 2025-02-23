@@ -27,8 +27,8 @@ async function fetchImageAsBytes(url: string): Promise<Uint8Array | null> {
 
 async function fetchFont(weight: string): Promise<Uint8Array | null> {
   const fontUrls = {
-    normal: 'https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXo.woff2',
-    bold: 'https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM73w5aXo.woff2'
+    normal: 'https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Regular.ttf',
+    bold: 'https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf'
   };
 
   try {
