@@ -156,23 +156,24 @@ serve(async (req) => {
 
     // Sculpture name - below logo, in proper case with thinner font
     const name = sculpture.ai_generated_name || 'Untitled';
-    const nameWidth = normalFont.widthOfTextAtSize(name, 24); // Changed from boldFont to normalFont
+    const nameWidth = normalFont.widthOfTextAtSize(name, 24);
     page.drawText(name, {
       x: contentCenterX - (nameWidth / 2),
       y: currentY,
       size: 24,
-      font: normalFont, // Changed from boldFont to normalFont for thinner weight
+      font: normalFont,
     });
 
     currentY -= 40; // Reduced from 80 to move material up two rows
 
-    // Material - centered below name, with reduced font size
+    // Material - moved closer to name
+    currentY -= 30; // Reduced from 40 to move material closer to name
     const materialText = sculpture.material?.name || 'Not specified';
-    const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5); // Reduced by 25% from 14
+    const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5);
     page.drawText(materialText, {
       x: contentCenterX - (materialWidth / 2),
       y: currentY,
-      size: 10.5, // Changed from 14
+      size: 10.5,
       font: normalFont,
     });
 
@@ -180,11 +181,11 @@ serve(async (req) => {
 
     // Dimensions - HWD format with both units, centered
     const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0} (in) | ${(sculpture.height_in || 0) * 2.54} × ${(sculpture.width_in || 0) * 2.54} × ${(sculpture.depth_in || 0) * 2.54} (cm)`;
-    const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 10.5); // Same size as material
+    const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 10.5);
     page.drawText(dimensionsText, {
       x: contentCenterX - (dimensionsWidth / 2),
       y: currentY,
-      size: 10.5, // Changed from 14, matching material
+      size: 10.5,
       font: normalFont,
     });
 
@@ -194,7 +195,7 @@ serve(async (req) => {
 
       const words = sculpture.ai_description.split(' ');
       let line = '';
-      const contentPadding = 40; // Increased padding on both sides
+      const contentPadding = 40;
       const adjustedContentWidth = contentWidth - (contentPadding * 2);
 
       for (const word of words) {
@@ -227,24 +228,24 @@ serve(async (req) => {
       }
     }
 
-    // Edition information at the bottom, moved down and smaller
-    const editionY = 40; // Changed from 80 to move down
+    // Edition information at the bottom
+    const editionY = 40; // Keep this the same
     const editionText = 'LIMITED EDITION OF 33';
-    const editionWidth = boldFont.widthOfTextAtSize(editionText, 7); // Changed from 14 to 7
+    const editionWidth = boldFont.widthOfTextAtSize(editionText, 7);
     page.drawText(editionText, {
       x: contentCenterX - (editionWidth / 2),
       y: editionY,
-      size: 7, // Changed from 14 to 7
+      size: 7,
       font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
     const subEditionText = '(available in multiple finishes and sizes)';
-    const subEditionWidth = normalFont.widthOfTextAtSize(subEditionText, 6); // Changed from 12 to 6
+    const subEditionWidth = normalFont.widthOfTextAtSize(subEditionText, 7);
     page.drawText(subEditionText, {
       x: contentCenterX - (subEditionWidth / 2),
-      y: editionY - 15, // Adjusted spacing for smaller font
-      size: 6, // Changed from 12 to 6
+      y: editionY - 12,
+      size: 7,
       font: normalFont,
       color: rgb(0.5, 0.5, 0.5),
     });
