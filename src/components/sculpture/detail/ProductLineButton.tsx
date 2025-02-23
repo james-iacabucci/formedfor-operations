@@ -32,7 +32,10 @@ export function ProductLineButton({
   const { toast } = useToast();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const handleProductLineChange = async (productLineId: string) => {
+  const handleProductLineChange = async (productLineId: string, e: React.MouseEvent) => {
+    // Stop event propagation to prevent card click
+    e.stopPropagation();
+    
     try {
       const { error } = await supabase
         .from('sculptures')
@@ -61,9 +64,13 @@ export function ProductLineButton({
     }
   };
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild onClick={handleTriggerClick}>
         <Button 
           ref={buttonRef}
           variant="outline"
@@ -82,7 +89,7 @@ export function ProductLineButton({
         {productLines?.map((productLine) => (
           <DropdownMenuItem
             key={productLine.id}
-            onClick={() => handleProductLineChange(productLine.id)}
+            onClick={(e) => handleProductLineChange(productLine.id, e)}
             className="cursor-pointer"
           >
             {productLine.name}
