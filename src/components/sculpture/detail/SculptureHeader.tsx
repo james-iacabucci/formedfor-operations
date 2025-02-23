@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { MessageCircleIcon, Wand2Icon } from "lucide-react";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { PDFGeneratorButton } from "./components/PDFGeneratorButton";
 import { ActionsDropdown } from "./components/ActionsDropdown";
 import { RegenerateButton } from "./components/RegenerateButton";
 import { useToast } from "@/hooks/use-toast";
+import { ProductLineButton } from "./ProductLineButton";
+import { supabase } from "@/integrations/supabase/client";
+import { ProductLine } from "@/types/product-line";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
@@ -24,6 +27,41 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
+
+  // Fetch all product lines
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
+  // Fetch current product line if product_line_id exists
+  const { data: currentProductLine } = useQuery({
+    queryKey: ["product_line", sculpture.product_line_id],
+    queryFn: async () => {
+      if (!sculpture.product_line_id) return null;
+
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .eq("id", sculpture.product_line_id)
+        .single();
+
+      if (error) throw error;
+      return data as ProductLine;
+    },
+    enabled: !!sculpture.product_line_id,
+  });
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -59,13 +97,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="default"
-        className="gap-2 font-mono uppercase"
-      >
-        FF
-      </Button>
+      <ProductLineButton
+        sculptureId={sculpture.id}
+        productLineId={sculpture.product_line_id}
+        productLines={productLines}
+        currentProductLine={currentProductLine}
+        variant="large"
+      />
       <SculptureStatus
         sculptureId={sculpture.id}
         status={sculpture.status}
