@@ -1,8 +1,6 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { FontLoader } from 'three-stdlib';
-import { TextGeometry } from 'three-stdlib';
 
 export const DotCloud = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +18,7 @@ export const DotCloud = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Create initial scattered points
-    const pointsCount = 5000;
+    const pointsCount = 8000; // Increased for better detail
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
@@ -35,7 +33,7 @@ export const DotCloud = () => {
     // Create points material
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.15,
+      size: 0.12, // Smaller points for better detail
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
@@ -45,45 +43,84 @@ export const DotCloud = () => {
     const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Load font and create text geometry
-    const loader = new FontLoader();
-    let targetPositions: Float32Array | null = null;
+    // Define logo paths
+    const shape = new THREE.Shape();
     
-    // Load the font and create text
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-      const textGeometry = new TextGeometry('Formed For', {
-        font: font,
-        size: 10,
-        height: 0,
-        curveSegments: 4,
-      });
+    // Outer rounded rectangle (border)
+    const width = 20;
+    const height = 30;
+    const radius = 5;
+    
+    shape.moveTo(-width/2, -height/2 + radius);
+    shape.lineTo(-width/2, height/2 - radius);
+    shape.quadraticCurveTo(-width/2, height/2, -width/2 + radius, height/2);
+    shape.lineTo(width/2 - radius, height/2);
+    shape.quadraticCurveTo(width/2, height/2, width/2, height/2 - radius);
+    shape.lineTo(width/2, -height/2 + radius);
+    shape.quadraticCurveTo(width/2, -height/2, width/2 - radius, -height/2);
+    shape.lineTo(-width/2 + radius, -height/2);
+    shape.quadraticCurveTo(-width/2, -height/2, -width/2, -height/2 + radius);
 
-      textGeometry.center();
+    // Add the F shapes and horizontal line
+    const fShape = new THREE.Shape();
+    // Top F
+    fShape.moveTo(-5, 5);
+    fShape.lineTo(-5, 12);
+    fShape.lineTo(5, 12);
+    fShape.lineTo(5, 10);
+    fShape.lineTo(-3, 10);
+    fShape.lineTo(-3, 8);
+    fShape.lineTo(4, 8);
+    fShape.lineTo(4, 6);
+    fShape.lineTo(-3, 6);
+    fShape.lineTo(-3, 5);
+    fShape.lineTo(-5, 5);
 
-      // Sample points from the text geometry
-      const textPoints = generatePointsFromGeometry(textGeometry, pointsCount);
-      targetPositions = new Float32Array(textPoints.flat());
-      
-      // Update the geometry with initial positions
-      points.geometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
-    });
+    // Bottom F (inverted)
+    fShape.moveTo(-5, -5);
+    fShape.lineTo(-5, -12);
+    fShape.lineTo(5, -12);
+    fShape.lineTo(5, -10);
+    fShape.lineTo(-3, -10);
+    fShape.lineTo(-3, -8);
+    fShape.lineTo(4, -8);
+    fShape.lineTo(4, -6);
+    fShape.lineTo(-3, -6);
+    fShape.lineTo(-3, -5);
+    fShape.lineTo(-5, -5);
 
-    // Helper function to generate points from geometry
-    function generatePointsFromGeometry(geometry: THREE.BufferGeometry, count: number) {
-      const points: number[][] = [];
-      const vertices = geometry.attributes.position.array;
-      
+    // Horizontal line
+    fShape.moveTo(-8, 0.75);
+    fShape.lineTo(8, 0.75);
+    fShape.lineTo(8, -0.75);
+    fShape.lineTo(-8, -0.75);
+    fShape.lineTo(-8, 0.75);
+
+    // Generate geometry from shapes
+    const geometry = new THREE.ShapeGeometry(shape);
+    const fGeometry = new THREE.ShapeGeometry(fShape);
+
+    // Combine geometries
+    const combinedGeometry = new THREE.BufferGeometry();
+    const positions: number[] = [];
+    
+    // Sample points from both geometries
+    const sampleGeometry = (geo: THREE.BufferGeometry, count: number) => {
+      const vertices = geo.attributes.position.array;
       for (let i = 0; i < count; i++) {
         const vertexIndex = Math.floor(Math.random() * (vertices.length / 3)) * 3;
-        points.push([
+        positions.push(
           vertices[vertexIndex],
           vertices[vertexIndex + 1],
           vertices[vertexIndex + 2]
-        ]);
+        );
       }
-      
-      return points;
-    }
+    };
+
+    sampleGeometry(geometry, pointsCount / 3);
+    sampleGeometry(fGeometry, (pointsCount * 2) / 3);
+
+    const targetPositions = new Float32Array(positions);
 
     // Position camera
     camera.position.z = 50;
@@ -94,22 +131,20 @@ export const DotCloud = () => {
       requestAnimationFrame(animate);
       time += 0.005;
 
-      if (targetPositions) {
-        const positions = points.geometry.attributes.position.array as Float32Array;
-        
-        for (let i = 0; i < positions.length; i += 3) {
-          // Interpolate between current and target positions
-          positions[i] += (targetPositions[i] - positions[i]) * 0.02;
-          positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
-          positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
+      const positions = points.geometry.attributes.position.array as Float32Array;
+      
+      for (let i = 0; i < positions.length; i += 3) {
+        // Interpolate between current and target positions
+        positions[i] += (targetPositions[i % targetPositions.length] - positions[i]) * 0.02;
+        positions[i + 1] += (targetPositions[(i + 1) % targetPositions.length] - positions[i + 1]) * 0.02;
+        positions[i + 2] += (targetPositions[(i + 2) % targetPositions.length] - positions[i + 2]) * 0.02;
 
-          // Add some wave motion
-          positions[i] += Math.sin(time + i) * 0.03;
-          positions[i + 1] += Math.cos(time + i) * 0.03;
-        }
-        
-        points.geometry.attributes.position.needsUpdate = true;
+        // Add subtle wave motion
+        positions[i] += Math.sin(time + i) * 0.02;
+        positions[i + 1] += Math.cos(time + i) * 0.02;
       }
+      
+      points.geometry.attributes.position.needsUpdate = true;
 
       // Slow rotation
       points.rotation.y += 0.001;
