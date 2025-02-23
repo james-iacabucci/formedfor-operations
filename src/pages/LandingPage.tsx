@@ -19,11 +19,13 @@ export const LandingPage = () => {
     <div className="min-h-screen bg-black relative">
       <DotCloud />
       
-      {/* Centered hero text */}
+      {/* Centered logo */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <h1 className="text-white font-bold text-8xl tracking-tight z-10 mix-blend-difference">
-          Formed For
-        </h1>
+        <img 
+          src="/your-logo.png" // Replace with your actual logo path
+          alt="Formed For Logo"
+          className="w-[400px] mix-blend-difference" // Adjust width as needed
+        />
       </div>
 
       {/* Sign in button */}
