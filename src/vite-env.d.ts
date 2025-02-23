@@ -30,10 +30,17 @@ declare module '@react-pdf/renderer' {
     style?: any;
   }
 
+  export interface PDFViewerProps {
+    width?: number | string;
+    height?: number | string;
+    style?: any;
+    children?: ReactNode;
+  }
+
   export interface PDFDownloadLinkProps {
     document: ReactElement;
     fileName?: string;
-    children?: (props: { loading: boolean; error?: Error }) => ReactNode;
+    children?: ReactNode | ((props: { blob: Blob | null; url: string | null; loading: boolean; error: Error | null }) => ReactNode);
   }
 
   export const Document: ComponentType<DocumentProps>;
@@ -41,6 +48,7 @@ declare module '@react-pdf/renderer' {
   export const View: ComponentType<ViewProps>;
   export const Text: ComponentType<TextProps>;
   export const Image: ComponentType<ImageProps>;
+  export const PDFViewer: ComponentType<PDFViewerProps>;
   export const PDFDownloadLink: ComponentType<PDFDownloadLinkProps>;
   export const StyleSheet: {
     create: <T extends { [key: string]: any }>(styles: T) => T;
