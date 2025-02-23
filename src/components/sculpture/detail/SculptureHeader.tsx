@@ -8,7 +8,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon, ImageIcon, MessageCircleIcon, MoreHorizontalIcon, RefreshCwIcon, Trash2Icon, Wand2Icon } from "lucide-react";
+import { 
+  FileIcon, 
+  ImageIcon, 
+  MessageCircleIcon, 
+  MoreHorizontalIcon, 
+  RefreshCwIcon, 
+  Trash2Icon, 
+  Wand2Icon,
+  ChevronDownIcon 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
@@ -52,18 +61,20 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     }
   };
 
-  const handleDownloadSpec = async () => {
-    console.log("Download spec button clicked");
+  const generatePDF = async (pricingMode: 'none' | 'trade' | 'retail') => {
     if (isGeneratingPDF) return;
 
     try {
       setIsGeneratingPDF(true);
-      console.log("Starting PDF generation for sculpture:", sculpture.id);
+      console.log("Starting PDF generation for sculpture:", sculpture.id, "with pricing mode:", pricingMode);
       
       const { data: response, error } = await supabase.functions.invoke(
         'generate-sculpture-pdf',
         {
-          body: { sculptureId: sculpture.id },
+          body: { 
+            sculptureId: sculpture.id,
+            pricingMode
+          },
         }
       );
 
@@ -93,12 +104,11 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      toast("PDF generated successfully");
+      toast.success("PDF generated successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
-      toast("Failed to generate PDF", {
-        description: "Please try again later",
-        style: { backgroundColor: 'red', color: 'white' }
+      toast.error("Failed to generate PDF", {
+        description: "Please try again later"
       });
     } finally {
       setIsGeneratingPDF(false);
@@ -161,14 +171,28 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
           <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
         </Button>
       )}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleDownloadSpec}
-        disabled={isGeneratingPDF}
-      >
-        <FileIcon className="h-4 w-4" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={isGeneratingPDF}
+          >
+            <FileIcon className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => generatePDF('none')}>
+            No Pricing
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => generatePDF('trade')}>
+            Trade Pricing
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => generatePDF('retail')}>
+            Trade & Retail Pricing
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
         variant="outline"
         size="icon"
@@ -213,3 +237,4 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     </div>
   );
 }
+
