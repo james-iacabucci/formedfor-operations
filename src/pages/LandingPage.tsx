@@ -33,7 +33,7 @@ export const LandingPage = () => {
       <div className="absolute top-6 right-6">
         <Button
           onClick={() => setShowLogin(true)}
-          className="bg-white text-black hover:bg-black hover:text-white transition-colors"
+          className="bg-white text-black hover:bg-black hover:text-white hover:border-white border transition-all"
         >
           Sign In
         </Button>
