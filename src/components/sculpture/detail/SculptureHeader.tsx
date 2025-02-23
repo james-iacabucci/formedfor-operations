@@ -97,7 +97,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       console.error("PDF generation failed:", error);
       toast("Failed to generate PDF", {
         description: "Please try again later",
-        error: true
+        style: { backgroundColor: 'red', color: 'white' }
       });
     } finally {
       setIsGeneratingPDF(false);
