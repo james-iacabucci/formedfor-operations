@@ -78,14 +78,16 @@ serve(async (req) => {
     if (sculptureError) throw sculptureError;
     if (!sculpture) throw new Error('Sculpture not found');
 
-    // Create PDF document
+    // Create PDF document with 16:9 aspect ratio
     const pdfDoc = await PDFDocument.create();
+    
+    // Register fontkit
     pdfDoc.registerFontkit(fontkit);
     
     const page = pdfDoc.addPage([960, 540]);
     const { width, height } = page.getSize();
 
-    // Embed fonts
+    // Fetch and embed Montserrat fonts
     console.log('Fetching fonts...');
     const normalFontBytes = await fetchFont('normal');
     const boldFontBytes = await fetchFont('bold');
@@ -99,124 +101,81 @@ serve(async (req) => {
 
     console.log('Fonts embedded successfully');
 
-    // Layout constants
-    const margin = 40;
-    const leftSection = width * 0.5;
-    const rightSection = width - leftSection - margin;
-    const redLineColor = rgb(0.8, 0.2, 0.2);
+    // Calculate layout dimensions
+    const imageWidth = width * 0.5;
+    const textStartX = imageWidth + 40;
+    const contentWidth = width - textStartX - 40;
 
-    // Add sculpture image on the left
-    if (sculpture.image_url) {
-      const imageBytes = await fetchImageAsBytes(sculpture.image_url);
-      if (imageBytes) {
-        const image = await pdfDoc.embedJpg(imageBytes);
-        const imgAspectRatio = image.width / image.height;
-        let imgWidth = leftSection - margin * 2;
-        let imgHeight = imgWidth / imgAspectRatio;
-        
-        // Ensure image fits height
-        if (imgHeight > height - margin * 2) {
-          imgHeight = height - margin * 2;
-          imgWidth = imgHeight * imgAspectRatio;
+    // Add images with proper error handling
+    try {
+      // Main sculpture image - full height, left edge
+      if (sculpture.image_url) {
+        const imageBytes = await fetchImageAsBytes(sculpture.image_url);
+        if (imageBytes) {
+          const image = await pdfDoc.embedJpg(imageBytes);
+          const scale = Math.max(imageWidth / image.width, height / image.height);
+          const scaledWidth = image.width * scale;
+          const scaledHeight = image.height * scale;
+          
+          // Center the image horizontally if it's wider than the space
+          const xOffset = (imageWidth - scaledWidth) / 2;
+          
+          page.drawImage(image, {
+            x: xOffset,
+            y: 0,
+            width: scaledWidth,
+            height: scaledHeight,
+          });
         }
-        
-        // Center image in left section
-        const xOffset = margin + (leftSection - margin * 2 - imgWidth) / 2;
-        const yOffset = (height - imgHeight) / 2;
-        
-        page.drawImage(image, {
-          x: xOffset,
-          y: yOffset,
-          width: imgWidth,
-          height: imgHeight,
-        });
       }
+
+      // Product line logo - top right
+      if (sculpture.product_line?.black_logo_url) {
+        const logoBytes = await fetchImageAsBytes(sculpture.product_line.black_logo_url);
+        if (logoBytes) {
+          const logo = await pdfDoc.embedPng(logoBytes);
+          const logoMaxWidth = width * 0.15;
+          const logoMaxHeight = height * 0.1;
+          const logoScale = Math.min(logoMaxWidth / logo.width, logoMaxHeight / logo.height);
+          
+          page.drawImage(logo, {
+            x: width - (logo.width * logoScale) - 40,
+            y: height - (logo.height * logoScale) - 40,
+            width: logo.width * logoScale,
+            height: logo.height * logoScale,
+          });
+        }
+      }
+    } catch (imageError) {
+      console.error('Error processing images:', imageError);
     }
 
-    // Right section content
-    const rightStart = leftSection + margin;
+    let currentY = height - 60;
 
-    // Draw diagonal lines and title
-    const lineLength = 100;
-    const lineAngle = Math.PI / 4; // 45 degrees
-    const lineOffsetY = height - margin - 20;
-    
-    // Top diagonal red line
-    page.drawLine({
-      start: { x: rightStart, y: lineOffsetY },
-      end: { x: rightStart + lineLength * Math.cos(lineAngle), 
-             y: lineOffsetY - lineLength * Math.sin(lineAngle) },
-      color: redLineColor,
-      thickness: 1,
-    });
-
-    // Title text
+    // Sculpture name - large, at the top
     const name = sculpture.ai_generated_name || 'Untitled';
-    let currentY = height - margin - 60;
-    page.drawText(name, {
-      x: rightStart,
+    page.drawText(name.toUpperCase(), {
+      x: textStartX,
       y: currentY,
       size: 24,
       font: boldFont,
     });
 
-    currentY -= 80;
-
-    // Center logo and "FORMED FOR" text
-    if (sculpture.product_line?.black_logo_url) {
-      const logoBytes = await fetchImageAsBytes(sculpture.product_line.black_logo_url);
-      if (logoBytes) {
-        const logo = await pdfDoc.embedPng(logoBytes);
-        const logoMaxWidth = 80;
-        const logoMaxHeight = 80;
-        const logoScale = Math.min(logoMaxWidth / logo.width, logoMaxHeight / logo.height);
-        
-        const logoWidth = logo.width * logoScale;
-        const logoX = rightStart + (rightSection - logoWidth) / 2;
-        
-        page.drawImage(logo, {
-          x: logoX,
-          y: currentY,
-          width: logoWidth,
-          height: logo.height * logoScale,
-        });
-
-        currentY -= 40;
-        
-        const formedForText = "FORMED FOR";
-        const textWidth = boldFont.widthOfTextAtSize(formedForText, 12);
-        page.drawText(formedForText, {
-          x: rightStart + (rightSection - textWidth) / 2,
-          y: currentY,
-          size: 12,
-          font: boldFont,
-        });
-      }
-    }
-
     currentY -= 60;
 
-    // Sculpture name in larger font
-    page.drawText(name, {
-      x: rightStart,
+    // Material section
+    page.drawText('MATERIAL', {
+      x: textStartX,
       y: currentY,
-      size: 28,
+      size: 12,
       font: boldFont,
+      color: rgb(0.5, 0.5, 0.5),
     });
-
-    currentY -= 40;
-
-    // Material text with red line
-    page.drawLine({
-      start: { x: rightStart, y: currentY + 10 },
-      end: { x: rightStart + lineLength * Math.cos(lineAngle), 
-             y: currentY + 10 - lineLength * Math.sin(lineAngle) },
-      color: redLineColor,
-      thickness: 1,
-    });
-
-    page.drawText((sculpture.material?.name || 'Not specified'), {
-      x: rightStart,
+    
+    currentY -= 25;
+    
+    page.drawText(sculpture.material?.name || 'Not specified', {
+      x: textStartX,
       y: currentY,
       size: 14,
       font: normalFont,
@@ -224,47 +183,63 @@ serve(async (req) => {
 
     currentY -= 40;
 
-    // Dimensions with elegant formatting
-    const formatDimension = (value: number | null, unit: string) => 
-      `${value?.toFixed(2) || '0'} ${unit}`;
+    // Dimensions section
+    page.drawText('DIMENSIONS', {
+      x: textStartX,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+
+    currentY -= 25;
 
     const dimensions = [
-      `Height: ${formatDimension(sculpture.height_in, 'in')} | ${formatDimension(sculpture.height_cm, 'cm')}`,
-      `Width: ${formatDimension(sculpture.width_in, 'in')} | ${formatDimension(sculpture.width_cm, 'cm')}`,
-      `Depth: ${formatDimension(sculpture.depth_in, 'in')} | ${formatDimension(sculpture.depth_cm, 'cm')}`,
+      `H: ${sculpture.height_in || 0} in (${sculpture.height_cm || 0}cm)`,
+      `W: ${sculpture.width_in || 0} in (${sculpture.width_cm || 0}cm)`,
+      `D: ${sculpture.depth_in || 0} in (${sculpture.depth_cm || 0}cm)`,
     ];
 
     dimensions.forEach((dim) => {
       page.drawText(dim, {
-        x: rightStart,
+        x: textStartX,
         y: currentY,
-        size: 12,
+        size: 14,
         font: normalFont,
       });
       currentY -= 20;
     });
 
-    currentY -= 40;
+    currentY -= 20;
 
-    // Description with better text wrapping
+    // Description section
     if (sculpture.ai_description) {
+      page.drawText('DESCRIPTION', {
+        x: textStartX,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+
+      currentY -= 25;
+
       const words = sculpture.ai_description.split(' ');
       let line = '';
-      const maxWidth = rightSection - margin;
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = normalFont.widthOfTextAtSize(testLine, 12);
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 14);
         
-        if (textWidth > maxWidth && line.length > 0) {
+        if (textWidth > contentWidth && line.length > 0) {
           page.drawText(line.trim(), {
-            x: rightStart,
+            x: textStartX,
             y: currentY,
-            size: 12,
+            size: 14,
             font: normalFont,
           });
           line = word + ' ';
-          currentY -= 16;
+          currentY -= 20;
         } else {
           line = testLine;
         }
@@ -272,35 +247,36 @@ serve(async (req) => {
       
       if (line.length > 0) {
         page.drawText(line.trim(), {
-          x: rightStart,
+          x: textStartX,
           y: currentY,
-          size: 12,
+          size: 14,
           font: normalFont,
         });
       }
     }
 
     // Edition information at the bottom
-    const editionY = margin + 40;
+    const editionY = 80;
     page.drawText('LIMITED EDITION OF 33', {
-      x: rightStart,
+      x: textStartX,
       y: editionY,
-      size: 12,
+      size: 14,
       font: boldFont,
+      color: rgb(0.5, 0.5, 0.5),
     });
 
     page.drawText('(available in multiple finishes and sizes)', {
-      x: rightStart,
-      y: editionY - 20,
-      size: 10,
+      x: textStartX,
+      y: editionY - 25,
+      size: 12,
       font: normalFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
-    // Serialize PDF
+    // Serialize the PDF to bytes
     const pdfBytes = await pdfDoc.save();
     
-    // Convert to base64 in chunks
+    // Convert to base64 in chunks to avoid stack overflow
     const chunkSize = 8192;
     const chunks = [];
     for (let i = 0; i < pdfBytes.length; i += chunkSize) {
