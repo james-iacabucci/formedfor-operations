@@ -24,7 +24,7 @@ export const LandingPage = () => {
         <img 
           src="/lovable-uploads/1d896fe1-615b-480a-afe2-43eb55e0c16f.png"
           alt="Formed For Logo"
-          className="w-[300px] invert mix-blend-difference" // Using invert since the logo is white on black
+          className="w-[300px] mix-blend-difference"
         />
       </div>
 
