@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
 import { ManageTagsDialog } from "./tags/ManageTagsDialog";
@@ -34,6 +36,7 @@ export function SculpturesList({
   selectedProductLines = [],
   searchQuery = ""
 }: SculpturesListProps) {
+  const navigate = useNavigate();
   const [sculptureToDelete, setSculptureToDelete] = useState<Sculpture | null>(null);
   const [sculptureToManageTags, setSculptureToManageTags] = useState<Sculpture | null>(null);
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
@@ -44,6 +47,10 @@ export function SculpturesList({
     selectedProductLines,
     searchQuery
   );
+
+  const handleSculptureClick = (sculptureId: string) => {
+    navigate(`/sculpture/${sculptureId}`);
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -86,6 +93,7 @@ export function SculpturesList({
           sculptureTagRelations={sculptureTagRelations}
           onDelete={(sculpture) => setSculptureToDelete(sculpture)}
           onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
+          onSculptureClick={handleSculptureClick}
         />
       ) : (
         <SculpturesTable
@@ -94,6 +102,7 @@ export function SculpturesList({
           sculptureTagRelations={sculptureTagRelations}
           onDelete={(sculpture) => setSculptureToDelete(sculpture)}
           onManageTags={(sculpture) => setSculptureToManageTags(sculpture)}
+          onSculptureClick={handleSculptureClick}
         />
       )}
 
