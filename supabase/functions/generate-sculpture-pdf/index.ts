@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { PDFDocument, rgb, StandardFonts } from "https://cdn.skypack.dev/pdf-lib@1.17.1";
+import { PDFDocument, rgb } from "https://cdn.skypack.dev/pdf-lib@1.17.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +20,21 @@ async function fetchImageAsBytes(url: string): Promise<Uint8Array | null> {
     return new Uint8Array(arrayBuffer);
   } catch (error) {
     console.error('Error fetching image:', error);
+    return null;
+  }
+}
+
+async function fetchMontserratFont(): Promise<Uint8Array | null> {
+  try {
+    const response = await fetch('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    if (!response.ok) {
+      console.error('Failed to fetch Montserrat font');
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  } catch (error) {
+    console.error('Error fetching Montserrat font:', error);
     return null;
   }
 }
@@ -57,34 +72,34 @@ serve(async (req) => {
     if (sculptureError) throw sculptureError;
     if (!sculpture) throw new Error('Sculpture not found');
 
-    // Create a new PDF document - A4 Landscape (width: 842, height: 595)
+    // Create a new PDF document with 16:9 aspect ratio
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([842, 595]); // A4 Landscape
+    // Using 1920x1080 scaled down for PDF (divided by 2 for better viewing)
+    const page = pdfDoc.addPage([960, 540]);
     const { width, height } = page.getSize();
 
-    // Define layout constants
-    const margin = 50;
-    const imageWidth = 400;
-    const textStartX = margin + imageWidth + 60; // Start text content after image
-    const contentWidth = width - textStartX - margin;
+    // Calculate layout dimensions
+    const imageWidth = width * 0.5; // Left half of the page
+    const textStartX = imageWidth + 40; // Start text content after image
+    const contentWidth = width - textStartX - 40;
 
     // Add images with proper error handling
     try {
-      // Main sculpture image - large, on the left side
+      // Main sculpture image - full height, left edge
       if (sculpture.image_url) {
         const imageBytes = await fetchImageAsBytes(sculpture.image_url);
         if (imageBytes) {
           const image = await pdfDoc.embedJpg(imageBytes);
-          const scale = Math.min(imageWidth / image.width, (height - 2 * margin) / image.height);
+          const scale = Math.max(imageWidth / image.width, height / image.height);
           const scaledWidth = image.width * scale;
           const scaledHeight = image.height * scale;
           
-          // Center the image vertically in the left section
-          const imageY = margin + ((height - 2 * margin) - scaledHeight) / 2;
+          // Center the image horizontally if it's wider than the space
+          const xOffset = (imageWidth - scaledWidth) / 2;
           
           page.drawImage(image, {
-            x: margin,
-            y: imageY,
+            x: xOffset,
+            y: 0,
             width: scaledWidth,
             height: scaledHeight,
           });
@@ -96,13 +111,13 @@ serve(async (req) => {
         const logoBytes = await fetchImageAsBytes(sculpture.product_line.black_logo_url);
         if (logoBytes) {
           const logo = await pdfDoc.embedPng(logoBytes);
-          const logoMaxWidth = 120;
-          const logoMaxHeight = 60;
+          const logoMaxWidth = width * 0.15;
+          const logoMaxHeight = height * 0.1;
           const logoScale = Math.min(logoMaxWidth / logo.width, logoMaxHeight / logo.height);
           
           page.drawImage(logo, {
-            x: width - margin - (logo.width * logoScale),
-            y: height - margin - (logo.height * logoScale),
+            x: width - (logo.width * logoScale) - 40,
+            y: height - (logo.height * logoScale) - 40,
             width: logo.width * logoScale,
             height: logo.height * logoScale,
           });
@@ -112,11 +127,11 @@ serve(async (req) => {
       console.error('Error processing images:', imageError);
     }
 
-    // Add text content
-    const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    // Use embedded font (fallback to Helvetica if Montserrat fails)
+    const standardFont = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
+    const standardFontBold = await pdfDoc.embedFont(PDFDocument.Font.HelveticaBold);
 
-    let currentY = height - margin - 20; // Start below top margin
+    let currentY = height - 60;
 
     // Sculpture name - large, at the top
     const name = sculpture.ai_generated_name || 'Untitled';
@@ -124,17 +139,17 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 24,
-      font: helveticaBold,
+      font: standardFontBold,
     });
 
-    currentY -= 60; // Space after title
+    currentY -= 60;
 
     // Material section
     page.drawText('MATERIAL', {
       x: textStartX,
       y: currentY,
       size: 12,
-      font: helveticaBold,
+      font: standardFontBold,
       color: rgb(0.5, 0.5, 0.5),
     });
     
@@ -144,7 +159,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 14,
-      font: helvetica,
+      font: standardFont,
     });
 
     currentY -= 40;
@@ -154,7 +169,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 12,
-      font: helveticaBold,
+      font: standardFontBold,
       color: rgb(0.5, 0.5, 0.5),
     });
 
@@ -171,7 +186,7 @@ serve(async (req) => {
         x: textStartX,
         y: currentY,
         size: 14,
-        font: helvetica,
+        font: standardFont,
       });
       currentY -= 20;
     });
@@ -184,7 +199,7 @@ serve(async (req) => {
         x: textStartX,
         y: currentY,
         size: 12,
-        font: helveticaBold,
+        font: standardFontBold,
         color: rgb(0.5, 0.5, 0.5),
       });
 
@@ -192,18 +207,17 @@ serve(async (req) => {
 
       const words = sculpture.ai_description.split(' ');
       let line = '';
-      const maxWidth = contentWidth;
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = helvetica.widthOfTextAtSize(testLine, 14);
+        const textWidth = standardFont.widthOfTextAtSize(testLine, 14);
         
-        if (textWidth > maxWidth && line.length > 0) {
+        if (textWidth > contentWidth && line.length > 0) {
           page.drawText(line.trim(), {
             x: textStartX,
             y: currentY,
             size: 14,
-            font: helvetica,
+            font: standardFont,
           });
           line = word + ' ';
           currentY -= 20;
@@ -217,18 +231,18 @@ serve(async (req) => {
           x: textStartX,
           y: currentY,
           size: 14,
-          font: helvetica,
+          font: standardFont,
         });
       }
     }
 
-    // Edition information - fixed at the bottom of the text section
-    const editionY = margin + 60;
+    // Edition information at the bottom
+    const editionY = 80;
     page.drawText('LIMITED EDITION OF 33', {
       x: textStartX,
       y: editionY,
       size: 14,
-      font: helveticaBold,
+      font: standardFontBold,
       color: rgb(0.5, 0.5, 0.5),
     });
 
@@ -236,7 +250,7 @@ serve(async (req) => {
       x: textStartX,
       y: editionY - 25,
       size: 12,
-      font: helvetica,
+      font: standardFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
