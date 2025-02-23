@@ -2,41 +2,26 @@
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  FileIcon, 
-  ImageIcon, 
-  MessageCircleIcon, 
-  MoreHorizontalIcon, 
-  RefreshCwIcon, 
-  Trash2Icon, 
-  Wand2Icon,
-  ChevronDownIcon 
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { MessageCircleIcon, Wand2Icon } from "lucide-react";
 import { useState } from "react";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { useQueryClient } from "@tanstack/react-query";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { PDFGeneratorButton } from "./components/PDFGeneratorButton";
+import { ActionsDropdown } from "./components/ActionsDropdown";
+import { RegenerateButton } from "./components/RegenerateButton";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
 }
 
 export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
-  const { toast: useToastHook } = useToast();
+  const { toast } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const [isChatSheetOpen, setIsChatSheetOpen] = useState(false);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
 
@@ -45,88 +30,19 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     try {
       await regenerateImage(sculpture.id);
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      useToastHook({
+      toast({
         title: "Success",
         description: "Image regenerated successfully.",
       });
     } catch (error) {
       console.error("Error regenerating:", error);
-      useToastHook({
+      toast({
         title: "Error",
         description: "Failed to regenerate. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsRegenerating(false);
-    }
-  };
-
-  const generatePDF = async (pricingMode: 'none' | 'trade' | 'retail') => {
-    if (isGeneratingPDF) return;
-
-    try {
-      setIsGeneratingPDF(true);
-      console.log("Starting PDF generation for sculpture:", sculpture.id, "with pricing mode:", pricingMode);
-      
-      const { data: response, error } = await supabase.functions.invoke(
-        'generate-sculpture-pdf',
-        {
-          body: { 
-            sculptureId: sculpture.id,
-            pricingMode
-          },
-        }
-      );
-
-      console.log("Edge function response:", { data: response, error });
-
-      if (error) throw error;
-      if (!response?.data) throw new Error("No PDF data received");
-
-      // Convert base64 to blob
-      const byteCharacters = atob(response.data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${sculpture.ai_generated_name || 'sculpture'}.pdf`);
-      
-      console.log("Created download link:", url);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("PDF generated successfully");
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      toast.error("Failed to generate PDF", {
-        description: "Please try again later"
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (sculpture?.image_url) {
-      const link = document.createElement("a");
-      link.href = sculpture.image_url;
-      link.download = `${sculpture.ai_generated_name || 'sculpture'}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      useToastHook({
-        title: "Download started",
-        description: "Your image download has started.",
-      });
     }
   };
 
@@ -162,37 +78,15 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         <Wand2Icon className="h-4 w-4" />
       </Button>
       {showRegenerateButton && (
-        <Button
-          variant="outline"
-          size="icon"
+        <RegenerateButton
           onClick={handleRegenerate}
-          disabled={isRegenerating}
-        >
-          <RefreshCwIcon className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-        </Button>
+          isRegenerating={isRegenerating}
+        />
       )}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={isGeneratingPDF}
-          >
-            <FileIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => generatePDF('none')}>
-            No Pricing
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => generatePDF('trade')}>
-            Trade Pricing
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => generatePDF('retail')}>
-            Trade & Retail Pricing
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <PDFGeneratorButton
+        sculptureId={sculpture.id}
+        sculptureName={sculpture.ai_generated_name}
+      />
       <Button
         variant="outline"
         size="icon"
@@ -200,26 +94,11 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       >
         <MessageCircleIcon className="h-4 w-4" />
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon"
-          >
-            <MoreHorizontalIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={handleDownload}>
-            <ImageIcon className="h-4 w-4 mr-2" />
-            Download Image
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-            <Trash2Icon className="h-4 w-4 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ActionsDropdown
+        imageUrl={sculpture.image_url}
+        sculptureName={sculpture.ai_generated_name}
+        onDelete={handleDelete}
+      />
 
       <RegenerationSheet
         open={isRegenerationSheetOpen}
@@ -237,4 +116,3 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
     </div>
   );
 }
-
