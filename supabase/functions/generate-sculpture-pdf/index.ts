@@ -44,14 +44,49 @@ async function fetchFont(weight: string): Promise<Uint8Array | null> {
   }
 }
 
+const calculateTotal = (quote: { 
+  fabrication_cost: number; 
+  shipping_cost: number; 
+  customs_cost: number; 
+  other_cost: number; 
+}) => {
+  return (
+    (quote.fabrication_cost || 0) +
+    (quote.shipping_cost || 0) +
+    (quote.customs_cost || 0) +
+    (quote.other_cost || 0)
+  );
+};
+
+const calculateTradePrice = (quote: { 
+  markup: number;
+  fabrication_cost: number;
+  shipping_cost: number;
+  customs_cost: number;
+  other_cost: number;
+}) => {
+  return calculateTotal(quote) * (quote.markup || 4);
+};
+
+const calculateRetailPrice = (tradePrice: number) => {
+  return Math.ceil(tradePrice / (1 - 0.35) / 250) * 250;
+};
+
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('en-US', { 
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0
+  }).format(num);
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { sculptureId } = await req.json();
-    console.log("Generating PDF for sculpture:", sculptureId);
+    const { sculptureId, pricingMode = 'none' } = await req.json();
+    console.log("Generating PDF for sculpture:", sculptureId, "with pricing mode:", pricingMode);
 
     // Initialize Supabase client
     const supabase = createClient(
@@ -59,7 +94,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch sculpture data
+    // Fetch sculpture data with the selected quote
     const { data: sculpture, error: sculptureError } = await supabase
       .from('sculptures')
       .select(`
@@ -69,9 +104,11 @@ serve(async (req) => {
           black_logo_url,
           white_logo_url
         ),
-        material:value_lists!sculptures_material_id_fkey(name)
+        material:value_lists!sculptures_material_id_fkey(name),
+        fabrication_quotes!inner(*)
       `)
       .eq('id', sculptureId)
+      .eq('fabrication_quotes.is_selected', true)
       .single();
 
     if (sculptureError) throw sculptureError;
@@ -164,10 +201,31 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    currentY -= 40; // Reduced from 80 to move material up two rows
+    // Price row (if applicable)
+    currentY -= 20;
+    if (pricingMode !== 'none' && sculpture.fabrication_quotes?.[0]) {
+      const quote = sculpture.fabrication_quotes[0];
+      const tradePrice = calculateTradePrice(quote);
+      const retailPrice = calculateRetailPrice(tradePrice);
+      
+      let priceText = '';
+      if (pricingMode === 'trade') {
+        priceText = `Trade Price: $${formatNumber(tradePrice)}`;
+      } else if (pricingMode === 'retail') {
+        priceText = `Trade Price: $${formatNumber(tradePrice)}  |  Retail Price: $${formatNumber(retailPrice)}`;
+      }
+      
+      const priceWidth = normalFont.widthOfTextAtSize(priceText, 10.5);
+      page.drawText(priceText, {
+        x: contentCenterX - (priceWidth / 2),
+        y: currentY,
+        size: 10.5,
+        font: normalFont,
+      });
+    }
 
-    // Material - moved much closer to name
-    currentY -= 20; // Reduced from 30 to move material even closer to name
+    // Material
+    currentY -= 20;
     const materialText = sculpture.material?.name || 'Not specified';
     const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5);
     page.drawText(materialText, {
@@ -189,7 +247,7 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    // Description with adjusted padding and slightly smaller font
+    // Description with same font size as material
     if (sculpture.ai_description) {
       currentY -= 40;
 
@@ -200,29 +258,29 @@ serve(async (req) => {
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = normalFont.widthOfTextAtSize(testLine, 9); // Reduced from 10.5
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 10.5); // Matches material font size
         
         if (textWidth > adjustedContentWidth && line.length > 0) {
-          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 9);
+          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 10.5);
           page.drawText(line.trim(), {
             x: contentCenterX - (lineWidth / 2),
             y: currentY,
-            size: 9, // Reduced from 10.5
+            size: 10.5, // Matches material font size
             font: normalFont,
           });
           line = word + ' ';
-          currentY -= 14; // Adjusted for smaller font
+          currentY -= 16; // Adjusted for smaller font
         } else {
           line = testLine;
         }
       }
       
       if (line.length > 0) {
-        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 9);
+        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 10.5);
         page.drawText(line.trim(), {
           x: contentCenterX - (finalLineWidth / 2),
           y: currentY,
-          size: 9,
+          size: 10.5, // Matches material font size
           font: normalFont,
         });
       }
