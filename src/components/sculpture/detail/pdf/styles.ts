@@ -10,24 +10,38 @@ export const styles = StyleSheet.create({
   leftSection: {
     width: '50%',
     backgroundColor: '#F8F8F8',
+    padding: 40,
   },
   rightSection: {
     width: '50%',
     padding: 40,
     display: 'flex',
-    alignItems: 'center',
+    gap: 10,
+  },
+  imageSection: {
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
     fontFamily: 'Helvetica',
-    textAlign: 'center',
+    fontWeight: 700,
   },
   subtitle: {
     fontSize: 12,
     marginBottom: 10,
     fontFamily: 'Helvetica',
-    textAlign: 'center',
     color: '#666666',
   },
+  description: {
+    fontSize: 12,
+    marginBottom: 20,
+    fontFamily: 'Helvetica',
+    lineHeight: 1.5,
+  },
+  specs: {
+    fontSize: 12,
+    fontFamily: 'Helvetica',
+    marginBottom: 8,
+  }
 });
