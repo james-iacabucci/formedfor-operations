@@ -12,14 +12,14 @@ export const createPointCloud = () => {
       const index = (i * gridSize + j) * 3;
       scatteredPositions[index] = (i - gridSize/2) * 0.9;
       scatteredPositions[index + 1] = (j - gridSize/2) * 0.9;
-      scatteredPositions[index + 2] = (Math.random() - 0.5) * 50;
+      scatteredPositions[index + 2] = (Math.random() - 0.5) * 20; // Reduced from 50 to 20 for less depth
     }
   }
   
   scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
   
   const pointsMaterial = new THREE.PointsMaterial({
-    color: 0xFEC6A1, // Changed to soft orange
+    color: 0xFEC6A1,
     size: 0.2,
     sizeAttenuation: true,
     transparent: true,
