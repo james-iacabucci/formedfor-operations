@@ -66,7 +66,6 @@ const Dashboard = () => {
     },
   });
 
-  // Load saved product line selection or set default to "FF"
   useEffect(() => {
     if (productLines) {
       const savedSelection = localStorage.getItem('selectedProductLines');
@@ -78,7 +77,6 @@ const Dashboard = () => {
           productLineId: parsed.length === 1 ? parsed[0] : null
         }));
       } else {
-        // Find FF product line and set as default
         const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
         if (ffProductLine) {
           const defaultSelection = [ffProductLine.id];
@@ -194,7 +192,7 @@ const Dashboard = () => {
                     value={pl.id}
                     variant="primary"
                     size="sm"
-                    className="px-2 py-1 text-xs h-10"
+                    className="h-10 px-[10px] py-[10px] text-xs"
                   >
                     {pl.product_line_code || pl.name}
                   </ToggleGroupItem>
