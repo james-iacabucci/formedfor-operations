@@ -24,23 +24,28 @@ export const DotCloud = () => {
     let targetRotationX = 0;
     let targetRotationY = 0;
 
-    // Create initial scattered points
-    const pointsCount = 15000;
+    // Create points in a uniform grid pattern
+    const gridSize = 100; // Number of points along each axis
+    const pointsCount = gridSize * gridSize;
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
     
-    for (let i = 0; i < pointsCount; i++) {
-      scatteredPositions[i * 3] = (Math.random() - 0.5) * 100;
-      scatteredPositions[i * 3 + 1] = (Math.random() - 0.5) * 100;
-      scatteredPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+    // Create initial grid positions
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        const index = (i * gridSize + j) * 3;
+        scatteredPositions[index] = (i - gridSize/2) * 0.5;
+        scatteredPositions[index + 1] = (j - gridSize/2) * 0.5;
+        scatteredPositions[index + 2] = 0;
+      }
     }
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material
+    // Create points material with smaller, denser points
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.08,
+      size: 0.05, // Smaller point size for more precise look
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
@@ -50,28 +55,33 @@ export const DotCloud = () => {
     const points = new THREE.Points(scatteredGeometry, pointsMaterial);
     scene.add(points);
 
-    // Generate organic target positions
+    // Generate organic target positions while maintaining grid structure
     const generateOrganicPositions = () => {
       const positions = new Float32Array(pointsCount * 3);
-      const scale = 15;
-      const frequency = 0.05;
       const time = Date.now() * 0.001;
       
-      for (let i = 0; i < pointsCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos((Math.random() * 2) - 1);
-        const r = 10 + Math.random() * 5;
-        
-        const distortion = Math.sin(theta * 4 + time) * Math.cos(phi * 3) * 2;
-        const finalRadius = r + distortion;
-        
-        positions[i * 3] = finalRadius * Math.sin(phi) * Math.cos(theta);
-        positions[i * 3 + 1] = finalRadius * Math.sin(phi) * Math.sin(theta);
-        positions[i * 3 + 2] = finalRadius * Math.cos(phi);
-        
-        positions[i * 3] += Math.sin(positions[i * 3 + 1] * frequency) * scale;
-        positions[i * 3 + 1] += Math.sin(positions[i * 3 + 2] * frequency) * scale;
-        positions[i * 3 + 2] += Math.sin(positions[i * 3] * frequency) * scale;
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const index = (i * gridSize + j) * 3;
+          
+          // Create base sphere coordinates
+          const phi = (i / gridSize) * Math.PI;
+          const theta = (j / gridSize) * Math.PI * 2;
+          
+          // Add organized variation
+          const radius = 15 + Math.cos(phi * 3 + time) * 2;
+          const distortion = Math.sin(theta * 4 + phi * 4 + time) * 0.5;
+          
+          // Convert to Cartesian coordinates while maintaining grid structure
+          positions[index] = (radius + distortion) * Math.sin(phi) * Math.cos(theta);
+          positions[index + 1] = (radius + distortion) * Math.sin(phi) * Math.sin(theta);
+          positions[index + 2] = (radius + distortion) * Math.cos(phi);
+          
+          // Add subtle grid-preserving displacement
+          positions[index] += Math.sin(phi * 8) * 0.2;
+          positions[index + 1] += Math.sin(theta * 8) * 0.2;
+          positions[index + 2] += Math.cos((phi + theta) * 4) * 0.2;
+        }
       }
       
       return positions;
@@ -127,10 +137,14 @@ export const DotCloud = () => {
         positions[i + 1] += (targetPositions[i + 1] - positions[i + 1]) * 0.02;
         positions[i + 2] += (targetPositions[i + 2] - positions[i + 2]) * 0.02;
 
-        // Add flowing motion
-        positions[i] += Math.sin(time + i * 0.1) * 0.03;
-        positions[i + 1] += Math.cos(time + i * 0.1) * 0.03;
-        positions[i + 2] += Math.sin(time + i * 0.05) * 0.03;
+        // Add very subtle flowing motion while preserving grid structure
+        const gridX = Math.floor(i / 3) % gridSize;
+        const gridY = Math.floor((i / 3) / gridSize);
+        const waveOffset = Math.sin(time + gridX * 0.1) * Math.cos(time + gridY * 0.1);
+        
+        positions[i] += waveOffset * 0.01;
+        positions[i + 1] += waveOffset * 0.01;
+        positions[i + 2] += waveOffset * 0.01;
       }
       
       points.geometry.attributes.position.needsUpdate = true;
