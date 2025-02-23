@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, rgb } from "https://cdn.skypack.dev/pdf-lib@1.17.1";
@@ -152,20 +151,20 @@ serve(async (req) => {
       console.error('Error processing images:', imageError);
     }
 
-    // Start content layout from top
-    let currentY = height - 140; // Adjusted to account for larger logo
+    // Start content layout from top, moved down two rows
+    let currentY = height - 200; // Adjusted from 140 to move content down
 
-    // Sculpture name - below logo
+    // Sculpture name - below logo, in proper case
     const name = sculpture.ai_generated_name || 'Untitled';
-    const nameWidth = boldFont.widthOfTextAtSize(name.toUpperCase(), 24);
-    page.drawText(name.toUpperCase(), {
+    const nameWidth = boldFont.widthOfTextAtSize(name, 24); // Removed toUpperCase()
+    page.drawText(name, {
       x: contentCenterX - (nameWidth / 2), // Center text
       y: currentY,
       size: 24,
       font: boldFont,
     });
 
-    currentY -= 40;
+    currentY -= 80; // Increased from 40 to create more space
 
     // Material - centered below name
     const materialText = sculpture.material?.name || 'Not specified';
@@ -177,7 +176,7 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    currentY -= 40;
+    currentY -= 80; // Increased from 40 to create more space
 
     // Dimensions - HWD format, centered
     const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0}`;
@@ -189,7 +188,7 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    // Description
+    // Description with smaller font
     if (sculpture.ai_description) {
       currentY -= 40;
 
@@ -198,52 +197,52 @@ serve(async (req) => {
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = normalFont.widthOfTextAtSize(testLine, 14);
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 7); // Changed from 14 to 7
         
         if (textWidth > contentWidth && line.length > 0) {
-          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 14);
+          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 7);
           page.drawText(line.trim(), {
             x: contentCenterX - (lineWidth / 2),
             y: currentY,
-            size: 14,
+            size: 7, // Changed from 14 to 7
             font: normalFont,
           });
           line = word + ' ';
-          currentY -= 20;
+          currentY -= 12; // Adjusted from 20 to account for smaller font
         } else {
           line = testLine;
         }
       }
       
       if (line.length > 0) {
-        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 14);
+        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 7);
         page.drawText(line.trim(), {
           x: contentCenterX - (finalLineWidth / 2),
           y: currentY,
-          size: 14,
+          size: 7, // Changed from 14 to 7
           font: normalFont,
         });
       }
     }
 
-    // Edition information at the bottom
-    const editionY = 80;
+    // Edition information at the bottom, moved down and smaller
+    const editionY = 40; // Changed from 80 to move down
     const editionText = 'LIMITED EDITION OF 33';
-    const editionWidth = boldFont.widthOfTextAtSize(editionText, 14);
+    const editionWidth = boldFont.widthOfTextAtSize(editionText, 7); // Changed from 14 to 7
     page.drawText(editionText, {
       x: contentCenterX - (editionWidth / 2),
       y: editionY,
-      size: 14,
+      size: 7, // Changed from 14 to 7
       font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
     const subEditionText = '(available in multiple finishes and sizes)';
-    const subEditionWidth = normalFont.widthOfTextAtSize(subEditionText, 12);
+    const subEditionWidth = normalFont.widthOfTextAtSize(subEditionText, 6); // Changed from 12 to 6
     page.drawText(subEditionText, {
       x: contentCenterX - (subEditionWidth / 2),
-      y: editionY - 25,
-      size: 12,
+      y: editionY - 15, // Adjusted spacing for smaller font
+      size: 6, // Changed from 12 to 6
       font: normalFont,
       color: rgb(0.5, 0.5, 0.5),
     });
@@ -283,4 +282,3 @@ serve(async (req) => {
     );
   }
 });
-
