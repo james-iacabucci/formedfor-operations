@@ -1,7 +1,6 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import PDFDocument from "https://esm.sh/pdfkit@0.13.0";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +15,7 @@ serve(async (req) => {
 
   try {
     const { sculptureId } = await req.json();
+    console.log("Received request for sculpture:", sculptureId);
 
     if (!sculptureId) {
       return new Response(
@@ -24,97 +24,15 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Fetch sculpture data with joined material and method info
-    const { data: sculpture, error: sculptureError } = await supabaseClient
-      .from('sculptures')
-      .select(`
-        *,
-        material:material_id(name),
-        method:method_id(name)
-      `)
-      .eq('id', sculptureId)
-      .single();
-
-    if (sculptureError || !sculpture) {
-      console.error('Error fetching sculpture:', sculptureError);
-      return new Response(
-        JSON.stringify({ error: 'Sculpture not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create PDF document
-    const doc = new PDFDocument();
-    const chunks: Uint8Array[] = [];
-
-    // Collect PDF chunks
-    doc.on('data', (chunk) => chunks.push(chunk));
-
-    // Add content to PDF
-    doc
-      .fontSize(24)
-      .text(sculpture.ai_generated_name || 'Untitled Sculpture', { align: 'center' })
-      .moveDown();
-
-    doc
-      .fontSize(12)
-      .text(`ID: ${sculpture.id}`)
-      .moveDown();
-
-    if (sculpture.material?.name) {
-      doc.text(`Material: ${sculpture.material.name}`);
-    }
-
-    if (sculpture.method?.name) {
-      doc.text(`Method: ${sculpture.method.name}`);
-    }
-
-    if (sculpture.height_in && sculpture.width_in && sculpture.depth_in) {
-      doc.text(`Dimensions: ${sculpture.height_in}" × ${sculpture.width_in}" × ${sculpture.depth_in}"`);
-    }
-
-    if (sculpture.weight_lbs) {
-      doc.text(`Weight: ${sculpture.weight_lbs} lbs`);
-    }
-
-    if (sculpture.ai_description) {
-      doc.moveDown()
-        .text('Description:', { underline: true })
-        .moveDown()
-        .text(sculpture.ai_description, {
-          width: 500,
-          align: 'left'
-        });
-    }
-
-    // Finalize PDF
-    doc.end();
-
-    // Combine chunks into a single Uint8Array
-    const pdfBytes = new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []));
-    
-    // Convert to base64 for transmission
-    const base64 = btoa(String.fromCharCode.apply(null, [...pdfBytes]));
-
+    // Just return a test response for now to verify the function is working
     return new Response(
-      JSON.stringify(base64),
-      { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      JSON.stringify({ message: "Edge function is working", sculptureId }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to generate PDF' }),
+      JSON.stringify({ error: 'Failed to process request' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
