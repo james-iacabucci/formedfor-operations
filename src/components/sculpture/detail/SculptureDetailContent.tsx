@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -8,12 +9,16 @@ import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+
+interface Tag {
+  id: string;
+  name: string;
+}
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;

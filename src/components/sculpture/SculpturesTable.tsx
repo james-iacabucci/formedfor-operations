@@ -1,4 +1,3 @@
-
 import { Sculpture } from "@/types/sculpture";
 import {
   Table,
@@ -9,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { SculpturePreviewDialog } from "./SculpturePreviewDialog";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +23,7 @@ interface SculpturesTableProps {
   sculptureTagRelations: Array<{ sculpture_id: string; tag_id: string; }> | undefined;
   onDelete: (sculpture: Sculpture) => void;
   onManageTags: (sculpture: Sculpture) => void;
+  onSculptureClick: (sculptureId: string) => void;
 }
 
 export function SculpturesTable({ 
@@ -32,7 +31,8 @@ export function SculpturesTable({
   tags, 
   sculptureTagRelations,
   onDelete,
-  onManageTags 
+  onManageTags,
+  onSculptureClick
 }: SculpturesTableProps) {
   const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -103,7 +103,7 @@ export function SculpturesTable({
               <TableCell>
                 <div 
                   className="font-medium cursor-pointer hover:text-primary"
-                  onClick={() => navigate(`/sculpture/${sculpture.id}`)}
+                  onClick={() => onSculptureClick(sculpture.id)}
                 >
                   {sculpture.ai_generated_name || "Untitled Sculpture"}
                 </div>
