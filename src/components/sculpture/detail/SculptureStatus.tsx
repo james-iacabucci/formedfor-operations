@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useRef } from "react";
 import { SCULPTURE_STATUS, SculptureStatusCode, getStatusDisplayName } from "@/lib/status";
+import { toast } from "sonner";
 
 interface SculptureStatusProps {
   sculptureId: string;
@@ -23,18 +24,23 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleStatusChange = async (newStatus: SculptureStatusCode) => {
-    const { error } = await supabase
-      .from('sculptures')
-      .update({ status: newStatus })
-      .eq('id', sculptureId);
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ status: newStatus })
+        .eq('id', sculptureId);
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      buttonRef.current?.blur();
+      toast.success(`Status updated to ${getStatusDisplayName(newStatus)}`);
+    } catch (error) {
       console.error('Error updating status:', error);
-      return;
+      toast.error("Failed to update status");
     }
-
-    await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-    buttonRef.current?.blur();
   };
 
   return (

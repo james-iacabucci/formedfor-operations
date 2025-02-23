@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon } from "lucide-react";
+import { FileIcon, Loader2Icon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -24,6 +24,7 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
 
     try {
       setIsGeneratingPDF(true);
+      toast.loading("Generating PDF...");
       console.log("Starting PDF generation for sculpture:", sculptureId, "with pricing mode:", pricingMode);
       
       const { data: response, error } = await supabase.functions.invoke(
@@ -62,9 +63,11 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
       link.remove();
       window.URL.revokeObjectURL(url);
 
+      toast.dismiss();
       toast.success("PDF generated successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
+      toast.dismiss();
       toast.error("Failed to generate PDF", {
         description: "Please try again later"
       });
@@ -80,8 +83,13 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
           variant="outline"
           size="icon"
           disabled={isGeneratingPDF}
+          className="relative"
         >
-          <FileIcon className="h-4 w-4" />
+          {isGeneratingPDF ? (
+            <Loader2Icon className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileIcon className="h-4 w-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
