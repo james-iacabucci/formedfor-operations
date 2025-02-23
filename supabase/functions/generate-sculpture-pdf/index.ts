@@ -24,17 +24,22 @@ async function fetchImageAsBytes(url: string): Promise<Uint8Array | null> {
   }
 }
 
-async function fetchMontserratFont(): Promise<Uint8Array | null> {
+async function fetchFont(weight: string): Promise<Uint8Array | null> {
+  const fontUrls = {
+    normal: 'https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXo.woff2',
+    bold: 'https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM73w5aXo.woff2'
+  };
+
   try {
-    const response = await fetch('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    console.log(`Fetching Montserrat ${weight} font`);
+    const response = await fetch(fontUrls[weight as keyof typeof fontUrls]);
     if (!response.ok) {
-      console.error('Failed to fetch Montserrat font');
-      return null;
+      throw new Error(`Failed to fetch font: ${response.statusText}`);
     }
     const arrayBuffer = await response.arrayBuffer();
     return new Uint8Array(arrayBuffer);
   } catch (error) {
-    console.error('Error fetching Montserrat font:', error);
+    console.error('Error fetching font:', error);
     return null;
   }
 }
@@ -72,15 +77,28 @@ serve(async (req) => {
     if (sculptureError) throw sculptureError;
     if (!sculpture) throw new Error('Sculpture not found');
 
-    // Create a new PDF document with 16:9 aspect ratio
+    // Create PDF document with 16:9 aspect ratio
     const pdfDoc = await PDFDocument.create();
-    // Using 1920x1080 scaled down for PDF (divided by 2 for better viewing)
     const page = pdfDoc.addPage([960, 540]);
     const { width, height } = page.getSize();
 
+    // Fetch and embed Montserrat fonts
+    console.log('Fetching fonts...');
+    const normalFontBytes = await fetchFont('normal');
+    const boldFontBytes = await fetchFont('bold');
+
+    if (!normalFontBytes || !boldFontBytes) {
+      throw new Error('Failed to load Montserrat fonts');
+    }
+
+    const normalFont = await pdfDoc.embedFont(normalFontBytes);
+    const boldFont = await pdfDoc.embedFont(boldFontBytes);
+
+    console.log('Fonts embedded successfully');
+
     // Calculate layout dimensions
-    const imageWidth = width * 0.5; // Left half of the page
-    const textStartX = imageWidth + 40; // Start text content after image
+    const imageWidth = width * 0.5;
+    const textStartX = imageWidth + 40;
     const contentWidth = width - textStartX - 40;
 
     // Add images with proper error handling
@@ -127,10 +145,6 @@ serve(async (req) => {
       console.error('Error processing images:', imageError);
     }
 
-    // Use embedded font (fallback to Helvetica if Montserrat fails)
-    const standardFont = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
-    const standardFontBold = await pdfDoc.embedFont(PDFDocument.Font.HelveticaBold);
-
     let currentY = height - 60;
 
     // Sculpture name - large, at the top
@@ -139,7 +153,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 24,
-      font: standardFontBold,
+      font: boldFont,
     });
 
     currentY -= 60;
@@ -149,7 +163,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 12,
-      font: standardFontBold,
+      font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
     
@@ -159,7 +173,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 14,
-      font: standardFont,
+      font: normalFont,
     });
 
     currentY -= 40;
@@ -169,7 +183,7 @@ serve(async (req) => {
       x: textStartX,
       y: currentY,
       size: 12,
-      font: standardFontBold,
+      font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
@@ -186,7 +200,7 @@ serve(async (req) => {
         x: textStartX,
         y: currentY,
         size: 14,
-        font: standardFont,
+        font: normalFont,
       });
       currentY -= 20;
     });
@@ -199,7 +213,7 @@ serve(async (req) => {
         x: textStartX,
         y: currentY,
         size: 12,
-        font: standardFontBold,
+        font: boldFont,
         color: rgb(0.5, 0.5, 0.5),
       });
 
@@ -210,14 +224,14 @@ serve(async (req) => {
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = standardFont.widthOfTextAtSize(testLine, 14);
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 14);
         
         if (textWidth > contentWidth && line.length > 0) {
           page.drawText(line.trim(), {
             x: textStartX,
             y: currentY,
             size: 14,
-            font: standardFont,
+            font: normalFont,
           });
           line = word + ' ';
           currentY -= 20;
@@ -231,7 +245,7 @@ serve(async (req) => {
           x: textStartX,
           y: currentY,
           size: 14,
-          font: standardFont,
+          font: normalFont,
         });
       }
     }
@@ -242,7 +256,7 @@ serve(async (req) => {
       x: textStartX,
       y: editionY,
       size: 14,
-      font: standardFontBold,
+      font: boldFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
@@ -250,7 +264,7 @@ serve(async (req) => {
       x: textStartX,
       y: editionY - 25,
       size: 12,
-      font: standardFont,
+      font: normalFont,
       color: rgb(0.5, 0.5, 0.5),
     });
 
