@@ -24,7 +24,7 @@ export const DotCloud = () => {
     let targetRotationY = 0;
 
     // Create points in a uniform grid pattern with varying Z depths
-    const gridSize = 100; // Number of points along each axis
+    const gridSize = 70; // Reduced from 100 to compensate for larger dots
     const pointsCount = gridSize * gridSize;
     const scatteredGeometry = new THREE.BufferGeometry();
     const scatteredPositions = new Float32Array(pointsCount * 3);
@@ -33,8 +33,8 @@ export const DotCloud = () => {
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
         const index = (i * gridSize + j) * 3;
-        scatteredPositions[index] = (i - gridSize/2) * 0.5;
-        scatteredPositions[index + 1] = (j - gridSize/2) * 0.5;
+        scatteredPositions[index] = (i - gridSize/2) * 0.7; // Increased spacing
+        scatteredPositions[index + 1] = (j - gridSize/2) * 0.7; // Increased spacing
         // Distribute points in front and behind the text
         scatteredPositions[index + 2] = (Math.random() - 0.5) * 50;
       }
@@ -42,10 +42,10 @@ export const DotCloud = () => {
     
     scatteredGeometry.setAttribute('position', new THREE.BufferAttribute(scatteredPositions, 3));
     
-    // Create points material with depth-based size variation
+    // Create points material with larger size
     const pointsMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.05,
+      size: 0.1, // Doubled from 0.05 to 0.1
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.8,
