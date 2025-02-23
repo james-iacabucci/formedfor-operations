@@ -1,10 +1,7 @@
 
-import { Document, Page, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { SculptureDocumentProps } from "./types";
 import { styles } from "./styles";
-
-// Force pdf worker initialization
-pdf.initWorker();
 
 export const SculptureDocument = ({ sculpture }: SculptureDocumentProps) => {
   console.log('SculptureDocument: Attempting to render PDF');
