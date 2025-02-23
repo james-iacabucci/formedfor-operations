@@ -1,11 +1,4 @@
 
 project_id = "lkgomkokczyvftjrbejq"
-
-[functions.generate-image]
-verify_jwt = false
-
-[functions.generate-metadata]
-verify_jwt = false
-
-[functions.regenerate-image]
+[functions.generate-sculpture-pdf]
 verify_jwt = false
