@@ -13,7 +13,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       document={<SculptureDocument sculpture={sculpture} />}
       fileName={`${sculpture.ai_generated_name || "sculpture"}.pdf`}
     >
-      {({ blob, url, loading, error }) => {
+      {({ loading, error }) => {
         if (error) {
           console.error('PDF generation error:', error);
           toast.error("Failed to generate PDF");
@@ -30,7 +30,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
             variant="outline"
             size="sm"
             className="gap-2"
-            disabled={loading || !url}
+            disabled={loading}
           >
             <FileIcon className="h-4 w-4" />
             {loading ? "Generating PDF..." : "Download Spec Sheet"}
