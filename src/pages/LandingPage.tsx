@@ -18,6 +18,15 @@ export const LandingPage = () => {
   return (
     <div className="min-h-screen bg-black relative">
       <DotCloud />
+      
+      {/* Logo text */}
+      <div className="absolute top-6 left-6">
+        <h1 className="text-white font-bold text-4xl">
+          Formed For
+        </h1>
+      </div>
+
+      {/* Sign in button */}
       <div className="absolute top-6 right-6">
         <Button
           onClick={() => setShowLogin(true)}
