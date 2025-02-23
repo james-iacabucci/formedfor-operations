@@ -166,8 +166,8 @@ serve(async (req) => {
 
     currentY -= 40; // Reduced from 80 to move material up two rows
 
-    // Material - moved closer to name
-    currentY -= 30; // Reduced from 40 to move material closer to name
+    // Material - moved much closer to name
+    currentY -= 20; // Reduced from 30 to move material even closer to name
     const materialText = sculpture.material?.name || 'Not specified';
     const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5);
     page.drawText(materialText, {
@@ -177,7 +177,7 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    currentY -= 40;
+    currentY -= 20; // Reduced from 40 to move HWD closer
 
     // Dimensions - HWD format with both units, centered
     const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0} (in) | ${(sculpture.height_in || 0) * 2.54} × ${(sculpture.width_in || 0) * 2.54} × ${(sculpture.depth_in || 0) * 2.54} (cm)`;
@@ -189,54 +189,54 @@ serve(async (req) => {
       font: normalFont,
     });
 
-    // Description with increased padding and moved down
+    // Description with adjusted padding and slightly smaller font
     if (sculpture.ai_description) {
-      currentY -= 40; // Increased from 20 to move description down 2 rows
+      currentY -= 40;
 
       const words = sculpture.ai_description.split(' ');
       let line = '';
-      const contentPadding = 40;
+      const contentPadding = 30; // Reduced from 40 for less padding
       const adjustedContentWidth = contentWidth - (contentPadding * 2);
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = normalFont.widthOfTextAtSize(testLine, 10.5);
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 9); // Reduced from 10.5
         
         if (textWidth > adjustedContentWidth && line.length > 0) {
-          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 10.5);
+          const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 9);
           page.drawText(line.trim(), {
             x: contentCenterX - (lineWidth / 2),
             y: currentY,
-            size: 10.5,
+            size: 9, // Reduced from 10.5
             font: normalFont,
           });
           line = word + ' ';
-          currentY -= 16;
+          currentY -= 14; // Adjusted for smaller font
         } else {
           line = testLine;
         }
       }
       
       if (line.length > 0) {
-        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 10.5);
+        const finalLineWidth = normalFont.widthOfTextAtSize(line.trim(), 9);
         page.drawText(line.trim(), {
           x: contentCenterX - (finalLineWidth / 2),
           y: currentY,
-          size: 10.5,
+          size: 9,
           font: normalFont,
         });
       }
     }
 
     // Edition information at the bottom
-    const editionY = 40; // Keep this the same
+    const editionY = 40;
     const editionText = 'LIMITED EDITION OF 33';
-    const editionWidth = boldFont.widthOfTextAtSize(editionText, 7);
+    const editionWidth = normalFont.widthOfTextAtSize(editionText, 7); // Changed from boldFont to normalFont
     page.drawText(editionText, {
       x: contentCenterX - (editionWidth / 2),
       y: editionY,
       size: 7,
-      font: boldFont,
+      font: normalFont, // Changed from boldFont to normalFont
       color: rgb(0.5, 0.5, 0.5),
     });
 
