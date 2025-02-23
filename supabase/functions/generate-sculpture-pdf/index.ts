@@ -219,9 +219,9 @@ serve(async (req) => {
       
       let priceText = '';
       if (pricingMode === 'trade') {
-        priceText = `Trade Price: $${formatNumber(tradePrice)}`;
+        priceText = `Trade: $${formatNumber(tradePrice)}`;
       } else if (pricingMode === 'retail') {
-        priceText = `Trade Price: $${formatNumber(tradePrice)}  |  Retail Price: $${formatNumber(retailPrice)}`;
+        priceText = `Trade: $${formatNumber(tradePrice)}  |  Retail: $${formatNumber(retailPrice)}`;
       }
       
       const priceWidth = normalFont.widthOfTextAtSize(priceText, 10.5);
