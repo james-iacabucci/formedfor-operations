@@ -166,49 +166,51 @@ serve(async (req) => {
 
     currentY -= 40; // Reduced from 80 to move material up two rows
 
-    // Material - centered below name
+    // Material - centered below name, with reduced font size
     const materialText = sculpture.material?.name || 'Not specified';
-    const materialWidth = normalFont.widthOfTextAtSize(materialText, 14);
+    const materialWidth = normalFont.widthOfTextAtSize(materialText, 10.5); // Reduced by 25% from 14
     page.drawText(materialText, {
       x: contentCenterX - (materialWidth / 2),
       y: currentY,
-      size: 14,
+      size: 10.5, // Changed from 14
       font: normalFont,
     });
 
-    currentY -= 40; // Reduced spacing to move HWD up 4 rows
+    currentY -= 40;
 
-    // Dimensions - HWD format, centered
-    const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0}`;
-    const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 14);
+    // Dimensions - HWD format with both units, centered
+    const dimensionsText = `HWD ${sculpture.height_in || 0} × ${sculpture.width_in || 0} × ${sculpture.depth_in || 0} (in) | ${(sculpture.height_in || 0) * 2.54} × ${(sculpture.width_in || 0) * 2.54} × ${(sculpture.depth_in || 0) * 2.54} (cm)`;
+    const dimensionsWidth = normalFont.widthOfTextAtSize(dimensionsText, 10.5); // Same size as material
     page.drawText(dimensionsText, {
       x: contentCenterX - (dimensionsWidth / 2),
       y: currentY,
-      size: 14,
+      size: 10.5, // Changed from 14, matching material
       font: normalFont,
     });
 
-    // Description with adjusted font size (50% larger than previous version)
+    // Description with increased padding and moved down
     if (sculpture.ai_description) {
-      currentY -= 20; // Reduced from 40 to move description up 2 rows
+      currentY -= 40; // Increased from 20 to move description down 2 rows
 
       const words = sculpture.ai_description.split(' ');
       let line = '';
+      const contentPadding = 40; // Increased padding on both sides
+      const adjustedContentWidth = contentWidth - (contentPadding * 2);
 
       for (const word of words) {
         const testLine = line + word + ' ';
-        const textWidth = normalFont.widthOfTextAtSize(testLine, 10.5); // Changed from 7 to 10.5 (50% larger)
+        const textWidth = normalFont.widthOfTextAtSize(testLine, 10.5);
         
-        if (textWidth > contentWidth && line.length > 0) {
+        if (textWidth > adjustedContentWidth && line.length > 0) {
           const lineWidth = normalFont.widthOfTextAtSize(line.trim(), 10.5);
           page.drawText(line.trim(), {
             x: contentCenterX - (lineWidth / 2),
             y: currentY,
-            size: 10.5, // Increased from 7 to 10.5
+            size: 10.5,
             font: normalFont,
           });
           line = word + ' ';
-          currentY -= 16; // Adjusted from 12 to account for larger font
+          currentY -= 16;
         } else {
           line = testLine;
         }
@@ -219,7 +221,7 @@ serve(async (req) => {
         page.drawText(line.trim(), {
           x: contentCenterX - (finalLineWidth / 2),
           y: currentY,
-          size: 10.5, // Increased from 7 to 10.5
+          size: 10.5,
           font: normalFont,
         });
       }
