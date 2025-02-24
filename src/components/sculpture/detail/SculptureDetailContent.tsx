@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -12,13 +13,13 @@ import { ArrowLeft } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
+import { Link } from "react-router-dom";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
   onUpdate: () => void;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
-  onBack: () => void;
 }
 
 export function SculptureDetailContent({
@@ -26,7 +27,6 @@ export function SculptureDetailContent({
   onUpdate,
   originalSculpture,
   tags,
-  onBack,
 }: SculptureDetailContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -93,13 +93,14 @@ export function SculptureDetailContent({
       <div className="sticky top-0 bg-background z-10 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onBack}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+            <Link to="/">
+              <Button
+                variant="outline"
+                size="icon"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
             <div className="text-2xl font-bold">
               {sculpture.ai_generated_name || "Untitled Sculpture"}
             </div>

@@ -10,12 +10,15 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import SculptureDetail from "./pages/SculptureDetail";
 
-// Create a client
+// Create a client with optimized configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
+      // Add these settings to help with navigation
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
   },
 });
