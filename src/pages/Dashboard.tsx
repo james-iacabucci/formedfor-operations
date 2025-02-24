@@ -3,17 +3,17 @@ import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState, useEffect } from "react";
-import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
+import { PlusIcon, UploadIcon, Search, Settings2, LayoutGrid, List } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Toggle } from "@/components/ui/toggle";
 import { Input } from "@/components/ui/input";
+import { AppHeader } from "@/components/layout/AppHeader";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -146,18 +146,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-background border-b">
-        <div className="mx-auto max-w-7xl p-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">Sculptify</h1>
-            <div className="flex items-center gap-4 ml-auto">
-              <UserMenu />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl p-6 pt-6">
+      <AppHeader />
+      <div className="mx-auto max-w-7xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex gap-2 border rounded-md p-0.5">
@@ -178,7 +168,7 @@ const Dashboard = () => {
                 <List className="h-4 w-4" />
               </Toggle>
             </div>
-            
+
             {productLines && productLines.length > 0 && (
               <ToggleGroup 
                 type="multiple"
