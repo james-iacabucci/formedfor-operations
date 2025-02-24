@@ -40,6 +40,8 @@ export default function SculptureDetail() {
       console.log("Fetched sculpture:", validatedData);
       return validatedData;
     },
+    staleTime: 30000, // Data remains fresh for 30 seconds
+    gcTime: 300000, // Keep unused data in cache for 5 minutes
   });
 
   const { data: originalSculpture } = useQuery({
@@ -69,6 +71,8 @@ export default function SculptureDetail() {
       console.log("Fetched original sculpture:", validatedData);
       return validatedData;
     },
+    staleTime: 30000, // Data remains fresh for 30 seconds
+    gcTime: 300000, // Keep unused data in cache for 5 minutes
   });
 
   const { data: tags } = useQuery({
@@ -91,6 +95,8 @@ export default function SculptureDetail() {
       console.log("Fetched sculpture tags:", data);
       return data.map((st: any) => st.tags);
     },
+    staleTime: 30000, // Data remains fresh for 30 seconds
+    gcTime: 300000, // Keep unused data in cache for 5 minutes
   });
 
   if (isLoadingSculpture) {
