@@ -1,18 +1,19 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
 import { AddSculptureSheet } from "@/components/AddSculptureSheet";
 import { useState, useEffect } from "react";
+import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, UploadIcon } from "lucide-react";
+import { LayoutGrid, List, PlusIcon, Search, Settings2, UploadIcon } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ViewSettingsSheet } from "@/components/view-settings/ViewSettingsSheet";
 import { SelectedFilters } from "@/components/filters/SelectedFilters";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { Input } from "@/components/ui/input";
 
 interface ViewSettings {
   sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
@@ -31,7 +32,9 @@ const Dashboard = () => {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [previousSearchValue, setPreviousSearchValue] = useState("");
   const [selectedProductLines, setSelectedProductLines] = useState<string[]>([]);
   const [viewSettings, setViewSettings] = useState<ViewSettings>({
     sortBy: 'created_at',
@@ -109,6 +112,29 @@ const Dashboard = () => {
     setViewSettings(newSettingsWithProductLine);
   };
 
+  const handleSearchClick = () => {
+    setIsSearchExpanded(true);
+    setPreviousSearchValue(searchValue);
+    setTimeout(() => {
+      const searchInput = document.getElementById('sculpture-search');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }, 100);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    } else if (e.key === 'Escape') {
+      setSearchValue(previousSearchValue);
+      e.currentTarget.blur();
+      if (!previousSearchValue) {
+        setIsSearchExpanded(false);
+      }
+    }
+  };
+
   const handleProductLineChange = (values: string[]) => {
     setSelectedProductLines(values);
     setViewSettings(prev => ({
@@ -120,17 +146,39 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader
-        isGridView={isGridView}
-        onGridViewChange={setIsGridView}
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-        onSettingsClick={() => setIsViewSettingsOpen(true)}
-      />
+      <div className="sticky top-0 z-10 bg-background border-b">
+        <div className="mx-auto max-w-7xl p-6">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Sculptify</h1>
+            <div className="flex items-center gap-4 ml-auto">
+              <UserMenu />
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-7xl p-6 pt-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <div className="flex gap-2 border rounded-md p-0.5">
+              <Toggle
+                pressed={isGridView}
+                onPressedChange={() => setIsGridView(true)}
+                size="sm"
+                className="data-[state=on]:bg-muted h-10 w-10"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={!isGridView}
+                onPressedChange={() => setIsGridView(false)}
+                size="sm"
+                className="data-[state=on]:bg-muted h-10 w-10"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
+            
             {productLines && productLines.length > 0 && (
               <ToggleGroup 
                 type="multiple"
@@ -150,6 +198,41 @@ const Dashboard = () => {
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
+            )}
+
+            {isSearchExpanded ? (
+              <div className="relative">
+                <Input
+                  id="sculpture-search"
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="h-10 w-[200px] pl-8"
+                  onBlur={() => !searchValue && setIsSearchExpanded(false)}
+                  placeholder="Search sculptures..."
+                />
+                <Search className="h-4 w-4 absolute left-2 top-3 text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={handleSearchClick}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => setIsViewSettingsOpen(true)}
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
 
             <SelectedFilters
