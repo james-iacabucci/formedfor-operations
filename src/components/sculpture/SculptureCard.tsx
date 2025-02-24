@@ -1,7 +1,6 @@
 
 import { Card } from "@/components/ui/card";
 import { Sculpture } from "@/types/sculpture";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { RegenerationSheet } from "./RegenerationSheet";
 import { SculptureCardContent } from "./SculptureCardContent";
@@ -22,29 +21,12 @@ export function SculptureCard({
   onManageTags,
   showAIContent,
 }: SculptureCardProps) {
-  const navigate = useNavigate();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { isRegenerating, regenerateImage, generateVariant } = useSculptureRegeneration();
 
   if (!sculpture?.id) {
     return null;
   }
-
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (
-      target.tagName === 'BUTTON' ||
-      target.tagName === 'SELECT' ||
-      target.closest('button') ||
-      target.closest('select')
-    ) {
-      return;
-    }
-    
-    if (sculpture.image_url) {
-      navigate(`/sculpture/${sculpture.id}`);
-    }
-  };
 
   const handleDownload = () => {
     if (sculpture?.image_url) {
@@ -59,10 +41,7 @@ export function SculptureCard({
 
   return (
     <>
-      <Card 
-        className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
-        onClick={handleCardClick}
-      >
+      <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer">
         <SculptureCardContent
           sculpture={sculpture}
           tags={tags}
