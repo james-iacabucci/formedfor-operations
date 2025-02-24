@@ -16,7 +16,6 @@ interface SculptureInfoProps {
 }
 
 export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
-  const sculptureName = sculpture.ai_generated_name || "Untitled Sculpture";
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
   const { data: productLines } = useQuery({
@@ -60,11 +59,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
   };
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold line-clamp-1">
-          {sculptureName}
-        </h3>
         <div className="flex items-center gap-2">
           <ProductLineButton 
             sculptureId={sculpture.id}

@@ -30,23 +30,8 @@ export function SculptureCardContent({
 }: SculptureCardContentProps) {
   return (
     <CardContent className="p-0">
-      <Link 
-        to={`/sculpture/${sculpture.id}`}
-        className="block"
-        onClick={(e) => {
-          // Prevent navigation if clicking on buttons or selects
-          const target = e.target as HTMLElement;
-          if (
-            target.tagName === 'BUTTON' ||
-            target.tagName === 'SELECT' ||
-            target.closest('button') ||
-            target.closest('select')
-          ) {
-            e.preventDefault();
-            return;
-          }
-        }}
-      >
+      <div className="relative">
+        {/* Image section - not wrapped in Link */}
         <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-muted">
           <div className="absolute inset-0 z-10 transition-colors duration-300 group-hover:bg-black/5" />
           <SculptureCardImage
@@ -60,14 +45,29 @@ export function SculptureCardContent({
             onDownload={onDownload}
           />
         </div>
+
+        {/* Info section - split into navigable and interactive parts */}
         <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
-          <SculptureInfo 
-            sculpture={sculpture}
-            tags={tags}
-            showAIContent={showAIContent}
-          />
+          <div className="flex flex-col gap-3">
+            {/* Navigable content */}
+            <Link 
+              to={`/sculpture/${sculpture.id}`}
+              className="block"
+            >
+              <h3 className="font-semibold line-clamp-1">
+                {sculpture.ai_generated_name || "Untitled Sculpture"}
+              </h3>
+            </Link>
+
+            {/* Interactive content - not wrapped in Link */}
+            <SculptureInfo 
+              sculpture={sculpture}
+              tags={tags}
+              showAIContent={showAIContent}
+            />
+          </div>
         </div>
-      </Link>
+      </div>
     </CardContent>
   );
 }
