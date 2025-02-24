@@ -1,5 +1,5 @@
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureDetailContent } from "@/components/sculpture/detail/SculptureDetailContent";
@@ -10,7 +10,6 @@ import { AppHeader } from "@/components/layout/AppHeader";
 
 export default function SculptureDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const { data: sculpture, isLoading: isLoadingSculpture, refetch } = useQuery({
     queryKey: ["sculpture", id],
@@ -111,7 +110,6 @@ export default function SculptureDetail() {
           originalSculpture={originalSculpture}
           tags={tags || []}
           onUpdate={refetch}
-          onBack={() => navigate("/")}
         />
       </div>
     </div>

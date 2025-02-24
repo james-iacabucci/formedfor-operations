@@ -94,7 +94,7 @@ export function useSculpturesData(
       return transformedData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Query to fetch sculpture-tag relationships with longer cache time
@@ -109,7 +109,7 @@ export function useSculpturesData(
       return data;
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
-    cacheTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
   });
 
   // Query to fetch all tags with longer cache time
@@ -128,7 +128,7 @@ export function useSculpturesData(
       return data;
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
-    cacheTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
   });
 
   return {
