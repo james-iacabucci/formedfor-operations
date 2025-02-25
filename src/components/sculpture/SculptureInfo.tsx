@@ -1,4 +1,5 @@
 
+import React from "react";
 import { ProductLineButton } from "@/components/sculpture/detail/ProductLineButton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sculpture } from "@/types/sculpture";
@@ -88,7 +89,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         />
       </div>
 
-      <div className="min-h-[28px]"> {/* Add minimum height container */}
+      <div className="min-h-[28px]">
         {tags.length > 0 ? (
           <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex gap-1.5">
@@ -105,7 +106,7 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             <ScrollBar orientation="horizontal" className="h-2" />
           </ScrollArea>
         ) : (
-          <div className="h-[28px]" /> {/* Empty placeholder with same height */}
+          <div className="h-[28px]" />
         )}
       </div>
     </div>
