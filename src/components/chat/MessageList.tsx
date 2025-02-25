@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,7 +96,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     console.log('Setting up real-time subscription for thread:', threadId);
     
     const channel = supabase
-      .channel(`room_${threadId}`) // Give unique name to avoid conflicts
+      .channel(`room_${threadId}`)
       .on(
         'postgres_changes',
         {
@@ -106,7 +107,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         },
         (payload) => {
           console.log('Received new message:', payload);
-          // Force refetch instead of just invalidating
           refetch();
           setShouldScrollToBottom(true);
         }
