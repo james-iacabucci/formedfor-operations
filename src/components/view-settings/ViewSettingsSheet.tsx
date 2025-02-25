@@ -69,6 +69,14 @@ export function ViewSettingsSheet({
         const newSelectedTags = checked
           ? [...prev.selectedTagIds.filter(id => id !== 'all'), tagId]
           : prev.selectedTagIds.filter(id => id !== tagId);
+
+        if (newSelectedTags.length === 0) {
+          return {
+            ...prev,
+            selectedTagIds: ['all']
+          };
+        }
+        
         return {
           ...prev,
           selectedTagIds: newSelectedTags
@@ -84,10 +92,21 @@ export function ViewSettingsSheet({
         status: checked ? null : undefined
       }));
     } else {
-      setSettings(prev => ({
-        ...prev,
-        status: checked ? status : null
-      }));
+      setSettings(prev => {
+        if (checked) {
+          // When selecting a specific status, uncheck "All Sculptures"
+          return {
+            ...prev,
+            status: status
+          };
+        } else {
+          // If unchecking and no other status is selected, select "All Sculptures"
+          return {
+            ...prev,
+            status: null
+          };
+        }
+      });
     }
   };
 
@@ -107,7 +126,7 @@ export function ViewSettingsSheet({
   ];
 
   const allStatuses = [
-    { id: 'all', name: 'All Statuses' },
+    { id: 'all', name: 'All Sculptures' },
     { id: 'idea', name: 'Idea' },
     { id: 'pending', name: 'Pending' },
     { id: 'approved', name: 'Approved' },
