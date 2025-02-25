@@ -44,9 +44,8 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="p-0 flex flex-col w-full sm:max-w-lg">
+      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg">
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Topic Tabs */}
           <Tabs
             value={currentTopic}
             onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
@@ -76,11 +75,10 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             </div>
           </Tabs>
 
-          {/* Chat/Files View Toggle */}
           <Tabs
             value={activeView}
             onValueChange={(value) => setActiveView(value as "chat" | "files")}
-            className="flex flex-col flex-1"
+            className="flex-1 flex flex-col overflow-hidden"
           >
             <div className="px-4 pt-4">
               <TabsList className="w-full">
@@ -96,14 +94,14 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 data-[state=active]:flex">
               {currentThreadId && (
                 <>
-                  <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
-                  <div className="border-t">
-                    <MessageInput 
-                      threadId={currentThreadId} 
-                      autoFocus 
-                      onUploadingFiles={setUploadingFiles}
-                    />
+                  <div className="flex-1 min-h-0">
+                    <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
                   </div>
+                  <MessageInput 
+                    threadId={currentThreadId} 
+                    autoFocus 
+                    onUploadingFiles={setUploadingFiles}
+                  />
                 </>
               )}
             </TabsContent>

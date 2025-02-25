@@ -122,7 +122,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         if (shouldScroll) {
           scrollElement.scrollTo({
             top: scrollElement.scrollHeight,
-            behavior: 'smooth'
+            behavior: isInitialScroll ? 'auto' : 'smooth'
           });
           
           setIsInitialScroll(false);
@@ -131,7 +131,9 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       }
     };
 
-    scrollToBottom();
+    // Call scrollToBottom after a short delay to ensure content is rendered
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
   }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   if (isLoading) {
@@ -145,22 +147,22 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const allMessages = data?.pages?.flatMap(page => page || []) ?? [];
 
   return (
-    <ScrollArea ref={scrollRef} className="flex-1 p-4">
-      {hasNextPage && (
-        <div className="h-8 flex items-center justify-center">
-          {isFetchingNextPage ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <button
-              className="text-sm text-muted-foreground hover:text-foreground"
-              onClick={() => fetchNextPage()}
-            >
-              Load more
-            </button>
-          )}
-        </div>
-      )}
-      <div className="space-y-6">
+    <ScrollArea ref={scrollRef} className="flex-1">
+      <div className="p-4 space-y-6">
+        {hasNextPage && (
+          <div className="h-8 flex items-center justify-center">
+            {isFetchingNextPage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <button
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => fetchNextPage()}
+              >
+                Load more
+              </button>
+            )}
+          </div>
+        )}
         {allMessages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))}
