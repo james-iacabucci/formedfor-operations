@@ -2,7 +2,7 @@ import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -12,7 +12,7 @@ import { ArrowLeft, CheckIcon, Pencil, RefreshCw, XIcon } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { Link } from "react-router-dom";
-import { EditableField } from "./EditableField";
+import { EditableField, EditableFieldRef } from "./EditableField";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,6 +35,7 @@ export function SculptureDetailContent({
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { generateAIContent, isGeneratingDescription } = useAIGeneration();
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
+  const editableFieldRef = useRef<EditableFieldRef>(null);
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id)) return;
@@ -128,32 +129,7 @@ export function SculptureDetailContent({
   };
 
   const handleSaveDescription = async () => {
-    const field = document.querySelector('[data-field="ai_description"]');
-    if (field) {
-      const textArea = field.querySelector('textarea');
-      if (textArea) {
-        const value = textArea.value;
-        const { error } = await supabase
-          .from('sculptures')
-          .update({ ai_description: value })
-          .eq('id', sculpture.id);
-        
-        if (!error) {
-          setIsDescriptionEditing(false);
-          await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-          toast({
-            title: "Success",
-            description: "Description updated successfully",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to update description",
-            variant: "destructive",
-          });
-        }
-      }
-    }
+    await editableFieldRef.current?.save();
   };
 
   return (
@@ -236,6 +212,7 @@ export function SculptureDetailContent({
                 )}
               </div>
               <EditableField
+                ref={editableFieldRef}
                 value={sculpture.ai_description || "No description available"}
                 type="textarea"
                 sculptureId={sculpture.id}

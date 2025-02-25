@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +22,11 @@ interface EditableFieldProps {
   onEditingChange?: (isEditing: boolean) => void;
 }
 
-export function EditableField({ 
+export interface EditableFieldRef {
+  save: () => Promise<void>;
+}
+
+export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({ 
   value, 
   type, 
   sculptureId, 
@@ -32,7 +37,7 @@ export function EditableField({
   hideControls = false,
   isEditing: controlledEditing,
   onEditingChange
-}: EditableFieldProps) {
+}, ref) => {
   const [isInternalEditing, setIsInternalEditing] = useState(false);
   const isEditing = controlledEditing ?? isInternalEditing;
   const setIsEditing = onEditingChange ?? setIsInternalEditing;
@@ -85,6 +90,10 @@ export function EditableField({
       setIsUpdating(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    save: handleUpdate
+  }));
 
   if (isEditing) {
     return (
@@ -172,4 +181,6 @@ export function EditableField({
       )}
     </div>
   );
-}
+});
+
+EditableField.displayName = "EditableField";
