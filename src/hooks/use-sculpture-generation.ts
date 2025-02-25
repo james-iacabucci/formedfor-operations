@@ -73,25 +73,23 @@ export function useSculptureGeneration() {
           }
           
           console.log("Successfully generated image for ID:", image.id);
-          setGeneratedImages(current => 
-            current.map(img => 
-              img.id === image.id 
-                ? { ...img, url: data.imageUrl, isGenerating: false }
-                : img
-            ) as GeneratedImage[]
+          const updatedImages = [...newImages].map(img => 
+            img.id === image.id 
+              ? { ...img, url: data.imageUrl, isGenerating: false }
+              : img
           );
+          setGeneratedImages(updatedImages);
           
           return { id: image.id, success: true };
         } catch (error) {
           console.error("Error generating individual image:", error);
           
-          setGeneratedImages(current => 
-            current.map(img => 
-              img.id === image.id 
-                ? { ...img, isGenerating: false, error: true }
-                : img
-            ) as GeneratedImage[]
+          const updatedImages = [...newImages].map(img => 
+            img.id === image.id 
+              ? { ...img, isGenerating: false, error: true }
+              : img
           );
+          setGeneratedImages(updatedImages);
           
           return { id: image.id, success: false };
         }
