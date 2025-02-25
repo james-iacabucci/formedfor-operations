@@ -17,6 +17,7 @@ interface EditableFieldProps {
   className?: string;
   label?: string;
   options?: Array<{ value: string; label: string }>;
+  hideControls?: boolean;
 }
 
 export function EditableField({ 
@@ -26,7 +27,8 @@ export function EditableField({
   field, 
   className = "", 
   label,
-  options = []
+  options = [],
+  hideControls = false
 }: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState(value);
@@ -182,14 +184,17 @@ export function EditableField({
   const displayValue = type === "number" && value ? parseFloat(value).toString() : value;
 
   return (
-    <div className="group relative">
-      <div className={className}>
+    <div className="group relative" data-field={field}>
+      <div 
+        className={className}
+        onClick={() => !hideControls && setIsEditing(true)}
+        style={{ cursor: hideControls ? 'text' : 'pointer' }}
+      >
         {label ? (
           <Input
             type="text"
             value={displayValue}
             className="cursor-pointer"
-            onClick={() => setIsEditing(true)}
             readOnly
             placeholder={label}
           />
@@ -197,25 +202,27 @@ export function EditableField({
           displayValue
         )}
       </div>
-      <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => setIsEditing(true)}
-          className="text-muted-foreground hover:text-foreground"
-          aria-label="Edit"
-        >
-          <PenIcon className="w-4 h-4" />
-        </button>
-        {(field === "ai_generated_name" || field === "ai_description") && (
+      {!hideControls && (
+        <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={handleRegenerate}
+            onClick={() => setIsEditing(true)}
             className="text-muted-foreground hover:text-foreground"
-            disabled={isRegenerating}
-            aria-label="Regenerate"
+            aria-label="Edit"
           >
-            <RefreshCwIcon className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+            <PenIcon className="w-4 h-4" />
           </button>
-        )}
-      </div>
+          {(field === "ai_generated_name" || field === "ai_description") && (
+            <button
+              onClick={handleRegenerate}
+              className="text-muted-foreground hover:text-foreground"
+              disabled={isRegenerating}
+              aria-label="Regenerate"
+            >
+              <RefreshCwIcon className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

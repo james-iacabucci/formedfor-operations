@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -169,7 +170,7 @@ export function SculptureDetailContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRegenerateDescription()}
+                  onClick={handleRegenerateDescription}
                   disabled={isGeneratingDescription}
                 >
                   <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
@@ -177,6 +178,7 @@ export function SculptureDetailContent({
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => document.querySelector<HTMLElement>('[data-field="ai_description"]')?.click()}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -187,6 +189,7 @@ export function SculptureDetailContent({
                 sculptureId={sculpture.id}
                 field="ai_description"
                 className="text-muted-foreground"
+                hideControls
               />
             </div>
             <SculptureFiles
