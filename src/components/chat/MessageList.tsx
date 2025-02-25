@@ -1,13 +1,12 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { MessageItem } from "./MessageItem";
 import { UploadingFilesList } from "./UploadingFilesList";
-import { UploadingFile, RawMessage, Message, FileAttachment, isFileAttachment } from "./types";
-import { Json } from "@/integrations/supabase/types";
+import { UploadingFile, Message, isFileAttachment } from "./types";
 import { useAuth } from "@/components/AuthProvider";
 
 interface MessageListProps {
@@ -22,7 +21,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
-  const queryClient = useQueryClient();
 
   const {
     data,
@@ -63,7 +61,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         throw error;
       }
 
-      console.log('Fetched messages:', data);
       return data || [];
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -81,20 +78,16 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           (Array.isArray(page) ? page : []).map(message => ({
             ...message,
             attachments: (message.attachments || [])
-              .filter(isFileAttachment) as FileAttachment[],
+              .filter(isFileAttachment),
             mentions: message.mentions || [],
           }))
         ),
         pageParams: data.pageParams,
       };
     },
-    staleTime: 0,
-    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
-    console.log('Setting up real-time subscription for thread:', threadId);
-    
     const channel = supabase
       .channel(`room_${threadId}`)
       .on(
@@ -111,12 +104,9 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           setShouldScrollToBottom(true);
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('Cleaning up subscription for thread:', threadId);
       supabase.removeChannel(channel);
     };
   }, [threadId, refetch]);
@@ -130,50 +120,19 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         const shouldScroll = isInitialScroll || shouldScrollToBottom;
         
         if (shouldScroll) {
-          requestAnimationFrame(() => {
-            const scrollHeight = scrollElement.scrollHeight;
-            const clientHeight = scrollElement.clientHeight;
-            
-            scrollElement.scrollTo({
-              top: scrollHeight - clientHeight,
-              behavior: 'smooth'
-            });
-            
-            setTimeout(() => {
-              if (scrollElement.scrollTop + clientHeight < scrollHeight) {
-                scrollElement.scrollTo({
-                  top: scrollHeight - clientHeight,
-                  behavior: 'auto'
-                });
-              }
-              setIsInitialScroll(false);
-              setShouldScrollToBottom(false);
-            }, 300);
+          scrollElement.scrollTo({
+            top: scrollElement.scrollHeight,
+            behavior: 'smooth'
           });
+          
+          setIsInitialScroll(false);
+          setShouldScrollToBottom(false);
         }
       }
     };
 
     scrollToBottom();
-    
   }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
-
-  useEffect(() => {
-    const intersectionObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    });
-
-    const loadMoreTrigger = document.getElementById('load-more-trigger');
-    if (loadMoreTrigger) {
-      intersectionObserver.observe(loadMoreTrigger);
-    }
-
-    return () => {
-      intersectionObserver.disconnect();
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isLoading) {
     return (
@@ -188,11 +147,16 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   return (
     <ScrollArea ref={scrollRef} className="flex-1 p-4">
       {hasNextPage && (
-        <div id="load-more-trigger" className="h-8 flex items-center justify-center">
+        <div className="h-8 flex items-center justify-center">
           {isFetchingNextPage ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <div className="text-sm text-muted-foreground">Load more...</div>
+            <button
+              className="text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => fetchNextPage()}
+            >
+              Load more
+            </button>
           )}
         </div>
       )}

@@ -6,9 +6,9 @@ import { useState } from "react";
 import { UploadingFile } from "./types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileList } from "./FileList";
-import { ChatTopicSelect } from "./ChatTopicSelect";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { MessageCircle, MessageSquare, Wrench } from "lucide-react";
 
 interface ChatSheetProps {
   open: boolean;
@@ -18,7 +18,7 @@ interface ChatSheetProps {
 
 export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
-  const [activeTab, setActiveTab] = useState<"chat" | "files">("chat");
+  const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
 
   const { data: threads } = useQuery({
@@ -46,16 +46,40 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="p-0 flex flex-col w-full sm:max-w-lg">
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="px-4 pt-4 border-b">
-            <ChatTopicSelect 
-              value={currentTopic} 
-              onValueChange={setCurrentTopic} 
-            />
-          </div>
-
+          {/* Topic Tabs */}
           <Tabs
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as "chat" | "files")}
+            value={currentTopic}
+            onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+            className="w-full border-b"
+          >
+            <div className="px-4 pt-4">
+              <TabsList className="w-full">
+                <TabsTrigger value="pricing" className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>Pricing</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="fabrication" className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Fabrication</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="operations" className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    <span>Operations</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </Tabs>
+
+          {/* Chat/Files View Toggle */}
+          <Tabs
+            value={activeView}
+            onValueChange={(value) => setActiveView(value as "chat" | "files")}
             className="flex flex-col flex-1"
           >
             <div className="px-4 pt-4">
@@ -69,20 +93,22 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               </TabsList>
             </div>
 
-            <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+            <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 data-[state=active]:flex">
               {currentThreadId && (
                 <>
                   <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
-                  <MessageInput 
-                    threadId={currentThreadId} 
-                    autoFocus 
-                    onUploadingFiles={setUploadingFiles}
-                  />
+                  <div className="border-t">
+                    <MessageInput 
+                      threadId={currentThreadId} 
+                      autoFocus 
+                      onUploadingFiles={setUploadingFiles}
+                    />
+                  </div>
                 </>
               )}
             </TabsContent>
 
-            <TabsContent value="files" className="flex-1 mt-0 p-4 overflow-auto">
+            <TabsContent value="files" className="flex-1 m-0 p-4 overflow-auto">
               {currentThreadId && <FileList threadId={currentThreadId} />}
             </TabsContent>
           </Tabs>
