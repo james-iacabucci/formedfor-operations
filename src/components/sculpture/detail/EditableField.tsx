@@ -122,7 +122,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
           <Textarea
             value={editedValue}
             onChange={(e) => setEditedValue(e.target.value)}
-            className="w-full text-base leading-relaxed min-h-[200px] border-0 rounded-none focus-visible:ring-0 px-4 py-3"
+            className="w-full text-base leading-relaxed min-h-[200px] bg-background border border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-4 py-3"
             placeholder={`Enter ${label || 'description'}`}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.ctrlKey) {
