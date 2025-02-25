@@ -164,24 +164,53 @@ export function SculptureDetailContent({
                 onManageTags={handleManageTags}
               />
             </AspectRatio>
-            <div className="group relative">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRegenerateDescription}
-                  disabled={isGeneratingDescription}
-                >
-                  <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsDescriptionEditing(true)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Description</h3>
+                {isDescriptionEditing ? (
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        const field = document.querySelector('[data-field="ai_description"]');
+                        if (field) {
+                          const form = field.querySelector('form');
+                          if (form) form.dispatchEvent(new Event('submit'));
+                        }
+                      }}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-1" />
+                      Save
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => setIsDescriptionEditing(false)}
+                      size="sm"
+                    >
+                      <XIcon className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleRegenerateDescription}
+                      disabled={isGeneratingDescription}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsDescriptionEditing(true)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
               <EditableField
                 value={sculpture.ai_description || "No description available"}

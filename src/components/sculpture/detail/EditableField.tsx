@@ -112,37 +112,13 @@ export function EditableField({
           </Select>
         ) : type === "textarea" ? (
           <>
-            <div className="p-0.5">
-              <Textarea
-                value={editedValue}
-                onChange={(e) => setEditedValue(e.target.value)}
-                className="w-full text-base leading-relaxed"
-                placeholder={`Enter ${label || 'description'}`}
-                autoFocus
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button 
-                onClick={handleUpdate} 
-                disabled={isUpdating}
-                size="sm"
-                variant="secondary"
-              >
-                <CheckIcon className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => {
-                  setEditedValue(value);
-                  setIsEditing(false);
-                }}
-                size="sm"
-              >
-                <XIcon className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-            </div>
+            <Textarea
+              value={editedValue}
+              onChange={(e) => setEditedValue(e.target.value)}
+              className="w-full text-base leading-relaxed"
+              placeholder={`Enter ${label || 'description'}`}
+              autoFocus
+            />
           </>
         ) : (
           <div className="flex items-center gap-2">
@@ -154,26 +130,6 @@ export function EditableField({
               placeholder={`Enter ${label || 'value'}`}
               autoFocus
             />
-            <Button 
-              onClick={handleUpdate} 
-              disabled={isUpdating}
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9"
-            >
-              <CheckIcon className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => {
-                setEditedValue(value);
-                setIsEditing(false);
-              }}
-              size="icon"
-              className="h-9 w-9"
-            >
-              <XIcon className="h-4 w-4" />
-            </Button>
           </div>
         )}
       </div>
@@ -201,7 +157,7 @@ export function EditableField({
           displayValue
         )}
       </div>
-      {!hideControls && (
+      {!hideControls && !isEditing && (
         <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => setIsEditing(true)}
