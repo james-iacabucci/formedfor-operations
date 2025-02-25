@@ -67,9 +67,19 @@ export function useAIGeneration() {
           .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
         onSuccess(cleanName);
       } else {
-        // For description, we don't need to replace the sculpture name anymore
-        // since it's now part of the format rules in the prompt
-        onSuccess(data.description);
+        // Validate and format the description to ensure it starts with the name in capitals
+        let description = data.description.trim();
+        
+        // If the description doesn't start with the name in capitals, add it
+        if (!description.toUpperCase().startsWith(name.toUpperCase())) {
+          description = `${name.toUpperCase()} ${description}`;
+        } else {
+          // If it does start with the name but not in capitals, capitalize it
+          const nameLength = name.length;
+          description = description.substring(0, nameLength).toUpperCase() + description.substring(nameLength);
+        }
+
+        onSuccess(description);
       }
 
       // Clean up temporary file
