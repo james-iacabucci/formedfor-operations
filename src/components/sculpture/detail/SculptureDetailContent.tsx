@@ -127,6 +127,17 @@ export function SculptureDetailContent({
     }
   };
 
+  const handleSaveDescription = async () => {
+    const field = document.querySelector('[data-field="ai_description"]');
+    if (field) {
+      const form = field.querySelector('form');
+      if (form) {
+        form.dispatchEvent(new Event('submit'));
+        setIsDescriptionEditing(false);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 bg-background z-10 pb-4">
@@ -170,13 +181,7 @@ export function SculptureDetailContent({
                 {isDescriptionEditing ? (
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => {
-                        const field = document.querySelector('[data-field="ai_description"]');
-                        if (field) {
-                          const form = field.querySelector('form');
-                          if (form) form.dispatchEvent(new Event('submit'));
-                        }
-                      }}
+                      onClick={handleSaveDescription}
                       size="sm"
                       variant="secondary"
                     >
