@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +17,8 @@ interface EditableFieldProps {
   label?: string;
   options?: Array<{ value: string; label: string }>;
   hideControls?: boolean;
+  isEditing?: boolean;
+  onEditingChange?: (isEditing: boolean) => void;
 }
 
 export function EditableField({ 
@@ -28,14 +29,23 @@ export function EditableField({
   className = "", 
   label,
   options = [],
-  hideControls = false
+  hideControls = false,
+  isEditing: controlledEditing,
+  onEditingChange
 }: EditableFieldProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isInternalEditing, setIsInternalEditing] = useState(false);
+  const isEditing = controlledEditing ?? isInternalEditing;
+  const setIsEditing = onEditingChange ?? setIsInternalEditing;
+
   const [editedValue, setEditedValue] = useState(value);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setEditedValue(value);
+  }, [value]);
 
   const handleUpdate = async () => {
     if (editedValue === value) {

@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -35,6 +34,7 @@ export function SculptureDetailContent({
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { generateAIContent, isGeneratingDescription } = useAIGeneration();
+  const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id)) return;
@@ -178,7 +178,7 @@ export function SculptureDetailContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => document.querySelector<HTMLElement>('[data-field="ai_description"]')?.click()}
+                  onClick={() => setIsDescriptionEditing(true)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -190,6 +190,8 @@ export function SculptureDetailContent({
                 field="ai_description"
                 className="text-muted-foreground"
                 hideControls
+                isEditing={isDescriptionEditing}
+                onEditingChange={setIsDescriptionEditing}
               />
             </div>
             <SculptureFiles
