@@ -40,7 +40,6 @@ export function EditableField({
 
   const [editedValue, setEditedValue] = useState(value);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -90,7 +89,7 @@ export function EditableField({
 
   if (isEditing) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-4">
         {type === "select" ? (
           <Select
             value={editedValue}
@@ -113,13 +112,15 @@ export function EditableField({
           </Select>
         ) : type === "textarea" ? (
           <>
-            <Textarea
-              value={editedValue}
-              onChange={(e) => setEditedValue(e.target.value)}
-              className="w-full text-base leading-relaxed"
-              placeholder={`Enter ${label || 'description'}`}
-              autoFocus
-            />
+            <div className="p-0.5">
+              <Textarea
+                value={editedValue}
+                onChange={(e) => setEditedValue(e.target.value)}
+                className="w-full text-base leading-relaxed"
+                placeholder={`Enter ${label || 'description'}`}
+                autoFocus
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button 
                 onClick={handleUpdate} 
@@ -209,16 +210,6 @@ export function EditableField({
           >
             <PenIcon className="w-4 h-4" />
           </button>
-          {(field === "ai_generated_name" || field === "ai_description") && (
-            <button
-              onClick={handleRegenerate}
-              className="text-muted-foreground hover:text-foreground"
-              disabled={isRegenerating}
-              aria-label="Regenerate"
-            >
-              <RefreshCwIcon className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-            </button>
-          )}
         </div>
       )}
     </div>
