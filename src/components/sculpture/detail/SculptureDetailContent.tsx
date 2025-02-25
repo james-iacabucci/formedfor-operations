@@ -166,7 +166,7 @@ export function SculptureDetailContent({
               />
             </AspectRatio>
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="group flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Description</h3>
                 {isDescriptionEditing ? (
                   <div className="flex gap-2">
@@ -194,7 +194,7 @@ export function SculptureDetailContent({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -213,16 +213,18 @@ export function SculptureDetailContent({
                   </div>
                 )}
               </div>
-              <EditableField
-                value={sculpture.ai_description || "No description available"}
-                type="textarea"
-                sculptureId={sculpture.id}
-                field="ai_description"
-                className="text-muted-foreground"
-                hideControls
-                isEditing={isDescriptionEditing}
-                onEditingChange={setIsDescriptionEditing}
-              />
+              <div className="rounded-md border p-4">
+                <EditableField
+                  value={sculpture.ai_description || "No description available"}
+                  type="textarea"
+                  sculptureId={sculpture.id}
+                  field="ai_description"
+                  className="text-muted-foreground"
+                  hideControls
+                  isEditing={isDescriptionEditing}
+                  onEditingChange={setIsDescriptionEditing}
+                />
+              </div>
             </div>
             <SculptureFiles
               sculptureId={sculpture.id}

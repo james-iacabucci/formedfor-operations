@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -89,7 +88,7 @@ export function EditableField({
 
   if (isEditing) {
     return (
-      <div className="space-y-4">
+      <div className="w-full">
         {type === "select" ? (
           <Select
             value={editedValue}
@@ -111,15 +110,13 @@ export function EditableField({
             </SelectContent>
           </Select>
         ) : type === "textarea" ? (
-          <>
-            <Textarea
-              value={editedValue}
-              onChange={(e) => setEditedValue(e.target.value)}
-              className="w-full text-base leading-relaxed"
-              placeholder={`Enter ${label || 'description'}`}
-              autoFocus
-            />
-          </>
+          <Textarea
+            value={editedValue}
+            onChange={(e) => setEditedValue(e.target.value)}
+            className="w-full text-base leading-relaxed min-h-[200px]"
+            placeholder={`Enter ${label || 'description'}`}
+            autoFocus
+          />
         ) : (
           <div className="flex items-center gap-2">
             <Input
