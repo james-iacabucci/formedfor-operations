@@ -3,17 +3,18 @@ import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil, RefreshCw } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
-import { useState } from "react";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { Link } from "react-router-dom";
+import { EditableField } from "./EditableField";
+import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -32,6 +33,7 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  const { generateAIContent, isGeneratingDescription } = useAIGeneration();
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id)) return;
@@ -80,12 +82,32 @@ export function SculptureDetailContent({
   };
 
   const handleManageTags = () => {
-    // This will be implemented when we add tag management functionality
     console.log("Manage tags clicked");
     toast({
       title: "Coming Soon",
       description: "Tag management will be available soon.",
     });
+  };
+
+  const handleRegenerateDescription = async () => {
+    if (!sculpture.image_url) return;
+    
+    const response = await fetch(sculpture.image_url);
+    const blob = await response.blob();
+    const file = new File([blob], "sculpture.png", { type: "image/png" });
+    
+    generateAIContent(
+      "description",
+      file,
+      sculpture.ai_generated_name || "",
+      async (newDescription: string) => {
+        await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+        toast({
+          title: "Success",
+          description: "Description regenerated successfully.",
+        });
+      }
+    );
   };
 
   return (
@@ -125,11 +147,25 @@ export function SculptureDetailContent({
                 onManageTags={handleManageTags}
               />
             </AspectRatio>
-            <div>
+            <div className="group relative">
               <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">
-                {sculpture.ai_description || "No description available"}
-              </p>
+              <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRegenerateDescription()}
+                  disabled={isGeneratingDescription}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
+                </Button>
+              </div>
+              <EditableField
+                value={sculpture.ai_description || "No description available"}
+                type="textarea"
+                sculptureId={sculpture.id}
+                field="ai_description"
+                className="text-muted-foreground"
+              />
             </div>
             <SculptureFiles
               sculptureId={sculpture.id}
