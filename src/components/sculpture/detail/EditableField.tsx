@@ -150,9 +150,9 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   const displayValue = type === "number" && value ? parseFloat(value).toString() : value;
 
   return (
-    <div className="group relative" data-field={field}>
+    <div className="group/field relative" data-field={field}>
       <div 
-        className={className}
+        className={`group/content ${className}`}
         onClick={() => !hideControls && setIsEditing(true)}
         style={{ cursor: hideControls ? 'text' : 'pointer' }}
       >
@@ -169,7 +169,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
         )}
       </div>
       {!hideControls && !isEditing && (
-        <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover/field:opacity-100 group-hover/content:opacity-100 transition-opacity">
           <button
             onClick={() => setIsEditing(true)}
             className="text-muted-foreground hover:text-foreground"
