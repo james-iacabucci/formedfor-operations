@@ -44,12 +44,12 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg">
-        <div className="flex-1 flex flex-col min-h-0">
+      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
+        <div className="flex flex-col h-full overflow-hidden">
           <Tabs
             value={currentTopic}
             onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-            className="w-full border-b"
+            className="w-full border-b shrink-0"
           >
             <div className="px-4 pt-4">
               <TabsList className="w-full">
@@ -78,9 +78,9 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           <Tabs
             value={activeView}
             onValueChange={(value) => setActiveView(value as "chat" | "files")}
-            className="flex-1 flex flex-col overflow-hidden"
+            className="flex-1 flex flex-col min-h-0"
           >
-            <div className="px-4 pt-4">
+            <div className="px-4 pt-4 shrink-0">
               <TabsList className="w-full">
                 <TabsTrigger value="chat" className="flex-1">
                   Chat
@@ -91,17 +91,19 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               </TabsList>
             </div>
 
-            <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 data-[state=active]:flex">
+            <TabsContent value="chat" className="flex flex-col flex-1 m-0 p-0 data-[state=active]:flex overflow-hidden">
               {currentThreadId && (
                 <>
-                  <div className="flex-1 min-h-0">
+                  <div className="flex-1 min-h-0 overflow-hidden">
                     <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
                   </div>
-                  <MessageInput 
-                    threadId={currentThreadId} 
-                    autoFocus 
-                    onUploadingFiles={setUploadingFiles}
-                  />
+                  <div className="shrink-0 p-4 pt-2">
+                    <MessageInput 
+                      threadId={currentThreadId} 
+                      autoFocus 
+                      onUploadingFiles={setUploadingFiles}
+                    />
+                  </div>
                 </>
               )}
             </TabsContent>

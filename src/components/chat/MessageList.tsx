@@ -21,6 +21,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
+  const lastMessageRef = useRef<string | null>(null);
 
   const {
     data,
@@ -31,12 +32,10 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     refetch
   } = useInfiniteQuery({
     queryKey: ["messages", threadId],
-    queryFn: async ({ pageParam = 0 }) => {
-      console.log('Fetching messages for thread:', threadId, 'page:', pageParam);
-      const from = pageParam * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-
-      const { data, error } = await supabase
+    queryFn: async ({ pageParam = null }) => {
+      console.log('Fetching messages for thread:', threadId, 'cursor:', pageParam);
+      
+      let query = supabase
         .from("chat_messages")
         .select(`
           id,
@@ -53,8 +52,14 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: true })
-        .range(from, to);
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE);
+
+      if (pageParam) {
+        query = query.lt("created_at", pageParam);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching messages:', error);
@@ -63,13 +68,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
       return data || [];
     },
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage) => {
       if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
         return undefined;
       }
-      return allPages.length;
+      return lastPage[lastPage.length - 1]?.created_at;
     },
-    initialPageParam: 0,
+    initialPageParam: null,
     select: (data) => {
       if (!data?.pages) return { pages: [], pageParams: [] };
       
@@ -100,8 +105,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         },
         async (payload) => {
           console.log('Received new message:', payload);
+          const currentLastMessage = lastMessageRef.current;
           await refetch();
-          setShouldScrollToBottom(true);
+          
+          // Only auto-scroll if we were already at the bottom
+          if (!currentLastMessage || currentLastMessage === payload.new.id) {
+            setShouldScrollToBottom(true);
+          }
         }
       )
       .subscribe();
@@ -136,6 +146,19 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     return () => clearTimeout(timeoutId);
   }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
 
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLDivElement;
+    if (target.scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+
+    // Update last message reference when scrolling near bottom
+    const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 100;
+    if (isNearBottom && allMessages.length > 0) {
+      lastMessageRef.current = allMessages[allMessages.length - 1].id;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -144,28 +167,23 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     );
   }
 
-  const allMessages = data?.pages?.flatMap(page => page || []) ?? [];
+  const allMessages = data?.pages?.flatMap(page => page || []).reverse() ?? [];
 
   return (
-    <ScrollArea ref={scrollRef} className="flex-1 h-full">
+    <ScrollArea 
+      ref={scrollRef} 
+      className="h-full" 
+      onScroll={handleScroll}
+    >
       <div className="p-4 space-y-6">
-        {hasNextPage && (
-          <div className="h-8 flex items-center justify-center">
-            {isFetchingNextPage ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <button
-                className="text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => fetchNextPage()}
-              >
-                Load more
-              </button>
-            )}
-          </div>
-        )}
         {allMessages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))}
+        {hasNextPage && isFetchingNextPage && (
+          <div className="h-8 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
         {uploadingFiles.length > 0 && user && (
           <MessageItem
             message={{
