@@ -1,21 +1,13 @@
 
-import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
-import { SculptureFiles } from "./SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckIcon, Pencil, RefreshCw, XIcon } from "lucide-react";
-import { SculptureHeader } from "./SculptureHeader";
 import { RegenerationSheet } from "../RegenerationSheet";
-import { Link } from "react-router-dom";
-import { EditableField, EditableFieldRef } from "./EditableField";
-import { useAIGeneration } from "@/hooks/use-ai-generation";
-import { supabase } from "@/integrations/supabase/client";
+import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
+import { SculptureMainContent } from "./components/SculptureMainContent";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -34,9 +26,6 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
-  const { generateAIContent, isGeneratingDescription } = useAIGeneration();
-  const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
-  const editableFieldRef = useRef<EditableFieldRef>(null);
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id)) return;
@@ -84,159 +73,17 @@ export function SculptureDetailContent({
     }
   };
 
-  const handleManageTags = () => {
-    console.log("Manage tags clicked");
-    toast({
-      title: "Coming Soon",
-      description: "Tag management will be available soon.",
-    });
-  };
-
-  const handleRegenerateDescription = async () => {
-    if (!sculpture.image_url) return;
-    
-    try {
-      const response = await fetch(sculpture.image_url);
-      const blob = await response.blob();
-      const file = new File([blob], "sculpture.png", { type: "image/png" });
-      
-      generateAIContent(
-        "description",
-        file,
-        sculpture.ai_generated_name || "",
-        async (newDescription: string) => {
-          const { error } = await supabase
-            .from("sculptures")
-            .update({ ai_description: newDescription })
-            .eq("id", sculpture.id);
-          
-          if (error) throw error;
-          
-          await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-          toast({
-            title: "Success",
-            description: "Description regenerated successfully.",
-          });
-        }
-      );
-    } catch (error) {
-      console.error("Error regenerating description:", error);
-      toast({
-        title: "Error",
-        description: "Failed to regenerate description. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveDescription = async () => {
-    await editableFieldRef.current?.save();
-  };
-
   return (
     <div className="flex flex-col h-full">
-      <div className="sticky top-0 bg-background z-10 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button
-                variant="outline"
-                size="icon"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="text-2xl font-bold">
-              {sculpture.ai_generated_name || "Untitled Sculpture"}
-            </div>
-          </div>
-          <SculptureHeader sculpture={sculpture} />
-        </div>
-      </div>
+      <SculptureDetailHeader sculpture={sculpture} />
 
       <div className="overflow-y-auto flex-1 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <AspectRatio ratio={1}>
-              <SculptureDetailImage
-                imageUrl={sculpture.image_url}
-                prompt={sculpture.prompt}
-                isRegenerating={isRegenerating(sculpture.id)}
-                sculptureId={sculpture.id}
-                userId={sculpture.user_id}
-                onRegenerate={handleRegenerate}
-                hideButtons={false}
-                status={sculpture.status}
-                onManageTags={handleManageTags}
-              />
-            </AspectRatio>
-            <div className="space-y-4">
-              <div className="group space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Description</h3>
-                  {isDescriptionEditing ? (
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleSaveDescription}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        <CheckIcon className="h-4 w-4 mr-1" />
-                        Save
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        onClick={() => setIsDescriptionEditing(false)}
-                        size="sm"
-                      >
-                        <XIcon className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleRegenerateDescription}
-                        disabled={isGeneratingDescription}
-                        className={isGeneratingDescription ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"}
-                      >
-                        <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
-                      </Button>
-                      {!isGeneratingDescription && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setIsDescriptionEditing(true)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <EditableField
-                  ref={editableFieldRef}
-                  value={sculpture.ai_description || "No description available"}
-                  type="textarea"
-                  sculptureId={sculpture.id}
-                  field="ai_description"
-                  className="text-muted-foreground"
-                  hideControls
-                  isEditing={isDescriptionEditing}
-                  onEditingChange={setIsDescriptionEditing}
-                />
-              </div>
-              <SculptureFiles
-                sculptureId={sculpture.id}
-                models={sculpture.models}
-                renderings={sculpture.renderings}
-                dimensions={sculpture.dimensions}
-              />
-            </div>
-          </div>
+          <SculptureMainContent
+            sculpture={sculpture}
+            isRegenerating={isRegenerating(sculpture.id)}
+            onRegenerate={handleRegenerate}
+          />
           <div>
             <SculptureAttributes
               sculpture={sculpture}
