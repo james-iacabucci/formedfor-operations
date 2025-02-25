@@ -5,17 +5,21 @@ import { SculptureDescription } from "./SculptureDescription";
 import { SculptureFiles } from "../SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { useToast } from "@/hooks/use-toast";
+import { EditableFieldRef } from "../EditableField";
+import { RefObject } from "react";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
   isRegenerating: boolean;
   onRegenerate: () => Promise<void>;
+  descriptionRef: RefObject<EditableFieldRef>;
 }
 
 export function SculptureMainContent({ 
   sculpture, 
   isRegenerating, 
-  onRegenerate 
+  onRegenerate,
+  descriptionRef
 }: SculptureMainContentProps) {
   const { toast } = useToast();
 
@@ -48,6 +52,7 @@ export function SculptureMainContent({
           imageUrl={sculpture.image_url}
           description={sculpture.ai_description}
           name={sculpture.ai_generated_name}
+          ref={descriptionRef}
         />
         <SculptureFiles
           sculptureId={sculpture.id}
