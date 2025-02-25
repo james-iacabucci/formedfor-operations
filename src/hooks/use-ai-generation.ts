@@ -46,7 +46,7 @@ export function useAIGeneration() {
       // System message based on type with specific rules
       const systemMessage = type === 'name' 
         ? "You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else."
-        : `You are a designer talking casually to another designer about a sculpture named "${name}". In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional. Always refer to the sculpture by its name.`;
+        : `You are a designer talking casually to another designer about a sculpture named "${name}". Your description MUST start with the sculpture name in capital letters followed by a period, and you cannot mention the name again in the description. In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional.`;
 
       // Generate AI content
       const { data, error } = await supabase.functions.invoke('generate-sculpture-metadata', {
@@ -67,10 +67,9 @@ export function useAIGeneration() {
           .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
         onSuccess(cleanName);
       } else {
-        const sculptureDescription = name 
-          ? data.description.replace(/\b(this sculpture|the sculpture|it)\b/gi, name)
-          : data.description;
-        onSuccess(sculptureDescription);
+        // For description, we don't need to replace the sculpture name anymore
+        // since it's now part of the format rules in the prompt
+        onSuccess(data.description);
       }
 
       // Clean up temporary file
