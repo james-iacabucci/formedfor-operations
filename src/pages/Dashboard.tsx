@@ -20,7 +20,7 @@ interface ViewSettings {
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
-  status: string | null;
+  selectedStatusIds: string[];
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
   heightUnit: 'in' | 'cm';
@@ -41,7 +41,7 @@ const Dashboard = () => {
     sortOrder: 'desc',
     productLineId: null,
     materialIds: [],
-    status: null,
+    selectedStatusIds: ['all'],
     heightOperator: null,
     heightValue: null,
     heightUnit: 'in',

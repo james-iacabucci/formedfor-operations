@@ -8,7 +8,7 @@ interface ViewSettings {
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
-  status: string | null;
+  selectedStatusIds: string[];
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
   heightUnit: 'in' | 'cm';
@@ -50,11 +50,8 @@ export function useSculpturesData(
       }
 
       // Handle status filtering
-      if (viewSettings.status) {
-        query = query.eq('status', viewSettings.status);
-      } else {
-        // If no status is explicitly selected, exclude archived sculptures
-        query = query.neq('status', 'archived');
+      if (!viewSettings.selectedStatusIds.includes('all')) {
+        query = query.in('status', viewSettings.selectedStatusIds);
       }
 
       if (viewSettings.heightOperator && viewSettings.heightValue !== null) {

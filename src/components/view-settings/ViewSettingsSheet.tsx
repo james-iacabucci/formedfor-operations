@@ -19,7 +19,7 @@ interface ViewSettings {
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
-  status: string | null;
+  selectedStatusIds: string[]; // Changed from status: string | null
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
   heightUnit: 'in' | 'cm';
@@ -41,7 +41,8 @@ export function ViewSettingsSheet({
 }: ViewSettingsSheetProps) {
   const [settings, setSettings] = useState<ViewSettings>({ 
     ...initialSettings,
-    heightUnit: initialSettings.heightUnit || 'in'
+    heightUnit: initialSettings.heightUnit || 'in',
+    selectedStatusIds: initialSettings.selectedStatusIds || ['all']
   });
   const { tags } = useTagsManagement(undefined);
 
@@ -85,27 +86,29 @@ export function ViewSettingsSheet({
     }
   };
 
-  const handleStatusSelection = (status: string, checked: boolean) => {
-    if (status === 'all') {
+  const handleStatusSelection = (statusId: string, checked: boolean) => {
+    if (statusId === 'all') {
       setSettings(prev => ({
         ...prev,
-        status: checked ? null : undefined
+        selectedStatusIds: checked ? ['all'] : []
       }));
     } else {
       setSettings(prev => {
-        if (checked) {
-          // When selecting a specific status, uncheck "All Sculptures"
+        const newSelectedStatuses = checked
+          ? [...prev.selectedStatusIds.filter(id => id !== 'all'), statusId]
+          : prev.selectedStatusIds.filter(id => id !== statusId);
+
+        if (newSelectedStatuses.length === 0) {
           return {
             ...prev,
-            status: status
-          };
-        } else {
-          // If unchecking and no other status is selected, select "All Sculptures"
-          return {
-            ...prev,
-            status: null
+            selectedStatusIds: ['all']
           };
         }
+        
+        return {
+          ...prev,
+          selectedStatusIds: newSelectedStatuses
+        };
       });
     }
   };
@@ -156,7 +159,7 @@ export function ViewSettingsSheet({
             <FilterOptionsSection
               title="Status"
               options={allStatuses}
-              selectedIds={settings.status ? [settings.status] : ['all']}
+              selectedIds={settings.selectedStatusIds}
               onSelectionChange={handleStatusSelection}
             />
 
