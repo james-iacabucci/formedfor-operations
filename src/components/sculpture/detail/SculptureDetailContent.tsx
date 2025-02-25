@@ -37,6 +37,11 @@ export function SculptureDetailContent({
     }
   };
 
+  const handleRegenerate = async (): Promise<void> => {
+    // Add empty async function to satisfy Promise<void> return type
+    return Promise.resolve();
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -55,7 +60,7 @@ export function SculptureDetailContent({
         <SculptureMainContent
           sculpture={sculpture}
           isRegenerating={false}
-          onRegenerate={() => {}}
+          onRegenerate={handleRegenerate}
           descriptionRef={descriptionRef}
         />
         <SculptureAttributes
@@ -67,7 +72,6 @@ export function SculptureDetailContent({
       
       <SculptureVariations
         sculptureId={sculpture.id}
-        userId={sculpture.user_id}
         prompt={sculpture.prompt}
       />
     </div>

@@ -1,8 +1,8 @@
-
-import { useRef, useState } from "react";
+import { forwardRef, ForwardRefRenderFunction, useRef, useState } from "react";
+import { EditableFieldRef } from "../EditableField";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, Pencil, RefreshCw, XIcon } from "lucide-react";
-import { EditableField, EditableFieldRef } from "../EditableField";
+import { EditableField } from "../EditableField";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +15,8 @@ interface SculptureDescriptionProps {
   name: string | null;
 }
 
-export function SculptureDescription({ sculptureId, imageUrl, description, name }: SculptureDescriptionProps) {
+export const SculptureDescription: ForwardRefRenderFunction<EditableFieldRef, SculptureDescriptionProps> = 
+  ({ sculptureId, imageUrl, description, name }, ref) => {
   const { generateAIContent, isGeneratingDescription } = useAIGeneration();
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const editableFieldRef = useRef<EditableFieldRef>(null);
@@ -123,4 +124,6 @@ export function SculptureDescription({ sculptureId, imageUrl, description, name 
       />
     </div>
   );
-}
+};
+
+export default forwardRef(SculptureDescription);

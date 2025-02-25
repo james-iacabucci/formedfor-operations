@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAIGeneration } from "@/hooks/use-aigeneration";
+import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 interface EditableFieldProps {
   value: string;
