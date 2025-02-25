@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -193,12 +194,13 @@ export function SculptureDetailContent({
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={handleRegenerateDescription}
                         disabled={isGeneratingDescription}
+                        className={isGeneratingDescription ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"}
                       >
                         <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
                       </Button>
@@ -206,6 +208,7 @@ export function SculptureDetailContent({
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsDescriptionEditing(true)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
