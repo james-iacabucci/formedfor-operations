@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -15,6 +14,7 @@ import { RegenerationSheet } from "../RegenerationSheet";
 import { Link } from "react-router-dom";
 import { EditableField } from "./EditableField";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
+import { supabase } from "@/lib/supabase";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -92,22 +92,38 @@ export function SculptureDetailContent({
   const handleRegenerateDescription = async () => {
     if (!sculpture.image_url) return;
     
-    const response = await fetch(sculpture.image_url);
-    const blob = await response.blob();
-    const file = new File([blob], "sculpture.png", { type: "image/png" });
-    
-    generateAIContent(
-      "description",
-      file,
-      sculpture.ai_generated_name || "",
-      async (newDescription: string) => {
-        await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-        toast({
-          title: "Success",
-          description: "Description regenerated successfully.",
-        });
-      }
-    );
+    try {
+      const response = await fetch(sculpture.image_url);
+      const blob = await response.blob();
+      const file = new File([blob], "sculpture.png", { type: "image/png" });
+      
+      generateAIContent(
+        "description",
+        file,
+        sculpture.ai_generated_name || "",
+        async (newDescription: string) => {
+          const { error } = await supabase
+            .from("sculptures")
+            .update({ ai_description: newDescription })
+            .eq("id", sculpture.id);
+          
+          if (error) throw error;
+          
+          await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+          toast({
+            title: "Success",
+            description: "Description regenerated successfully.",
+          });
+        }
+      );
+    } catch (error) {
+      console.error("Error regenerating description:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate description. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -157,6 +173,12 @@ export function SculptureDetailContent({
                   disabled={isGeneratingDescription}
                 >
                   <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                >
+                  <Pencil className="h-4 w-4" />
                 </Button>
               </div>
               <EditableField
