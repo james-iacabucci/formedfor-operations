@@ -1,4 +1,3 @@
-
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -213,18 +212,16 @@ export function SculptureDetailContent({
                   </div>
                 )}
               </div>
-              <div className="rounded-md border p-4">
-                <EditableField
-                  value={sculpture.ai_description || "No description available"}
-                  type="textarea"
-                  sculptureId={sculpture.id}
-                  field="ai_description"
-                  className="text-muted-foreground"
-                  hideControls
-                  isEditing={isDescriptionEditing}
-                  onEditingChange={setIsDescriptionEditing}
-                />
-              </div>
+              <EditableField
+                value={sculpture.ai_description || "No description available"}
+                type="textarea"
+                sculptureId={sculpture.id}
+                field="ai_description"
+                className="text-muted-foreground"
+                hideControls
+                isEditing={isDescriptionEditing}
+                onEditingChange={setIsDescriptionEditing}
+              />
             </div>
             <SculptureFiles
               sculptureId={sculpture.id}

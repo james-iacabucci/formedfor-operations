@@ -88,7 +88,7 @@ export function EditableField({
 
   if (isEditing) {
     return (
-      <div className="w-full">
+      <div className="w-full rounded-md border">
         {type === "select" ? (
           <Select
             value={editedValue}
@@ -113,7 +113,7 @@ export function EditableField({
           <Textarea
             value={editedValue}
             onChange={(e) => setEditedValue(e.target.value)}
-            className="w-full text-base leading-relaxed min-h-[200px]"
+            className="w-full text-base leading-relaxed min-h-[200px] border-0 rounded-none focus-visible:ring-0"
             placeholder={`Enter ${label || 'description'}`}
             autoFocus
           />
