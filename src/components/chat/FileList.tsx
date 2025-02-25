@@ -176,9 +176,9 @@ export function FileList({ threadId }: FileListProps) {
   });
 
   return (
-    <div className="flex flex-col h-full">
-      <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-        <div className="px-4 py-2 border-b">
+    <div className="flex flex-col flex-1 h-full">
+      <Tabs defaultValue="modified" className="flex flex-col flex-1" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+        <div className="px-4 py-2 border-b shrink-0">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="modified">Last Modified</TabsTrigger>
             <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
@@ -186,8 +186,8 @@ export function FileList({ threadId }: FileListProps) {
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1 px-4">
-          <div className="py-4 space-y-4">
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-4">
             {sortedFiles.map((file) => (
               <FileCard
                 key={`${file.messageId}-${file.name}`}
@@ -197,6 +197,11 @@ export function FileList({ threadId }: FileListProps) {
                 onAttachToSculpture={attachToSculpture}
               />
             ))}
+            {sortedFiles.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                No files found in this thread
+              </div>
+            )}
           </div>
         </ScrollArea>
       </Tabs>
