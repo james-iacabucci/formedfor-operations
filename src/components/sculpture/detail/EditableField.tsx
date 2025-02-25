@@ -97,7 +97,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
 
   if (isEditing) {
     return (
-      <div className="w-full rounded-md border bg-background">
+      <div className="w-full rounded-md border bg-background p-1">
         {type === "select" ? (
           <Select
             value={editedValue}
