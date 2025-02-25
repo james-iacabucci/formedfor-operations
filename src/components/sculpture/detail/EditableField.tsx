@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAIGeneration } from "@/hooks/use-ai-generation";
 
 interface EditableFieldProps {
   value: string;
@@ -23,8 +23,7 @@ interface EditableFieldProps {
 }
 
 export interface EditableFieldRef {
-  save: () => Promise<string | undefined>;
-  regenerate?: (file: File, name: string) => Promise<void>;
+  save: () => Promise<void>;
 }
 
 export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({ 
@@ -47,7 +46,6 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { generateAIContent } = useAIGeneration();
 
   useEffect(() => {
     setEditedValue(value);
@@ -81,7 +79,6 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
         description: "Updated successfully",
       });
       setIsEditing(false);
-      return finalValue;
     } catch (error) {
       console.error('Error updating sculpture:', error);
       toast({
@@ -95,13 +92,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   };
 
   useImperativeHandle(ref, () => ({
-    save: handleUpdate,
-    regenerate: field === 'ai_description' ? async (file: File, name: string) => {
-      generateAIContent('description', file, name, async (newDescription: string) => {
-        setEditedValue(newDescription);
-        await handleUpdate();
-      });
-    } : undefined
+    save: handleUpdate
   }));
 
   if (isEditing) {

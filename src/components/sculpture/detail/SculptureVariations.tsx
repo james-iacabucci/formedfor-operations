@@ -1,14 +1,12 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
 interface SculptureVariationsProps {
   sculptureId: string;
-  prompt: string;
 }
 
-export function SculptureVariations({ sculptureId, prompt }: SculptureVariationsProps) {
+export function SculptureVariations({ sculptureId }: SculptureVariationsProps) {
   const navigate = useNavigate();
   
   const { data: variations } = useQuery({

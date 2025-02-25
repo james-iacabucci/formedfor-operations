@@ -1,78 +1,105 @@
 
-import { SculptureMainContent } from "./components/SculptureMainContent";
 import { SculptureAttributes } from "./SculptureAttributes";
-import { SculptureVariations } from "./SculptureVariations";
-import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
-import { SculptureName } from "./components/SculptureName";
-import { useRef } from "react";
-import { EditableFieldRef } from "./EditableField";
 import { Sculpture } from "@/types/sculpture";
+import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+import { RegenerationSheet } from "../RegenerationSheet";
+import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
+import { SculptureMainContent } from "./components/SculptureMainContent";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
+  onUpdate: () => void;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
-  onUpdate: () => void;
 }
 
-export function SculptureDetailContent({ 
-  sculpture, 
+export function SculptureDetailContent({
+  sculpture,
+  onUpdate,
   originalSculpture,
   tags,
-  onUpdate 
 }: SculptureDetailContentProps) {
-  const descriptionRef = useRef<EditableFieldRef>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
+  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
 
-  const handleNameUpdate = async (newName: string) => {
-    // Trigger description regeneration when name is updated
-    if (sculpture.image_url) {
-      const response = await fetch(sculpture.image_url);
-      const blob = await response.blob();
-      const file = new File([blob], "sculpture.png", { type: "image/png" });
+  const handleRegenerate = useCallback(async () => {
+    if (isRegenerating(sculpture.id)) return;
+    
+    try {
+      await regenerateImage(sculpture.id);
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
       
-      // Get the description component to regenerate
-      if (descriptionRef.current) {
-        descriptionRef.current.regenerate(file, newName);
-      }
+      toast({
+        title: "Success",
+        description: "Image regenerated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to regenerate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
+
+  const handleGenerateVariant = async (options: {
+    creativity: "none" | "small" | "medium" | "large";
+    changes?: string;
+    updateExisting: boolean;
+    regenerateImage: boolean;
+    regenerateMetadata: boolean;
+  }) => {
+    try {
+      await generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options);
+      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
+      
+      toast({
+        title: "Success",
+        description: options.updateExisting 
+          ? "Updates generated successfully." 
+          : "Variation created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate variant. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleRegenerate = async (): Promise<void> => {
-    // Add empty async function to satisfy Promise<void> return type
-    return Promise.resolve();
-  };
-
   return (
-    <div className="space-y-8">
-      <div>
-        <SculptureDetailHeader sculpture={sculpture} />
-        <div className="mt-4">
-          <SculptureName
-            sculptureId={sculpture.id}
-            imageUrl={sculpture.image_url}
-            name={sculpture.ai_generated_name}
-            onNameUpdate={handleNameUpdate}
+    <div className="flex flex-col h-full">
+      <SculptureDetailHeader sculpture={sculpture} />
+
+      <div className="overflow-y-auto flex-1 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <SculptureMainContent
+            sculpture={sculpture}
+            isRegenerating={isRegenerating(sculpture.id)}
+            onRegenerate={handleRegenerate}
           />
+          <div>
+            <SculptureAttributes
+              sculpture={sculpture}
+              originalSculpture={originalSculpture}
+              tags={tags}
+            />
+          </div>
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
-        <SculptureMainContent
-          sculpture={sculpture}
-          isRegenerating={false}
-          onRegenerate={handleRegenerate}
-          descriptionRef={descriptionRef}
-        />
-        <SculptureAttributes
-          sculpture={sculpture}
-          originalSculpture={originalSculpture}
-          tags={tags}
-        />
-      </div>
-      
-      <SculptureVariations
-        sculptureId={sculpture.id}
-        prompt={sculpture.prompt}
+
+      <RegenerationSheet
+        open={isRegenerationSheetOpen}
+        onOpenChange={setIsRegenerationSheetOpen}
+        onRegenerate={handleGenerateVariant}
+        isRegenerating={isRegenerating(sculpture.id)}
+        defaultPrompt={sculpture.prompt}
       />
     </div>
   );
