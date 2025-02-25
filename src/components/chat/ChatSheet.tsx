@@ -91,7 +91,10 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               </TabsList>
             </div>
 
-            <TabsContent value="chat" className="flex flex-col flex-1 m-0 p-0 data-[state=active]:flex overflow-hidden">
+            <TabsContent 
+              value="chat" 
+              className="flex flex-col flex-1 m-0 p-0 data-[state=active]:flex overflow-hidden"
+            >
               {currentThreadId && (
                 <>
                   <div className="flex-1 min-h-0 overflow-hidden">
@@ -108,8 +111,15 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               )}
             </TabsContent>
 
-            <TabsContent value="files" className="flex-1 m-0 p-4 overflow-auto">
-              {currentThreadId && <FileList threadId={currentThreadId} />}
+            <TabsContent 
+              value="files" 
+              className="flex-1 m-0 overflow-hidden"
+            >
+              {currentThreadId && (
+                <div className="h-full">
+                  <FileList threadId={currentThreadId} />
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
