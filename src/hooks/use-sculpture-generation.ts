@@ -51,9 +51,10 @@ export function useSculptureGeneration() {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
       console.log("Images to generate:", imagesToGenerate.length);
       
-      for (const image of imagesToGenerate) {
+      // Create all generation promises at once
+      const generationPromises = imagesToGenerate.map(async (image) => {
         try {
-          console.log("Generating image with ID:", image.id);
+          console.log("Starting generation for image ID:", image.id);
           const { data, error } = await supabase.functions.invoke('generate-image', {
             body: { 
               prompt: prompt.trim(),
@@ -73,26 +74,40 @@ export function useSculptureGeneration() {
           }
           
           console.log("Successfully generated image for ID:", image.id);
-          const updatedImages = [...newImages].map(img => 
-            img.id === image.id 
-              ? { ...img, url: data.imageUrl, isGenerating: false }
-              : img
-          );
-          newImages.splice(0, newImages.length, ...updatedImages);
-          setGeneratedImages(updatedImages);
+          return {
+            id: image.id,
+            success: true,
+            url: data.imageUrl
+          };
         } catch (error) {
           console.error("Error generating individual image:", error);
-          const updatedImages = [...newImages].map(img => 
-            img.id === image.id 
-              ? { ...img, isGenerating: false, error: true }
-              : img
-          );
-          newImages.splice(0, newImages.length, ...updatedImages);
-          setGeneratedImages(updatedImages);
+          return {
+            id: image.id,
+            success: false,
+            error: true
+          };
         }
-      }
+      });
 
-      const failedCount = newImages.filter(img => img.error).length;
+      // Wait for all generations to complete
+      const results = await Promise.all(generationPromises);
+      
+      // Update state once with all results
+      const finalImages = [...newImages].map(img => {
+        const result = results.find(r => r.id === img.id);
+        if (!result) return img;
+        
+        return {
+          ...img,
+          url: result.success ? result.url : null,
+          isGenerating: false,
+          error: !result.success
+        };
+      });
+
+      setGeneratedImages(finalImages);
+
+      const failedCount = results.filter(r => !r.success).length;
       if (failedCount > 0) {
         toast({
           title: "Generation Completed",
