@@ -14,7 +14,7 @@ import { RegenerationSheet } from "../RegenerationSheet";
 import { Link } from "react-router-dom";
 import { EditableField } from "./EditableField";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
