@@ -204,14 +204,16 @@ export function SculptureDetailContent({
                       >
                         <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsDescriptionEditing(true)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      {!isGeneratingDescription && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsDescriptionEditing(true)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
