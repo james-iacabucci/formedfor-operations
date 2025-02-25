@@ -8,6 +8,19 @@ export function useAIGeneration() {
   const [isGeneratingName, setIsGeneratingName] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
+  const cleanDescription = (description: string): string => {
+    return description
+      .replace(/^(the\s+sculpture|this\s+piece|the\s+artwork)/gi, '')
+      .replace(/(the\s+sculpture|this\s+piece|the\s+artwork)/gi, 'it')
+      .replace(/^\s+/, '')
+      .replace(/^,\s*/, '')
+      .replace(/^and\s+/i, '')
+      .replace(/^features?\s+/i, '')
+      .replace(/^presents?\s+/i, '')
+      .replace(/^displays?\s+/i, '')
+      .replace(/^shows?\s+/i, '');
+  };
+
   const generateAIContent = useCallback(async (
     type: 'name' | 'description',
     file: File,
@@ -62,8 +75,9 @@ export function useAIGeneration() {
           .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
         onSuccess(cleanName);
       } else {
-        // Format the description to start with the name in capitals
-        const finalDescription = `${name.toUpperCase()} ${data.description}`;
+        // Clean the description and format it with the name in capitals
+        const cleanedDescription = cleanDescription(data.description);
+        const finalDescription = `${name.toUpperCase()} ${cleanedDescription}`;
         onSuccess(finalDescription);
       }
 

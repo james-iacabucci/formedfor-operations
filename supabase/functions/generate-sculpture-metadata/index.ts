@@ -77,7 +77,7 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: 'You are a designer talking casually to another designer about a sculpture. In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional. Do not mention or reference the name of the sculpture at all in your response.'
+              content: 'You are describing the visual and spatial impact of an artwork. In 2-3 concise sentences, describe its physical presence, materials, and symbolism. Focus purely on the form, materiality, and spatial relationship. Do not use any phrases like "the sculpture", "this piece", or any names - just describe what you see and its impact directly. Start with the physical attributes, then discuss material properties, and end with the spatial impact.'
             },
             {
               role: 'user',
