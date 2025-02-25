@@ -98,9 +98,9 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           table: 'chat_messages',
           filter: `thread_id=eq.${threadId}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('Received new message:', payload);
-          refetch();
+          await refetch();
           setShouldScrollToBottom(true);
         }
       )
@@ -131,10 +131,10 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       }
     };
 
-    // Call scrollToBottom after a short delay to ensure content is rendered
+    // Ensure content is rendered before scrolling
     const timeoutId = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timeoutId);
-  }, [data, isLoading, isInitialScroll, shouldScrollToBottom]);
+  }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
 
   if (isLoading) {
     return (
@@ -147,7 +147,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const allMessages = data?.pages?.flatMap(page => page || []) ?? [];
 
   return (
-    <ScrollArea ref={scrollRef} className="flex-1">
+    <ScrollArea ref={scrollRef} className="flex-1 h-full">
       <div className="p-4 space-y-6">
         {hasNextPage && (
           <div className="h-8 flex items-center justify-center">
