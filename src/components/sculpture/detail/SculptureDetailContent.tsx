@@ -130,10 +130,28 @@ export function SculptureDetailContent({
   const handleSaveDescription = async () => {
     const field = document.querySelector('[data-field="ai_description"]');
     if (field) {
-      const form = field.querySelector('form');
-      if (form) {
-        form.dispatchEvent(new Event('submit'));
-        setIsDescriptionEditing(false);
+      const textArea = field.querySelector('textarea');
+      if (textArea) {
+        const value = textArea.value;
+        const { error } = await supabase
+          .from('sculptures')
+          .update({ ai_description: value })
+          .eq('id', sculpture.id);
+        
+        if (!error) {
+          setIsDescriptionEditing(false);
+          await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+          toast({
+            title: "Success",
+            description: "Description updated successfully",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to update description",
+            variant: "destructive",
+          });
+        }
       }
     }
   };

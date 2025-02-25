@@ -115,6 +115,11 @@ export function EditableField({
             onChange={(e) => setEditedValue(e.target.value)}
             className="w-full text-base leading-relaxed min-h-[200px] border-0 rounded-none focus-visible:ring-0 px-4 py-3"
             placeholder={`Enter ${label || 'description'}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.ctrlKey) {
+                handleUpdate();
+              }
+            }}
             autoFocus
           />
         ) : (
