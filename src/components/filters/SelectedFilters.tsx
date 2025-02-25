@@ -6,7 +6,7 @@ interface ViewSettings {
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
-  status: string | null;
+  selectedStatusIds: string[]; // Changed from status: string | null
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
   heightUnit: 'in' | 'cm';
@@ -36,11 +36,17 @@ export function SelectedFilters({
     }
   });
 
-  // Add status if selected
-  if (viewSettings.status) {
-    filters.push({ 
-      id: `status-${viewSettings.status}`, 
-      label: viewSettings.status.charAt(0).toUpperCase() + viewSettings.status.slice(1).toLowerCase()
+  // Add selected statuses if not "all"
+  if (!viewSettings.selectedStatusIds.includes('all')) {
+    viewSettings.selectedStatusIds.forEach(statusId => {
+      const statusMap: Record<string, string> = {
+        'idea': 'Idea',
+        'pending': 'Pending',
+        'approved': 'Approved',
+        'archived': 'Archived'
+      };
+      const statusLabel = statusMap[statusId] || statusId;
+      filters.push({ id: `status-${statusId}`, label: statusLabel });
     });
   }
 
