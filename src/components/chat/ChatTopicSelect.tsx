@@ -1,6 +1,6 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MessageSquare, MessageCircleDollar, Wrench } from "lucide-react"
+import { MessageCircle, MessageSquare, Wrench } from "lucide-react"
 
 interface ChatTopicSelectProps {
   value: string;
@@ -16,7 +16,7 @@ export function ChatTopicSelect({ value, onValueChange }: ChatTopicSelectProps) 
       <SelectContent>
         <SelectItem value="pricing">
           <div className="flex items-center gap-2">
-            <MessageCircleDollar className="h-4 w-4" />
+            <MessageCircle className="h-4 w-4" />
             <span>Pricing Discussion</span>
           </div>
         </SelectItem>
