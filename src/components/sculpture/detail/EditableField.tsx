@@ -88,7 +88,7 @@ export function EditableField({
 
   if (isEditing) {
     return (
-      <div className="w-full rounded-md border">
+      <div className="w-full rounded-md border bg-background">
         {type === "select" ? (
           <Select
             value={editedValue}
