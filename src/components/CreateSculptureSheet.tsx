@@ -68,84 +68,104 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     setTimeout(() => setIsPromptUpdated(false), 1000);
   };
 
+  const processSingleImage = async (image: GeneratedImage) => {
+    try {
+      console.log("Processing image:", image.id);
+      const response = await fetch(image.url!);
+      if (!response.ok) {
+        throw new Error('Could not access image');
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], 'generated-image.png', { type: 'image/png' });
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
+      
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('sculptures')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('sculptures')
+        .getPublicUrl(fileName);
+
+      // Set a timeout for AI content generation
+      const timeoutDuration = 30000; // 30 seconds
+      const generateWithTimeout = async (type: 'name' | 'description', existingName = '') => {
+        const contentPromise = new Promise<string>((resolve) => {
+          generateAIContent(type, file, existingName, (content) => {
+            resolve(content);
+          });
+        });
+
+        const timeoutPromise = new Promise<string>((_, reject) => {
+          setTimeout(() => reject(new Error(`${type} generation timed out`)), timeoutDuration);
+        });
+
+        try {
+          return await Promise.race([contentPromise, timeoutPromise]);
+        } catch (error) {
+          console.warn(`AI ${type} generation failed:`, error);
+          return type === 'name' ? 'Untitled Sculpture' : 'No description available.';
+        }
+      };
+
+      const aiName = await generateWithTimeout('name');
+      const aiDescription = await generateWithTimeout('description', aiName);
+
+      const { error: createError } = await supabase
+        .from('sculptures')
+        .insert([
+          {
+            prompt: prompt.trim(),
+            user_id: user!.id,
+            ai_engine: "runware",
+            status: "idea",
+            image_url: publicUrl,
+            creativity_level: creativity,
+            ai_generated_name: aiName,
+            ai_description: aiDescription,
+            product_line_id: selectedProductLineId === "unassigned" ? null : selectedProductLineId
+          }
+        ]);
+
+      if (createError) {
+        throw createError;
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to process image:', error);
+      return { success: false, error };
+    }
+  };
+
   const handleSaveToLibrary = async () => {
     if (!user || selectedIds.size === 0) return;
     
     setIsSaving(true);
-    try {
-      const selectedImages = generatedImages.filter(img => selectedIds.has(img.id));
-      
-      for (const image of selectedImages) {
-        try {
-          const response = await fetch(image.url!);
-          if (!response.ok) {
-            throw new Error('Could not access image');
-          }
+    const selectedImages = generatedImages.filter(img => selectedIds.has(img.id));
+    const results = await Promise.allSettled(selectedImages.map(processSingleImage));
+    
+    const successCount = results.filter(
+      result => result.status === 'fulfilled' && result.value.success
+    ).length;
+    
+    const failureCount = selectedImages.length - successCount;
 
-          const blob = await response.blob();
-          const file = new File([blob], 'generated-image.png', { type: 'image/png' });
-          
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${image.id}/${crypto.randomUUID()}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('sculptures')
-            .upload(fileName, file);
-
-          if (uploadError) {
-            console.error('Upload error:', uploadError);
-            throw uploadError;
-          }
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('sculptures')
-            .getPublicUrl(fileName);
-
-          let aiName = '';
-          let aiDescription = '';
-
-          await generateAIContent('name', file, '', (name) => {
-            aiName = name;
-          });
-
-          await generateAIContent('description', file, aiName, (description) => {
-            aiDescription = description;
-          });
-
-          const { error: createError } = await supabase
-            .from('sculptures')
-            .insert([
-              {
-                prompt: prompt.trim(),
-                user_id: user.id,
-                ai_engine: "runware",
-                status: "idea",
-                image_url: publicUrl,
-                creativity_level: creativity,
-                ai_generated_name: aiName,
-                ai_description: aiDescription,
-                product_line_id: selectedProductLineId === "unassigned" ? null : selectedProductLineId
-              }
-            ]);
-
-          if (createError) {
-            console.error('Create error:', createError);
-            throw createError;
-          }
-
-        } catch (imageError) {
-          console.error('Failed to process image:', imageError);
-          toast({
-            title: "Error",
-            description: "Failed to process one of the selected images.",
-            variant: "destructive",
-          });
-        }
-      }
-
+    if (successCount > 0) {
       toast({
         title: "Success",
-        description: `${selectedIds.size} sculpture${selectedIds.size > 1 ? 's' : ''} saved to library.`,
+        description: `${successCount} sculpture${successCount > 1 ? 's' : ''} saved to library.${
+          failureCount > 0 ? ` ${failureCount} failed to save.` : ''
+        }`,
+        variant: failureCount > 0 ? "destructive" : "default",
       });
       
       queryClient.invalidateQueries({ queryKey: ["sculptures"] });
@@ -154,17 +174,15 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       setPrompt("");
       setGeneratedImages([]);
       clearSelection();
-      
-    } catch (error) {
-      console.error('Error in save process:', error);
+    } else {
       toast({
         title: "Error",
-        description: "Could not complete the save operation. Please try again.",
+        description: "Could not save any sculptures. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
     }
+    
+    setIsSaving(false);
   };
 
   useEffect(() => {
