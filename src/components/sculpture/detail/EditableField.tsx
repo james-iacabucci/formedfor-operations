@@ -152,7 +152,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   return (
     <div className="group relative" data-field={field}>
       <div 
-        className={`group hover:bg-accent/50 rounded-md ${className}`}
+        className={`${className}`}
         onClick={() => !hideControls && setIsEditing(true)}
         style={{ cursor: hideControls ? 'text' : 'pointer' }}
       >
