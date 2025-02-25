@@ -176,7 +176,7 @@ export function FileList({ threadId }: FileListProps) {
   });
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex flex-col h-full">
       <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
         <div className="px-4 py-2 border-b">
           <TabsList className="grid w-full grid-cols-3">
@@ -186,8 +186,8 @@ export function FileList({ threadId }: FileListProps) {
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 px-4">
+          <div className="py-4 space-y-4">
             {sortedFiles.map((file) => (
               <FileCard
                 key={`${file.messageId}-${file.name}`}
