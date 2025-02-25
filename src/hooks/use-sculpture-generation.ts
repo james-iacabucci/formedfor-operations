@@ -73,39 +73,26 @@ export function useSculptureGeneration() {
           }
           
           console.log("Successfully generated image for ID:", image.id);
-          setGeneratedImages(currentImages => 
-            currentImages.map(img => 
-              img.id === image.id 
-                ? { ...img, url: data.imageUrl, isGenerating: false }
-                : img
-            )
+          const updatedImages = [...newImages].map(img => 
+            img.id === image.id 
+              ? { ...img, url: data.imageUrl, isGenerating: false }
+              : img
           );
+          newImages.splice(0, newImages.length, ...updatedImages);
+          setGeneratedImages(updatedImages);
         } catch (error) {
           console.error("Error generating individual image:", error);
-          setGeneratedImages(currentImages => 
-            currentImages.map(img => 
-              img.id === image.id 
-                ? { ...img, isGenerating: false, error: true }
-                : img
-            )
+          const updatedImages = [...newImages].map(img => 
+            img.id === image.id 
+              ? { ...img, isGenerating: false, error: true }
+              : img
           );
+          newImages.splice(0, newImages.length, ...updatedImages);
+          setGeneratedImages(updatedImages);
         }
       }
 
-      const failedImages = await Promise.all(
-        imagesToGenerate.map(async img => {
-          const currentState = await new Promise<GeneratedImage>(resolve => {
-            setGeneratedImages(current => {
-              const image = current.find(i => i.id === img.id);
-              resolve(image!);
-              return current;
-            });
-          });
-          return currentState.error === true;
-        })
-      );
-
-      const failedCount = failedImages.filter(failed => failed).length;
+      const failedCount = newImages.filter(img => img.error).length;
       if (failedCount > 0) {
         toast({
           title: "Generation Completed",
