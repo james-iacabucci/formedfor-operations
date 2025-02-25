@@ -51,7 +51,7 @@ export function useSculptureGeneration() {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
       console.log("Images to generate:", imagesToGenerate.length);
       
-      const generationPromises = imagesToGenerate.map(async image => {
+      for (const image of imagesToGenerate) {
         try {
           console.log("Generating image with ID:", image.id);
           const { data, error } = await supabase.functions.invoke('generate-image', {
@@ -73,35 +73,43 @@ export function useSculptureGeneration() {
           }
           
           console.log("Successfully generated image for ID:", image.id);
-          const updatedImages = [...newImages].map(img => 
-            img.id === image.id 
-              ? { ...img, url: data.imageUrl, isGenerating: false }
-              : img
+          setGeneratedImages(currentImages => 
+            currentImages.map(img => 
+              img.id === image.id 
+                ? { ...img, url: data.imageUrl, isGenerating: false }
+                : img
+            )
           );
-          setGeneratedImages(updatedImages);
-          
-          return { id: image.id, success: true };
         } catch (error) {
           console.error("Error generating individual image:", error);
-          
-          const updatedImages = [...newImages].map(img => 
-            img.id === image.id 
-              ? { ...img, isGenerating: false, error: true }
-              : img
+          setGeneratedImages(currentImages => 
+            currentImages.map(img => 
+              img.id === image.id 
+                ? { ...img, isGenerating: false, error: true }
+                : img
+            )
           );
-          setGeneratedImages(updatedImages);
-          
-          return { id: image.id, success: false };
         }
-      });
+      }
 
-      const results = await Promise.all(generationPromises);
-      
-      const failedCount = results.filter(r => !r.success).length;
+      const failedImages = await Promise.all(
+        imagesToGenerate.map(async img => {
+          const currentState = await new Promise<GeneratedImage>(resolve => {
+            setGeneratedImages(current => {
+              const image = current.find(i => i.id === img.id);
+              resolve(image!);
+              return current;
+            });
+          });
+          return currentState.error === true;
+        })
+      );
+
+      const failedCount = failedImages.filter(failed => failed).length;
       if (failedCount > 0) {
         toast({
           title: "Generation Completed",
-          description: `${failedCount} out of ${results.length} images failed to generate.`,
+          description: `${failedCount} out of ${imagesToGenerate.length} images failed to generate.`,
           variant: "destructive",
         });
       }
