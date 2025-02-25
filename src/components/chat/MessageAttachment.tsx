@@ -1,7 +1,5 @@
 
 import { FileAttachment } from "./types";
-import { useState } from "react";
-import { DeleteFileDialog } from "./DeleteFileDialog";
 import { MessageAttachmentImage } from "./MessageAttachmentImage";
 import { MessageAttachmentFile } from "./MessageAttachmentFile";
 
@@ -14,13 +12,10 @@ interface MessageAttachmentProps {
 
 export function MessageAttachment({ 
   attachment, 
-  onDelete, 
+  onDelete,
   onAttachToSculpture,
   canDelete = false 
 }: MessageAttachmentProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const isImageFile = attachment.type.startsWith('image/');
-
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = document.createElement('a');
@@ -35,39 +30,25 @@ export function MessageAttachment({
     window.open(attachment.url, '_blank');
   };
 
-  const handleDelete = () => {
-    setShowDeleteDialog(true);
-  };
+  const isImageFile = attachment.type.startsWith('image/');
 
-  return (
-    <>
-      {isImageFile ? (
-        <MessageAttachmentImage
-          attachment={attachment}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-          onAttachToSculpture={onAttachToSculpture}
-          canDelete={canDelete}
-          onPreview={handlePreview}
-        />
-      ) : (
-        <MessageAttachmentFile
-          attachment={attachment}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-          onAttachToSculpture={onAttachToSculpture}
-          canDelete={canDelete}
-          onPreview={handlePreview}
-        />
-      )}
-      <DeleteFileDialog 
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={() => {
-          onDelete?.();
-          setShowDeleteDialog(false);
-        }}
-      />
-    </>
+  return isImageFile ? (
+    <MessageAttachmentImage
+      attachment={attachment}
+      onDownload={handleDownload}
+      onDelete={onDelete}
+      onAttachToSculpture={onAttachToSculpture}
+      canDelete={canDelete}
+      onPreview={handlePreview}
+    />
+  ) : (
+    <MessageAttachmentFile
+      attachment={attachment}
+      onDownload={handleDownload}
+      onDelete={onDelete}
+      onAttachToSculpture={onAttachToSculpture}
+      canDelete={canDelete}
+      onPreview={handlePreview}
+    />
   );
 }

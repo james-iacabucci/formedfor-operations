@@ -24,6 +24,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const { data: threads } = useQuery({
     queryKey: ["chat-threads", threadId],
     queryFn: async () => {
+      console.log('Fetching threads for sculpture:', threadId);
       const { data, error } = await supabase
         .from("chat_threads")
         .select("*")
@@ -34,6 +35,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
         return [];
       }
 
+      console.log('Fetched threads:', data);
       return data || [];
     },
   });
