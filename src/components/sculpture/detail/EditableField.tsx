@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { CheckIcon, PenIcon, XIcon, RefreshCwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -87,43 +88,9 @@ export function EditableField({
     }
   };
 
-  const handleRegenerate = async () => {
-    if (isRegenerating) return;
-
-    setIsRegenerating(true);
-    try {
-      console.log("Regenerating metadata for field:", field);
-      const { error: metadataError } = await supabase.functions.invoke("generate-metadata", {
-        body: {
-          sculptureId,
-          field,
-        },
-      });
-
-      if (metadataError) throw metadataError;
-
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-
-      toast({
-        title: "Success",
-        description: `${field === 'ai_generated_name' ? 'Name' : 'Description'} regenerated successfully.`,
-      });
-    } catch (error) {
-      console.error('Error regenerating:', error);
-      toast({
-        title: "Error",
-        description: "Failed to regenerate. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="space-y-2">
         {type === "select" ? (
           <Select
             value={editedValue}
@@ -145,26 +112,47 @@ export function EditableField({
             </SelectContent>
           </Select>
         ) : type === "textarea" ? (
-          <Textarea
-            value={editedValue}
-            onChange={(e) => setEditedValue(e.target.value)}
-            className="flex-1"
-            placeholder={`Enter ${label || 'value'}`}
-            autoFocus
-          />
-        ) : (
-          <Input
-            type={type === "number" ? "number" : "text"}
-            value={editedValue}
-            onChange={(e) => setEditedValue(e.target.value)}
-            className="flex-1"
-            placeholder={`Enter ${label || 'value'}`}
-            autoFocus
-          />
-        )}
-        
-        {type !== "select" && (
           <>
+            <Textarea
+              value={editedValue}
+              onChange={(e) => setEditedValue(e.target.value)}
+              className="w-full text-base leading-relaxed"
+              placeholder={`Enter ${label || 'description'}`}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button 
+                onClick={handleUpdate} 
+                disabled={isUpdating}
+                size="sm"
+                variant="secondary"
+              >
+                <CheckIcon className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => {
+                  setEditedValue(value);
+                  setIsEditing(false);
+                }}
+                size="sm"
+              >
+                <XIcon className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Input
+              type={type === "number" ? "number" : "text"}
+              value={editedValue}
+              onChange={(e) => setEditedValue(e.target.value)}
+              className="flex-1"
+              placeholder={`Enter ${label || 'value'}`}
+              autoFocus
+            />
             <Button 
               onClick={handleUpdate} 
               disabled={isUpdating}
@@ -185,7 +173,7 @@ export function EditableField({
             >
               <XIcon className="h-4 w-4" />
             </Button>
-          </>
+          </div>
         )}
       </div>
     );
