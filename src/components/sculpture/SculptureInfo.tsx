@@ -88,22 +88,26 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         />
       </div>
 
-      {tags.length > 0 && (
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-1.5">
-            {tags.map(tag => (
-              <Badge
-                key={tag.id}
-                variant="secondary"
-                className="bg-muted text-white border-0"
-              >
-                {tag.name}
-              </Badge>
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" className="h-2" />
-        </ScrollArea>
-      )}
+      <div className="min-h-[28px]"> {/* Add minimum height container */}
+        {tags.length > 0 ? (
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-1.5">
+              {tags.map(tag => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="bg-muted text-white border-0"
+                >
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="h-2" />
+          </ScrollArea>
+        ) : (
+          <div className="h-[28px]" /> {/* Empty placeholder with same height */}
+        )}
+      </div>
     </div>
   );
 }
