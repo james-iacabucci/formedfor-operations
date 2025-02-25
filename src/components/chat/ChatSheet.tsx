@@ -45,7 +45,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-hidden">
           <Tabs
             value={currentTopic}
             onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
@@ -93,7 +93,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
 
             <TabsContent 
               value="chat" 
-              className="flex-1 flex flex-col m-0 p-0 data-[state=active]:flex overflow-hidden"
+              className="flex flex-col flex-1 m-0 p-0 data-[state=active]:flex overflow-hidden"
             >
               {currentThreadId && (
                 <>
@@ -113,10 +113,12 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
 
             <TabsContent 
               value="files" 
-              className="flex-1 flex flex-col m-0 overflow-hidden"
+              className="flex-1 m-0 overflow-hidden"
             >
               {currentThreadId && (
-                <FileList threadId={currentThreadId} />
+                <div className="h-full">
+                  <FileList threadId={currentThreadId} />
+                </div>
               )}
             </TabsContent>
           </Tabs>
