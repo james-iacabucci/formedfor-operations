@@ -170,65 +170,67 @@ export function SculptureDetailContent({
               />
             </AspectRatio>
             <div className="space-y-4">
-              <div className="group flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Description</h3>
-                {isDescriptionEditing ? (
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={handleSaveDescription}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      <CheckIcon className="h-4 w-4 mr-1" />
-                      Save
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => setIsDescriptionEditing(false)}
-                      size="sm"
-                    >
-                      <XIcon className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleRegenerateDescription}
-                      disabled={isGeneratingDescription}
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsDescriptionEditing(true)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+              <div className="group space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Description</h3>
+                  {isDescriptionEditing ? (
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSaveDescription}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        <CheckIcon className="h-4 w-4 mr-1" />
+                        Save
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => setIsDescriptionEditing(false)}
+                        size="sm"
+                      >
+                        <XIcon className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRegenerateDescription}
+                        disabled={isGeneratingDescription}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsDescriptionEditing(true)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <EditableField
+                  ref={editableFieldRef}
+                  value={sculpture.ai_description || "No description available"}
+                  type="textarea"
+                  sculptureId={sculpture.id}
+                  field="ai_description"
+                  className="text-muted-foreground"
+                  hideControls
+                  isEditing={isDescriptionEditing}
+                  onEditingChange={setIsDescriptionEditing}
+                />
               </div>
-              <EditableField
-                ref={editableFieldRef}
-                value={sculpture.ai_description || "No description available"}
-                type="textarea"
+              <SculptureFiles
                 sculptureId={sculpture.id}
-                field="ai_description"
-                className={`text-muted-foreground ${isDescriptionEditing ? 'bg-white' : ''}`}
-                hideControls
-                isEditing={isDescriptionEditing}
-                onEditingChange={setIsDescriptionEditing}
+                models={sculpture.models}
+                renderings={sculpture.renderings}
+                dimensions={sculpture.dimensions}
               />
             </div>
-            <SculptureFiles
-              sculptureId={sculpture.id}
-              models={sculpture.models}
-              renderings={sculpture.renderings}
-              dimensions={sculpture.dimensions}
-            />
           </div>
           <div>
             <SculptureAttributes
