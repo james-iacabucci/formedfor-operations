@@ -1,7 +1,7 @@
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { SculptureDetailImage } from "../SculptureDetailImage";
-import { SculptureDescription } from "./SculptureDescription";
+import SculptureDescription from "./SculptureDescription";
 import { SculptureFiles } from "../SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { useToast } from "@/hooks/use-toast";
