@@ -43,17 +43,12 @@ export function useAIGeneration() {
         .from('sculptures')
         .getPublicUrl(`temp/${fileName}`);
 
-      // System message based on type with specific rules
-      const systemMessage = type === 'name' 
-        ? "You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else."
-        : `You are a designer talking casually to another designer about a sculpture. Your description MUST start with "${name}" in capital letters, followed directly by the rest of the description. After using the name in capitals at the start, do not mention or reference the name again in any way. In 2-3 concise sentences, describe how this sculpture enhances its space. Focus on the shape, materials, and what they could symbolize. Be conversational but professional.`;
-
       // Generate AI content
       const { data, error } = await supabase.functions.invoke('generate-sculpture-metadata', {
         body: { 
           imageUrl: publicUrl, 
           type,
-          systemMessage
+          existingName: name
         }
       });
 
@@ -67,26 +62,9 @@ export function useAIGeneration() {
           .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
         onSuccess(cleanName);
       } else {
-        // Validate and format the description to ensure it starts with the name in capitals
-        let description = data.description.trim();
-        
-        // Remove any quoted instances of the name
-        description = description.replace(new RegExp(`"${name}"`, 'gi'), '');
-        description = description.replace(new RegExp(`'${name}'`, 'gi'), '');
-        
-        // If the description doesn't start with the name in capitals, add it
-        if (!description.toUpperCase().startsWith(name.toUpperCase())) {
-          description = `${name.toUpperCase()} ${description}`;
-        } else {
-          // If it does start with the name but not in capitals, capitalize it
-          const nameLength = name.length;
-          description = description.substring(0, nameLength).toUpperCase() + description.substring(nameLength);
-        }
-
-        // Clean up any double spaces that might have been created
-        description = description.replace(/\s+/g, ' ').trim();
-
-        onSuccess(description);
+        // Format the description to start with the name in capitals
+        const finalDescription = `${name.toUpperCase()} ${data.description}`;
+        onSuccess(finalDescription);
       }
 
       // Clean up temporary file
