@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Sculpture } from "@/types/sculpture";
 import { DeleteSculptureDialog } from "./sculpture/DeleteSculptureDialog";
@@ -13,7 +14,7 @@ interface ViewSettings {
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
-  status: string | null;
+  selectedStatusIds: string[]; // Updated to match new interface
   heightOperator: 'eq' | 'gt' | 'lt' | null;
   heightValue: number | null;
   heightUnit: 'in' | 'cm';
