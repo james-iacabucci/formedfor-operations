@@ -15,6 +15,7 @@ export function useSculptureGeneration() {
     setGeneratedImages: (images: GeneratedImage[]) => void,
     clearSelection: () => void
   ) => {
+    console.log("Starting image generation with prompt:", prompt);
     setIsGenerating(true);
     const numImages = 6;
     const newImages: GeneratedImage[] = [];
@@ -48,41 +49,53 @@ export function useSculptureGeneration() {
 
     try {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
+      console.log("Images to generate:", imagesToGenerate.length);
       
-      const generationPromises = imagesToGenerate.map(image =>
-        supabase.functions.invoke('generate-image', {
-          body: { 
-            prompt: prompt.trim(),
-            sculptureId: image.id,
-            creativity 
+      const generationPromises = imagesToGenerate.map(async image => {
+        try {
+          console.log("Generating image with ID:", image.id);
+          const { data, error } = await supabase.functions.invoke('generate-image', {
+            body: { 
+              prompt: prompt.trim(),
+              sculptureId: image.id,
+              creativity 
+            }
+          });
+          
+          if (error) {
+            console.error("Error from generate-image function:", error);
+            throw error;
           }
-        }).then(({ data, error }) => {
-          if (error) throw error;
-          if (!data?.imageUrl) throw new Error('No image URL in response');
           
-          const updatedImages = generatedImages.map(img => 
-            img.id === image.id 
-              ? { ...img, url: data.imageUrl, isGenerating: false }
-              : img
+          if (!data?.imageUrl) {
+            console.error("No image URL in response for ID:", image.id);
+            throw new Error('No image URL in response');
+          }
+          
+          console.log("Successfully generated image for ID:", image.id);
+          setGeneratedImages(current => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, url: data.imageUrl, isGenerating: false }
+                : img
+            )
           );
-          
-          setGeneratedImages(updatedImages);
           
           return { id: image.id, success: true };
-        }).catch(error => {
-          console.error('Error generating image:', error);
+        } catch (error) {
+          console.error("Error generating individual image:", error);
           
-          const updatedImages = generatedImages.map(img => 
-            img.id === image.id 
-              ? { ...img, isGenerating: false, error: true }
-              : img
+          setGeneratedImages(current => 
+            current.map(img => 
+              img.id === image.id 
+                ? { ...img, isGenerating: false, error: true }
+                : img
+            )
           );
           
-          setGeneratedImages(updatedImages);
-          
           return { id: image.id, success: false };
-        })
-      );
+        }
+      });
 
       const results = await Promise.all(generationPromises);
       
