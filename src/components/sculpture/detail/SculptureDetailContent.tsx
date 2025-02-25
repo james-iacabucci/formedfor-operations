@@ -1,3 +1,4 @@
+
 import { SculptureDetailImage } from "./SculptureDetailImage";
 import { SculptureAttributes } from "./SculptureAttributes";
 import { SculptureFiles } from "./SculptureFiles";
@@ -8,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckIcon, Pencil, RefreshCw, XIcon } from "lucide-react";
 import { SculptureHeader } from "./SculptureHeader";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { Link } from "react-router-dom";
