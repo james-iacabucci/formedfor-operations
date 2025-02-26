@@ -46,27 +46,12 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
         <div className="flex flex-col h-full">
-          <div className="border-b shrink-0">
+          <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4">
-              <Tabs
-                value={activeView}
-                onValueChange={(value) => setActiveView(value as "chat" | "files")}
-                className="w-[120px] shrink-0"
-              >
-                <TabsList className="w-full">
-                  <TabsTrigger value="chat" className="flex-1">
-                    Chat
-                  </TabsTrigger>
-                  <TabsTrigger value="files" className="flex-1">
-                    Files
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
               <Tabs
                 value={currentTopic}
                 onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-                className="flex-1 ml-4"
+                className="flex-1"
               >
                 <TabsList className="w-full">
                   <TabsTrigger value="pricing" className="flex-1">
@@ -86,6 +71,21 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                       <Wrench className="h-4 w-4" />
                       <span>Operations</span>
                     </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Tabs
+                value={activeView}
+                onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                className="w-[120px] shrink-0 ml-4"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="chat" className="flex-1">
+                    Chat
+                  </TabsTrigger>
+                  <TabsTrigger value="files" className="flex-1">
+                    Files
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
