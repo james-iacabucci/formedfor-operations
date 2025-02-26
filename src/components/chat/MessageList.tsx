@@ -18,11 +18,11 @@ const PAGE_SIZE = 20;
 
 export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef<number>(0);
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
   const lastMessageRef = useRef<string | null>(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   const {
     data,
@@ -67,19 +67,32 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         throw error;
       }
 
+      console.log('Fetched page data:', {
+        pageParam,
+        messageCount: data?.length,
+        oldestMessage: data?.[data.length - 1]?.created_at,
+        newestMessage: data?.[0]?.created_at
+      });
+
       return data || [];
     },
     getNextPageParam: (lastPage) => {
       if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
+        console.log('No more pages available', { 
+          lastPageLength: lastPage?.length,
+          requiredLength: PAGE_SIZE 
+        });
         return undefined;
       }
-      return lastPage[lastPage.length - 1]?.created_at;
+      const nextCursor = lastPage[lastPage.length - 1]?.created_at;
+      console.log('Next cursor:', nextCursor);
+      return nextCursor;
     },
     initialPageParam: null,
     select: (data) => {
       if (!data?.pages) return { pages: [], pageParams: [] };
       
-      return {
+      const processedData = {
         pages: data.pages.map(page => 
           (Array.isArray(page) ? page : []).map(message => ({
             ...message,
@@ -90,6 +103,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         ),
         pageParams: data.pageParams,
       };
+
+      console.log('Processed data:', {
+        pageCount: processedData.pages.length,
+        totalMessages: processedData.pages.reduce((acc, page) => acc + page.length, 0)
+      });
+
+      return processedData;
     },
   });
 
@@ -109,7 +129,6 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           const currentLastMessage = lastMessageRef.current;
           await refetch();
           
-          // Only auto-scroll if we were already at the bottom
           if (!currentLastMessage || currentLastMessage === payload.new.id) {
             setShouldScrollToBottom(true);
           }
@@ -141,37 +160,29 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     scrollToBottom();
   }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
 
-  // Preserve scroll position after loading more messages
-  useEffect(() => {
-    if (isFetchingNextPage) return;
-
-    const scrollElement = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollElement && scrollPositionRef.current > 0) {
-      const newScrollHeight = scrollElement.scrollHeight;
-      const oldScrollHeight = scrollPositionRef.current;
-      const diff = newScrollHeight - oldScrollHeight;
-      
-      if (diff > 0) {
-        scrollElement.scrollTop = diff;
-        scrollPositionRef.current = 0; // Reset the stored position
-      }
-    }
-  }, [isFetchingNextPage, data?.pages]);
-
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const target = event.target as HTMLDivElement;
     const scrollTop = target.scrollTop;
     const scrollHeight = target.scrollHeight;
     const clientHeight = target.clientHeight;
 
-    // Check if we're near the top (within 100px) to load more messages
-    if (scrollTop < 100 && hasNextPage && !isFetchingNextPage) {
-      console.log('Loading more messages...', { scrollTop, scrollHeight, clientHeight });
-      scrollPositionRef.current = scrollHeight;
+    if (!hasScrolled) {
+      setHasScrolled(true);
+    }
+
+    console.log('Scroll event:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      hasNextPage,
+      isFetchingNextPage
+    });
+
+    if (scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
+      console.log('Triggering next page load');
       fetchNextPage();
     }
 
-    // Update last message reference when scrolling near bottom
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     if (isNearBottom && allMessages.length > 0) {
       lastMessageRef.current = allMessages[allMessages.length - 1].id;
@@ -188,6 +199,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
 
   const allMessages = data?.pages?.flatMap(page => page || []).reverse() ?? [];
 
+  console.log('Render state:', {
+    hasNextPage,
+    isFetchingNextPage,
+    pageCount: data?.pages?.length,
+    messageCount: allMessages.length
+  });
+
   return (
     <ScrollArea 
       ref={scrollRef} 
@@ -198,6 +216,11 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         {isFetchingNextPage && (
           <div className="h-8 flex items-center justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
+        {allMessages.length === 0 && !isLoading && (
+          <div className="text-center text-muted-foreground">
+            No messages yet
           </div>
         )}
         {allMessages.map((message) => (
