@@ -149,6 +149,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const target = event.target as HTMLDivElement;
     if (target.scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+      console.log('Loading more messages...');
       fetchNextPage();
     }
 
@@ -162,7 +163,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <MessageSquare className="h-6 w-6 animate-pulse text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -176,14 +177,14 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
       onScroll={handleScroll}
     >
       <div className="p-4 space-y-6">
-        {allMessages.map((message) => (
-          <MessageItem key={message.id} message={message} />
-        ))}
-        {hasNextPage && isFetchingNextPage && (
+        {isFetchingNextPage && (
           <div className="h-8 flex items-center justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
           </div>
         )}
+        {allMessages.map((message) => (
+          <MessageItem key={message.id} message={message} />
+        ))}
         {uploadingFiles.length > 0 && user && (
           <MessageItem
             message={{
