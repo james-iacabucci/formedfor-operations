@@ -19,9 +19,10 @@ interface SculptureAttributesProps {
   sculpture: Sculpture;
   originalSculpture: Sculpture | null;
   tags: Array<{ id: string; name: string }>;
+  hideQuotes?: boolean;
 }
 
-export function SculptureAttributes({ sculpture, originalSculpture, tags }: SculptureAttributesProps) {
+export function SculptureAttributes({ sculpture, originalSculpture, tags, hideQuotes = false }: SculptureAttributesProps) {
   const navigate = useNavigate();
 
   const { data: material } = useQuery({
@@ -41,7 +42,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
     <div className="space-y-6">
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
           <div className="space-y-6">
             <div>
               <SculptureMaterialFinish
@@ -104,7 +104,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           </div>
         </div>
 
-        <SculptureFabricationQuotes sculptureId={sculpture.id} />
+        {!hideQuotes && <SculptureFabricationQuotes sculptureId={sculpture.id} />}
 
         <div>
           <h2 className="text-lg font-semibold mb-2">AI Settings</h2>
