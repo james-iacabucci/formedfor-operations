@@ -45,83 +45,81 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
-        <div className="flex flex-col h-full overflow-hidden">
-          <Tabs
-            value={currentTopic}
-            onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-            className="w-full border-b shrink-0"
-          >
-            <div className="px-4 pt-4">
-              <TabsList className="w-full">
-                <TabsTrigger value="pricing" className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Pricing</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="fabrication" className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>Fabrication</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="operations" className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Wrench className="h-4 w-4" />
-                    <span>Operations</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </Tabs>
+        <div className="flex flex-col h-full">
+          <div className="border-b shrink-0">
+            <div className="flex items-start px-4 pt-4">
+              <Tabs
+                value={activeView}
+                onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                className="w-[120px] shrink-0"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="chat" className="flex-1">
+                    Chat
+                  </TabsTrigger>
+                  <TabsTrigger value="files" className="flex-1">
+                    Files
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-          <Tabs
-            value={activeView}
-            onValueChange={(value) => setActiveView(value as "chat" | "files")}
-            className="flex-1 flex flex-col min-h-0"
-          >
-            <div className="px-4 pt-4 shrink-0">
-              <TabsList className="w-full">
-                <TabsTrigger value="chat" className="flex-1">
-                  Chat
-                </TabsTrigger>
-                <TabsTrigger value="files" className="flex-1">
-                  Files
-                </TabsTrigger>
-              </TabsList>
+              <Tabs
+                value={currentTopic}
+                onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+                className="flex-1 ml-4"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="pricing" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>Pricing</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="fabrication" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>Fabrication</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="operations" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-4 w-4" />
+                      <span>Operations</span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
+          </div>
 
-            <TabsContent 
-              value="chat" 
-              className="flex flex-col flex-1 m-0 p-0 data-[state=active]:flex overflow-hidden"
-            >
-              {currentThreadId && (
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {activeView === "chat" ? (
                 <>
-                  <div className="flex-1 min-h-0 overflow-hidden">
-                    <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
-                  </div>
-                  <div className="shrink-0 p-4 pt-2">
-                    <MessageInput 
-                      threadId={currentThreadId} 
-                      autoFocus 
-                      onUploadingFiles={setUploadingFiles}
-                    />
-                  </div>
+                  {currentThreadId && (
+                    <>
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
+                      </div>
+                      <div className="shrink-0 p-4 pt-2">
+                        <MessageInput 
+                          threadId={currentThreadId} 
+                          autoFocus 
+                          onUploadingFiles={setUploadingFiles}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {currentThreadId && (
+                    <FileList threadId={currentThreadId} />
+                  )}
                 </>
               )}
-            </TabsContent>
-
-            <TabsContent 
-              value="files" 
-              className="flex-1 m-0 overflow-hidden"
-            >
-              {currentThreadId && (
-                <div className="h-full">
-                  <FileList threadId={currentThreadId} />
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
