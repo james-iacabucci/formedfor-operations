@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +17,7 @@ const PAGE_SIZE = 20;
 
 export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
@@ -160,11 +160,13 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     scrollToBottom();
   }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
 
-  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLDivElement;
-    const scrollTop = target.scrollTop;
-    const scrollHeight = target.scrollHeight;
-    const clientHeight = target.clientHeight;
+  const handleScroll = () => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const scrollTop = viewport.scrollTop;
+    const scrollHeight = viewport.scrollHeight;
+    const clientHeight = viewport.clientHeight;
 
     if (!hasScrolled) {
       setHasScrolled(true);
@@ -189,6 +191,15 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     }
   };
 
+  useEffect(() => {
+    const viewport = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewportRef.current = viewport as HTMLDivElement;
+      viewport.addEventListener('scroll', handleScroll);
+      return () => viewport.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasNextPage, isFetchingNextPage]);
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -209,8 +220,7 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
   return (
     <ScrollArea 
       ref={scrollRef} 
-      className="h-full" 
-      onScroll={handleScroll}
+      className="h-full"
     >
       <div className="p-4 space-y-6">
         {isFetchingNextPage && (
