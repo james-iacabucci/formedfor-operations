@@ -18,6 +18,7 @@ const PAGE_SIZE = 20;
 
 export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
   const { user } = useAuth();
   const [isInitialScroll, setIsInitialScroll] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
@@ -130,31 +131,48 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         const shouldScroll = isInitialScroll || shouldScrollToBottom;
         
         if (shouldScroll) {
-          scrollElement.scrollTo({
-            top: scrollElement.scrollHeight,
-            behavior: isInitialScroll ? 'auto' : 'smooth'
-          });
-          
+          scrollElement.scrollTop = scrollElement.scrollHeight;
           setIsInitialScroll(false);
           setShouldScrollToBottom(false);
         }
       }
     };
 
-    // Ensure content is rendered before scrolling
-    const timeoutId = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timeoutId);
+    scrollToBottom();
   }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
+
+  // Preserve scroll position after loading more messages
+  useEffect(() => {
+    if (isFetchingNextPage) return;
+
+    const scrollElement = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollElement && scrollPositionRef.current > 0) {
+      const newScrollHeight = scrollElement.scrollHeight;
+      const oldScrollHeight = scrollPositionRef.current;
+      const diff = newScrollHeight - oldScrollHeight;
+      
+      if (diff > 0) {
+        scrollElement.scrollTop = diff;
+        scrollPositionRef.current = 0; // Reset the stored position
+      }
+    }
+  }, [isFetchingNextPage, data?.pages]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const target = event.target as HTMLDivElement;
-    if (target.scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
-      console.log('Loading more messages...');
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    // Check if we're near the top (within 100px) to load more messages
+    if (scrollTop < 100 && hasNextPage && !isFetchingNextPage) {
+      console.log('Loading more messages...', { scrollTop, scrollHeight, clientHeight });
+      scrollPositionRef.current = scrollHeight;
       fetchNextPage();
     }
 
     // Update last message reference when scrolling near bottom
-    const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 100;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     if (isNearBottom && allMessages.length > 0) {
       lastMessageRef.current = allMessages[allMessages.length - 1].id;
     }
