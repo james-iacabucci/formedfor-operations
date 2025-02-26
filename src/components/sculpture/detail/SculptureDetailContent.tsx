@@ -8,10 +8,6 @@ import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Receipt, MessageSquare } from "lucide-react";
-import { ChatDetail } from "./components/ChatDetail";
-import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -89,44 +85,11 @@ export function SculptureDetailContent({
             onRegenerate={handleRegenerate}
           />
           <div>
-            <Tabs defaultValue="details" className="w-full">
-              <TabsList className="w-full border-b rounded-none bg-transparent">
-                <TabsTrigger value="details" className="flex-1">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Details
-                </TabsTrigger>
-                <TabsTrigger value="quotes" className="flex-1">
-                  <Receipt className="h-4 w-4 mr-2" />
-                  Quotes
-                </TabsTrigger>
-                <TabsTrigger value="chat" className="flex-1">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Chat
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="details" className="mt-4">
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
-                    <SculptureAttributes
-                      sculpture={sculpture}
-                      originalSculpture={originalSculpture}
-                      tags={tags}
-                      hideQuotes
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="quotes" className="mt-4">
-                <SculptureFabricationQuotes sculptureId={sculpture.id} />
-              </TabsContent>
-
-              <TabsContent value="chat" className="mt-4">
-                <ChatDetail sculptureId={sculpture.id} />
-              </TabsContent>
-            </Tabs>
+            <SculptureAttributes
+              sculpture={sculpture}
+              originalSculpture={originalSculpture}
+              tags={tags}
+            />
           </div>
         </div>
       </div>
