@@ -266,23 +266,26 @@ export function FileList({ threadId }: FileListProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-2 border-b space-y-2">
-        {/* Sorting field tabs */}
-        <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="modified">Last Modified</TabsTrigger>
-            <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
-            <TabsTrigger value="user">User</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        {/* Sort direction tabs */}
-        <Tabs defaultValue="desc" className="w-full" value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
-          <TabsList className="w-[120px] ml-auto">
-            <TabsTrigger value="asc" className="flex-1 text-xs px-2">ASC</TabsTrigger>
-            <TabsTrigger value="desc" className="flex-1 text-xs px-2">DESC</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="px-4 py-2 border-b">
+        {/* Sorting controls - combined in a single row */}
+        <div className="flex items-center gap-2">
+          {/* Sorting field tabs */}
+          <Tabs defaultValue="modified" className="flex-1" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="modified">Last Modified</TabsTrigger>
+              <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
+              <TabsTrigger value="user">User</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {/* Sort direction tabs */}
+          <Tabs defaultValue="desc" className="w-[120px]" value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="asc" className="text-xs px-2">ASC</TabsTrigger>
+              <TabsTrigger value="desc" className="text-xs px-2">DESC</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 px-4">
