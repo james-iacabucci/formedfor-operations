@@ -194,7 +194,7 @@ export function FileList({ threadId }: FileListProps) {
                 file={file}
                 canDelete={user?.id === file.userId}
                 onDelete={setDeleteFile}
-                onAttachToSculpture={attachToSculpture}
+                onAttachToSculpture={(category) => attachToSculpture(file, category)}
               />
             ))}
           </div>
