@@ -1,98 +1,37 @@
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Download, FileText, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { ExtendedFileAttachment } from "./types";
+import { FileText } from "lucide-react";
 
 interface FileCardProps {
-  file: ExtendedFileAttachment;
-  canDelete: boolean;
-  onDelete: (file: ExtendedFileAttachment) => void;
-  onAttachToSculpture: (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions") => void;
+  file: File;
 }
 
-export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: FileCardProps) {
-  return (
-    <div className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={file.user?.avatar_url || ""} />
-        <AvatarFallback>
-          {file.user?.username?.charAt(0) || "U"}
-        </AvatarFallback>
-      </Avatar>
+export function FileCard({ file }: FileCardProps) {
+  // Convert file size to human-readable format
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+  };
 
-      {file.type?.startsWith('image/') ? (
-        <div className="h-16 w-16 rounded overflow-hidden bg-background border">
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-lg border bg-background">
+      {file.type.startsWith('image/') ? (
+        <div className="h-10 w-10 rounded overflow-hidden bg-muted">
           <img 
-            src={file.url} 
+            src={URL.createObjectURL(file)} 
             alt={file.name}
             className="h-full w-full object-cover"
+            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
           />
         </div>
       ) : (
-        <div className="h-16 w-16 rounded flex items-center justify-center bg-background border">
-          <FileText className="h-8 w-8 text-muted-foreground" />
+        <div className="h-10 w-10 rounded flex items-center justify-center bg-muted">
+          <FileText className="h-5 w-5 text-muted-foreground" />
         </div>
       )}
-
       <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{file.name}</div>
-        <div className="text-sm text-muted-foreground">
-          {format(new Date(file.uploadedAt), 'MMM d, yyyy h:mm a')}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const link = document.createElement('a');
-            link.href = file.url;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-        >
-          <Download className="h-4 w-4" />
-        </Button>
-
-        {canDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(file)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              Attach to Sculpture
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onAttachToSculpture(file, "models")}>
-              Models
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAttachToSculpture(file, "renderings")}>
-              Renderings
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAttachToSculpture(file, "dimensions")}>
-              Dimensions
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="text-sm font-medium truncate">{file.name}</div>
+        <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
       </div>
     </div>
   );
