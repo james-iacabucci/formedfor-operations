@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -216,6 +217,12 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
     pageCount: data?.pages?.length,
     messageCount: allMessages.length
   });
+
+  // Debug: Log a sample message to check attachment structure
+  if (allMessages.length > 0) {
+    console.log('Current messagesData:', data);
+    console.log('Processed files:', allMessages[0].attachments);
+  }
 
   return (
     <ScrollArea 

@@ -12,20 +12,24 @@ export async function uploadFiles(
   for (const file of files) {
     const fileExt = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = fileName;
 
     onProgress(fileName, 10);
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('chat_attachments')
-      .upload(fileName, file);
+      .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
 
     onProgress(fileName, 100);
 
     const { data: { publicUrl } } = supabase.storage
       .from('chat_attachments')
-      .getPublicUrl(fileName);
+      .getPublicUrl(filePath);
 
     uploads.push({
       name: file.name,
@@ -35,6 +39,6 @@ export async function uploadFiles(
     });
   }
 
-  // Convert FileUpload[] to Json[]
+  console.log("Uploaded files:", uploads);
   return uploads as unknown as Json[];
 }

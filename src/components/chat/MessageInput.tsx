@@ -93,48 +93,49 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
     if (!user || (!message.trim() && !uploadingFiles.length)) return;
 
     setIsSending(true);
+    let messageId: string | null = null;
+
     try {
       const currentUploadingFiles = [...uploadingFiles];
+      let uploadedFiles: any[] = [];
 
-      const { error: messageError } = await supabase
+      // If there are files to upload, do that first
+      if (currentUploadingFiles.length > 0) {
+        const filesToUpload = currentUploadingFiles.map(f => f.file);
+        uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
+          setUploadingFiles(prev => prev.map(f => 
+            f.id === fileId ? { ...f, progress } : f
+          ));
+        });
+        
+        console.log("Successfully uploaded files:", uploadedFiles);
+      }
+
+      // Create the message with attachments included from the start
+      const { data: messageData, error: messageError } = await supabase
         .from("chat_messages")
         .insert({
           thread_id: threadId,
           user_id: user.id,
           content: message.trim(),
-          attachments: []
-        });
+          attachments: uploadedFiles
+        })
+        .select();
 
       if (messageError) throw messageError;
+      
+      if (messageData && messageData.length > 0) {
+        messageId = messageData[0].id;
+        console.log("Created message with ID:", messageId, "and attachments:", uploadedFiles);
+      }
 
       setMessage("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
-        textareaRef.current.focus();
       }
 
-      if (currentUploadingFiles.length > 0) {
-        const filesToUpload = currentUploadingFiles.map(f => f.file);
-        const uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
-          setUploadingFiles(prev => prev.map(f => 
-            f.id === fileId ? { ...f, progress } : f
-          ));
-        });
-
-        const { error: updateError } = await supabase
-          .from("chat_messages")
-          .update({ attachments: uploadedFiles })
-          .eq("thread_id", threadId)
-          .eq("user_id", user.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (updateError) throw updateError;
-      }
-
-      setUploadingFiles(prev => prev.filter(f => 
-        !currentUploadingFiles.some(cf => cf.id === f.id)
-      ));
+      // Clear uploading files
+      setUploadingFiles([]);
 
       // Set focus back to textarea after everything is done
       requestAnimationFrame(() => {
