@@ -2,13 +2,14 @@
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UploadingFile } from "./types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileList } from "./FileList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, MessageSquare, Wrench } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ChatSheetProps {
   open: boolean;
@@ -20,8 +21,9 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
+  const { user } = useAuth();
 
-  const { data: threads } = useQuery({
+  const { data: threads, refetch } = useQuery({
     queryKey: ["chat-threads", threadId],
     queryFn: async () => {
       console.log('Fetching threads for sculpture:', threadId);
@@ -39,6 +41,41 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
       return data || [];
     },
   });
+
+  // Create default threads if they don't exist
+  useEffect(() => {
+    const createDefaultThreads = async () => {
+      if (!threads || !user) return;
+
+      const topics: ("pricing" | "fabrication" | "operations")[] = ["pricing", "fabrication", "operations"];
+      const missingTopics = topics.filter(topic => 
+        !threads.some(thread => thread.topic === topic)
+      );
+
+      if (missingTopics.length > 0) {
+        console.log('Creating default threads for topics:', missingTopics);
+        
+        for (const topic of missingTopics) {
+          const { error } = await supabase
+            .from("chat_threads")
+            .insert({
+              sculpture_id: threadId,
+              topic: topic,
+              created_by: user.id
+            });
+
+          if (error) {
+            console.error(`Error creating thread for ${topic}:`, error);
+          }
+        }
+
+        // Refetch threads after creating new ones
+        refetch();
+      }
+    };
+
+    createDefaultThreads();
+  }, [threads, threadId, user, refetch]);
 
   const currentThreadId = threads?.find(thread => thread.topic === currentTopic)?.id;
 
