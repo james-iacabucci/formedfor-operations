@@ -127,8 +127,14 @@ export function FileList({ threadId }: FileListProps) {
 
       const updatedAttachments = (message.attachments || [])
         .filter(attachment => {
-          if (typeof attachment !== 'object' || attachment === null) return true;
-          return attachment.url !== deleteFile.url;
+          // Type guard: First check if it's an object and not an array
+          if (typeof attachment !== 'object' || attachment === null || Array.isArray(attachment)) {
+            return true;
+          }
+          
+          // Now we can safely check if it has a url property and compare it
+          return !(attachment as Record<string, any>).url || 
+                 (attachment as Record<string, any>).url !== deleteFile.url;
         });
 
       const { error: updateError } = await supabase
