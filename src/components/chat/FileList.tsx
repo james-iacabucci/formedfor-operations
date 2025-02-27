@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { FileAttachment, isFileAttachment, ExtendedFileAttachment, MessageData, convertToMessage } from "./types";
+import { FileAttachment, ExtendedFileAttachment, MessageData } from "./types";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { FileCard } from "./FileCard";
@@ -127,7 +127,7 @@ export function FileList({ threadId }: FileListProps) {
 
       const updatedAttachments = (message.attachments || [])
         .filter(attachment => {
-          if (!isFileAttachment(attachment)) return true;
+          if (typeof attachment !== 'object' || attachment === null) return true;
           return attachment.url !== deleteFile.url;
         });
 
@@ -231,23 +231,15 @@ export function FileList({ threadId }: FileListProps) {
         // For each attachment in this message
         message.attachments.forEach((attachment, idx) => {
           try {
-            // Check if it's a valid file attachment
+            // Direct access to attachment properties
             if (typeof attachment === 'object' && attachment !== null) {
-              const keys = Object.keys(attachment);
-              updateDebugInfo(`  Attachment ${idx+1} keys: ${keys.join(', ')}`);
-              
-              const hasRequiredProps = 
-                'name' in attachment && 
-                'url' in attachment && 
-                'type' in attachment && 
-                'size' in attachment;
-              
-              if (hasRequiredProps) {
+              // Check if attachment has all required properties
+              if ('url' in attachment && 'name' in attachment && 'type' in attachment && 'size' in attachment) {
                 const fileAttachment: ExtendedFileAttachment = {
                   name: attachment.name as string,
                   url: attachment.url as string,
                   type: attachment.type as string,
-                  size: attachment.size as number,
+                  size: Number(attachment.size),
                   user: message.profiles,
                   userId: message.user_id,
                   messageId: message.id,
@@ -255,9 +247,11 @@ export function FileList({ threadId }: FileListProps) {
                 };
                 
                 updateDebugInfo(`  Valid attachment found: ${fileAttachment.name}`);
+                console.log("Adding file attachment:", fileAttachment);
                 extractedFiles.push(fileAttachment);
               } else {
                 updateDebugInfo(`  Invalid attachment: missing required properties`);
+                console.log("Attachment missing required properties:", attachment);
               }
             } else {
               updateDebugInfo(`  Invalid attachment: not an object`);
