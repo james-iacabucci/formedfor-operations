@@ -188,15 +188,21 @@ export function FileList({ threadId }: FileListProps) {
 
         <ScrollArea className="flex-1 px-4">
           <div className="py-4 space-y-4">
-            {sortedFiles.map((file) => (
-              <FileCard
-                key={`${file.messageId}-${file.name}`}
-                file={file}
-                canDelete={user?.id === file.userId}
-                onDelete={setDeleteFile}
-                onAttachToSculpture={(category) => attachToSculpture(file, category)}
-              />
-            ))}
+            {sortedFiles.length > 0 ? (
+              sortedFiles.map((file) => (
+                <FileCard
+                  key={`${file.messageId}-${file.name}`}
+                  file={file}
+                  canDelete={user?.id === file.userId}
+                  onDelete={() => setDeleteFile(file)}
+                  onAttachToSculpture={(category) => attachToSculpture(file, category)}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No files have been shared in this chat yet
+              </div>
+            )}
           </div>
         </ScrollArea>
       </Tabs>

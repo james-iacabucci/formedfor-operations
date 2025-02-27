@@ -28,10 +28,13 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
       ? URL.createObjectURL(file) 
       : '';
 
+  const isImage = file.type.startsWith('image/');
+  const userName = isExtendedFile ? file.user?.username : null;
+
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg border bg-background">
-      {file.type.startsWith('image/') ? (
-        <div className="h-10 w-10 rounded overflow-hidden bg-muted">
+    <div className="flex items-center gap-3 p-3 rounded-lg border bg-background hover:bg-accent/10 transition-colors">
+      {isImage ? (
+        <div className="h-14 w-14 rounded overflow-hidden bg-muted flex-shrink-0">
           <img 
             src={imageUrl} 
             alt={file.name}
@@ -39,46 +42,52 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
             onLoad={(e) => {
               // Only revoke URL for regular File objects
               if (!isExtendedFile && imageUrl) {
-                URL.revokeObjectURL((e.target as HTMLImageElement).src);
+                URL.revokeObjectURL(imageUrl);
               }
             }}
           />
         </div>
       ) : (
-        <div className="h-10 w-10 rounded flex items-center justify-center bg-muted">
-          <FileText className="h-5 w-5 text-muted-foreground" />
+        <div className="h-14 w-14 rounded flex items-center justify-center bg-muted flex-shrink-0">
+          <FileText className="h-6 w-6 text-muted-foreground" />
         </div>
       )}
+
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{file.name}</div>
         <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+        {userName && (
+          <div className="text-xs text-muted-foreground mt-1">Shared by: {userName || 'Unknown user'}</div>
+        )}
       </div>
       
-      {isExtendedFile && canDelete && onDelete && (
-        <button 
-          onClick={() => onDelete(file as ExtendedFileAttachment)}
-          className="p-1 text-muted-foreground hover:text-foreground"
-        >
-          <FileText className="h-4 w-4" />
-        </button>
-      )}
-      
-      {isExtendedFile && onAttachToSculpture && (
-        <div className="flex gap-1">
+      <div className="flex flex-col gap-1">
+        {isExtendedFile && canDelete && onDelete && (
           <button 
-            onClick={() => onAttachToSculpture("models")}
-            className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80"
+            onClick={() => onDelete(file as ExtendedFileAttachment)}
+            className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
           >
-            Model
+            Delete
           </button>
-          <button 
-            onClick={() => onAttachToSculpture("renderings")}
-            className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80"
-          >
-            Render
-          </button>
-        </div>
-      )}
+        )}
+        
+        {isExtendedFile && onAttachToSculpture && (
+          <div className="flex flex-col gap-1">
+            <button 
+              onClick={() => onAttachToSculpture("models")}
+              className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              Save as Model
+            </button>
+            <button 
+              onClick={() => onAttachToSculpture("renderings")}
+              className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              Save as Rendering
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
