@@ -8,12 +8,12 @@ import { FileList } from "./FileList";
 import { UploadingFile } from "./types";
 
 interface ChatSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;  // Changed from isOpen to open to match the prop name used in SculptureHeader
+  onOpenChange: (open: boolean) => void;  // Changed to match RadixUI pattern
   threadId: string;
 }
 
-export function ChatSheet({ isOpen, onClose, threadId }: ChatSheetProps) {
+export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [pendingMessageSubmitted, setPendingMessageSubmitted] = useState(false);
 
@@ -25,7 +25,7 @@ export function ChatSheet({ isOpen, onClose, threadId }: ChatSheetProps) {
   if (!threadId) return null;
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md md:max-w-lg w-[90vw] p-0 flex flex-col">
         <SheetHeader className="px-4 py-2 border-b">
           <SheetTitle>Chat</SheetTitle>
