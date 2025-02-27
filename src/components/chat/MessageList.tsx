@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { MessageItem } from "./MessageItem";
 import { UploadingFilesList } from "./UploadingFilesList";
-import { UploadingFile, Message, isFileAttachment } from "./types";
+import { UploadingFile, Message, isFileAttachment, convertToMessage } from "./types";
 import { useAuth } from "@/components/AuthProvider";
 
 interface MessageListProps {
@@ -101,26 +101,7 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
       
       const processedData = {
         pages: data.pages.map(page => 
-          (Array.isArray(page) ? page : []).map(message => ({
-            ...message,
-            attachments: (message.attachments || [])
-              .map(attachment => {
-                console.log("Processing attachment in message list:", attachment);
-                if (typeof attachment === 'object' && attachment !== null) {
-                  const hasRequiredProps = 
-                    'url' in attachment && 
-                    'name' in attachment && 
-                    'type' in attachment && 
-                    'size' in attachment;
-                  
-                  console.log("Has required props:", hasRequiredProps);
-                  return hasRequiredProps ? attachment : null;
-                }
-                return null;
-              })
-              .filter(Boolean),
-            mentions: message.mentions || [],
-          }))
+          (Array.isArray(page) ? page : [])
         ),
         pageParams: data.pageParams,
       };
@@ -236,7 +217,11 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
   // Debug: Log a sample message to check attachment structure
   if (allMessages.length > 0) {
     console.log('Current messagesData:', data);
-    console.log('Processed files:', allMessages[0].attachments);
+    console.log('First message:', allMessages[0]);
+    
+    if (allMessages[0].attachments) {
+      console.log('Processed files:', allMessages[0].attachments);
+    }
   }
 
   return (
@@ -255,9 +240,13 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
             No messages yet
           </div>
         )}
-        {allMessages.map((message) => (
-          <MessageItem key={message.id} message={message as Message} />
-        ))}
+        {allMessages.map((rawMessage) => {
+          // Convert raw message to proper Message type
+          const message = convertToMessage(rawMessage);
+          return (
+            <MessageItem key={message.id} message={message} />
+          );
+        })}
         {uploadingFiles.length > 0 && user && (
           <MessageItem
             message={{

@@ -59,6 +59,32 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
   );
 }
 
+// Helper function to convert raw message data to Message type
+export function convertToMessage(rawMessage: any): Message {
+  const attachments = Array.isArray(rawMessage.attachments) 
+    ? rawMessage.attachments
+        .filter(isFileAttachment)
+        .map(att => ({
+          name: att.name as string,
+          url: att.url as string,
+          type: att.type as string,
+          size: att.size as number
+        }))
+    : [];
+
+  return {
+    id: rawMessage.id,
+    created_at: rawMessage.created_at,
+    content: rawMessage.content,
+    user_id: rawMessage.user_id,
+    profiles: rawMessage.profiles,
+    attachments: attachments,
+    mentions: Array.isArray(rawMessage.mentions) ? rawMessage.mentions : [],
+    edited_at: rawMessage.edited_at,
+    thread_id: rawMessage.thread_id
+  };
+}
+
 export interface ExtendedFileAttachment extends FileAttachment {
   user: {
     username: string | null;

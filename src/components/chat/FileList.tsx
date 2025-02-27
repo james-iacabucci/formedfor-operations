@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { FileAttachment, isFileAttachment, ExtendedFileAttachment, MessageData } from "./types";
+import { FileAttachment, isFileAttachment, ExtendedFileAttachment, MessageData, convertToMessage } from "./types";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { FileCard } from "./FileCard";
@@ -38,6 +38,7 @@ export function FileList({ threadId }: FileListProps) {
         .select(`
           id,
           created_at,
+          content,
           attachments,
           user_id,
           profiles (
@@ -119,7 +120,7 @@ export function FileList({ threadId }: FileListProps) {
     setDeleteFile(null);
   };
 
-  const attachToSculpture = async (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions") => {
+  const attachToSculpture = async (file: ExtendedFileAttachment, category: "models" | "renderings" | "dimensions" | "other") => {
     try {
       const { data: sculpture, error: fetchError } = await supabase
         .from("sculptures")
@@ -128,6 +129,15 @@ export function FileList({ threadId }: FileListProps) {
         .single();
 
       if (fetchError) throw fetchError;
+
+      // If category is "other", handle it differently (just show a message)
+      if (category === "other") {
+        toast({
+          title: "Feature coming soon",
+          description: "Saving to 'Other' category will be available soon."
+        });
+        return;
+      }
 
       const existingFiles = sculpture?.[category] || [];
       const newFile = {
@@ -175,58 +185,23 @@ export function FileList({ threadId }: FileListProps) {
         setDebugInfo(prev => prev + `\nMessage ${message.id} has ${message.attachments.length} attachments`);
         
         try {
-          // First try the standard way of filtering
-          let validAttachments = message.attachments
-            .filter(attachment => {
-              const isValid = isFileAttachment(attachment);
-              console.log(`Attachment validation result for:`, attachment, `isValid:`, isValid);
-              return isValid;
-            })
-            .map((file): ExtendedFileAttachment => ({
-              name: file.name,
-              url: file.url,
-              type: file.type,
-              size: file.size,
-              user: message.profiles,
-              userId: message.user_id,
-              messageId: message.id,
-              uploadedAt: message.created_at
-            }));
+          // Convert raw message to proper Message type
+          const convertedMessage = convertToMessage(message);
           
-          setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments using isFileAttachment`);
+          // Use the properly typed attachments
+          const validAttachments: ExtendedFileAttachment[] = convertedMessage.attachments.map(file => ({
+            name: file.name,
+            url: file.url,
+            type: file.type,
+            size: file.size,
+            user: message.profiles,
+            userId: message.user_id,
+            messageId: message.id,
+            uploadedAt: message.created_at
+          }));
           
-          // If no attachments were found using isFileAttachment, try direct access
-          if (validAttachments.length === 0 && message.attachments.length > 0) {
-            console.log("Trying alternate attachment validation approach");
-            validAttachments = message.attachments
-              .filter(attachment => {
-                const valid = attachment && 
-                  typeof attachment === 'object' &&
-                  'url' in attachment &&
-                  'name' in attachment &&
-                  'type' in attachment &&
-                  'size' in attachment;
-                console.log(`Direct validation for:`, attachment, `valid:`, valid);
-                return valid;
-              })
-              .map((file: any): ExtendedFileAttachment => {
-                console.log("Mapping file:", file);
-                return {
-                  name: file.name,
-                  url: file.url,
-                  type: file.type,
-                  size: file.size,
-                  user: message.profiles,
-                  userId: message.user_id,
-                  messageId: message.id,
-                  uploadedAt: message.created_at
-                };
-              });
-              
-            setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments using direct access`);
-          }
-            
-          console.log("Valid attachments found:", validAttachments.length);
+          setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments`);
+          
           if (validAttachments.length > 0) {
             console.log("First valid attachment:", validAttachments[0]);
           }
@@ -261,7 +236,7 @@ export function FileList({ threadId }: FileListProps) {
       try {
         const { data, error } = await supabase
           .from("chat_messages")
-          .select('id, created_at, attachments')
+          .select('id, created_at, attachments, content')
           .eq("thread_id", threadId)
           .limit(5);
           
@@ -277,6 +252,7 @@ export function FileList({ threadId }: FileListProps) {
         if (data && data.length > 0) {
           console.log("First message direct check:", {
             messageId: data[0].id,
+            content: data[0].content,
             hasAttachments: !!data[0].attachments,
             attachmentsArray: Array.isArray(data[0].attachments),
             attachmentsLength: Array.isArray(data[0].attachments) ? data[0].attachments.length : 'not an array',
