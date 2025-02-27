@@ -103,9 +103,13 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
       if (currentUploadingFiles.length > 0) {
         const filesToUpload = currentUploadingFiles.map(f => f.file);
         uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
-          setUploadingFiles(prev => prev.map(f => 
-            f.id === fileId ? { ...f, progress } : f
-          ));
+          setUploadingFiles(prev => prev.map(f => {
+            // Match the file by name since we're using the filename as the ID in uploadFiles
+            if (f.file.name === fileId) {
+              return { ...f, progress };
+            }
+            return f;
+          }));
         });
         
         console.log("Successfully uploaded files:", uploadedFiles);
