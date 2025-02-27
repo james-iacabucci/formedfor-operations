@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,8 +21,15 @@ export function FileList({ threadId }: FileListProps) {
   const { toast } = useToast();
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
-  const { data: messagesData } = useQuery<MessageData[]>({
+  // Add more detailed debug logging
+  useEffect(() => {
+    console.log(`FileList mounted with threadId: ${threadId}`);
+    return () => console.log("FileList unmounted");
+  }, [threadId]);
+
+  const { data: messagesData, isLoading, error } = useQuery<MessageData[]>({
     queryKey: ["messages", threadId],
     queryFn: async () => {
       console.log("Fetching messages for thread:", threadId);
@@ -43,12 +50,30 @@ export function FileList({ threadId }: FileListProps) {
 
       if (error) {
         console.error("Error fetching messages:", error);
+        setDebugInfo(prev => prev + `\nError fetching messages: ${error.message}`);
         return [];
       }
       
       console.log("Fetched messages data:", data);
+      const messageCount = data?.length || 0;
+      setDebugInfo(prev => prev + `\nFetched ${messageCount} messages`);
+      
+      // Log each message's attachments
+      if (data && data.length > 0) {
+        data.forEach((msg, i) => {
+          const attachmentsCount = Array.isArray(msg.attachments) ? msg.attachments.length : 0;
+          console.log(`Message ${i+1}/${data.length} (${msg.id}) has ${attachmentsCount} attachments:`, msg.attachments);
+          setDebugInfo(prev => prev + `\nMessage ${i+1} has ${attachmentsCount} attachments`);
+          
+          if (attachmentsCount > 0) {
+            console.log("Attachment examples:", JSON.stringify(msg.attachments[0], null, 2));
+          }
+        });
+      }
+      
       return data ?? [];
     },
+    refetchOnWindowFocus: false,
   });
 
   const handleDeleteFile = async () => {
@@ -141,37 +166,23 @@ export function FileList({ threadId }: FileListProps) {
   const files: ExtendedFileAttachment[] = [];
   
   if (Array.isArray(messagesData)) {
+    setDebugInfo(prev => prev + `\nProcessing ${messagesData.length} messages for files`);
+    
     for (const message of messagesData) {
       if (message?.attachments && Array.isArray(message.attachments)) {
         // Debug the attachments
         console.log("Processing message attachments:", message.attachments);
+        setDebugInfo(prev => prev + `\nMessage ${message.id} has ${message.attachments.length} attachments`);
         
-        // First try the standard way of filtering
-        let validAttachments = message.attachments
-          .filter(isFileAttachment)
-          .map((file): ExtendedFileAttachment => ({
-            name: file.name,
-            url: file.url,
-            type: file.type,
-            size: file.size,
-            user: message.profiles,
-            userId: message.user_id,
-            messageId: message.id,
-            uploadedAt: message.created_at
-          }));
-        
-        // If no attachments were found using isFileAttachment, try direct access
-        if (validAttachments.length === 0 && message.attachments.length > 0) {
-          validAttachments = message.attachments
-            .filter(attachment => 
-              attachment && 
-              typeof attachment === 'object' &&
-              'url' in attachment &&
-              'name' in attachment &&
-              'type' in attachment &&
-              'size' in attachment
-            )
-            .map((file: any): ExtendedFileAttachment => ({
+        try {
+          // First try the standard way of filtering
+          let validAttachments = message.attachments
+            .filter(attachment => {
+              const isValid = isFileAttachment(attachment);
+              console.log(`Attachment validation result for:`, attachment, `isValid:`, isValid);
+              return isValid;
+            })
+            .map((file): ExtendedFileAttachment => ({
               name: file.name,
               url: file.url,
               type: file.type,
@@ -181,15 +192,56 @@ export function FileList({ threadId }: FileListProps) {
               messageId: message.id,
               uploadedAt: message.created_at
             }));
-        }
           
-        console.log("Valid attachments found:", validAttachments.length);
-        files.push(...validAttachments);
+          setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments using isFileAttachment`);
+          
+          // If no attachments were found using isFileAttachment, try direct access
+          if (validAttachments.length === 0 && message.attachments.length > 0) {
+            console.log("Trying alternate attachment validation approach");
+            validAttachments = message.attachments
+              .filter(attachment => {
+                const valid = attachment && 
+                  typeof attachment === 'object' &&
+                  'url' in attachment &&
+                  'name' in attachment &&
+                  'type' in attachment &&
+                  'size' in attachment;
+                console.log(`Direct validation for:`, attachment, `valid:`, valid);
+                return valid;
+              })
+              .map((file: any): ExtendedFileAttachment => {
+                console.log("Mapping file:", file);
+                return {
+                  name: file.name,
+                  url: file.url,
+                  type: file.type,
+                  size: file.size,
+                  user: message.profiles,
+                  userId: message.user_id,
+                  messageId: message.id,
+                  uploadedAt: message.created_at
+                };
+              });
+              
+            setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments using direct access`);
+          }
+            
+          console.log("Valid attachments found:", validAttachments.length);
+          if (validAttachments.length > 0) {
+            console.log("First valid attachment:", validAttachments[0]);
+          }
+          
+          files.push(...validAttachments);
+        } catch (error) {
+          console.error("Error processing attachments:", error);
+          setDebugInfo(prev => prev + `\nError processing attachments: ${error}`);
+        }
       }
     }
   }
 
   console.log("Processed files:", files);
+  setDebugInfo(prev => prev + `\nTotal processed files: ${files.length}`);
 
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
@@ -202,6 +254,50 @@ export function FileList({ threadId }: FileListProps) {
         return 0;
     }
   });
+
+  // Debug direct messages to thread
+  useEffect(() => {
+    const fetchDirectMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("chat_messages")
+          .select('id, created_at, attachments')
+          .eq("thread_id", threadId)
+          .limit(5);
+          
+        if (error) {
+          console.error("Error in direct messages check:", error);
+          return;
+        }
+        
+        console.log("Direct thread messages check:", data);
+        setDebugInfo(prev => prev + `\nDirect check: ${data?.length || 0} messages in thread`);
+        
+        // Check first message specifically
+        if (data && data.length > 0) {
+          console.log("First message direct check:", {
+            messageId: data[0].id,
+            hasAttachments: !!data[0].attachments,
+            attachmentsArray: Array.isArray(data[0].attachments),
+            attachmentsLength: Array.isArray(data[0].attachments) ? data[0].attachments.length : 'not an array',
+            rawValue: data[0].attachments
+          });
+        }
+      } catch (e) {
+        console.error("Error in direct messages fetch:", e);
+      }
+    };
+    
+    fetchDirectMessages();
+  }, [threadId]);
+
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading files...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-center text-red-500">Error loading files</div>;
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -229,6 +325,12 @@ export function FileList({ threadId }: FileListProps) {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No files have been shared in this chat yet
+                {debugInfo && (
+                  <div className="mt-4 p-3 text-xs text-left border rounded bg-muted overflow-auto max-h-64">
+                    <h5 className="font-bold mb-2">Debug Info:</h5>
+                    <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+                  </div>
+                )}
               </div>
             )}
           </div>

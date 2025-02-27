@@ -12,11 +12,12 @@ import { useAuth } from "@/components/AuthProvider";
 interface MessageListProps {
   threadId: string;
   uploadingFiles?: UploadingFile[];
+  pendingMessageSubmitted?: boolean;
 }
 
 const PAGE_SIZE = 20;
 
-export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
+export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmitted = false }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -68,12 +69,17 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
         throw error;
       }
 
-      console.log('Fetched page data:', {
-        pageParam,
-        messageCount: data?.length,
-        oldestMessage: data?.[data.length - 1]?.created_at,
-        newestMessage: data?.[0]?.created_at
-      });
+      // Debug the fetched data
+      console.log('Fetched message data:', data);
+      
+      if (data && data.length > 0) {
+        // Examine the first message for attachments
+        const firstMsg = data[0];
+        console.log('First message attachments:', firstMsg.attachments);
+        if (firstMsg.attachments && Array.isArray(firstMsg.attachments) && firstMsg.attachments.length > 0) {
+          console.log('First attachment:', firstMsg.attachments[0]);
+        }
+      }
 
       return data || [];
     },
@@ -98,17 +104,26 @@ export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps)
           (Array.isArray(page) ? page : []).map(message => ({
             ...message,
             attachments: (message.attachments || [])
-              .filter(isFileAttachment),
+              .map(attachment => {
+                console.log("Processing attachment in message list:", attachment);
+                if (typeof attachment === 'object' && attachment !== null) {
+                  const hasRequiredProps = 
+                    'url' in attachment && 
+                    'name' in attachment && 
+                    'type' in attachment && 
+                    'size' in attachment;
+                  
+                  console.log("Has required props:", hasRequiredProps);
+                  return hasRequiredProps ? attachment : null;
+                }
+                return null;
+              })
+              .filter(Boolean),
             mentions: message.mentions || [],
           }))
         ),
         pageParams: data.pageParams,
       };
-
-      console.log('Processed data:', {
-        pageCount: processedData.pages.length,
-        totalMessages: processedData.pages.reduce((acc, page) => acc + page.length, 0)
-      });
 
       return processedData;
     },
