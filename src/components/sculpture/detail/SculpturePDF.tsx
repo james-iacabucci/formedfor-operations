@@ -14,6 +14,11 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
 
   const generatePDF = useCallback(async () => {
     try {
+      if (isGenerating) return;
+      
+      setIsGenerating(true);
+      toast.loading("Generating PDF...");
+      
       console.log("Starting PDF generation for sculpture:", sculpture.id);
       
       const { data, error } = await supabase.functions.invoke(
@@ -29,6 +34,8 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
         throw error;
       }
 
+      toast.dismiss();
+      
       // Convert base64 to blob
       const byteCharacters = atob(data as string);
       const byteNumbers = new Array(byteCharacters.length);
@@ -53,43 +60,32 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       toast.success("PDF generated successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
+      toast.dismiss();
       toast.error("Failed to generate PDF");
     } finally {
       setIsGenerating(false);
     }
-  }, [sculpture]);
+  }, [sculpture, isGenerating]);
 
-  // Create a simple native button handler for testing
   const handleButtonClick = (e: React.MouseEvent) => {
-    console.log("Native button click detected");
     e.preventDefault();
     e.stopPropagation();
-    
-    // Force an alert to verify the click is registered
-    window.alert("Button clicked!");
-    
-    if (!isGenerating) {
-      setIsGenerating(true);
-      generatePDF();
-    }
+    console.log("PDF button clicked");
+    generatePDF();
   };
 
   return (
-    <div 
-      className="relative z-50 bg-transparent p-1 cursor-pointer" 
-      onClick={(e) => {
-        console.log("Parent div clicked");
-        handleButtonClick(e);
-      }}
-    >
-      <button
-        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 rounded-md px-3"
+    <div className="relative z-50 bg-transparent p-1">
+      <Button
+        variant="outline"
+        size="default"
+        className="flex items-center gap-2"
         onClick={handleButtonClick}
         disabled={isGenerating}
       >
         <FileIcon className="h-4 w-4" />
         <span>{isGenerating ? "Generating PDF..." : "Download Spec Sheet"}</span>
-      </button>
+      </Button>
     </div>
   );
 }

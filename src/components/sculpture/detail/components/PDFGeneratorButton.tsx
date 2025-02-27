@@ -42,6 +42,8 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
       if (error) throw error;
       if (!response?.data) throw new Error("No PDF data received");
 
+      toast.dismiss();
+      
       // Convert base64 to blob
       const byteCharacters = atob(response.data);
       const byteNumbers = new Array(byteCharacters.length);
@@ -63,7 +65,6 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      toast.dismiss();
       toast.success("PDF generated successfully");
     } catch (error) {
       console.error("PDF generation failed:", error);
@@ -93,13 +94,31 @@ export function PDFGeneratorButton({ sculptureId, sculptureName }: PDFGeneratorB
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => generatePDF('none')}>
+        <DropdownMenuItem 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            generatePDF('none');
+          }}
+        >
           No Pricing
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => generatePDF('trade')}>
+        <DropdownMenuItem 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            generatePDF('trade');
+          }}
+        >
           Trade Pricing
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => generatePDF('retail')}>
+        <DropdownMenuItem 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            generatePDF('retail');
+          }}
+        >
           Trade & Retail Pricing
         </DropdownMenuItem>
       </DropdownMenuContent>
