@@ -143,7 +143,11 @@ export function FileList({ threadId }: FileListProps) {
   if (Array.isArray(messagesData)) {
     for (const message of messagesData) {
       if (message?.attachments && Array.isArray(message.attachments)) {
-        const validAttachments = message.attachments
+        // Debug the attachments
+        console.log("Processing message attachments:", message.attachments);
+        
+        // First try the standard way of filtering
+        let validAttachments = message.attachments
           .filter(isFileAttachment)
           .map((file): ExtendedFileAttachment => ({
             name: file.name,
@@ -155,7 +159,31 @@ export function FileList({ threadId }: FileListProps) {
             messageId: message.id,
             uploadedAt: message.created_at
           }));
+        
+        // If no attachments were found using isFileAttachment, try direct access
+        if (validAttachments.length === 0 && message.attachments.length > 0) {
+          validAttachments = message.attachments
+            .filter(attachment => 
+              attachment && 
+              typeof attachment === 'object' &&
+              'url' in attachment &&
+              'name' in attachment &&
+              'type' in attachment &&
+              'size' in attachment
+            )
+            .map((file: any): ExtendedFileAttachment => ({
+              name: file.name,
+              url: file.url,
+              type: file.type,
+              size: file.size,
+              user: message.profiles,
+              userId: message.user_id,
+              messageId: message.id,
+              uploadedAt: message.created_at
+            }));
+        }
           
+        console.log("Valid attachments found:", validAttachments.length);
         files.push(...validAttachments);
       }
     }
