@@ -10,6 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 interface FileCardProps {
   file: File | ExtendedFileAttachment;
@@ -62,9 +68,9 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border bg-background hover:bg-accent/10 transition-colors group">
+    <div className="flex items-start gap-3 p-3 rounded-lg border bg-background hover:bg-accent/10 transition-colors group">
       {isImage ? (
-        <div className="h-14 w-14 rounded overflow-hidden bg-muted flex-shrink-0">
+        <div className="h-20 w-20 rounded overflow-hidden bg-muted flex-shrink-0">
           <img 
             src={imageUrl} 
             alt={file.name}
@@ -78,84 +84,112 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
           />
         </div>
       ) : (
-        <div className="h-14 w-14 rounded flex items-center justify-center bg-muted flex-shrink-0">
-          <FileText className="h-6 w-6 text-muted-foreground" />
+        <div className="h-20 w-20 rounded flex items-center justify-center bg-muted flex-shrink-0">
+          <FileText className="h-8 w-8 text-muted-foreground" />
         </div>
       )}
 
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{file.name}</div>
-        <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
         
-        {/* File details */}
-        <div className="mt-1 grid grid-cols-1 gap-x-1 text-xs text-muted-foreground">
-          {userName && (
-            <div>Shared by: {userName || 'Unknown user'}</div>
-          )}
+        {/* File details in a grid layout */}
+        <div className="mt-1 space-y-1 text-xs text-muted-foreground">
+          {/* File size and shared by on the same row */}
+          <div className="flex items-center space-x-2">
+            <span>{formatFileSize(file.size)}</span>
+            {userName && (
+              <>
+                <span className="text-gray-400">•</span>
+                <span>Shared by: {userName || 'Unknown user'}</span>
+              </>
+            )}
+          </div>
+          
+          {/* Upload date if available */}
           {uploadDate && (
             <div>Uploaded: {uploadDate}</div>
           )}
-          {!isExtendedFile && (
+          
+          {/* Modified date */}
+          {!isExtendedFile && 'lastModified' in file ? (
             <div>Modified: {lastModified}</div>
+          ) : isExtendedFile && (
+            <div>Modified: {uploadDate}</div> 
           )}
         </div>
       </div>
       
-      {/* Action buttons that appear on hover */}
+      {/* Action buttons that appear on hover - icon only, right justified */}
       {isExtendedFile && (
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8"
-            onClick={handleDownload}
-          >
-            <Download className="h-4 w-4 mr-1" />
-            Download
-          </Button>
+        <div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={handleDownload}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Download</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8"
-              >
-                <MoreHorizontal className="h-4 w-4 mr-1" />
-                Actions
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {onAttachToSculpture && (
-                <>
-                  <DropdownMenuItem onClick={() => onAttachToSculpture("models")}>
-                    Save as Model
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAttachToSculpture("renderings")}>
-                    Save as Rendering
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAttachToSculpture("dimensions")}>
-                    Save as Dimensions
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAttachToSculpture("other")}>
-                    Save as Other
-                  </DropdownMenuItem>
-                  
-                  {canDelete && onDelete && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => onDelete(file as ExtendedFileAttachment)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {onAttachToSculpture && (
+                      <>
+                        <DropdownMenuItem onClick={() => onAttachToSculpture("models")}>
+                          Save as Model
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onAttachToSculpture("renderings")}>
+                          Save as Rendering
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onAttachToSculpture("dimensions")}>
+                          Save as Dimensions
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onAttachToSculpture("other")}>
+                          Save as Other
+                        </DropdownMenuItem>
+                        
+                        {canDelete && onDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => onDelete(file as ExtendedFileAttachment)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Actions</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
     </div>
