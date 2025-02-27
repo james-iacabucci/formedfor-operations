@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +12,7 @@ import { DeleteFileDialog } from "./DeleteFileDialog";
 import { Json } from "@/integrations/supabase/types";
 
 type SortBy = "modified" | "uploaded" | "user";
+type SortOrder = "asc" | "desc";
 
 interface FileListProps {
   threadId: string;
@@ -21,6 +23,7 @@ export function FileList({ threadId }: FileListProps) {
   const { toast } = useToast();
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [debugInfo, setDebugInfo] = useState<string>("");
   const [files, setFiles] = useState<ExtendedFileAttachment[]>([]);
 
@@ -243,54 +246,70 @@ export function FileList({ threadId }: FileListProps) {
   };
 
   const sortedFiles = [...files].sort((a, b) => {
+    let comparison = 0;
+    
     switch (sortBy) {
       case "modified":
       case "uploaded":
-        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+        comparison = new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
+        break;
       case "user":
-        return (a.user?.username || "").localeCompare(b.user?.username || "");
+        comparison = (a.user?.username || "").localeCompare(b.user?.username || "");
+        break;
       default:
         return 0;
     }
+    
+    // Apply sort order direction
+    return sortOrder === "asc" ? comparison : -comparison;
   });
 
   return (
     <div className="flex flex-col h-full">
-      <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-        <div className="px-4 py-2 border-b">
+      <div className="px-4 py-2 border-b space-y-2">
+        {/* Sorting field tabs */}
+        <Tabs defaultValue="modified" className="w-full" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="modified">Last Modified</TabsTrigger>
             <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
             <TabsTrigger value="user">User</TabsTrigger>
           </TabsList>
-        </div>
+        </Tabs>
+        
+        {/* Sort direction tabs */}
+        <Tabs defaultValue="desc" className="w-full" value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+          <TabsList className="w-[120px] ml-auto">
+            <TabsTrigger value="asc" className="flex-1 text-xs px-2">ASC</TabsTrigger>
+            <TabsTrigger value="desc" className="flex-1 text-xs px-2">DESC</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
-        <ScrollArea className="flex-1 px-4">
-          <div className="py-4 space-y-4">
-            {sortedFiles.length > 0 ? (
-              sortedFiles.map((file) => (
-                <FileCard
-                  key={`${file.messageId}-${file.name}`}
-                  file={file}
-                  canDelete={user?.id === file.userId}
-                  onDelete={() => setDeleteFile(file)}
-                  onAttachToSculpture={(category) => attachToSculpture(file, category)}
-                />
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No files have been shared in this chat yet
-                {debugInfo && (
-                  <div className="mt-4 p-3 text-xs text-left border rounded bg-muted overflow-auto max-h-64">
-                    <h5 className="font-bold mb-2">Debug Info:</h5>
-                    <pre className="whitespace-pre-wrap">{debugInfo}</pre>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </Tabs>
+      <ScrollArea className="flex-1 px-4">
+        <div className="py-4 space-y-4">
+          {sortedFiles.length > 0 ? (
+            sortedFiles.map((file) => (
+              <FileCard
+                key={`${file.messageId}-${file.name}`}
+                file={file}
+                canDelete={user?.id === file.userId}
+                onDelete={() => setDeleteFile(file)}
+                onAttachToSculpture={(category) => attachToSculpture(file, category)}
+              />
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No files have been shared in this chat yet
+              {debugInfo && (
+                <div className="mt-4 p-3 text-xs text-left border rounded bg-muted overflow-auto max-h-64">
+                  <h5 className="font-bold mb-2">Debug Info:</h5>
+                  <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
 
       <DeleteFileDialog
         isOpen={!!deleteFile}
