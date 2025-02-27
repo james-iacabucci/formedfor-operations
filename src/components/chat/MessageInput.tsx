@@ -14,21 +14,20 @@ import { uploadFiles } from "./uploadService";
 interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
-  onUploadingFiles: (files: UploadingFile[], messageSubmitted: boolean) => void;
+  onUploadingFiles: (files: UploadingFile[]) => void;
 }
 
 export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
-  const [messageSubmitted, setMessageSubmitted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    onUploadingFiles(uploadingFiles, messageSubmitted);
-  }, [uploadingFiles, onUploadingFiles, messageSubmitted]);
+    onUploadingFiles(uploadingFiles);
+  }, [uploadingFiles, onUploadingFiles]);
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
@@ -94,7 +93,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
     if (!user || (!message.trim() && !uploadingFiles.length)) return;
 
     setIsSending(true);
-    setMessageSubmitted(true); // Mark that a message with files has been submitted
     let messageId: string | null = null;
 
     try {
@@ -140,13 +138,8 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
         textareaRef.current.style.height = "auto";
       }
 
-      // Clear uploading files and reset submission state after all files are uploaded
-      // We only want to do this when all files have been uploaded (all progress is 100%)
-      const allFilesUploaded = uploadingFiles.every(file => file.progress === 100);
-      if (allFilesUploaded) {
-        setUploadingFiles([]);
-        setMessageSubmitted(false);
-      }
+      // Clear uploading files
+      setUploadingFiles([]);
 
       // Set focus back to textarea after everything is done
       requestAnimationFrame(() => {
@@ -161,7 +154,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
         description: "Failed to send message",
         variant: "destructive",
       });
-      setMessageSubmitted(false);
     } finally {
       setIsSending(false);
     }

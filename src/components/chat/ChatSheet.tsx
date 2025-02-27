@@ -1,61 +1,163 @@
 
-import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
-import { TabsList, TabsTrigger, Tabs, TabsContent } from "@/components/ui/tabs";
-import { FileList } from "./FileList";
+import { useState, useEffect } from "react";
 import { UploadingFile } from "./types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileList } from "./FileList";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { MessageCircle, MessageSquare, Wrench } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ChatSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   threadId: string;
 }
 
-export function ChatSheet({ isOpen, onClose, threadId }: ChatSheetProps) {
+export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
-  const [pendingMessageSubmitted, setPendingMessageSubmitted] = useState(false);
+  const [activeView, setActiveView] = useState<"chat" | "files">("chat");
+  const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
+  const { user } = useAuth();
 
-  const handleUploadingFiles = (files: UploadingFile[], messageSubmitted: boolean) => {
-    setUploadingFiles(files);
-    setPendingMessageSubmitted(messageSubmitted);
-  };
+  const { data: threads, refetch } = useQuery({
+    queryKey: ["chat-threads", threadId],
+    queryFn: async () => {
+      console.log('Fetching threads for sculpture:', threadId);
+      const { data, error } = await supabase
+        .from("chat_threads")
+        .select("*")
+        .eq("sculpture_id", threadId);
 
-  if (!threadId) return null;
+      if (error) {
+        console.error("Error fetching threads:", error);
+        return [];
+      }
+
+      console.log('Fetched threads:', data);
+      return data || [];
+    },
+  });
+
+  // Create default threads if they don't exist
+  useEffect(() => {
+    const createDefaultThreads = async () => {
+      if (!threads || !user) return;
+
+      const topics: ("pricing" | "fabrication" | "operations")[] = ["pricing", "fabrication", "operations"];
+      const missingTopics = topics.filter(topic => 
+        !threads.some(thread => thread.topic === topic)
+      );
+
+      if (missingTopics.length > 0) {
+        console.log('Creating default threads for topics:', missingTopics);
+        
+        for (const topic of missingTopics) {
+          const { error } = await supabase
+            .from("chat_threads")
+            .insert({
+              sculpture_id: threadId,
+              topic: topic,
+              user_id: user.id
+            });
+
+          if (error) {
+            console.error(`Error creating thread for ${topic}:`, error);
+          }
+        }
+
+        // Refetch threads after creating new ones
+        refetch();
+      }
+    };
+
+    createDefaultThreads();
+  }, [threads, threadId, user, refetch]);
+
+  const currentThreadId = threads?.find(thread => thread.topic === currentTopic)?.id;
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="sm:max-w-md md:max-w-lg w-[90vw] p-0 flex flex-col">
-        <SheetHeader className="px-4 py-2 border-b">
-          <SheetTitle>Chat</SheetTitle>
-        </SheetHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
+        <div className="flex flex-col h-full">
+          <div className="border-b shrink-0 pb-4">
+            <div className="flex items-start px-4 pt-4">
+              <Tabs
+                value={currentTopic}
+                onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+                className="flex-1"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="pricing" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>Pricing</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="fabrication" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>Fabrication</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="operations" className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-4 w-4" />
+                      <span>Operations</span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-        <Tabs defaultValue="messages" className="flex-1 flex flex-col">
-          <TabsList className="grid grid-cols-2 px-4 py-2 border-b">
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="files">Files</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="messages" className="flex-1 flex flex-col mt-0">
-            <div className="flex-1 overflow-hidden">
-              <MessageList 
-                threadId={threadId} 
-                uploadingFiles={uploadingFiles}
-                pendingMessageSubmitted={pendingMessageSubmitted} 
-              />
+              <Tabs
+                value={activeView}
+                onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                className="w-[120px] shrink-0 ml-4"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="chat" className="flex-1">
+                    Chat
+                  </TabsTrigger>
+                  <TabsTrigger value="files" className="flex-1">
+                    Files
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-            <MessageInput 
-              threadId={threadId} 
-              autoFocus 
-              onUploadingFiles={handleUploadingFiles}
-            />
-          </TabsContent>
-          
-          <TabsContent value="files" className="flex-1 overflow-hidden mt-0">
-            <FileList threadId={threadId} />
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {activeView === "chat" ? (
+                <>
+                  {currentThreadId && (
+                    <>
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
+                      </div>
+                      <div className="shrink-0 p-4 pt-2">
+                        <MessageInput 
+                          threadId={currentThreadId} 
+                          autoFocus 
+                          onUploadingFiles={setUploadingFiles}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {currentThreadId && (
+                    <FileList threadId={currentThreadId} />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );

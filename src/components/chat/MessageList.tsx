@@ -12,12 +12,11 @@ import { useAuth } from "@/components/AuthProvider";
 interface MessageListProps {
   threadId: string;
   uploadingFiles?: UploadingFile[];
-  pendingMessageSubmitted: boolean;
 }
 
 const PAGE_SIZE = 20;
 
-export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmitted = false }: MessageListProps) {
+export function MessageList({ threadId, uploadingFiles = [] }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -225,9 +224,6 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
     console.log('Processed files:', allMessages[0].attachments);
   }
 
-  // Only show uploading files in the chat history if the message has been submitted
-  const shouldShowUploadingFiles = pendingMessageSubmitted && uploadingFiles.length > 0 && user;
-
   return (
     <ScrollArea 
       ref={scrollRef} 
@@ -247,7 +243,7 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
         {allMessages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))}
-        {shouldShowUploadingFiles && (
+        {uploadingFiles.length > 0 && user && (
           <MessageItem
             message={{
               id: 'uploading',
