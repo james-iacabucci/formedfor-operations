@@ -51,6 +51,19 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
   
   const obj = value as Record<string, Json>;
   
+  // Log detailed information about the object being checked
+  console.log("Checking isFileAttachment:", { 
+    value,
+    hasName: 'name' in obj, 
+    nameType: obj.name ? typeof obj.name : 'undefined',
+    hasUrl: 'url' in obj, 
+    urlType: obj.url ? typeof obj.url : 'undefined',
+    hasType: 'type' in obj,
+    typeType: obj.type ? typeof obj.type : 'undefined',
+    hasSize: 'size' in obj,
+    sizeType: obj.size !== undefined ? typeof obj.size : 'undefined'
+  });
+  
   return (
     typeof obj.name === 'string' &&
     typeof obj.url === 'string' &&
@@ -61,16 +74,28 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
 
 // Helper function to convert raw message data to Message type
 export function convertToMessage(rawMessage: any): Message {
-  const attachments = Array.isArray(rawMessage.attachments) 
-    ? rawMessage.attachments
-        .filter(isFileAttachment)
-        .map(att => ({
-          name: att.name as string,
-          url: att.url as string,
-          type: att.type as string,
-          size: att.size as number
-        }))
-    : [];
+  console.log("Converting raw message to Message:", rawMessage);
+  
+  let attachments: FileAttachment[] = [];
+  
+  if (Array.isArray(rawMessage.attachments)) {
+    attachments = rawMessage.attachments
+      .filter(att => {
+        const isValid = isFileAttachment(att);
+        console.log("Filtering attachment:", { att, isValid });
+        return isValid;
+      })
+      .map(att => ({
+        name: att.name as string,
+        url: att.url as string,
+        type: att.type as string,
+        size: att.size as number
+      }));
+      
+    console.log("Processed attachments:", attachments);
+  } else {
+    console.log("Message has no attachments array:", rawMessage.attachments);
+  }
 
   return {
     id: rawMessage.id,
