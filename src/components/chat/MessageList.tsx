@@ -256,7 +256,7 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
           </div>
         )}
         {allMessages.map((message) => (
-          <MessageItem key={message.id} message={message} />
+          <MessageItem key={message.id} message={message as Message} />
         ))}
         {uploadingFiles.length > 0 && user && (
           <MessageItem
