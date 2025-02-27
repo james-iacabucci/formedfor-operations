@@ -115,13 +115,13 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               <Tabs
                 value={activeView}
                 onValueChange={(value) => setActiveView(value as "chat" | "files")}
-                className="w-[120px] shrink-0 ml-4"
+                className="w-[120px] shrink-0 ml-2"
               >
-                <TabsList className="w-full">
-                  <TabsTrigger value="chat" className="flex-1">
+                <TabsList className="w-full grid grid-cols-2">
+                  <TabsTrigger value="chat" className="text-xs px-2">
                     Chat
                   </TabsTrigger>
-                  <TabsTrigger value="files" className="flex-1">
+                  <TabsTrigger value="files" className="text-xs px-2">
                     Files
                   </TabsTrigger>
                 </TabsList>
