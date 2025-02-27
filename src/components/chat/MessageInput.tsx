@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,6 +135,13 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
       setUploadingFiles(prev => prev.filter(f => 
         !currentUploadingFiles.some(cf => cf.id === f.id)
       ));
+
+      // Set focus back to textarea after everything is done
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
