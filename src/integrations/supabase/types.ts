@@ -95,18 +95,21 @@ export type Database = {
           id: string
           sculpture_id: string
           topic: Database["public"]["Enums"]["chat_topic"]
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           sculpture_id: string
           topic: Database["public"]["Enums"]["chat_topic"]
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           sculpture_id?: string
           topic?: Database["public"]["Enums"]["chat_topic"]
+          user_id?: string | null
         }
         Relationships: [
           {

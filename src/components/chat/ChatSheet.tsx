@@ -61,7 +61,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             .insert({
               sculpture_id: threadId,
               topic: topic,
-              created_by: user.id
+              user_id: user.id
             });
 
           if (error) {
