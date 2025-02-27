@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,11 +23,16 @@ export function FileList({ threadId }: FileListProps) {
   const [sortBy, setSortBy] = useState<SortBy>("modified");
   const [debugInfo, setDebugInfo] = useState<string>("");
 
-  // Add more detailed debug logging
+  // Log initial mount info
   useEffect(() => {
     console.log(`FileList mounted with threadId: ${threadId}`);
     return () => console.log("FileList unmounted");
   }, [threadId]);
+
+  // Update debug info helper - created to avoid setting state during render
+  const updateDebugInfo = useCallback((message: string) => {
+    setDebugInfo(prev => prev + "\n" + message);
+  }, []);
 
   const { data: messagesData, isLoading, error } = useQuery<MessageData[]>({
     queryKey: ["messages", threadId],
@@ -51,20 +56,20 @@ export function FileList({ threadId }: FileListProps) {
 
       if (error) {
         console.error("Error fetching messages:", error);
-        setDebugInfo(prev => prev + `\nError fetching messages: ${error.message}`);
+        updateDebugInfo(`Error fetching messages: ${error.message}`);
         return [];
       }
       
       console.log("Fetched messages data:", data);
       const messageCount = data?.length || 0;
-      setDebugInfo(prev => prev + `\nFetched ${messageCount} messages`);
+      updateDebugInfo(`Fetched ${messageCount} messages`);
       
       // Log each message's attachments
       if (data && data.length > 0) {
         data.forEach((msg, i) => {
           const attachmentsCount = Array.isArray(msg.attachments) ? msg.attachments.length : 0;
           console.log(`Message ${i+1}/${data.length} (${msg.id}) has ${attachmentsCount} attachments:`, msg.attachments);
-          setDebugInfo(prev => prev + `\nMessage ${i+1} has ${attachmentsCount} attachments`);
+          updateDebugInfo(`Message ${i+1} has ${attachmentsCount} attachments`);
           
           if (attachmentsCount > 0) {
             console.log("Attachment examples:", JSON.stringify(msg.attachments[0], null, 2));
@@ -171,18 +176,22 @@ export function FileList({ threadId }: FileListProps) {
     }
   };
 
-  console.log("Current messagesData:", messagesData);
-
-  const files: ExtendedFileAttachment[] = [];
+  // Process files from messages - moved to useEffect to avoid state updates during render
+  const [files, setFiles] = useState<ExtendedFileAttachment[]>([]);
   
-  if (Array.isArray(messagesData)) {
-    setDebugInfo(prev => prev + `\nProcessing ${messagesData.length} messages for files`);
+  useEffect(() => {
+    if (!Array.isArray(messagesData)) return;
+    
+    console.log("Current messagesData:", messagesData);
+    updateDebugInfo(`Processing ${messagesData.length} messages for files`);
+    
+    const extractedFiles: ExtendedFileAttachment[] = [];
     
     for (const message of messagesData) {
       if (message?.attachments && Array.isArray(message.attachments)) {
         // Debug the attachments
         console.log("Processing message attachments:", message.attachments);
-        setDebugInfo(prev => prev + `\nMessage ${message.id} has ${message.attachments.length} attachments`);
+        updateDebugInfo(`Message ${message.id} has ${message.attachments.length} attachments`);
         
         try {
           // Convert raw message to proper Message type
@@ -200,35 +209,24 @@ export function FileList({ threadId }: FileListProps) {
             uploadedAt: message.created_at
           }));
           
-          setDebugInfo(prev => prev + `\nFound ${validAttachments.length} valid attachments`);
+          updateDebugInfo(`Found ${validAttachments.length} valid attachments`);
           
           if (validAttachments.length > 0) {
             console.log("First valid attachment:", validAttachments[0]);
           }
           
-          files.push(...validAttachments);
+          extractedFiles.push(...validAttachments);
         } catch (error) {
           console.error("Error processing attachments:", error);
-          setDebugInfo(prev => prev + `\nError processing attachments: ${error}`);
+          updateDebugInfo(`Error processing attachments: ${error}`);
         }
       }
     }
-  }
-
-  console.log("Processed files:", files);
-  setDebugInfo(prev => prev + `\nTotal processed files: ${files.length}`);
-
-  const sortedFiles = [...files].sort((a, b) => {
-    switch (sortBy) {
-      case "modified":
-      case "uploaded":
-        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-      case "user":
-        return (a.user?.username || "").localeCompare(b.user?.username || "");
-      default:
-        return 0;
-    }
-  });
+    
+    console.log("Processed files:", extractedFiles);
+    updateDebugInfo(`Total processed files: ${extractedFiles.length}`);
+    setFiles(extractedFiles);
+  }, [messagesData, updateDebugInfo]);
 
   // Debug direct messages to thread
   useEffect(() => {
@@ -246,7 +244,7 @@ export function FileList({ threadId }: FileListProps) {
         }
         
         console.log("Direct thread messages check:", data);
-        setDebugInfo(prev => prev + `\nDirect check: ${data?.length || 0} messages in thread`);
+        updateDebugInfo(`Direct check: ${data?.length || 0} messages in thread`);
         
         // Check first message specifically
         if (data && data.length > 0) {
@@ -265,7 +263,19 @@ export function FileList({ threadId }: FileListProps) {
     };
     
     fetchDirectMessages();
-  }, [threadId]);
+  }, [threadId, updateDebugInfo]);
+
+  const sortedFiles = [...files].sort((a, b) => {
+    switch (sortBy) {
+      case "modified":
+      case "uploaded":
+        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+      case "user":
+        return (a.user?.username || "").localeCompare(b.user?.username || "");
+      default:
+        return 0;
+    }
+  });
 
   if (isLoading) {
     return <div className="p-4 text-center">Loading files...</div>;
