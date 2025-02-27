@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { FileCard } from "./FileCard";
 import { DeleteFileDialog } from "./DeleteFileDialog";
+import { Json } from "@/integrations/supabase/types";
 
 type SortBy = "modified" | "uploaded" | "user";
 
@@ -22,6 +22,7 @@ export function FileList({ threadId }: FileListProps) {
   const [deleteFile, setDeleteFile] = useState<ExtendedFileAttachment | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("modified");
   const [debugInfo, setDebugInfo] = useState<string>("");
+  const [files, setFiles] = useState<ExtendedFileAttachment[]>([]);
 
   // Log initial mount info
   useEffect(() => {
@@ -29,87 +30,112 @@ export function FileList({ threadId }: FileListProps) {
     return () => console.log("FileList unmounted");
   }, [threadId]);
 
-  // Update debug info helper - created to avoid setting state during render
+  // Update debug info helper
   const updateDebugInfo = useCallback((message: string) => {
     setDebugInfo(prev => prev + "\n" + message);
+    console.log(message); // Also log to console for easier debugging
   }, []);
 
-  const { data: messagesData, isLoading, error } = useQuery<MessageData[]>({
-    queryKey: ["messages", threadId],
-    queryFn: async () => {
-      console.log("Fetching messages for thread:", threadId);
-      updateDebugInfo(`Fetching messages for thread: ${threadId}`);
+  // Fetch the raw messages directly
+  useEffect(() => {
+    const fetchMessages = async () => {
+      updateDebugInfo(`Fetching messages directly for thread: ${threadId}`);
       
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .select(`
-          id,
-          created_at,
-          content,
-          attachments,
-          user_id,
-          profiles (
-            username,
-            avatar_url
-          )
-        `)
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("chat_messages")
+          .select(`
+            id,
+            created_at,
+            content,
+            attachments,
+            user_id,
+            profiles (
+              username,
+              avatar_url
+            )
+          `)
+          .eq("thread_id", threadId)
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching messages:", error);
-        updateDebugInfo(`Error fetching messages: ${error.message}`);
-        return [];
-      }
-      
-      console.log("Fetched messages data:", data);
-      const messageCount = data?.length || 0;
-      updateDebugInfo(`Fetched ${messageCount} messages`);
-      
-      // Log each message's attachments
-      if (data && data.length > 0) {
-        data.forEach((msg, i) => {
-          const hasAttachments = msg.attachments !== null && msg.attachments !== undefined;
-          const isAttachmentsArray = Array.isArray(msg.attachments);
-          const attachmentsCount = isAttachmentsArray ? msg.attachments.length : 0;
-          
-          console.log(`Message ${i+1}/${data.length} (${msg.id}):`, {
-            hasAttachments,
-            isAttachmentsArray,
-            attachmentsCount,
-            rawAttachments: msg.attachments
-          });
-          
-          updateDebugInfo(`Message ${i+1}/${data.length} (${msg.id}): hasAttachments=${hasAttachments}, isArray=${isAttachmentsArray}, count=${attachmentsCount}`);
-          
-          if (attachmentsCount > 0) {
-            msg.attachments.forEach((att, j) => {
-              const isObject = typeof att === 'object' && att !== null;
-              const hasRequiredProps = isObject && 
-                'name' in att && 
-                'url' in att && 
-                'type' in att && 
-                'size' in att;
+        if (error) {
+          console.error("Error fetching messages:", error);
+          updateDebugInfo(`Error fetching messages: ${error.message}`);
+          return;
+        }
+        
+        updateDebugInfo(`Fetched ${data?.length || 0} messages directly`);
+        
+        // Process files from the messages
+        const extractedFiles: ExtendedFileAttachment[] = [];
+        
+        if (data && data.length > 0) {
+          // Inspect each message
+          data.forEach((message, i) => {
+            updateDebugInfo(`Processing message ${i+1}/${data.length} (${message.id})`);
+            
+            if (!message.attachments || !Array.isArray(message.attachments) || message.attachments.length === 0) {
+              updateDebugInfo(`  Message has no attachments`);
+              return;
+            }
+            
+            updateDebugInfo(`  Message has ${message.attachments.length} attachments`);
+            
+            // Process each attachment
+            message.attachments.forEach((attachment: Json, j) => {
+              updateDebugInfo(`  Processing attachment ${j+1}/${message.attachments.length}`);
               
-              console.log(`  Attachment ${j+1}/${attachmentsCount}:`, {
-                isObject,
-                hasRequiredProps,
-                attachment: att
-              });
-              
-              updateDebugInfo(`  Attachment ${j+1}/${attachmentsCount}: isObject=${isObject}, hasRequiredProps=${hasRequiredProps}`);
-              if (isObject) {
-                updateDebugInfo(`    Keys: ${Object.keys(att).join(', ')}`);
+              // Check if attachment is an object with the expected properties
+              if (
+                typeof attachment === 'object' && 
+                attachment !== null && 
+                !Array.isArray(attachment) &&
+                'name' in attachment && 
+                'url' in attachment && 
+                'type' in attachment && 
+                'size' in attachment
+              ) {
+                const name = String(attachment.name || '');
+                const url = String(attachment.url || '');
+                const type = String(attachment.type || '');
+                const size = Number(attachment.size || 0);
+                
+                if (name && url) {
+                  const fileAttachment: ExtendedFileAttachment = {
+                    name,
+                    url,
+                    type,
+                    size,
+                    user: message.profiles,
+                    userId: message.user_id,
+                    messageId: message.id,
+                    uploadedAt: message.created_at
+                  };
+                  
+                  updateDebugInfo(`  ✅ Valid attachment found: ${name}`);
+                  console.log("Adding file:", fileAttachment);
+                  extractedFiles.push(fileAttachment);
+                } else {
+                  updateDebugInfo(`  ❌ Attachment has empty name or url`);
+                }
+              } else {
+                updateDebugInfo(`  ❌ Invalid attachment format`);
+                console.log("Invalid attachment:", attachment);
               }
             });
-          }
-        });
+          });
+        }
+        
+        updateDebugInfo(`Total extracted files: ${extractedFiles.length}`);
+        setFiles(extractedFiles);
+      } catch (e) {
+        console.error("Error in message processing:", e);
+        updateDebugInfo(`Error in message processing: ${e}`);
       }
-      
-      return data ?? [];
-    },
-    refetchOnWindowFocus: false,
-  });
+    };
+    
+    fetchMessages();
+  }, [threadId, updateDebugInfo]);
 
   const handleDeleteFile = async () => {
     if (!deleteFile || !user) return;
@@ -125,17 +151,18 @@ export function FileList({ threadId }: FileListProps) {
         throw new Error("Message not found");
       }
 
-      const updatedAttachments = (message.attachments || [])
-        .filter(attachment => {
-          // Type guard: First check if it's an object and not an array
-          if (typeof attachment !== 'object' || attachment === null || Array.isArray(attachment)) {
-            return true;
-          }
-          
-          // Now we can safely check if it has a url property and compare it
-          return !(attachment as Record<string, any>).url || 
-                 (attachment as Record<string, any>).url !== deleteFile.url;
-        });
+      const updatedAttachments = Array.isArray(message.attachments) 
+        ? message.attachments.filter(attachment => {
+            // Skip non-object attachments
+            if (typeof attachment !== 'object' || attachment === null || Array.isArray(attachment)) {
+              return true;
+            }
+            
+            // Keep attachments that don't have a url or have a different url
+            if (!('url' in attachment)) return true;
+            return String(attachment.url) !== deleteFile.url;
+          })
+        : [];
 
       const { error: updateError } = await supabase
         .from("chat_messages")
@@ -148,6 +175,10 @@ export function FileList({ threadId }: FileListProps) {
         title: "File deleted",
         description: "The file has been removed from the chat history.",
       });
+      
+      // Update local files state to remove the deleted file
+      setFiles(prevFiles => prevFiles.filter(file => file.url !== deleteFile.url));
+      
     } catch (error) {
       console.error("Error deleting file:", error);
       toast({
@@ -211,119 +242,6 @@ export function FileList({ threadId }: FileListProps) {
     }
   };
 
-  // Process files from messages - moved to useEffect to avoid state updates during render
-  const [files, setFiles] = useState<ExtendedFileAttachment[]>([]);
-  
-  useEffect(() => {
-    if (!Array.isArray(messagesData)) return;
-    
-    console.log("Processing messages for files:", messagesData);
-    updateDebugInfo(`Processing ${messagesData.length} messages for files`);
-    
-    const extractedFiles: ExtendedFileAttachment[] = [];
-    
-    for (const message of messagesData) {
-      if (!message) continue;
-      
-      updateDebugInfo(`Processing message ${message.id}`);
-      
-      // Check if message has attachments
-      const hasAttachments = message.attachments !== null && message.attachments !== undefined;
-      const isArray = Array.isArray(message.attachments);
-      
-      updateDebugInfo(`  Message attachments: exists=${hasAttachments}, isArray=${isArray}`);
-      
-      if (hasAttachments && isArray && message.attachments.length > 0) {
-        // For each attachment in this message
-        message.attachments.forEach((attachment, idx) => {
-          try {
-            // Direct access to attachment properties
-            if (typeof attachment === 'object' && attachment !== null) {
-              // Check if attachment has all required properties
-              if ('url' in attachment && 'name' in attachment && 'type' in attachment && 'size' in attachment) {
-                const fileAttachment: ExtendedFileAttachment = {
-                  name: attachment.name as string,
-                  url: attachment.url as string,
-                  type: attachment.type as string,
-                  size: Number(attachment.size),
-                  user: message.profiles,
-                  userId: message.user_id,
-                  messageId: message.id,
-                  uploadedAt: message.created_at
-                };
-                
-                updateDebugInfo(`  Valid attachment found: ${fileAttachment.name}`);
-                console.log("Adding file attachment:", fileAttachment);
-                extractedFiles.push(fileAttachment);
-              } else {
-                updateDebugInfo(`  Invalid attachment: missing required properties`);
-                console.log("Attachment missing required properties:", attachment);
-              }
-            } else {
-              updateDebugInfo(`  Invalid attachment: not an object`);
-            }
-          } catch (error) {
-            console.error("Error processing attachment:", error);
-            updateDebugInfo(`  Error processing attachment: ${error}`);
-          }
-        });
-      } else {
-        updateDebugInfo(`  No valid attachments found in message`);
-      }
-    }
-    
-    console.log("Processed files:", extractedFiles);
-    updateDebugInfo(`Total processed files: ${extractedFiles.length}`);
-    setFiles(extractedFiles);
-  }, [messagesData, updateDebugInfo]);
-
-  // Debug direct messages to thread
-  useEffect(() => {
-    const fetchDirectMessages = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("chat_messages")
-          .select('id, created_at, attachments, content')
-          .eq("thread_id", threadId)
-          .order("created_at", { ascending: false })
-          .limit(5);
-          
-        if (error) {
-          console.error("Error in direct messages check:", error);
-          return;
-        }
-        
-        console.log("Direct thread messages check:", data);
-        updateDebugInfo(`Direct check: ${data?.length || 0} messages in thread`);
-        
-        // Check first message specifically
-        if (data && data.length > 0) {
-          data.forEach((msg, i) => {
-            updateDebugInfo(`Direct message ${i+1}: id=${msg.id}, content="${msg.content?.substring(0, 20)}..."`);
-            
-            const hasAttachments = msg.attachments !== null && msg.attachments !== undefined;
-            const isArray = Array.isArray(msg.attachments);
-            const count = isArray ? msg.attachments.length : 0;
-            
-            updateDebugInfo(`  Attachments: exists=${hasAttachments}, isArray=${isArray}, count=${count}`);
-            
-            if (count > 0) {
-              msg.attachments.forEach((att, j) => {
-                const attType = typeof att;
-                updateDebugInfo(`  Attachment ${j+1}: type=${attType}, keys=${att && typeof att === 'object' ? Object.keys(att).join(',') : 'N/A'}`);
-              });
-            }
-          });
-        }
-      } catch (e) {
-        console.error("Error in direct messages fetch:", e);
-        updateDebugInfo(`Error in direct messages fetch: ${e}`);
-      }
-    };
-    
-    fetchDirectMessages();
-  }, [threadId, updateDebugInfo]);
-
   const sortedFiles = [...files].sort((a, b) => {
     switch (sortBy) {
       case "modified":
@@ -335,14 +253,6 @@ export function FileList({ threadId }: FileListProps) {
         return 0;
     }
   });
-
-  if (isLoading) {
-    return <div className="p-4 text-center">Loading files...</div>;
-  }
-
-  if (error) {
-    return <div className="p-4 text-center text-red-500">Error loading files</div>;
-  }
 
   return (
     <div className="flex flex-col h-full">
