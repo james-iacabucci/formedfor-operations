@@ -28,17 +28,13 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const queryClient = useQueryClient();
   const { regenerateImage, generateVariant } = useSculptureRegeneration();
 
-  // Fetch all product lines
+  // Fetch all product lines (global)
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       const { data, error } = await supabase
         .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*");
 
       if (error) throw error;
       return data as ProductLine[];
