@@ -190,7 +190,7 @@ export type Database = {
           id: string
           name: string
           product_line_code: string | null
-          user_id: string
+          user_id: string | null
           white_logo_url: string | null
         }
         Insert: {
@@ -201,7 +201,7 @@ export type Database = {
           id?: string
           name: string
           product_line_code?: string | null
-          user_id: string
+          user_id?: string | null
           white_logo_url?: string | null
         }
         Update: {
@@ -212,7 +212,7 @@ export type Database = {
           id?: string
           name?: string
           product_line_code?: string | null
-          user_id?: string
+          user_id?: string | null
           white_logo_url?: string | null
         }
         Relationships: [
@@ -460,19 +460,19 @@ export type Database = {
           created_at: string
           id: string
           name: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
