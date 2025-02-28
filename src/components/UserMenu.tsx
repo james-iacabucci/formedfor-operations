@@ -15,6 +15,7 @@ import { PreferencesSheet } from "./preferences/PreferencesSheet";
 import { useTheme } from "./ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { toast } from "sonner";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
@@ -22,6 +23,7 @@ export function UserMenu() {
   const [showSettings, setShowSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -43,6 +45,65 @@ export function UserMenu() {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleThemeChange = async () => {
+    // Prevent multiple clicks
+    if (isChangingTheme) return;
+    
+    setIsChangingTheme(true);
+    
+    // Set the new theme
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    
+    if (!user) {
+      // If no user, just update local storage and release the lock
+      setTimeout(() => setIsChangingTheme(false), 300);
+      return;
+    }
+
+    try {
+      // First check if user has preferences record
+      const { data: existingPref, error: fetchError } = await supabase
+        .from('user_preferences')
+        .select('id, settings')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (fetchError) throw fetchError;
+
+      if (existingPref) {
+        // Update existing record
+        const updatedSettings = {
+          ...(typeof existingPref.settings === 'object' ? existingPref.settings : {}),
+          theme: newTheme
+        };
+
+        const { error } = await supabase
+          .from('user_preferences')
+          .update({ settings: updatedSettings })
+          .eq('id', existingPref.id);
+
+        if (error) throw error;
+      } else {
+        // Create new record
+        const { error } = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: user.id,
+            settings: { theme: newTheme }
+          });
+          
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error('Error saving theme preference:', error);
+      toast.error("Failed to save theme preference");
+    } finally {
+      // Release the lock after a delay
+      setTimeout(() => setIsChangingTheme(false), 400);
     }
   };
 
@@ -69,13 +130,13 @@ export function UserMenu() {
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+          <DropdownMenuItem onClick={handleThemeChange} disabled={isChangingTheme}>
             {theme === "light" ? (
               <Moon className="mr-2 h-4 w-4" />
             ) : (
               <Sun className="mr-2 h-4 w-4" />
             )}
-            {theme === "light" ? "Dark mode" : "Light mode"}
+            {theme === "light" ? "Change to Dark Theme" : "Change to Light Theme"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => signOut()}>

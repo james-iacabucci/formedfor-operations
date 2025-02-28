@@ -1,6 +1,5 @@
 
 import { UserMenu } from "@/components/UserMenu";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function AppHeader() {
   return (
@@ -9,7 +8,6 @@ export function AppHeader() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Sculptify</h1>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <UserMenu />
           </div>
         </div>
