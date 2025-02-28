@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, PlusIcon, FileIcon } from "lucide-react";
+import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, FileIcon, WandSparklesIcon } from "lucide-react";
 import { BaseSculptureImage } from "./BaseSculptureImage";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -122,7 +122,7 @@ export function SculptureCardImage({
                     onGenerateVariant();
                   }}
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <WandSparklesIcon className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
