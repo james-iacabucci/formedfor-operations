@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, PlusIcon } from "lucide-react";
+import { DownloadIcon, TagIcon, Trash2Icon, RefreshCwIcon, PlusIcon, FileIcon } from "lucide-react";
 import { BaseSculptureImage } from "./BaseSculptureImage";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface SculptureCardImageProps {
   onRegenerate: () => void;
   onGenerateVariant: () => void;
   onDownload: () => void;
+  onDownloadPDF: () => void;
   onClick?: () => void;
   status?: SculptureStatusCode;
 }
@@ -28,6 +29,7 @@ export function SculptureCardImage({
   onRegenerate,
   onGenerateVariant,
   onDownload,
+  onDownloadPDF,
   onClick,
   status,
 }: SculptureCardImageProps) {
@@ -125,6 +127,25 @@ export function SculptureCardImage({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Generate variation</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownloadPDF();
+                  }}
+                >
+                  <FileIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Download spec sheet</p>
               </TooltipContent>
             </Tooltip>
 

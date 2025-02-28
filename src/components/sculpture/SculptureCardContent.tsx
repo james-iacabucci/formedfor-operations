@@ -15,6 +15,7 @@ interface SculptureCardContentProps {
   onRegenerate: () => void;
   onGenerateVariant: () => void;
   onDownload: () => void;
+  onDownloadPDF: () => void;
 }
 
 export function SculptureCardContent({
@@ -27,6 +28,7 @@ export function SculptureCardContent({
   onRegenerate,
   onGenerateVariant,
   onDownload,
+  onDownloadPDF,
 }: SculptureCardContentProps) {
   const navigate = useNavigate();
 
@@ -65,6 +67,8 @@ export function SculptureCardContent({
             onRegenerate={onRegenerate}
             onGenerateVariant={onGenerateVariant}
             onDownload={onDownload}
+            onDownloadPDF={onDownloadPDF}
+            status={sculpture.status}
           />
         </div>
 
