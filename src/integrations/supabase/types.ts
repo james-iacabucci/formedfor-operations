@@ -307,7 +307,6 @@ export type Database = {
           prompt: string
           renderings: Json | null
           status: string | null
-          user_id: string
           weight_kg: number | null
           weight_lbs: number | null
           width_cm: number | null
@@ -348,7 +347,6 @@ export type Database = {
           prompt: string
           renderings?: Json | null
           status?: string | null
-          user_id: string
           weight_kg?: number | null
           weight_lbs?: number | null
           width_cm?: number | null
@@ -389,7 +387,6 @@ export type Database = {
           prompt?: string
           renderings?: Json | null
           status?: string | null
-          user_id?: string
           weight_kg?: number | null
           weight_lbs?: number | null
           width_cm?: number | null
@@ -436,13 +433,6 @@ export type Database = {
             columns: ["product_line_id"]
             isOneToOne: false
             referencedRelation: "product_lines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sculptures_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

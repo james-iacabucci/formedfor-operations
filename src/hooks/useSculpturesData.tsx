@@ -82,7 +82,7 @@ export function useSculpturesData(
         status: item.status as "ideas" | "pending_additions" | "approved",
         ai_engine: item.ai_engine as "runware" | "manual",
         creativity_level: item.creativity_level as "none" | "small" | "medium" | "large" | null,
-        created_by: item.created_by || item.user_id, // Fallback to user_id if created_by is not set
+        created_by: item.created_by,
       }));
 
       return transformedData;

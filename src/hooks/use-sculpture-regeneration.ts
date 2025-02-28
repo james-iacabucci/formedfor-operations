@@ -195,7 +195,6 @@ export function useSculptureRegeneration() {
           .insert([
             {
               prompt: options.changes ? `${prompt}\n\nChanges: ${options.changes}` : prompt,
-              user_id: userId,
               created_by: user?.id || userId,
               ai_engine: "runware",
               status: "idea",
