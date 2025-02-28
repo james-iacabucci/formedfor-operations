@@ -35,6 +35,8 @@ export async function downloadFile(url: string, filename: string): Promise<void>
     const link = document.createElement('a');
     link.href = blobUrl;
     link.download = filename;
+    link.target = "_self"; // Force same window
+    link.setAttribute("type", "application/octet-stream"); // Force download
     
     // Append to document, click, and remove
     document.body.appendChild(link);
@@ -78,6 +80,8 @@ export async function downloadFileDirectly(url: string, filename: string): Promi
     const link = document.createElement('a');
     link.href = blobUrl;
     link.download = filename;
+    link.target = "_self"; // Force same window
+    link.setAttribute("type", "application/octet-stream"); // Force download
     
     // Append to document, click, and remove
     document.body.appendChild(link);

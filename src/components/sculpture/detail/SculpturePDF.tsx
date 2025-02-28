@@ -15,6 +15,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
   const generatePDF = useCallback(async () => {
     try {
       console.log("Starting PDF generation for sculpture:", sculpture.id);
+      setIsGenerating(true);
       
       const { data, error } = await supabase.functions.invoke(
         'generate-sculpture-pdf',
@@ -38,16 +39,18 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: 'application/pdf' });
 
-      // Create download link
+      // Create download link with force download attributes
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${sculpture.ai_generated_name || 'sculpture'}.pdf`);
+      link.download = `${sculpture.ai_generated_name || 'sculpture'}.pdf`;
+      link.target = "_self"; // Force same window
+      link.setAttribute("type", "application/pdf"); // Set MIME type
       
       console.log("Created download link:", url);
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
       toast.success("PDF generated successfully");
@@ -59,37 +62,16 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
     }
   }, [sculpture]);
 
-  // Create a simple native button handler for testing
-  const handleButtonClick = (e: React.MouseEvent) => {
-    console.log("Native button click detected");
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Force an alert to verify the click is registered
-    window.alert("Button clicked!");
-    
-    if (!isGenerating) {
-      setIsGenerating(true);
-      generatePDF();
-    }
-  };
-
   return (
-    <div 
-      className="relative z-50 bg-transparent p-1 cursor-pointer" 
-      onClick={(e) => {
-        console.log("Parent div clicked");
-        handleButtonClick(e);
-      }}
-    >
-      <button
+    <div className="relative z-50 bg-transparent p-1 cursor-pointer">
+      <Button
         className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 rounded-md px-3"
-        onClick={handleButtonClick}
+        onClick={generatePDF}
         disabled={isGenerating}
       >
         <FileIcon className="h-4 w-4" />
         <span>{isGenerating ? "Generating PDF..." : "Download Spec Sheet"}</span>
-      </button>
+      </Button>
     </div>
   );
 }
