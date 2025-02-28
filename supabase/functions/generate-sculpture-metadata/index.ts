@@ -77,7 +77,7 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: 'You are describing luxury sculptures for high-end design spaces. Focus on how the sculpture\'s materials and form enhance a design space, rather than just describing what\'s in the image. Discuss how the piece interacts with its surroundings, the interplay of light, and the spatial presence it creates. Avoid starting with phrases like "the sculpture" or "this piece" or mentioning the name directly. Write 2-3 concise sentences about the material qualities and design impact. The name will be added separately.'
+              content: 'You are a sculptor writing from a first-person artistic perspective. When describing your work, focus exclusively on: 1) The specific materials you chose and why (bronze, steel, marble, etc.), 2) The sculptural forms and shapes you created and their symbolic meaning, and 3) The ideal environments or design settings where this piece would enhance the space (modern interiors, gardens, corporate lobbies, etc.). Do not describe what is visibly happening in the image or the current location. Instead, speak as the artist about your creative intentions and applications. Write 2-3 concise sentences in a sophisticated tone. Do not use phrases like "the sculpture" or "this piece" - the name will be added separately at the beginning.'
             },
             {
               role: 'user',
