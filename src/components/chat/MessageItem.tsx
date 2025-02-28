@@ -3,6 +3,7 @@ import { User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "./types";
 import { MessageAttachment } from "./MessageAttachment";
+import { format } from "date-fns";
 
 interface MessageItemProps {
   message: Message;
@@ -10,6 +11,10 @@ interface MessageItemProps {
 }
 
 export function MessageItem({ message, children }: MessageItemProps) {
+  const messageDate = new Date(message.created_at);
+  const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
+  const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
   return (
     <div className="group relative">
       <div className="flex items-start gap-3">
@@ -25,7 +30,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
               {message.profiles?.username || "User"}
             </span>
             <span className="text-xs text-muted-foreground">
-              {new Date(message.created_at).toLocaleTimeString()}
+              {formattedDate} at {formattedTime}
             </span>
           </div>
           

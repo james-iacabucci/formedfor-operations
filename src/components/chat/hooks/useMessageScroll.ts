@@ -31,10 +31,11 @@ export function useMessageScroll({
   // Effect to handle initial render scroll to bottom
   useEffect(() => {
     if (isInitialLoad && !isLoading && messages.length > 0) {
-      requestAnimationFrame(() => {
+      // Use a slight delay to ensure the DOM has rendered
+      setTimeout(() => {
         scrollToBottom(true);
         setIsInitialLoad(false);
-      });
+      }, 100);
     }
   }, [isLoading, messages, isInitialLoad, setIsInitialLoad]);
 
@@ -55,6 +56,10 @@ export function useMessageScroll({
     if (scrollElement) {
       setIsAutoScrolling(true);
       
+      // Get the input area height to adjust scrolling
+      const inputArea = document.querySelector('.shrink-0.p-4.pt-2');
+      const inputAreaHeight = inputArea ? inputArea.clientHeight : 80; // Default fallback if not found
+      
       if (instant) {
         // Instant scroll (for initial load)
         scrollElement.scrollTop = scrollElement.scrollHeight;
@@ -68,6 +73,11 @@ export function useMessageScroll({
         
         // Reset auto-scrolling flag after animation completes (roughly 300ms)
         setTimeout(() => setIsAutoScrolling(false), 350);
+      }
+      
+      // Update last message reference after scrolling
+      if (messages.length > 0) {
+        lastMessageRef.current = messages[messages.length - 1].id;
       }
     }
   };

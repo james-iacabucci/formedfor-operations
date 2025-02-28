@@ -22,6 +22,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
   const { user } = useAuth();
+  const [sculptureName, setSculptureName] = useState<string>("");
 
   const { data: threads, refetch } = useQuery({
     queryKey: ["chat-threads", threadId],
@@ -41,6 +42,32 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
       return data || [];
     },
   });
+
+  // Fetch sculpture name
+  useEffect(() => {
+    const fetchSculptureName = async () => {
+      if (!threadId) return;
+      
+      const { data, error } = await supabase
+        .from("chat_threads")
+        .select("sculptures(ai_generated_name, manual_name)")
+        .eq("sculpture_id", threadId)
+        .limit(1)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching sculpture name:", error);
+        return;
+      }
+      
+      if (data?.sculptures) {
+        const name = data.sculptures.manual_name || data.sculptures.ai_generated_name || "Untitled Sculpture";
+        setSculptureName(name);
+      }
+    };
+    
+    fetchSculptureName();
+  }, [threadId]);
 
   // Create default threads if they don't exist
   useEffect(() => {
@@ -83,6 +110,13 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
         <div className="flex flex-col h-full">
+          {/* Sculpture name header */}
+          <div className="border-b shrink-0 py-3 px-4">
+            <div className="flex items-center justify-between">
+              <div className="font-medium truncate">{sculptureName}</div>
+            </div>
+          </div>
+          
           <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4">
               <Tabs
