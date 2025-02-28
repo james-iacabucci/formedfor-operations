@@ -119,10 +119,10 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               >
                 <TabsList className="w-full grid grid-cols-2">
                   <TabsTrigger value="chat" className="text-xs px-2">
-                    Chat
+                    CHAT
                   </TabsTrigger>
                   <TabsTrigger value="files" className="text-xs px-2">
-                    Files
+                    FILES
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

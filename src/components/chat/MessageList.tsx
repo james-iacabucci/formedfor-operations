@@ -21,10 +21,11 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const [isInitialScroll, setIsInitialScroll] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
   const lastMessageRef = useRef<string | null>(null);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
 
   const {
     data,
@@ -126,7 +127,9 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
           const currentLastMessage = lastMessageRef.current;
           await refetch();
           
-          if (!currentLastMessage || currentLastMessage === payload.new.id) {
+          // Always scroll to bottom when there's a new message unless the user
+          // has scrolled up manually to view older messages
+          if (!hasScrolled || currentLastMessage === payload.new.id) {
             setShouldScrollToBottom(true);
           }
         }
@@ -136,55 +139,80 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [threadId, refetch]);
+  }, [threadId, refetch, hasScrolled]);
 
+  // Effect to handle initial render scroll to bottom
   useEffect(() => {
-    const scrollToBottom = () => {
-      if (!scrollRef.current) return;
-      
-      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        const shouldScroll = isInitialScroll || shouldScrollToBottom;
-        
-        if (shouldScroll) {
-          scrollElement.scrollTop = scrollElement.scrollHeight;
-          setIsInitialScroll(false);
-          setShouldScrollToBottom(false);
-        }
-      }
-    };
+    if (isInitialLoad && !isLoading && data?.pages && data.pages.length > 0) {
+      requestAnimationFrame(() => {
+        scrollToBottom(true);
+        setIsInitialLoad(false);
+      });
+    }
+  }, [isLoading, data?.pages, isInitialLoad]);
 
-    scrollToBottom();
-  }, [data?.pages, isLoading, isInitialScroll, shouldScrollToBottom]);
+  // Effect to handle smooth scrolling to bottom when new messages arrive
+  useEffect(() => {
+    if (shouldScrollToBottom && !isLoading) {
+      requestAnimationFrame(() => {
+        scrollToBottom(false);
+        setShouldScrollToBottom(false);
+      });
+    }
+  }, [data?.pages, shouldScrollToBottom, isLoading]);
+
+  const scrollToBottom = (instant: boolean) => {
+    if (!scrollRef.current) return;
+    
+    const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollElement) {
+      setIsAutoScrolling(true);
+      
+      if (instant) {
+        // Instant scroll (for initial load)
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+        setTimeout(() => setIsAutoScrolling(false), 100);
+      } else {
+        // Smooth scroll (for new messages)
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: 'smooth'
+        });
+        
+        // Reset auto-scrolling flag after animation completes (roughly 300ms)
+        setTimeout(() => setIsAutoScrolling(false), 350);
+      }
+    }
+  };
 
   const handleScroll = () => {
     const viewport = viewportRef.current;
-    if (!viewport) return;
+    if (!viewport || isAutoScrolling) return;
 
     const scrollTop = viewport.scrollTop;
     const scrollHeight = viewport.scrollHeight;
     const clientHeight = viewport.clientHeight;
 
+    // Mark that user has manually scrolled (only if not auto-scrolling)
     if (!hasScrolled) {
       setHasScrolled(true);
     }
 
-    console.log('Scroll event:', {
-      scrollTop,
-      scrollHeight,
-      clientHeight,
-      hasNextPage,
-      isFetchingNextPage
-    });
-
+    // Load more messages when scrolling near the top
     if (scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
       console.log('Triggering next page load');
       fetchNextPage();
     }
 
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-    if (isNearBottom && allMessages.length > 0) {
-      lastMessageRef.current = allMessages[allMessages.length - 1].id;
+    // Check if user has scrolled to the bottom again
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
+    if (isNearBottom) {
+      setHasScrolled(false);
+      
+      // Update the last message reference for real-time updates
+      if (allMessages.length > 0) {
+        lastMessageRef.current = allMessages[allMessages.length - 1].id;
+      }
     }
   };
 
@@ -213,16 +241,6 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
     pageCount: data?.pages?.length,
     messageCount: allMessages.length
   });
-
-  // Debug: Log a sample message to check attachment structure
-  if (allMessages.length > 0) {
-    console.log('Current messagesData:', data);
-    console.log('First message:', allMessages[0]);
-    
-    if (allMessages[0].attachments) {
-      console.log('Processed files:', allMessages[0].attachments);
-    }
-  }
 
   return (
     <ScrollArea 
