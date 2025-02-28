@@ -15,6 +15,7 @@ interface SculptureFabricationQuotesProps {
 
 export function SculptureFabricationQuotes({ sculptureId }: SculptureFabricationQuotesProps) {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
 
   const { data: quotes, isLoading } = useQuery({
     queryKey: ["fabrication-quotes", sculptureId],
@@ -39,18 +40,28 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isAddingQuote ? (
+        {isAddingQuote || editingQuoteId ? (
           <FabricationQuoteForm 
             sculptureId={sculptureId}
-            onCancel={() => setIsAddingQuote(false)}
-            onSuccess={() => setIsAddingQuote(false)}
+            editingQuoteId={editingQuoteId}
+            onCancel={() => {
+              setIsAddingQuote(false);
+              setEditingQuoteId(null);
+            }}
+            onSuccess={() => {
+              setIsAddingQuote(false);
+              setEditingQuoteId(null);
+            }}
           />
         ) : (
           <>
             {quotes && quotes.length > 0 ? (
               <div className="space-y-4">
                 {quotes.map((quote) => (
-                  <FabricationQuoteCard key={quote.id} quote={quote} />
+                  <FabricationQuoteCard 
+                    key={quote.id} 
+                    quote={quote} 
+                  />
                 ))}
               </div>
             ) : (
@@ -62,7 +73,7 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         )}
       </CardContent>
       <CardFooter>
-        {!isAddingQuote && (
+        {!isAddingQuote && !editingQuoteId && (
           <Button 
             variant="outline" 
             className="w-full" 
