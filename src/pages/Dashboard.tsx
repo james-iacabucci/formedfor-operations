@@ -15,46 +15,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toggle } from "@/components/ui/toggle";
 import { Input } from "@/components/ui/input";
 import { AppHeader } from "@/components/layout/AppHeader";
-
-interface ViewSettings {
-  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
-  sortOrder: 'asc' | 'desc';
-  productLineId: string | null;
-  materialIds: string[];
-  selectedStatusIds: string[];
-  heightOperator: 'eq' | 'gt' | 'lt' | null;
-  heightValue: number | null;
-  heightUnit: 'in' | 'cm';
-  selectedTagIds: string[];
-}
+import { useUserPreferences, ViewSettings } from "@/hooks/use-user-preferences";
 
 const Dashboard = () => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isGridView, setIsGridView] = useState(true);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [previousSearchValue, setPreviousSearchValue] = useState("");
-  const [selectedProductLines, setSelectedProductLines] = useState<string[]>([]);
-  const [viewSettings, setViewSettings] = useState<ViewSettings>({
-    sortBy: 'created_at',
-    sortOrder: 'desc',
-    productLineId: null,
-    materialIds: [],
-    selectedStatusIds: ['all'],
-    heightOperator: null,
-    heightValue: null,
-    heightUnit: 'in',
-    selectedTagIds: ['all'],
-  });
-
+  
+  // Use our new hook to manage preferences
+  const { viewSettings, isLoading: preferencesLoading, savePreferences } = useUserPreferences();
+  
   const { tags } = useTagsManagement(undefined);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
-      // Global product lines - no user ID filtering
       const { data, error } = await supabase
         .from("product_lines")
         .select("*");
@@ -64,30 +41,16 @@ const Dashboard = () => {
     },
   });
 
+  // Initialize product lines if needed, but don't override user preferences
   useEffect(() => {
-    if (productLines) {
-      const savedSelection = localStorage.getItem('selectedProductLines');
-      if (savedSelection) {
-        const parsed = JSON.parse(savedSelection);
-        setSelectedProductLines(parsed);
-        setViewSettings(prev => ({
-          ...prev,
-          productLineId: parsed.length === 1 ? parsed[0] : null
-        }));
-      } else {
-        const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
-        if (ffProductLine) {
-          const defaultSelection = [ffProductLine.id];
-          setSelectedProductLines(defaultSelection);
-          setViewSettings(prev => ({
-            ...prev,
-            productLineId: ffProductLine.id
-          }));
-          localStorage.setItem('selectedProductLines', JSON.stringify(defaultSelection));
-        }
+    if (productLines && viewSettings.selectedProductLines.length === 0 && !preferencesLoading) {
+      const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
+      if (ffProductLine) {
+        const defaultSelection = [ffProductLine.id];
+        handleProductLineChange(defaultSelection);
       }
     }
-  }, [productLines]);
+  }, [productLines, viewSettings.selectedProductLines, preferencesLoading]);
 
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
@@ -102,17 +65,20 @@ const Dashboard = () => {
     },
   });
 
-  const handleViewSettingsChange = (newSettings: ViewSettings) => {
-    const newSettingsWithProductLine = {
+  const handleViewSettingsChange = (newSettings: Partial<ViewSettings>) => {
+    const productLineId = viewSettings.selectedProductLines.length === 1 
+      ? viewSettings.selectedProductLines[0] 
+      : null;
+      
+    savePreferences({
       ...newSettings,
-      productLineId: selectedProductLines.length === 1 ? selectedProductLines[0] : null
-    };
-    setViewSettings(newSettingsWithProductLine);
+      productLineId
+    });
   };
 
   const handleSearchClick = () => {
     setIsSearchExpanded(true);
-    setPreviousSearchValue(searchValue);
+    setPreviousSearchValue(viewSettings.searchValue);
     setTimeout(() => {
       const searchInput = document.getElementById('sculpture-search');
       if (searchInput) {
@@ -125,7 +91,7 @@ const Dashboard = () => {
     if (e.key === 'Enter') {
       e.currentTarget.blur();
     } else if (e.key === 'Escape') {
-      setSearchValue(previousSearchValue);
+      savePreferences({ searchValue: previousSearchValue });
       e.currentTarget.blur();
       if (!previousSearchValue) {
         setIsSearchExpanded(false);
@@ -133,14 +99,24 @@ const Dashboard = () => {
     }
   };
 
-  const handleProductLineChange = (values: string[]) => {
-    setSelectedProductLines(values);
-    setViewSettings(prev => ({
-      ...prev,
-      productLineId: values.length === 1 ? values[0] : null
-    }));
-    localStorage.setItem('selectedProductLines', JSON.stringify(values));
+  const handleSearchChange = (value: string) => {
+    savePreferences({ searchValue: value });
   };
+
+  const handleProductLineChange = (values: string[]) => {
+    savePreferences({
+      selectedProductLines: values,
+      productLineId: values.length === 1 ? values[0] : null
+    });
+  };
+
+  const handleGridViewToggle = (isGrid: boolean) => {
+    savePreferences({ isGridView: isGrid });
+  };
+
+  if (preferencesLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Loading preferences...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,16 +126,16 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <div className="flex gap-2 border rounded-md p-0.5">
               <Toggle
-                pressed={isGridView}
-                onPressedChange={() => setIsGridView(true)}
+                pressed={viewSettings.isGridView}
+                onPressedChange={() => handleGridViewToggle(true)}
                 size="sm"
                 className="data-[state=on]:bg-muted h-10 w-10"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
               <Toggle
-                pressed={!isGridView}
-                onPressedChange={() => setIsGridView(false)}
+                pressed={!viewSettings.isGridView}
+                onPressedChange={() => handleGridViewToggle(false)}
                 size="sm"
                 className="data-[state=on]:bg-muted h-10 w-10"
               >
@@ -170,7 +146,7 @@ const Dashboard = () => {
             {productLines && productLines.length > 0 && (
               <ToggleGroup 
                 type="multiple"
-                value={selectedProductLines}
+                value={viewSettings.selectedProductLines}
                 onValueChange={handleProductLineChange}
                 className="flex flex-wrap gap-1"
               >
@@ -193,11 +169,11 @@ const Dashboard = () => {
                 <Input
                   id="sculpture-search"
                   type="text"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  value={viewSettings.searchValue}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   className="h-10 w-[200px] pl-8"
-                  onBlur={() => !searchValue && setIsSearchExpanded(false)}
+                  onBlur={() => !viewSettings.searchValue && setIsSearchExpanded(false)}
                   placeholder="Search sculptures..."
                 />
                 <Search className="h-4 w-4 absolute left-2 top-3 text-muted-foreground" />
@@ -254,9 +230,9 @@ const Dashboard = () => {
           <CardContent className="p-0">
             <SculpturesList 
               viewSettings={viewSettings} 
-              isGridView={isGridView}
-              selectedProductLines={selectedProductLines}
-              searchQuery={searchValue}
+              isGridView={viewSettings.isGridView}
+              selectedProductLines={viewSettings.selectedProductLines}
+              searchQuery={viewSettings.searchValue}
             />
           </CardContent>
         </Card>

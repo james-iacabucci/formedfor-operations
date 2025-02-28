@@ -8,17 +8,7 @@ import { SculpturesGrid } from "./sculpture/SculpturesGrid";
 import { SculpturesTable } from "./sculpture/SculpturesTable";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, UploadIcon } from "lucide-react";
-
-interface ViewSettings {
-  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
-  sortOrder: 'asc' | 'desc';
-  productLineId: string | null;
-  materialIds: string[];
-  selectedStatusIds: string[]; // Updated to match new interface
-  heightOperator: 'eq' | 'gt' | 'lt' | null;
-  heightValue: number | null;
-  heightUnit: 'in' | 'cm';
-}
+import { ViewSettings } from "@/hooks/use-user-preferences";
 
 interface SculpturesListProps {
   viewSettings: ViewSettings;
