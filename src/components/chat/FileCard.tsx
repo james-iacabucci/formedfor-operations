@@ -56,21 +56,37 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
     ? format(new Date(file.lastModified), 'MMM d, yyyy h:mm a')
     : 'N/A';
 
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (isExtendedFile) {
+      // Create a temporary anchor element for download
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.name;
+      // Append to the document temporarily
       document.body.appendChild(a);
+      // Trigger click event
       a.click();
+      // Remove from the document
       document.body.removeChild(a);
+    }
+  };
+
+  const handlePreview = () => {
+    if (isExtendedFile) {
+      window.open(file.url, '_blank');
     }
   };
 
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border bg-background hover:bg-accent/10 transition-colors group">
       {isImage ? (
-        <div className="h-20 w-20 rounded overflow-hidden bg-muted flex-shrink-0">
+        <div 
+          className="h-20 w-20 rounded overflow-hidden bg-muted flex-shrink-0 cursor-pointer"
+          onClick={handlePreview}
+        >
           <img 
             src={imageUrl} 
             alt={file.name}
@@ -84,13 +100,21 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
           />
         </div>
       ) : (
-        <div className="h-20 w-20 rounded flex items-center justify-center bg-muted flex-shrink-0">
+        <div 
+          className="h-20 w-20 rounded flex items-center justify-center bg-muted flex-shrink-0 cursor-pointer"
+          onClick={handlePreview}
+        >
           <FileText className="h-8 w-8 text-muted-foreground" />
         </div>
       )}
 
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{file.name}</div>
+        <div 
+          className="text-sm font-medium truncate cursor-pointer"
+          onClick={handlePreview}
+        >
+          {file.name}
+        </div>
         
         {/* File details in a grid layout */}
         <div className="mt-1 space-y-1 text-xs text-muted-foreground">
