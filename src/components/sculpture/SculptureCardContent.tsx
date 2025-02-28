@@ -71,10 +71,6 @@ export function SculptureCardContent({
         {/* Info section */}
         <div className="p-4 transition-all duration-300 group-hover:bg-muted/50">
           <div className="flex flex-col gap-3">
-            <h3 className="font-semibold line-clamp-1">
-              {sculpture.ai_generated_name || "Untitled Sculpture"}
-            </h3>
-
             <SculptureInfo 
               sculpture={sculpture}
               tags={tags}

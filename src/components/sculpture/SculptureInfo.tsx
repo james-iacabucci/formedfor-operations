@@ -67,8 +67,12 @@ export function SculptureInfo({
 
   return (
     <div className="space-y-3">
+      {/* Title row with product line and status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <h3 className="font-semibold line-clamp-1">
+            {sculpture.ai_generated_name || "Untitled Sculpture"}
+          </h3>
           <ProductLineButton 
             sculptureId={sculpture.id}
             productLineId={sculpture.product_line_id}
