@@ -27,8 +27,11 @@ export function ThemeToggle() {
 
         if (error) throw error;
         
-        if (data && data.settings && data.settings.theme) {
-          setTheme(data.settings.theme);
+        if (data && data.settings && typeof data.settings === 'object' && 'theme' in data.settings) {
+          const userTheme = data.settings.theme;
+          if (userTheme === 'light' || userTheme === 'dark') {
+            setTheme(userTheme);
+          }
         }
       } catch (error) {
         console.error('Error loading theme preference:', error);
@@ -41,7 +44,9 @@ export function ThemeToggle() {
   }, [user, setTheme]);
 
   // Save theme preference to database when theme changes
-  const handleThemeChange = async (newTheme: 'light' | 'dark') => {
+  const handleThemeChange = async () => {
+    // Toggle the theme
+    const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     
     if (!user) return;
@@ -61,7 +66,7 @@ export function ThemeToggle() {
       if (existingPref) {
         // Update existing record
         const updatedSettings = {
-          ...existingPref.settings,
+          ...(typeof existingPref.settings === 'object' ? existingPref.settings : {}),
           theme: newTheme
         };
 
@@ -91,27 +96,21 @@ export function ThemeToggle() {
   };
 
   return (
-    <div className="flex gap-1">
-      <Button
-        variant={theme === 'light' ? 'default' : 'outline'}
-        size="icon"
-        onClick={() => handleThemeChange('light')}
-        disabled={isLoading}
-        title="Light mode"
-      >
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={handleThemeChange}
+      disabled={isLoading}
+      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+    >
+      {theme === 'light' ? (
         <SunIcon className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Light mode</span>
-      </Button>
-      <Button
-        variant={theme === 'dark' ? 'default' : 'outline'}
-        size="icon"
-        onClick={() => handleThemeChange('dark')}
-        disabled={isLoading}
-        title="Dark mode"
-      >
+      ) : (
         <MoonIcon className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Dark mode</span>
-      </Button>
-    </div>
+      )}
+      <span className="sr-only">
+        {theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+      </span>
+    </Button>
   );
 }
