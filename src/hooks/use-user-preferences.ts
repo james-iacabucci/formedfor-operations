@@ -34,6 +34,67 @@ export const defaultViewSettings: ViewSettings = {
   searchValue: ""
 };
 
+// Helper function to validate and ensure we have a proper ViewSettings object
+function ensureValidViewSettings(data: any): ViewSettings {
+  if (!data || typeof data !== 'object') {
+    return { ...defaultViewSettings };
+  }
+
+  // Create a new object with all default values
+  const settings: ViewSettings = { ...defaultViewSettings };
+
+  // Only override with valid values from data
+  if (data.sortBy && ['created_at', 'ai_generated_name', 'updated_at'].includes(data.sortBy)) {
+    settings.sortBy = data.sortBy;
+  }
+  
+  if (data.sortOrder && ['asc', 'desc'].includes(data.sortOrder)) {
+    settings.sortOrder = data.sortOrder;
+  }
+  
+  if (data.productLineId === null || typeof data.productLineId === 'string') {
+    settings.productLineId = data.productLineId;
+  }
+  
+  if (Array.isArray(data.materialIds)) {
+    settings.materialIds = data.materialIds;
+  }
+  
+  if (Array.isArray(data.selectedStatusIds)) {
+    settings.selectedStatusIds = data.selectedStatusIds;
+  }
+  
+  if (data.heightOperator === null || ['eq', 'gt', 'lt'].includes(data.heightOperator)) {
+    settings.heightOperator = data.heightOperator;
+  }
+  
+  if (data.heightValue === null || typeof data.heightValue === 'number') {
+    settings.heightValue = data.heightValue;
+  }
+  
+  if (data.heightUnit && ['in', 'cm'].includes(data.heightUnit)) {
+    settings.heightUnit = data.heightUnit;
+  }
+  
+  if (Array.isArray(data.selectedTagIds)) {
+    settings.selectedTagIds = data.selectedTagIds;
+  }
+  
+  if (typeof data.isGridView === 'boolean') {
+    settings.isGridView = data.isGridView;
+  }
+  
+  if (Array.isArray(data.selectedProductLines)) {
+    settings.selectedProductLines = data.selectedProductLines;
+  }
+  
+  if (typeof data.searchValue === 'string') {
+    settings.searchValue = data.searchValue;
+  }
+  
+  return settings;
+}
+
 export function useUserPreferences() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +119,9 @@ export function useUserPreferences() {
 
         if (error) throw error;
 
-        if (data) {
-          setViewSettings(data.settings as ViewSettings);
+        if (data && data.settings) {
+          // Use the helper function to ensure we have valid settings
+          setViewSettings(ensureValidViewSettings(data.settings));
         }
         
         setHasLoadedInitialPreferences(true);
