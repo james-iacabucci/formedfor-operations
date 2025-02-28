@@ -1,6 +1,6 @@
 
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
 import { useTheme } from "@/components/ThemeProvider";
@@ -12,6 +12,7 @@ export function ThemeToggle() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const pendingThemeChange = useRef(false);
 
   // Load theme preference from database when user logs in
   useEffect(() => {
@@ -51,18 +52,23 @@ export function ThemeToggle() {
 
   // Save theme preference to database when theme changes
   const handleThemeChange = async () => {
-    if (isLoading || !initialLoadComplete) return; // Prevent clicks during loading or initial setup
+    // Prevent double clicks or clicks during loading
+    if (isLoading || !initialLoadComplete || pendingThemeChange.current) return;
     
-    // Lock the button immediately before any state changes
+    // Lock the button and set pending flag
     setIsLoading(true);
+    pendingThemeChange.current = true;
     
-    // Toggle the theme - but don't trigger while we're still initializing
+    // Toggle the theme
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     
     if (!user) {
       // If no user, just release the button after a short delay
-      setTimeout(() => setIsLoading(false), 300);
+      setTimeout(() => {
+        setIsLoading(false);
+        pendingThemeChange.current = false;
+      }, 300);
       return;
     }
 
@@ -105,7 +111,10 @@ export function ThemeToggle() {
       toast.error("Failed to save theme preference");
     } finally {
       // Release the button after a delay to prevent rapid toggling
-      setTimeout(() => setIsLoading(false), 300);
+      setTimeout(() => {
+        setIsLoading(false);
+        pendingThemeChange.current = false;
+      }, 400);
     }
   };
 
@@ -114,7 +123,7 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={handleThemeChange}
-      disabled={isLoading || !initialLoadComplete}
+      disabled={isLoading || !initialLoadComplete || pendingThemeChange.current}
       title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
       className="transition-all duration-300"
     >

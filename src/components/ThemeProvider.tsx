@@ -30,6 +30,7 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem("theme") as Theme) || defaultTheme
   );
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
   
   // Apply theme transition styles to document root once on mount
   useEffect(() => {
@@ -51,10 +52,9 @@ export function ThemeProvider({
   // Handle theme changes after the initial load
   useEffect(() => {
     const root = window.document.documentElement;
-    const storedTheme = localStorage.getItem("theme");
     
-    // Only process theme changes after initial load
-    if (storedTheme && theme !== storedTheme) {
+    // Skip this effect when component first mounts
+    if (isChangingTheme) {
       // Remove both classes first, then add the correct one
       root.classList.remove("light", "dark");
       
@@ -65,12 +65,15 @@ export function ThemeProvider({
         localStorage.setItem("theme", theme);
       }, 5);
     }
-  }, [theme]);
+  }, [theme, isChangingTheme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      if (newTheme !== theme) {
+        setIsChangingTheme(true);
+        setTheme(newTheme);
+      }
     },
   };
 
