@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
       
       navigate('/');
-      toast.success("Signed out successfully");
+      // Success toast removed
       
     } catch (error) {
       navigate('/');
