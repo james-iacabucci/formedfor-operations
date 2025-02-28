@@ -58,11 +58,12 @@ export function ThemeProvider({
       // Remove both classes first, then add the correct one
       root.classList.remove("light", "dark");
       
-      // Using requestAnimationFrame to ensure DOM is ready before applying the new theme
-      window.requestAnimationFrame(() => {
+      // Using a small timeout to ensure the class removal is processed
+      // before adding the new class to prevent flickering
+      setTimeout(() => {
         root.classList.add(theme);
         localStorage.setItem("theme", theme);
-      });
+      }, 5);
     }
   }, [theme]);
 

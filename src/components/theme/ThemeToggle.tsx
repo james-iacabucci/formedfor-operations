@@ -53,15 +53,20 @@ export function ThemeToggle() {
   const handleThemeChange = async () => {
     if (isLoading || !initialLoadComplete) return; // Prevent clicks during loading or initial setup
     
+    // Lock the button immediately before any state changes
+    setIsLoading(true);
+    
     // Toggle the theme - but don't trigger while we're still initializing
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     
-    if (!user) return;
+    if (!user) {
+      // If no user, just release the button after a short delay
+      setTimeout(() => setIsLoading(false), 300);
+      return;
+    }
 
     try {
-      setIsLoading(true);
-      
       // First check if user has preferences record
       const { data: existingPref, error: fetchError } = await supabase
         .from('user_preferences')
@@ -99,7 +104,8 @@ export function ThemeToggle() {
       console.error('Error saving theme preference:', error);
       toast.error("Failed to save theme preference");
     } finally {
-      setTimeout(() => setIsLoading(false), 300); // Add a slight delay before allowing another click
+      // Release the button after a delay to prevent rapid toggling
+      setTimeout(() => setIsLoading(false), 300);
     }
   };
 
