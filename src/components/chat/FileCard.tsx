@@ -16,7 +16,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { downloadFile } from "@/lib/fileUtils";
+import { downloadFile, downloadFileDirectly } from "@/lib/fileUtils";
 import { toast } from "sonner";
 
 interface FileCardProps {
@@ -67,8 +67,14 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
         // Show loading toast
         toast.loading(`Downloading ${file.name}...`);
         
-        // Use our utility function to download the file
-        await downloadFile(file.url, file.name);
+        try {
+          // Use our signed URL download function
+          await downloadFile(file.url, file.name);
+        } catch (signedUrlError) {
+          console.error("Signed URL download failed, trying direct download:", signedUrlError);
+          // If the signed URL approach fails, fall back to direct download
+          await downloadFileDirectly(file.url, file.name);
+        }
         
         // Show success toast
         toast.dismiss();

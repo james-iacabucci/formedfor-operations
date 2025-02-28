@@ -2,7 +2,7 @@
 import { FileAttachment } from "./types";
 import { MessageAttachmentImage } from "./MessageAttachmentImage";
 import { MessageAttachmentFile } from "./MessageAttachmentFile";
-import { downloadFile } from "@/lib/fileUtils";
+import { downloadFile, downloadFileDirectly } from "@/lib/fileUtils";
 import { toast } from "sonner";
 
 interface MessageAttachmentProps {
@@ -24,8 +24,14 @@ export function MessageAttachment({
       // Show loading toast
       toast.loading(`Downloading ${attachment.name}...`);
       
-      // Use our utility function to download the file
-      await downloadFile(attachment.url, attachment.name);
+      try {
+        // Use our signed URL download function
+        await downloadFile(attachment.url, attachment.name);
+      } catch (signedUrlError) {
+        console.error("Signed URL download failed, trying direct download:", signedUrlError);
+        // If the signed URL approach fails, fall back to direct download
+        await downloadFileDirectly(attachment.url, attachment.name);
+      }
       
       // Show success toast
       toast.dismiss();
