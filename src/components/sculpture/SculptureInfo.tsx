@@ -14,9 +14,15 @@ interface SculptureInfoProps {
   sculpture: Sculpture;
   tags: Array<{ id: string; name: string }>;
   showAIContent?: boolean;
+  showTags?: boolean;
 }
 
-export function SculptureInfo({ sculpture, tags = [], showAIContent }: SculptureInfoProps) {
+export function SculptureInfo({ 
+  sculpture, 
+  tags = [], 
+  showAIContent,
+  showTags = false // Set default to false to hide tags
+}: SculptureInfoProps) {
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
   const { data: productLines } = useQuery({
@@ -89,8 +95,9 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
         />
       </div>
 
-      <div className="min-h-[28px]">
-        {tags.length > 0 ? (
+      {/* Only show tags if the showTags prop is true */}
+      {showTags && tags.length > 0 && (
+        <div className="min-h-[28px]">
           <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex gap-1.5">
               {tags.map(tag => (
@@ -105,10 +112,8 @@ export function SculptureInfo({ sculpture, tags = [], showAIContent }: Sculpture
             </div>
             <ScrollBar orientation="horizontal" className="h-2" />
           </ScrollArea>
-        ) : (
-          <div className="h-[28px]" />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
