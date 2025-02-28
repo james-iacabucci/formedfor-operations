@@ -16,6 +16,8 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { downloadFile } from "@/lib/fileUtils";
+import { toast } from "sonner";
 
 interface FileCardProps {
   file: File | ExtendedFileAttachment;
@@ -56,21 +58,27 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
     ? format(new Date(file.lastModified), 'MMM d, yyyy h:mm a')
     : 'N/A';
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (isExtendedFile) {
-      // Create a temporary anchor element for download
-      const a = document.createElement('a');
-      a.href = file.url;
-      a.download = file.name;
-      // Append to the document temporarily
-      document.body.appendChild(a);
-      // Trigger click event
-      a.click();
-      // Remove from the document
-      document.body.removeChild(a);
+      try {
+        // Show loading toast
+        toast.loading(`Downloading ${file.name}...`);
+        
+        // Use our utility function to download the file
+        await downloadFile(file.url, file.name);
+        
+        // Show success toast
+        toast.dismiss();
+        toast.success(`Downloaded ${file.name}`);
+      } catch (error) {
+        // Show error toast
+        toast.dismiss();
+        toast.error(`Failed to download ${file.name}`);
+        console.error("Download error:", error);
+      }
     }
   };
 
