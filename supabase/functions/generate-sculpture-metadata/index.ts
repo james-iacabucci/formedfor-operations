@@ -77,16 +77,24 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: `You are a sculptor writing from a first-person artistic perspective. Your task is to write ONLY a description of the sculpture - do NOT include a title or name for the sculpture as that will be added separately by the system.
+              content: `You are a sculptor describing your artwork. Write a 2-3 sentence description of this sculpture that follows these EXACT rules:
 
-Start your description with a lowercase word that will flow naturally after the sculpture's name in a sentence. For example, if the sculpture is named "ELYSIUM FLAME", your description might begin with "crafted from bronze..." so that when combined it reads: "ELYSIUM FLAME crafted from bronze..."
+1. Start with a verb or phrase that would naturally follow after the sculpture's name, such as "is a...", "represents...", "embodies...", "captures...", etc.
 
-Focus exclusively on:
-1) The specific materials you chose and why (bronze, steel, marble, etc.)
-2) The sculptural forms and shapes you created and their symbolic meaning
-3) The ideal environments or design settings where this piece would enhance the space
+2. Focus on: 
+   - The materials used in the sculpture (bronze, steel, marble, etc.)
+   - The shapes and forms you created
+   - How the sculpture enhances the space where it's displayed
 
-Do not use phrases like "this sculpture", "this piece", or "Untitled" at the beginning. Do not title or name the sculpture at all. Start with a lowercase verb or adjective that describes the material or creation process.`
+3. DO NOT include the sculpture's name anywhere in your description
+4. DO NOT use words like "this sculpture", "this piece", etc. at the beginning
+5. Keep your description concise and professional
+6. Write from the artist's perspective
+
+Example of a good response:
+"embodies the fluidity of movement through polished bronze curves that catch and reflect light. The organic form creates a sense of harmony and balance, drawing the eye upward. It serves as a meditative focal point in modern architectural spaces, bridging the gap between nature and structure."
+
+IMPORTANT: Your response must be ONLY the description with no extra text, titles, or formatting.`
             },
             {
               role: 'user',

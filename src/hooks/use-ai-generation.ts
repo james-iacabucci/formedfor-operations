@@ -9,23 +9,23 @@ export function useAIGeneration() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const cleanDescription = (description: string): string => {
-    // Remove common placeholder names that might be included in the response
-    const cleanedText = description
-      // First, try to remove any potential new name AI might have generated
-      .replace(/^\*\*[^*]+\*\*\s+/i, '') // Remove any **Name** format at the beginning
-      .replace(/^["']?[A-Z][a-zA-Z\s]{0,20}["']?[:|\s]+/i, '') // Remove "Title:" or "Title " pattern
-      .replace(/^(untitled|unnamed|sculpture|artwork)[\s:]*\s*/i, '')
-      .replace(/^(the\s+sculpture|this\s+piece|the\s+artwork)/gi, '')
-      .replace(/(the\s+sculpture|this\s+piece|the\s+artwork)/gi, 'it')
-      .replace(/^\s+/, '')
-      .replace(/^,\s*/, '')
-      .replace(/^and\s+/i, '')
-      .replace(/^features?\s+/i, '')
-      .replace(/^presents?\s+/i, '')
-      .replace(/^displays?\s+/i, '')
-      .replace(/^shows?\s+/i, '');
-      
-    return cleanedText;
+    // Check if the description starts with a proper connecting phrase
+    const starterVerbs = ["is ", "represents ", "embodies ", "captures ", "conveys ", "expresses ", "evokes ", "showcases "];
+    const startsWithProperVerb = starterVerbs.some(verb => description.toLowerCase().startsWith(verb));
+    
+    // If not, we'll fix it by adding a default connecting phrase
+    if (!startsWithProperVerb && !description.startsWith("is ")) {
+      // Check if first word is capitalized - if so, make it lowercase
+      if (/^[A-Z]/.test(description)) {
+        description = description.charAt(0).toLowerCase() + description.slice(1);
+      }
+      // Add "is " to the beginning if needed
+      if (!description.startsWith("is ")) {
+        description = "is " + description;
+      }
+    }
+    
+    return description;
   };
 
   const generateAIContent = useCallback(async (
@@ -82,16 +82,14 @@ export function useAIGeneration() {
           .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
         onSuccess(cleanName);
       } else {
-        // Clean the description and format it with the name in capitals
-        const cleanedDescription = cleanDescription(data.description);
+        // Process the description according to rules
+        let cleanedDescription = data.description;
         
-        // Ensure the first word is lowercase to flow naturally from the name
-        // Find the first word and make it lowercase if it's not already
-        const formattedDescription = cleanedDescription.replace(/^\S+/, (firstWord) => {
-          return firstWord.toLowerCase();
-        });
+        // Ensure the description properly connects with the name
+        cleanedDescription = cleanDescription(cleanedDescription);
         
-        const finalDescription = `${name.toUpperCase()} ${formattedDescription}`;
+        // Combine with the name in all caps
+        const finalDescription = `${name.toUpperCase()} ${cleanedDescription}`;
         onSuccess(finalDescription);
       }
 
