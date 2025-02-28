@@ -20,10 +20,11 @@ interface EditableFieldProps {
   hideControls?: boolean;
   isEditing?: boolean;
   onEditingChange?: (isEditing: boolean) => void;
+  onSaved?: (value: string) => void;
 }
 
 export interface EditableFieldRef {
-  save: () => Promise<void>;
+  save: () => Promise<string | null>;
 }
 
 export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({ 
@@ -36,7 +37,8 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   options = [],
   hideControls = false,
   isEditing: controlledEditing,
-  onEditingChange
+  onEditingChange,
+  onSaved
 }, ref) => {
   const [isInternalEditing, setIsInternalEditing] = useState(false);
   const isEditing = controlledEditing ?? isInternalEditing;
@@ -54,7 +56,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   const handleUpdate = async () => {
     if (editedValue === value) {
       setIsEditing(false);
-      return;
+      return null;
     }
 
     setIsUpdating(true);
@@ -79,6 +81,13 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
         description: "Updated successfully",
       });
       setIsEditing(false);
+      
+      // Call onSaved callback if provided
+      if (onSaved) {
+        onSaved(finalValue);
+      }
+      
+      return finalValue;
     } catch (error) {
       console.error('Error updating sculpture:', error);
       toast({
@@ -86,6 +95,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
         description: "Failed to update. Please try again.",
         variant: "destructive",
       });
+      return null;
     } finally {
       setIsUpdating(false);
     }

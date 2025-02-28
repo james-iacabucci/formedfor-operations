@@ -2,9 +2,11 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { SculptureDetailImage } from "../SculptureDetailImage";
 import { SculptureDescription } from "./SculptureDescription";
+import { SculptureName } from "./SculptureName";
 import { SculptureFiles } from "../SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
@@ -18,6 +20,7 @@ export function SculptureMainContent({
   onRegenerate 
 }: SculptureMainContentProps) {
   const { toast } = useToast();
+  const descriptionComponentRef = useRef<HTMLDivElement>(null);
 
   const handleManageTags = () => {
     console.log("Manage tags clicked");
@@ -25,6 +28,14 @@ export function SculptureMainContent({
       title: "Coming Soon",
       description: "Tag management will be available soon.",
     });
+  };
+
+  const handleNameChanged = (newName: string) => {
+    // After name change, trigger description regeneration
+    const descriptionButton = descriptionComponentRef.current?.querySelector('button[aria-label="Regenerate Description"]');
+    if (descriptionButton instanceof HTMLButtonElement) {
+      descriptionButton.click();
+    }
   };
 
   return (
@@ -42,13 +53,21 @@ export function SculptureMainContent({
           onManageTags={handleManageTags}
         />
       </AspectRatio>
-      <div className="space-y-4">
-        <SculptureDescription
+      <div className="space-y-6">
+        <SculptureName
           sculptureId={sculpture.id}
           imageUrl={sculpture.image_url}
-          description={sculpture.ai_description}
           name={sculpture.ai_generated_name}
+          onNameChanged={handleNameChanged}
         />
+        <div ref={descriptionComponentRef}>
+          <SculptureDescription
+            sculptureId={sculpture.id}
+            imageUrl={sculpture.image_url}
+            description={sculpture.ai_description}
+            name={sculpture.ai_generated_name}
+          />
+        </div>
         <SculptureFiles
           sculptureId={sculpture.id}
           models={sculpture.models}
