@@ -128,13 +128,6 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
           </div>
           <div className="flex justify-end gap-2">
             <Button
-              onClick={handleDimensionsUpdate}
-              size="sm"
-              variant="ghost"
-            >
-              <CheckIcon className="h-4 w-4 mr-1" /> Save
-            </Button>
-            <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -147,6 +140,13 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
               }}
             >
               <XIcon className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              onClick={handleDimensionsUpdate}
+              size="sm"
+              variant="default"
+            >
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
             </Button>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { PenIcon, CheckIcon, XIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 interface SculptureWeightProps {
   sculptureId: string;
@@ -65,7 +66,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
       console.error('Error updating weight:', error);
       toast({
         title: "Error",
-        description: "Failed to update weight",
+        description: "Failed to update weight: " + error.message,
         variant: "destructive",
       });
       return;
@@ -86,41 +87,42 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
       {isEditingWeight ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              value={weight.lbs}
-              onChange={(e) => {
-                const lbsValue = e.target.value;
-                setWeight(prev => ({
-                  lbs: lbsValue,
-                  kg: lbsValue ? calculateKg(parseFloat(lbsValue)).toFixed(2) : ""
-                }));
-              }}
-              placeholder="Weight (lbs)"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <Input
-              type="number"
-              value={weight.kg}
-              onChange={(e) => {
-                const kgValue = e.target.value;
-                setWeight(prev => ({
-                  kg: kgValue,
-                  lbs: kgValue ? (parseFloat(kgValue) * 2.20462).toFixed(2) : ""
-                }));
-              }}
-              placeholder="Weight (kg)"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="weight-lbs-input">Weight (lbs)</Label>
+              <Input
+                id="weight-lbs-input"
+                type="number"
+                value={weight.lbs}
+                onChange={(e) => {
+                  const lbsValue = e.target.value;
+                  setWeight(prev => ({
+                    lbs: lbsValue,
+                    kg: lbsValue ? calculateKg(parseFloat(lbsValue)).toFixed(2) : ""
+                  }));
+                }}
+                placeholder="Weight (lbs)"
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight-kg-input">Weight (kg)</Label>
+              <Input
+                id="weight-kg-input"
+                type="number"
+                value={weight.kg}
+                onChange={(e) => {
+                  const kgValue = e.target.value;
+                  setWeight(prev => ({
+                    kg: kgValue,
+                    lbs: kgValue ? (parseFloat(kgValue) * 2.20462).toFixed(2) : ""
+                  }));
+                }}
+                placeholder="Weight (kg)"
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button
-              onClick={handleWeightUpdate}
-              size="sm"
-              variant="ghost"
-            >
-              <CheckIcon className="h-4 w-4" />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -132,7 +134,14 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
                 setIsEditingWeight(false);
               }}
             >
-              <XIcon className="h-4 w-4" />
+              <XIcon className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              onClick={handleWeightUpdate}
+              size="sm"
+              variant="default"
+            >
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
             </Button>
           </div>
         </div>
@@ -142,7 +151,7 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
             <span className="text-muted-foreground text-sm">Weight:</span>
             <Input
               readOnly
-              value={formatWeightString(weightKg, weightLbs) + formatMetricString(weightKg)}
+              value={formatWeightString(weightKg, weightLbs) + " " + formatMetricString(weightKg)}
               placeholder="Enter weight"
               className={`border-0 focus-visible:ring-0 px-0 ${!weightKg && !weightLbs ? 'placeholder:text-white' : ''}`}
               onClick={() => setIsEditingWeight(true)}
