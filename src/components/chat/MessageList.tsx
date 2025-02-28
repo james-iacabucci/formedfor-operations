@@ -1,13 +1,12 @@
 
-import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Loader2 } from "lucide-react";
-import { MessageItem } from "./MessageItem";
-import { UploadingFilesList } from "./UploadingFilesList";
-import { UploadingFile, Message, isFileAttachment, convertToMessage } from "./types";
 import { useAuth } from "@/components/AuthProvider";
+import { UploadingFile } from "./types";
+import { useMessages } from "./hooks/useMessages";
+import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
+import { useMessageScroll } from "./hooks/useMessageScroll";
+import { MessageLoading } from "./components/MessageLoading";
+import { MessageListContent } from "./components/MessageListContent";
 
 interface MessageListProps {
   threadId: string;
@@ -15,231 +14,57 @@ interface MessageListProps {
   pendingMessageSubmitted?: boolean;
 }
 
-const PAGE_SIZE = 20;
-
-export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmitted = false }: MessageListProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
+export function MessageList({ 
+  threadId, 
+  uploadingFiles = [], 
+  pendingMessageSubmitted = false 
+}: MessageListProps) {
   const { user } = useAuth();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
-  const lastMessageRef = useRef<string | null>(null);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-
+  
   const {
-    data,
+    messages,
     isLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch
-  } = useInfiniteQuery({
-    queryKey: ["messages", threadId],
-    queryFn: async ({ pageParam = null }) => {
-      console.log('Fetching messages for thread:', threadId, 'cursor:', pageParam);
-      
-      let query = supabase
-        .from("chat_messages")
-        .select(`
-          id,
-          created_at,
-          content,
-          user_id,
-          attachments,
-          mentions,
-          edited_at,
-          thread_id,
-          profiles (
-            username,
-            avatar_url
-          )
-        `)
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: false })
-        .limit(PAGE_SIZE);
+    refetch,
+    isInitialLoad,
+    setIsInitialLoad,
+    lastMessageRef
+  } = useMessages(threadId);
 
-      if (pageParam) {
-        query = query.lt("created_at", pageParam);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching messages:', error);
-        throw error;
-      }
-
-      // Debug the fetched data
-      console.log('Fetched message data:', data);
-      
-      if (data && data.length > 0) {
-        // Examine the first message for attachments
-        const firstMsg = data[0];
-        console.log('First message attachments:', firstMsg.attachments);
-        if (firstMsg.attachments && Array.isArray(firstMsg.attachments) && firstMsg.attachments.length > 0) {
-          console.log('First attachment:', firstMsg.attachments[0]);
-        }
-      }
-
-      return data || [];
-    },
-    getNextPageParam: (lastPage) => {
-      if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
-        console.log('No more pages available', { 
-          lastPageLength: lastPage?.length,
-          requiredLength: PAGE_SIZE 
-        });
-        return undefined;
-      }
-      const nextCursor = lastPage[lastPage.length - 1]?.created_at;
-      console.log('Next cursor:', nextCursor);
-      return nextCursor;
-    },
-    initialPageParam: null,
-    select: (data) => {
-      if (!data?.pages) return { pages: [], pageParams: [] };
-      
-      const processedData = {
-        pages: data.pages.map(page => 
-          (Array.isArray(page) ? page : [])
-        ),
-        pageParams: data.pageParams,
-      };
-
-      return processedData;
-    },
+  const {
+    scrollRef,
+    hasScrolled,
+    setShouldScrollToBottom
+  } = useMessageScroll({
+    isLoading,
+    messages,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isInitialLoad,
+    setIsInitialLoad,
+    lastMessageRef
   });
 
-  useEffect(() => {
-    const channel = supabase
-      .channel(`room_${threadId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `thread_id=eq.${threadId}`
-        },
-        async (payload) => {
-          console.log('Received new message:', payload);
-          const currentLastMessage = lastMessageRef.current;
-          await refetch();
-          
-          // Always scroll to bottom when there's a new message unless the user
-          // has scrolled up manually to view older messages
-          if (!hasScrolled || currentLastMessage === payload.new.id) {
-            setShouldScrollToBottom(true);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [threadId, refetch, hasScrolled]);
-
-  // Effect to handle initial render scroll to bottom
-  useEffect(() => {
-    if (isInitialLoad && !isLoading && data?.pages && data.pages.length > 0) {
-      requestAnimationFrame(() => {
-        scrollToBottom(true);
-        setIsInitialLoad(false);
-      });
-    }
-  }, [isLoading, data?.pages, isInitialLoad]);
-
-  // Effect to handle smooth scrolling to bottom when new messages arrive
-  useEffect(() => {
-    if (shouldScrollToBottom && !isLoading) {
-      requestAnimationFrame(() => {
-        scrollToBottom(false);
-        setShouldScrollToBottom(false);
-      });
-    }
-  }, [data?.pages, shouldScrollToBottom, isLoading]);
-
-  const scrollToBottom = (instant: boolean) => {
-    if (!scrollRef.current) return;
-    
-    const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollElement) {
-      setIsAutoScrolling(true);
-      
-      if (instant) {
-        // Instant scroll (for initial load)
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-        setTimeout(() => setIsAutoScrolling(false), 100);
-      } else {
-        // Smooth scroll (for new messages)
-        scrollElement.scrollTo({
-          top: scrollElement.scrollHeight,
-          behavior: 'smooth'
-        });
-        
-        // Reset auto-scrolling flag after animation completes (roughly 300ms)
-        setTimeout(() => setIsAutoScrolling(false), 350);
-      }
-    }
-  };
-
-  const handleScroll = () => {
-    const viewport = viewportRef.current;
-    if (!viewport || isAutoScrolling) return;
-
-    const scrollTop = viewport.scrollTop;
-    const scrollHeight = viewport.scrollHeight;
-    const clientHeight = viewport.clientHeight;
-
-    // Mark that user has manually scrolled (only if not auto-scrolling)
-    if (!hasScrolled) {
-      setHasScrolled(true);
-    }
-
-    // Load more messages when scrolling near the top
-    if (scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
-      console.log('Triggering next page load');
-      fetchNextPage();
-    }
-
-    // Check if user has scrolled to the bottom again
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
-    if (isNearBottom) {
-      setHasScrolled(false);
-      
-      // Update the last message reference for real-time updates
-      if (allMessages.length > 0) {
-        lastMessageRef.current = allMessages[allMessages.length - 1].id;
-      }
-    }
-  };
-
-  useEffect(() => {
-    const viewport = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (viewport) {
-      viewportRef.current = viewport as HTMLDivElement;
-      viewport.addEventListener('scroll', handleScroll);
-      return () => viewport.removeEventListener('scroll', handleScroll);
-    }
-  }, [hasNextPage, isFetchingNextPage]);
+  // Set up realtime subscriptions
+  useRealtimeMessages({
+    threadId,
+    refetch,
+    lastMessageRef,
+    hasScrolled,
+    setScrollToBottom: setShouldScrollToBottom
+  });
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <MessageLoading />;
   }
-
-  const allMessages = data?.pages?.flatMap(page => page || []).reverse() ?? [];
 
   console.log('Render state:', {
     hasNextPage,
     isFetchingNextPage,
-    pageCount: data?.pages?.length,
-    messageCount: allMessages.length
+    messageCount: messages.length
   });
 
   return (
@@ -247,45 +72,14 @@ export function MessageList({ threadId, uploadingFiles = [], pendingMessageSubmi
       ref={scrollRef} 
       className="h-full"
     >
-      <div className="p-4 space-y-6">
-        {isFetchingNextPage && (
-          <div className="h-8 flex items-center justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
-        )}
-        {allMessages.length === 0 && !isLoading && (
-          <div className="text-center text-muted-foreground">
-            No messages yet
-          </div>
-        )}
-        {allMessages.map((rawMessage) => {
-          // Convert raw message to proper Message type
-          const message = convertToMessage(rawMessage);
-          return (
-            <MessageItem key={message.id} message={message} />
-          );
-        })}
-        {uploadingFiles.length > 0 && user && (
-          <MessageItem
-            message={{
-              id: 'uploading',
-              created_at: new Date().toISOString(),
-              content: '',
-              user_id: user.id,
-              profiles: {
-                username: user.user_metadata?.username || user.email || 'User',
-                avatar_url: user.user_metadata?.avatar_url || null
-              },
-              attachments: [],
-              mentions: [],
-              edited_at: null,
-              thread_id: threadId,
-            }}
-          >
-            <UploadingFilesList files={uploadingFiles} />
-          </MessageItem>
-        )}
-      </div>
+      <MessageListContent
+        messages={messages}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isLoading}
+        uploadingFiles={uploadingFiles}
+        user={user}
+        threadId={threadId}
+      />
     </ScrollArea>
   );
 }
