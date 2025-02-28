@@ -24,7 +24,7 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     const w_val = formatValue(w);
     const d_val = formatValue(d);
     
-    return `HWD: ${h_val} × ${w_val} × ${d_val}`;
+    return `HWD ${h_val} × ${w_val} × ${d_val}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
