@@ -27,18 +27,10 @@ export function MessageAttachmentFile({
   canDelete,
   onPreview
 }: MessageAttachmentFileProps) {
-  const handleFileClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Instead of preview, trigger download
-    onDownload(e);
-  };
-  
   return (
     <div 
       className="flex items-center gap-3 p-3 rounded-lg border bg-muted/40 hover:bg-muted/60 transition-colors max-w-md cursor-pointer group"
-      onClick={handleFileClick}
+      onClick={onPreview}
     >
       <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
         <FileText className="h-5 w-5 text-muted-foreground" />

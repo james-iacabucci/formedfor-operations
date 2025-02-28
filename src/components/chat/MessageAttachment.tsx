@@ -18,8 +18,6 @@ export function MessageAttachment({
 }: MessageAttachmentProps) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // Create a temporary anchor element for download
     const link = document.createElement('a');
     link.href = attachment.url;
     link.download = attachment.name;

@@ -20,29 +20,16 @@ export function MessageAttachmentImage({
   canDelete,
   onPreview
 }: MessageAttachmentImageProps) {
-  // Handle image click - prevent default behavior to avoid opening in new tab
-  const handleImageClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Instead of opening in a new tab, trigger the download
-    onDownload(e);
-  };
-  
   return (
     <div className="relative inline-block max-w-sm">
       <div 
         className="group relative rounded-lg overflow-hidden border border-border cursor-pointer"
-        onClick={handleImageClick}
+        onClick={onPreview}
       >
         <img 
           src={attachment.url} 
           alt={attachment.name}
           className="max-h-[300px] object-cover w-full"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleImageClick(e);
-          }}
         />
         <MessageAttachmentActions
           onDownload={onDownload}

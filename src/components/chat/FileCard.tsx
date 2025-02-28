@@ -58,15 +58,11 @@ export function FileCard({ file, canDelete, onDelete, onAttachToSculpture }: Fil
 
   const handleDownload = () => {
     if (isExtendedFile) {
-      // Create a temporary anchor element
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.name;
-      // Append to the document temporarily
       document.body.appendChild(a);
-      // Trigger click event
       a.click();
-      // Remove from the document
       document.body.removeChild(a);
     }
   };
