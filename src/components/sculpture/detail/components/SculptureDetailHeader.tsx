@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, RefreshCw, CheckIcon, XIcon } from "lucide-react";
 import { SculptureHeader } from "../SculptureHeader";
 import { Sculpture } from "@/types/sculpture";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -207,7 +207,7 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="group relative">
+          <div className="group relative flex items-center">
             {isNameEditing ? (
               <div className="flex items-center gap-2">
                 <Input
@@ -235,11 +235,11 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center">
-                <div className="text-2xl font-bold mr-2">
+              <>
+                <h1 className="text-2xl font-bold mr-2">
                   {sculpture.ai_generated_name || "Untitled Sculpture"}
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                </h1>
+                <div className="hidden group-hover:flex transition-all duration-200 items-center gap-1">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -277,7 +277,7 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
