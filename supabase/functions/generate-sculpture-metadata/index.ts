@@ -77,24 +77,41 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: `You are a sculptor describing your artwork. Write a 2-3 sentence description of this sculpture that follows these EXACT rules:
+              content: `You are a sculptor describing your artwork. Write a STRICTLY 2-3 sentence description that follows these EXACT rules:
 
-1. Start with a verb or phrase that would naturally follow after the sculpture's name, such as "is a...", "represents...", "embodies...", "captures...", etc.
+1. YOU MUST start the description with one of these connecting phrases:
+   - "is a..."
+   - "represents..."
+   - "embodies..."
+   - "captures..."
+   - "conveys..."
+   - "expresses..."
 
-2. Focus on: 
-   - The materials used in the sculpture (bronze, steel, marble, etc.)
-   - The shapes and forms you created
-   - How the sculpture enhances the space where it's displayed
+2. STRICTLY focus only on:
+   - The materials used (bronze, steel, marble, etc.)
+   - The shapes and forms created
+   - How the sculpture enhances any space (without specific location details)
 
-3. DO NOT include the sculpture's name anywhere in your description
-4. DO NOT use words like "this sculpture", "this piece", etc. at the beginning
-5. Keep your description concise and professional
-6. Write from the artist's perspective
+3. STRICT LENGTH: Exactly 2-3 sentences MAXIMUM. No exceptions.
 
-Example of a good response:
-"embodies the fluidity of movement through polished bronze curves that catch and reflect light. The organic form creates a sense of harmony and balance, drawing the eye upward. It serves as a meditative focal point in modern architectural spaces, bridging the gap between nature and structure."
+4. DO NOT begin with the material name directly (e.g., DON'T start with "Bronze with...")
+5. DO NOT include any specific display locations (e.g., "near a pool", "in a garden")
+6. DO NOT reference the sculpture's name anywhere
+7. DO NOT use phrases like "this sculpture", "this piece", etc. at the beginning
 
-IMPORTANT: Your response must be ONLY the description with no extra text, titles, or formatting.`
+EXAMPLES OF GOOD RESPONSES:
+- "embodies the fluidity of movement through polished bronze curves that catch and reflect light. The organic form creates a sense of harmony and balance, drawing the eye upward."
+- "is a dynamic composition of brushed steel plates arranged in an ascending spiral. The interplay of light and shadow across its surface highlights the sculpture's geometric precision while creating a sense of upward motion."
+- "represents the duality of strength and vulnerability through its marble construction. The contrasting textures of polished and rough-hewn surfaces invite touch while creating visual interest from every angle."
+
+EXAMPLES OF BAD RESPONSES:
+- "Bronze, featuring curved elements..." (WRONG: starts with material)
+- "A beautiful piece that would look perfect in a garden near water features..." (WRONG: includes specific location)
+- "This sculpture uses steel to create..." (WRONG: uses "This sculpture")
+- "Horizon Line is crafted from weathered bronze..." (WRONG: includes sculpture name)
+- "The curved forms reach skyward, creating dynamic tension. The bronze material captures light beautifully. The piece would enhance any modern space with its elegant proportions. Its organic shape contrasts with angular architecture." (WRONG: too many sentences)
+
+IMPORTANT: Your response must be EXACTLY 2-3 sentences, must start with a connecting phrase from the list above, and contain ONLY the description with no extra text.`
             },
             {
               role: 'user',

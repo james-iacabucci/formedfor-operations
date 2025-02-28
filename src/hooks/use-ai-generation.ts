@@ -9,20 +9,86 @@ export function useAIGeneration() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const cleanDescription = (description: string): string => {
-    // Check if the description starts with a proper connecting phrase
-    const starterVerbs = ["is ", "represents ", "embodies ", "captures ", "conveys ", "expresses ", "evokes ", "showcases "];
-    const startsWithProperVerb = starterVerbs.some(verb => description.toLowerCase().startsWith(verb));
+    // Define approved connecting phrases
+    const connectingPhrases = [
+      "is a", "represents", "embodies", "captures", 
+      "conveys", "expresses", "evokes", "showcases"
+    ];
     
-    // If not, we'll fix it by adding a default connecting phrase
-    if (!startsWithProperVerb && !description.startsWith("is ")) {
-      // Check if first word is capitalized - if so, make it lowercase
-      if (/^[A-Z]/.test(description)) {
-        description = description.charAt(0).toLowerCase() + description.slice(1);
+    // Check if the description already starts with an approved phrase
+    const startsWithApprovedPhrase = connectingPhrases.some(phrase => 
+      description.toLowerCase().startsWith(phrase)
+    );
+    
+    if (startsWithApprovedPhrase) {
+      // Already in correct format, do nothing
+      return description;
+    }
+    
+    // Handle common incorrect formats
+    
+    // 1. Starts with material name: "Bronze, featuring..." or "Bronze. The..."
+    const materialPattern = /^(bronze|steel|marble|wood|glass|metal|ceramic|stone|aluminum|copper|iron|gold|silver)[,.]/i;
+    if (materialPattern.test(description)) {
+      // Extract the material name
+      const material = description.match(materialPattern)?.[1] || "";
+      // Remove the material prefix and clean up
+      let cleanedDesc = description.replace(materialPattern, "").trim();
+      // Make first letter lowercase if needed
+      if (/^[A-Z]/.test(cleanedDesc)) {
+        cleanedDesc = cleanedDesc.charAt(0).toLowerCase() + cleanedDesc.slice(1);
       }
-      // Add "is " to the beginning if needed
-      if (!description.startsWith("is ")) {
-        description = "is " + description;
+      // Add connecting phrase
+      return `is a ${material.toLowerCase()} sculpture that ${cleanedDesc}`;
+    }
+    
+    // 2. Starts with "This sculpture..." or similar
+    const thisPatterns = /^(this|the) (sculpture|piece|artwork|creation|work)/i;
+    if (thisPatterns.test(description)) {
+      // Remove the "This sculpture" beginning and clean up
+      let cleanedDesc = description.replace(thisPatterns, "").trim();
+      // Remove leading punctuation
+      cleanedDesc = cleanedDesc.replace(/^[,.:;-]\s*/, "");
+      // Make first letter lowercase if needed
+      if (/^[A-Z]/.test(cleanedDesc)) {
+        cleanedDesc = cleanedDesc.charAt(0).toLowerCase() + cleanedDesc.slice(1);
       }
+      return `is a sculpture that ${cleanedDesc}`;
+    }
+    
+    // 3. Starts with descriptive adjective: "Dynamic and flowing..."
+    const adjectivePattern = /^[A-Z][a-z]+\b/;
+    if (adjectivePattern.test(description)) {
+      // Convert to lowercase and prefix
+      const firstWord = description.match(adjectivePattern)?.[0].toLowerCase() || "";
+      // Join with rest of description
+      const restOfDesc = description.substring(firstWord.length).trim();
+      return `is a ${firstWord} sculpture that${restOfDesc}`;
+    }
+    
+    // 4. Default fallback - just prefix with "is a"
+    return `is a ${description.charAt(0).toLowerCase() + description.slice(1)}`;
+  };
+
+  // Ensure description is not too long (limit to 2-3 sentences)
+  const limitSentences = (description: string, maxSentences: number = 3): string => {
+    // Split by sentence-ending punctuation followed by space or end of string
+    const sentencePattern = /[.!?]+(?:\s|$)/;
+    const sentences = description.split(sentencePattern).filter(s => s.trim().length > 0);
+    
+    // If we have more sentences than our max, truncate
+    if (sentences.length > maxSentences) {
+      let result = "";
+      for (let i = 0; i < maxSentences; i++) {
+        // Add sentence and its punctuation back
+        const match = description.match(new RegExp(`${sentences[i].trim()}[.!?]+(?:\\s|$)`));
+        if (match) {
+          result += match[0];
+        } else {
+          result += sentences[i].trim() + ". ";
+        }
+      }
+      return result.trim();
     }
     
     return description;
@@ -83,13 +149,16 @@ export function useAIGeneration() {
         onSuccess(cleanName);
       } else {
         // Process the description according to rules
-        let cleanedDescription = data.description;
         
-        // Ensure the description properly connects with the name
-        cleanedDescription = cleanDescription(cleanedDescription);
+        // 1. Clean the initial format
+        let cleanedDescription = cleanDescription(data.description);
         
-        // Combine with the name in all caps
+        // 2. Limit to 2-3 sentences
+        cleanedDescription = limitSentences(cleanedDescription, 3);
+        
+        // 3. Combine with the name in all caps
         const finalDescription = `${name.toUpperCase()} ${cleanedDescription}`;
+        
         onSuccess(finalDescription);
       }
 
