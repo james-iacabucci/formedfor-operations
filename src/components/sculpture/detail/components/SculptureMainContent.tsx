@@ -5,23 +5,19 @@ import { SculptureDescription } from "./SculptureDescription";
 import { SculptureFiles } from "../SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { useToast } from "@/hooks/use-toast";
-import { useRef } from "react";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
   isRegenerating: boolean;
   onRegenerate: () => Promise<void>;
-  onNameChanged?: (newName: string) => void;
 }
 
 export function SculptureMainContent({ 
   sculpture, 
   isRegenerating, 
-  onRegenerate,
-  onNameChanged
+  onRegenerate 
 }: SculptureMainContentProps) {
   const { toast } = useToast();
-  const descriptionComponentRef = useRef<HTMLDivElement>(null);
 
   const handleManageTags = () => {
     console.log("Manage tags clicked");
@@ -46,15 +42,13 @@ export function SculptureMainContent({
           onManageTags={handleManageTags}
         />
       </AspectRatio>
-      <div className="space-y-6">
-        <div ref={descriptionComponentRef}>
-          <SculptureDescription
-            sculptureId={sculpture.id}
-            imageUrl={sculpture.image_url}
-            description={sculpture.ai_description}
-            name={sculpture.ai_generated_name}
-          />
-        </div>
+      <div className="space-y-4">
+        <SculptureDescription
+          sculptureId={sculpture.id}
+          imageUrl={sculpture.image_url}
+          description={sculpture.ai_description}
+          name={sculpture.ai_generated_name}
+        />
         <SculptureFiles
           sculptureId={sculpture.id}
           models={sculpture.models}

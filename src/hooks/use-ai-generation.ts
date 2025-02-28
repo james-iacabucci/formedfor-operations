@@ -94,26 +94,6 @@ export function useAIGeneration() {
     return description;
   };
 
-  // Clean and validate the name
-  const cleanName = (name: string): string => {
-    return name
-      .replace(/['"]/g, '') // Remove quotes
-      .replace(/^\s+|\s+$/g, '') // Remove leading/trailing spaces
-      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
-      .split(/\s+/).slice(0, 2).join(' '); // Limit to two words maximum
-  };
-
-  // Check if a name is unique in the database
-  const isNameUnique = async (name: string, sculptureId: string): Promise<boolean> => {
-    const { data } = await supabase
-      .from("sculptures")
-      .select("id")
-      .eq("ai_generated_name", name)
-      .neq("id", sculptureId);
-    
-    return !data || data.length === 0;
-  };
-
   const generateAIContent = useCallback(async (
     type: 'name' | 'description',
     file: File,
@@ -161,9 +141,12 @@ export function useAIGeneration() {
       if (error) throw error;
 
       if (type === 'name') {
-        // Clean and validate the name
-        let cleanedName = cleanName(data.name);
-        onSuccess(cleanedName);
+        // Clean the name to ensure it follows the rules
+        const cleanName = data.name
+          .replace(/['"]/g, '') // Remove quotes
+          .replace(/^\s+|\s+$/g, '') // Remove leading/trailing spaces
+          .replace(/[^\w\s-]/g, ''); // Remove special characters except spaces and hyphens
+        onSuccess(cleanName);
       } else {
         // Process the description according to rules
         

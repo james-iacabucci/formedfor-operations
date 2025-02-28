@@ -1,123 +1,33 @@
-
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
 import { PencilIcon, Trash2Icon, CheckCircle2Icon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
+  fabricatorName?: string;
+  onSelect: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  calculateTotal: (quote: FabricationQuote) => number;
+  calculateTradePrice: (quote: FabricationQuote) => number;
+  calculateRetailPrice: (tradePrice: number) => number;
+  formatNumber: (num: number) => string;
+  isEditing?: boolean;
 }
 
-export function FabricationQuoteCard({ quote }: FabricationQuoteCardProps) {
-  const [fabricatorName, setFabricatorName] = useState<string>("");
-  const [isEditing, setIsEditing] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Format number to 2 decimal places
-  const formatNumber = (num: number) => {
-    return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-
-  // Calculate total cost
-  const calculateTotal = (quote: FabricationQuote) => {
-    return quote.fabrication_cost + quote.shipping_cost + quote.customs_cost + quote.other_cost;
-  };
-
-  // Calculate trade price
-  const calculateTradePrice = (quote: FabricationQuote) => {
-    return calculateTotal(quote) * quote.markup;
-  };
-
-  // Calculate retail price (2x trade price)
-  const calculateRetailPrice = (tradePrice: number) => {
-    return tradePrice * 2;
-  };
-
-  useEffect(() => {
-    const getFabricatorName = async () => {
-      const { data, error } = await supabase
-        .from("fabricators")
-        .select("name")
-        .eq("id", quote.fabricator_id)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching fabricator:", error);
-        return;
-      }
-      
-      setFabricatorName(data.name);
-    };
-
-    getFabricatorName();
-  }, [quote.fabricator_id]);
-
-  const handleSelect = async () => {
-    try {
-      // First, unselect all quotes for this sculpture
-      await supabase
-        .from("fabrication_quotes")
-        .update({ is_selected: false })
-        .eq("sculpture_id", quote.sculpture_id);
-      
-      // Then select this quote
-      const { error } = await supabase
-        .from("fabrication_quotes")
-        .update({ is_selected: true })
-        .eq("id", quote.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Success",
-        description: "Quote selected successfully",
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ["fabrication-quotes", quote.sculpture_id] });
-    } catch (error) {
-      console.error("Error selecting quote:", error);
-      toast({
-        title: "Error",
-        description: "Failed to select quote",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleDelete = async () => {
-    try {
-      const { error } = await supabase
-        .from("fabrication_quotes")
-        .delete()
-        .eq("id", quote.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Success",
-        description: "Quote deleted successfully",
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ["fabrication-quotes", quote.sculpture_id] });
-    } catch (error) {
-      console.error("Error deleting quote:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete quote",
-        variant: "destructive",
-      });
-    }
-  };
-
+export function FabricationQuoteCard({
+  quote,
+  fabricatorName,
+  onSelect,
+  onEdit,
+  onDelete,
+  calculateTotal,
+  calculateTradePrice,
+  calculateRetailPrice,
+  formatNumber,
+  isEditing
+}: FabricationQuoteCardProps) {
   return (
     <div 
       className={`border rounded-lg p-4 space-y-4 transition-colors ${
@@ -138,7 +48,7 @@ export function FabricationQuoteCard({ quote }: FabricationQuoteCardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleSelect}
+              onClick={onSelect}
             >
               <CheckCircle2Icon className="h-4 w-4" />
             </Button>
@@ -146,18 +56,20 @@ export function FabricationQuoteCard({ quote }: FabricationQuoteCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleEdit}
+            onClick={onEdit}
           >
             <PencilIcon className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2Icon className="h-4 w-4" />
-          </Button>
+          {isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 

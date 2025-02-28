@@ -36,7 +36,7 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: 'You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be descriptive of the form or emotion conveyed by the sculpture. It must be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else. Choose words that are evocative and artistic, but easy to pronounce and remember.'
+              content: 'You are an art curator responsible for naming sculptures. Create a brief name (1-2 words maximum) for the sculpture in the image. The name should be clean and simple with NO special characters, NO quotation marks, and NO extra spaces before or after. Just return the name, nothing else.'
             },
             {
               role: 'user',
@@ -116,10 +116,6 @@ IMPORTANT: Your response must be EXACTLY 2-3 sentences, must start with a connec
             {
               role: 'user',
               content: [
-                {
-                  type: 'text',
-                  text: `The name of this sculpture is "${existingName}". Please generate a description for it based on this image:`
-                },
                 {
                   type: 'image_url',
                   image_url: { url: imageUrl }
