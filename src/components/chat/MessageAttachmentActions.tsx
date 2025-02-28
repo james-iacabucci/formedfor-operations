@@ -28,7 +28,10 @@ export function MessageAttachmentActions({
           size="icon"
           variant="ghost"
           className="text-white hover:bg-white/20 h-8 w-8"
-          onClick={onDownload}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDownload(e);
+          }}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -38,7 +41,10 @@ export function MessageAttachmentActions({
             size="icon"
             variant="ghost"
             className="text-white hover:bg-white/20 h-8 w-8"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -51,6 +57,7 @@ export function MessageAttachmentActions({
                 size="icon"
                 variant="ghost"
                 className="text-white hover:bg-white/20 h-8 w-8"
+                onClick={(e) => e.stopPropagation()}
               >
                 <Save className="h-4 w-4" />
               </Button>
