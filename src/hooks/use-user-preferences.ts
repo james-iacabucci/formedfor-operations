@@ -100,6 +100,7 @@ export function useUserPreferences() {
   const [isLoading, setIsLoading] = useState(true);
   const [viewSettings, setViewSettings] = useState<ViewSettings>(defaultViewSettings);
   const [hasLoadedInitialPreferences, setHasLoadedInitialPreferences] = useState(false);
+  const [prefId, setPrefId] = useState<string | null>(null);
 
   // Load user preferences
   useEffect(() => {
@@ -113,7 +114,7 @@ export function useUserPreferences() {
         setIsLoading(true);
         const { data, error } = await supabase
           .from('user_preferences')
-          .select('settings')
+          .select('id, settings')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -122,6 +123,9 @@ export function useUserPreferences() {
         if (data && data.settings) {
           // Use the helper function to ensure we have valid settings
           setViewSettings(ensureValidViewSettings(data.settings));
+          if (data.id) {
+            setPrefId(data.id);
+          }
         }
         
         setHasLoadedInitialPreferences(true);
@@ -146,15 +150,30 @@ export function useUserPreferences() {
     setViewSettings(updatedSettings);
 
     try {
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({ 
-          user_id: user.id,
-          settings: updatedSettings 
-        })
-        .select();
+      if (prefId) {
+        // Update existing record
+        const { error } = await supabase
+          .from('user_preferences')
+          .update({ settings: updatedSettings })
+          .eq('id', prefId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Insert new record
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .insert({ 
+            user_id: user.id,
+            settings: updatedSettings 
+          })
+          .select();
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setPrefId(data[0].id);
+        }
+      }
     } catch (error) {
       console.error('Error saving user preferences:', error);
       toast.error("Failed to save preferences");
