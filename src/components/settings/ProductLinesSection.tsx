@@ -23,6 +23,7 @@ export function ProductLinesSection() {
           }}
           size="sm"
           className="gap-2"
+          variant="primary"
         >
           <PlusCircle className="h-4 w-4" />
           Add Product Line

@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -24,7 +23,6 @@ const Dashboard = () => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [previousSearchValue, setPreviousSearchValue] = useState("");
   
-  // Use our new hook to manage preferences
   const { viewSettings, isLoading: preferencesLoading, savePreferences } = useUserPreferences();
   
   const { tags } = useTagsManagement(undefined);
@@ -41,7 +39,6 @@ const Dashboard = () => {
     },
   });
 
-  // Initialize product lines if needed, but don't override user preferences
   useEffect(() => {
     if (productLines && viewSettings.selectedProductLines.length === 0 && !preferencesLoading) {
       const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
