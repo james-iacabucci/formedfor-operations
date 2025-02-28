@@ -1,15 +1,22 @@
 
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
-import { SculptureDetailSidebar } from "./SculptureDetailSidebar";
-import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
-import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { Separator } from "@/components/ui/separator";
 import { Sculpture } from "@/types/sculpture";
-import { Tag } from "@/components/settings/useTagsState";
 import { useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+
+// Let's import these files and check their interfaces
+import { SculptureDetailSidebar } from "./SculptureDetailSidebar";
+import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+
+// Define Tag type directly since it's not exported from useTagsState
+interface Tag {
+  id: string;
+  name: string;
+}
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -24,9 +31,16 @@ export function SculptureDetailContent({
   tags,
   onUpdate
 }: SculptureDetailContentProps) {
-  const { handleRegenerate, isRegenerating } = useSculptureRegeneration(sculpture);
+  const { regenerateImage, isRegenerating } = useSculptureRegeneration();
   const descriptionComponentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // Function to handle image regeneration
+  const handleRegenerate = async () => {
+    if (sculpture.id) {
+      await regenerateImage(sculpture.id);
+    }
+  };
 
   const handleNameChanged = async (newName: string) => {
     console.log("Name changed to:", newName);
@@ -78,7 +92,7 @@ export function SculptureDetailContent({
         />
         <SculptureMainContent
           sculpture={sculpture}
-          isRegenerating={isRegenerating}
+          isRegenerating={isRegenerating(sculpture.id)}
           onRegenerate={handleRegenerate}
           onNameChanged={handleNameChanged}
         />
@@ -91,7 +105,7 @@ export function SculptureDetailContent({
           onUpdate={onUpdate}
         />
         <Separator />
-        <SculptureFabricationQuotes sculpture={sculpture} />
+        <SculptureFabricationQuotes sculptureId={sculpture.id} />
       </div>
     </div>
   );

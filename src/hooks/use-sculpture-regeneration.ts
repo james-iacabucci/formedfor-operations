@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
+import { Sculpture } from "@/types/sculpture";
 
 export function useSculptureRegeneration() {
   const { toast } = useToast();
