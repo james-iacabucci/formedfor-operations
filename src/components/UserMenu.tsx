@@ -112,7 +112,7 @@ export function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-8 w-8 border border-border">
               <AvatarImage src={avatar || undefined} />
               <AvatarFallback>
                 <User className="h-4 w-4" />
