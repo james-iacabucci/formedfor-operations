@@ -30,12 +30,30 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem("theme") as Theme) || defaultTheme
   );
+  
+  // Apply theme transition styles to document root once on mount
+  useEffect(() => {
+    // Add transition to make theme changes smoother
+    const root = window.document.documentElement;
+    root.style.transition = "background-color 0.3s ease, color 0.3s ease";
+    
+    // Clean up transition when component unmounts
+    return () => {
+      root.style.transition = "";
+    };
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;
+    
+    // Remove both classes first, then add the correct one
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("theme", theme);
+    
+    // Using requestAnimationFrame to ensure DOM is ready before applying the new theme
+    window.requestAnimationFrame(() => {
+      root.classList.add(theme);
+      localStorage.setItem("theme", theme);
+    });
   }, [theme]);
 
   const value = {

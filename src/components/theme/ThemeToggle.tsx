@@ -30,7 +30,8 @@ export function ThemeToggle() {
         if (data && data.settings && typeof data.settings === 'object' && 'theme' in data.settings) {
           const userTheme = data.settings.theme;
           if (userTheme === 'light' || userTheme === 'dark') {
-            setTheme(userTheme);
+            // Using setTimeout to avoid immediate state changes
+            setTimeout(() => setTheme(userTheme), 50);
           }
         }
       } catch (error) {
@@ -45,6 +46,8 @@ export function ThemeToggle() {
 
   // Save theme preference to database when theme changes
   const handleThemeChange = async () => {
+    if (isLoading) return; // Prevent multiple rapid clicks
+    
     // Toggle the theme
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -91,7 +94,7 @@ export function ThemeToggle() {
       console.error('Error saving theme preference:', error);
       toast.error("Failed to save theme preference");
     } finally {
-      setIsLoading(false);
+      setTimeout(() => setIsLoading(false), 300); // Add a slight delay before allowing another click
     }
   };
 
@@ -102,6 +105,7 @@ export function ThemeToggle() {
       onClick={handleThemeChange}
       disabled={isLoading}
       title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+      className="transition-all duration-300"
     >
       {theme === 'light' ? (
         <SunIcon className="h-[1.2rem] w-[1.2rem]" />
