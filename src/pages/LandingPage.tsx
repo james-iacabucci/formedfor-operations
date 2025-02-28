@@ -40,10 +40,10 @@ export const LandingPage = () => {
       </div>
 
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white text-black">
           <DialogHeader>
-            <DialogTitle>Welcome back</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-black">Welcome back</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Sign in to your account to continue
             </DialogDescription>
           </DialogHeader>
@@ -58,6 +58,10 @@ export const LandingPage = () => {
                     brandAccent: '#404040',
                     inputBackground: 'white',
                     inputText: 'black',
+                    inputPlaceholder: '#6B7280',
+                    inputBorder: '#E5E7EB',
+                    inputBorderFocus: '#000000',
+                    dividerBackground: '#E5E7EB'
                   }
                 }
               }
