@@ -190,7 +190,6 @@ export type Database = {
           id: string
           name: string
           product_line_code: string | null
-          user_id: string | null
           white_logo_url: string | null
         }
         Insert: {
@@ -201,7 +200,6 @@ export type Database = {
           id?: string
           name: string
           product_line_code?: string | null
-          user_id?: string | null
           white_logo_url?: string | null
         }
         Update: {
@@ -212,18 +210,9 @@ export type Database = {
           id?: string
           name?: string
           product_line_code?: string | null
-          user_id?: string | null
           white_logo_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "product_lines_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -460,29 +449,18 @@ export type Database = {
           created_at: string
           id: string
           name: string
-          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
-          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
-          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "tags_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       value_lists: {
         Row: {
