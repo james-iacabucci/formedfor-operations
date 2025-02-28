@@ -35,13 +35,9 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       const { data, error } = await supabase
         .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*");
 
       if (error) throw error;
       return data;
