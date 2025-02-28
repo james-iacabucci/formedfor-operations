@@ -14,6 +14,7 @@ interface SculptureVariationsProps {
 export function SculptureVariations({ sculpture }: SculptureVariationsProps) {
   const originalId = sculpture.original_sculpture_id || sculpture.id;
   const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTagsDialogOpen, setIsTagsDialogOpen] = useState(false);
   const hasVariants = !!sculpture.original_sculpture_id;
 
@@ -74,6 +75,7 @@ export function SculptureVariations({ sculpture }: SculptureVariationsProps) {
 
   const handleDelete = (variation: Sculpture) => {
     setSelectedSculpture(variation);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleManageTags = (variation: Sculpture) => {
@@ -120,18 +122,16 @@ export function SculptureVariations({ sculpture }: SculptureVariationsProps) {
       {selectedSculpture && (
         <DeleteSculptureDialog
           sculpture={selectedSculpture}
-          onDeleted={() => {
-            // Refetch queries after deletion
-          }}
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
         />
       )}
 
       {selectedSculpture && (
         <ManageTagsDialog
+          sculpture={selectedSculpture}
           open={isTagsDialogOpen}
           onOpenChange={setIsTagsDialogOpen}
-          sculptureId={selectedSculpture.id}
-          title={`Manage Tags: ${selectedSculpture.ai_generated_name || "Untitled"}`}
         />
       )}
     </div>
