@@ -124,11 +124,11 @@ export function UserMenu() {
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setShowPreferences(true)}>
             <User className="mr-2 h-4 w-4" />
-            Preferences
+            User Profile
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowSettings(true)}>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            System Settings
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleThemeChange} disabled={isChangingTheme}>
             {theme === "light" ? (
