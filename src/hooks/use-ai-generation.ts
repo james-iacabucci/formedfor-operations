@@ -11,6 +11,9 @@ export function useAIGeneration() {
   const cleanDescription = (description: string): string => {
     // Remove common placeholder names that might be included in the response
     const cleanedText = description
+      // First, try to remove any potential new name AI might have generated
+      .replace(/^\*\*[^*]+\*\*\s+/i, '') // Remove any **Name** format at the beginning
+      .replace(/^["']?[A-Z][a-zA-Z\s]{0,20}["']?[:|\s]+/i, '') // Remove "Title:" or "Title " pattern
       .replace(/^(untitled|unnamed|sculpture|artwork)[\s:]*\s*/i, '')
       .replace(/^(the\s+sculpture|this\s+piece|the\s+artwork)/gi, '')
       .replace(/(the\s+sculpture|this\s+piece|the\s+artwork)/gi, 'it')
@@ -82,11 +85,11 @@ export function useAIGeneration() {
         // Clean the description and format it with the name in capitals
         const cleanedDescription = cleanDescription(data.description);
         
-        // Make the first letter of the description lowercase to ensure it flows naturally from the name
-        let formattedDescription = cleanedDescription;
-        if (formattedDescription.length > 0) {
-          formattedDescription = formattedDescription.charAt(0).toLowerCase() + formattedDescription.slice(1);
-        }
+        // Ensure the first word is lowercase to flow naturally from the name
+        // Find the first word and make it lowercase if it's not already
+        const formattedDescription = cleanedDescription.replace(/^\S+/, (firstWord) => {
+          return firstWord.toLowerCase();
+        });
         
         const finalDescription = `${name.toUpperCase()} ${formattedDescription}`;
         onSuccess(finalDescription);
