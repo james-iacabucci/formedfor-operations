@@ -28,15 +28,12 @@ export async function generateSignedUrl(url: string, fileName: string, expiresIn
     console.log(`Generating signed URL for ${bucketName}/${filePath} with filename ${fileName}`);
     
     // Create a signed URL with download options
+    // Note: We're using the download parameter to force the browser to download the file
+    // instead of trying to set Content-Disposition through transform.metadata (which is not supported)
     const { data, error } = await supabase.storage
       .from(bucketName)
       .createSignedUrl(filePath, expiresIn, {
-        download: fileName,
-        transform: {
-          metadata: {
-            'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`
-          }
-        }
+        download: fileName
       });
     
     if (error || !data?.signedUrl) {
