@@ -37,23 +37,33 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     root.style.transition = "background-color 0.3s ease, color 0.3s ease";
     
+    // Apply initial theme immediately without animation on first load
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    localStorage.setItem("theme", theme);
+    
     // Clean up transition when component unmounts
     return () => {
       root.style.transition = "";
     };
   }, []);
 
+  // Handle theme changes after the initial load
   useEffect(() => {
     const root = window.document.documentElement;
+    const storedTheme = localStorage.getItem("theme");
     
-    // Remove both classes first, then add the correct one
-    root.classList.remove("light", "dark");
-    
-    // Using requestAnimationFrame to ensure DOM is ready before applying the new theme
-    window.requestAnimationFrame(() => {
-      root.classList.add(theme);
-      localStorage.setItem("theme", theme);
-    });
+    // Only process theme changes after initial load
+    if (storedTheme && theme !== storedTheme) {
+      // Remove both classes first, then add the correct one
+      root.classList.remove("light", "dark");
+      
+      // Using requestAnimationFrame to ensure DOM is ready before applying the new theme
+      window.requestAnimationFrame(() => {
+        root.classList.add(theme);
+        localStorage.setItem("theme", theme);
+      });
+    }
   }, [theme]);
 
   const value = {

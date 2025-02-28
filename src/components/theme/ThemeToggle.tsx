@@ -11,10 +11,14 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Load theme preference from database when user logs in
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setInitialLoadComplete(true);
+      return;
+    }
     
     const loadThemePreference = async () => {
       try {
@@ -30,14 +34,15 @@ export function ThemeToggle() {
         if (data && data.settings && typeof data.settings === 'object' && 'theme' in data.settings) {
           const userTheme = data.settings.theme;
           if (userTheme === 'light' || userTheme === 'dark') {
-            // Using setTimeout to avoid immediate state changes
-            setTimeout(() => setTheme(userTheme), 50);
+            setTheme(userTheme);
           }
         }
       } catch (error) {
         console.error('Error loading theme preference:', error);
       } finally {
         setIsLoading(false);
+        // Mark initial load as complete after the theme has been set
+        setInitialLoadComplete(true);
       }
     };
 
@@ -46,9 +51,9 @@ export function ThemeToggle() {
 
   // Save theme preference to database when theme changes
   const handleThemeChange = async () => {
-    if (isLoading) return; // Prevent multiple rapid clicks
+    if (isLoading || !initialLoadComplete) return; // Prevent clicks during loading or initial setup
     
-    // Toggle the theme
+    // Toggle the theme - but don't trigger while we're still initializing
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     
@@ -103,7 +108,7 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={handleThemeChange}
-      disabled={isLoading}
+      disabled={isLoading || !initialLoadComplete}
       title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
       className="transition-all duration-300"
     >
