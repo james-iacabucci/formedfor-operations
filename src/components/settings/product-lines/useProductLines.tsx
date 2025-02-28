@@ -3,9 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 export function useProductLines() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -61,6 +63,11 @@ export function useProductLines() {
         return;
       }
 
+      if (!user) {
+        toast.error("You must be logged in to save changes");
+        return;
+      }
+
       if (data.id) {
         // For existing records, update using the ID
         const { error } = await supabase
@@ -77,7 +84,7 @@ export function useProductLines() {
 
         if (error) throw error;
       } else {
-        // For new records, insert without user_id
+        // For new records, include user_id (required by schema) but don't filter by it
         const { error } = await supabase
           .from("product_lines")
           .insert({
@@ -87,6 +94,7 @@ export function useProductLines() {
             white_logo_url: data.white_logo_url,
             black_logo_url: data.black_logo_url,
             product_line_code: data.product_line_code,
+            user_id: user.id // Still required by database schema
           });
 
         if (error) throw error;

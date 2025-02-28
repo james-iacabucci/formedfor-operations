@@ -8,4 +8,5 @@ export interface ProductLine {
   address: string | null;
   created_at: string;
   product_line_code: string | null;
+  user_id: string;
 }
