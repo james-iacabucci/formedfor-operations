@@ -23,13 +23,9 @@ export function useSculpturesData(
   const { data: sculptures, isLoading } = useQuery({
     queryKey: ["sculptures", viewSettings, selectedProductLines, searchQuery],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       let query = supabase
         .from("sculptures")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*");
 
       // Handle product line filtering
       if (selectedProductLines.length > 0) {
@@ -113,13 +109,9 @@ export function useSculpturesData(
   const { data: tags } = useQuery({
     queryKey: ["tags"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       const { data, error } = await supabase
         .from("tags")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*");
 
       if (error) throw error;
       return data;
