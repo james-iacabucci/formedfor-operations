@@ -26,7 +26,7 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     
     const unitLabel = unit === 'centimeters' ? '(cm)' : '(in)';
     
-    return `${h_val} × ${w_val} × ${d_val} ${unitLabel}`;
+    return `HWD: ${h_val} × ${w_val} × ${d_val} ${unitLabel}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
