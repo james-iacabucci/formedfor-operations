@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
         .insert([
           {
             user_id: user.id,
+            created_by: user.id,
             is_manual: true,
             manual_name: name,
             manual_description: description,
@@ -91,6 +93,9 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             height_in: heightIn ? parseFloat(heightIn) : null,
             width_in: widthIn ? parseFloat(widthIn) : null,
             depth_in: depthIn ? parseFloat(depthIn) : null,
+            height_cm: heightIn ? calculateCm(heightIn) : null,
+            width_cm: widthIn ? calculateCm(widthIn) : null,
+            depth_cm: depthIn ? calculateCm(depthIn) : null,
           }
         ])
         .select()

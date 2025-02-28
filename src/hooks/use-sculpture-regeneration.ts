@@ -3,11 +3,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIGeneration } from "@/hooks/use-ai-generation";
+import { useAuth } from "@/components/AuthProvider";
 
 export function useSculptureRegeneration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { generateAIContent } = useAIGeneration();
+  const { user } = useAuth();
 
   // Use React Query to manage regeneration state per sculpture as a Record
   const { data: regeneratingState } = useQuery({
@@ -194,6 +196,7 @@ export function useSculptureRegeneration() {
             {
               prompt: options.changes ? `${prompt}\n\nChanges: ${options.changes}` : prompt,
               user_id: userId,
+              created_by: user?.id || userId,
               ai_engine: "runware",
               status: "idea",
               original_sculpture_id: sculptureId,

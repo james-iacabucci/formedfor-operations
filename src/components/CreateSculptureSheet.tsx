@@ -121,6 +121,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
           {
             prompt: prompt.trim(),
             user_id: user!.id,
+            created_by: user!.id,
             ai_engine: "runware",
             status: "idea",
             image_url: publicUrl,

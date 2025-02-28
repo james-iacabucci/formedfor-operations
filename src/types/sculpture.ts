@@ -15,7 +15,8 @@ export type Sculpture = {
   original_sculpture_id?: string | null;
   ai_generated_name?: string | null;
   ai_description?: string | null;
-  user_id: string;
+  created_by: string;
+  user_id: string; // Keep this temporarily for backward compatibility until fully migrated
   ai_engine: "runware" | "manual";
   status: "idea" | "pending" | "approved" | "archived";
   models: FileUpload[];

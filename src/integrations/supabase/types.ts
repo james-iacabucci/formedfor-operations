@@ -287,6 +287,7 @@ export type Database = {
           base_width_cm: number | null
           base_width_in: number | null
           created_at: string
+          created_by: string
           creativity_level: string | null
           depth_cm: number | null
           depth_in: number | null
@@ -327,6 +328,7 @@ export type Database = {
           base_width_cm?: number | null
           base_width_in?: number | null
           created_at?: string
+          created_by: string
           creativity_level?: string | null
           depth_cm?: number | null
           depth_in?: number | null
@@ -367,6 +369,7 @@ export type Database = {
           base_width_cm?: number | null
           base_width_in?: number | null
           created_at?: string
+          created_by?: string
           creativity_level?: string | null
           depth_cm?: number | null
           depth_in?: number | null
