@@ -77,7 +77,7 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: 'You are describing the visual and spatial impact of an artwork. In 2-3 concise sentences, describe its physical presence, materials, and symbolism. Focus purely on the form, materiality, and spatial relationship. Do not use any phrases like "the sculpture", "this piece", or any names - just describe what you see and its impact directly. Start with the physical attributes, then discuss material properties, and end with the spatial impact.'
+              content: 'You are describing luxury sculptures for high-end design spaces. Focus on how the sculpture\'s materials and form enhance a design space, rather than just describing what\'s in the image. Discuss how the piece interacts with its surroundings, the interplay of light, and the spatial presence it creates. Avoid starting with phrases like "the sculpture" or "this piece" or mentioning the name directly. Write 2-3 concise sentences about the material qualities and design impact. The name will be added separately.'
             },
             {
               role: 'user',
