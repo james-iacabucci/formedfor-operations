@@ -2,9 +2,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 export function useTagsManagement(sculptureId: string | undefined) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: tags } = useQuery({
     queryKey: ["tags"],
@@ -75,9 +77,16 @@ export function useTagsManagement(sculptureId: string | undefined) {
 
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
+      if (!user) {
+        throw new Error("You must be logged in to create tags");
+      }
+      
       const { data, error } = await supabase
         .from("tags")
-        .insert([{ name }])
+        .insert([{ 
+          name,
+          user_id: user.id 
+        }])
         .select()
         .single();
 
