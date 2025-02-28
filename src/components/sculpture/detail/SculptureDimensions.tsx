@@ -6,6 +6,7 @@ import { PenIcon, CheckIcon, XIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 interface SculptureDimensionsProps {
   sculptureId: string;
@@ -50,14 +51,16 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
 
   const handleDimensionsUpdate = async () => {
     const prefix = isBase ? 'base_' : '';
-    const updatedDimensions = {
+    
+    // Prepare the update object with direct values, not calculations
+    const updatedDimensions: Record<string, number | null> = {
       [`${prefix}height_in`]: dimensions.height ? parseFloat(dimensions.height) : null,
       [`${prefix}width_in`]: dimensions.width ? parseFloat(dimensions.width) : null,
       [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
-      [`${prefix}height_cm`]: dimensions.height ? calculateCm(parseFloat(dimensions.height)) : null,
-      [`${prefix}width_cm`]: dimensions.width ? calculateCm(parseFloat(dimensions.width)) : null,
-      [`${prefix}depth_cm`]: dimensions.depth ? calculateCm(parseFloat(dimensions.depth)) : null,
     };
+    
+    // Don't include cm values in the update, they are calculated by a database trigger or function
+    console.log("Updating dimensions:", updatedDimensions);
 
     const { error } = await supabase
       .from('sculptures')
@@ -68,7 +71,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
       console.error('Error updating dimensions:', error);
       toast({
         title: "Error",
-        description: "Failed to update dimensions",
+        description: "Failed to update dimensions: " + error.message,
         variant: "destructive",
       });
       return;
@@ -89,27 +92,39 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
       {isEditingDimensions ? (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
-            <Input
-              type="number"
-              value={dimensions.height}
-              onChange={(e) => setDimensions(prev => ({ ...prev, height: e.target.value }))}
-              placeholder="Height (in)"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <Input
-              type="number"
-              value={dimensions.width}
-              onChange={(e) => setDimensions(prev => ({ ...prev, width: e.target.value }))}
-              placeholder="Width (in)"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <Input
-              type="number"
-              value={dimensions.depth}
-              onChange={(e) => setDimensions(prev => ({ ...prev, depth: e.target.value }))}
-              placeholder="Depth (in)"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="height-input">Height</Label>
+              <Input
+                id="height-input"
+                type="number"
+                placeholder="Height"
+                value={dimensions.height}
+                onChange={(e) => setDimensions(prev => ({ ...prev, height: e.target.value }))}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="width-input">Width</Label>
+              <Input
+                id="width-input"
+                type="number"
+                placeholder="Width"
+                value={dimensions.width}
+                onChange={(e) => setDimensions(prev => ({ ...prev, width: e.target.value }))}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="depth-input">Depth</Label>
+              <Input
+                id="depth-input"
+                type="number"
+                placeholder="Depth"
+                value={dimensions.depth}
+                onChange={(e) => setDimensions(prev => ({ ...prev, depth: e.target.value }))}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button
@@ -117,7 +132,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
               size="sm"
               variant="ghost"
             >
-              <CheckIcon className="h-4 w-4" />
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
             </Button>
             <Button
               variant="ghost"
@@ -131,7 +146,7 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
                 setIsEditingDimensions(false);
               }}
             >
-              <XIcon className="h-4 w-4" />
+              <XIcon className="h-4 w-4 mr-1" /> Cancel
             </Button>
           </div>
         </div>

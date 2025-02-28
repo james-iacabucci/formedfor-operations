@@ -1,6 +1,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { Label } from "@/components/ui/label";
 
 interface DimensionDisplayProps {
   height: number | null;
@@ -25,7 +26,7 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     
     const unitLabel = unit === 'centimeters' ? '(cm)' : '(in)';
     
-    return `${h_val} x ${w_val} x ${d_val} ${unitLabel}`;
+    return `${h_val} × ${w_val} × ${d_val} ${unitLabel}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
