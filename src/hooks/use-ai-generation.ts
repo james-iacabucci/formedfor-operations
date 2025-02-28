@@ -9,7 +9,9 @@ export function useAIGeneration() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const cleanDescription = (description: string): string => {
-    return description
+    // Remove common placeholder names that might be included in the response
+    const cleanedText = description
+      .replace(/^(untitled|unnamed|sculpture|artwork)[\s:]*\s*/i, '')
       .replace(/^(the\s+sculpture|this\s+piece|the\s+artwork)/gi, '')
       .replace(/(the\s+sculpture|this\s+piece|the\s+artwork)/gi, 'it')
       .replace(/^\s+/, '')
@@ -19,6 +21,8 @@ export function useAIGeneration() {
       .replace(/^presents?\s+/i, '')
       .replace(/^displays?\s+/i, '')
       .replace(/^shows?\s+/i, '');
+      
+    return cleanedText;
   };
 
   const generateAIContent = useCallback(async (
