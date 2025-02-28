@@ -207,7 +207,7 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="group relative flex items-center">
+          <div className="group relative">
             {isNameEditing ? (
               <div className="flex items-center gap-2">
                 <Input
@@ -235,18 +235,18 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
                 </Button>
               </div>
             ) : (
-              <>
+              <div className="flex items-center">
                 <h1 className="text-2xl font-bold mr-2">
                   {sculpture.ai_generated_name || "Untitled Sculpture"}
                 </h1>
-                <div className="hidden group-hover:flex transition-all duration-200 items-center gap-1">
+                <div className="flex items-center gap-1">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className={`h-8 w-8 ${isGeneratingName ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"}`}
                           onClick={handleRegenerateName}
                           disabled={isGeneratingName}
                         >
@@ -259,25 +259,27 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
                     </Tooltip>
                   </TooltipProvider>
                   
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setIsNameEditing(true)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit name</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {!isGeneratingName && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => setIsNameEditing(true)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit name</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
