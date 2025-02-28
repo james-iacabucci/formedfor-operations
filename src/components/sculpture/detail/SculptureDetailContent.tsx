@@ -1,106 +1,98 @@
 
-import { SculptureAttributes } from "./SculptureAttributes";
-import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
-import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
+import { SculptureDetailSidebar } from "./SculptureDetailSidebar";
+import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
+import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
+import { Separator } from "@/components/ui/separator";
+import { Sculpture } from "@/types/sculpture";
+import { Tag } from "@/components/settings/useTagsState";
+import { useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
+  originalSculpture?: Sculpture;
+  tags: Tag[];
   onUpdate: () => void;
-  originalSculpture: Sculpture | null;
-  tags: Array<{ id: string; name: string }>;
 }
 
-export function SculptureDetailContent({
-  sculpture,
-  onUpdate,
-  originalSculpture,
+export function SculptureDetailContent({ 
+  sculpture, 
+  originalSculpture, 
   tags,
+  onUpdate
 }: SculptureDetailContentProps) {
-  const { toast } = useToast();
+  const { handleRegenerate, isRegenerating } = useSculptureRegeneration(sculpture);
+  const descriptionComponentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-  const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
-  const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
 
-  const handleRegenerate = useCallback(async () => {
-    if (isRegenerating(sculpture.id)) return;
+  const handleNameChanged = async (newName: string) => {
+    console.log("Name changed to:", newName);
     
-    try {
-      await regenerateImage(sculpture.id);
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
-      
-      toast({
-        title: "Success",
-        description: "Image regenerated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to regenerate. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
-
-  const handleGenerateVariant = async (options: {
-    creativity: "none" | "small" | "medium" | "large";
-    changes?: string;
-    updateExisting: boolean;
-    regenerateImage: boolean;
-    regenerateMetadata: boolean;
-  }) => {
-    try {
-      await generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options);
-      await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
-      
-      toast({
-        title: "Success",
-        description: options.updateExisting 
-          ? "Updates generated successfully." 
-          : "Variation created successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate variant. Please try again.",
-        variant: "destructive",
-      });
+    // Trigger description regeneration
+    if (sculpture.image_url) {
+      try {
+        const response = await fetch(sculpture.image_url);
+        const blob = await response.blob();
+        const file = new File([blob], "sculpture.png", { type: "image/png" });
+        
+        // Make AI request to generate description
+        const { data, error } = await supabase.functions.invoke('generate-sculpture-metadata', {
+          body: { 
+            imageUrl: sculpture.image_url, 
+            type: "description",
+            existingName: newName
+          }
+        });
+        
+        if (error) throw error;
+        
+        // Clean and format description
+        const description = `${newName.toUpperCase()} ${data.description}`;
+        
+        // Update sculpture description
+        const { error: updateError } = await supabase
+          .from("sculptures")
+          .update({ ai_description: description })
+          .eq("id", sculpture.id);
+        
+        if (updateError) throw updateError;
+        
+        // Invalidate queries to refresh data
+        await queryClient.invalidateQueries({ queryKey: ["sculpture", sculpture.id] });
+        
+      } catch (error) {
+        console.error("Error updating description after name change:", error);
+      }
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <SculptureDetailHeader sculpture={sculpture} />
-
-      <div className="overflow-y-auto flex-1 space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SculptureMainContent
-            sculpture={sculpture}
-            isRegenerating={isRegenerating(sculpture.id)}
-            onRegenerate={handleRegenerate}
-          />
-          <div>
-            <SculptureAttributes
-              sculpture={sculpture}
-              originalSculpture={originalSculpture}
-              tags={tags}
-            />
-          </div>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="col-span-1 lg:col-span-2 space-y-8">
+        <SculptureDetailHeader 
+          sculpture={sculpture} 
+          onNameChanged={handleNameChanged}
+        />
+        <SculptureMainContent
+          sculpture={sculpture}
+          isRegenerating={isRegenerating}
+          onRegenerate={handleRegenerate}
+          onNameChanged={handleNameChanged}
+        />
       </div>
-
-      <RegenerationSheet
-        open={isRegenerationSheetOpen}
-        onOpenChange={setIsRegenerationSheetOpen}
-        onRegenerate={handleGenerateVariant}
-        isRegenerating={isRegenerating(sculpture.id)}
-        defaultPrompt={sculpture.prompt}
-      />
+      <div className="col-span-1 space-y-8">
+        <SculptureDetailSidebar
+          sculpture={sculpture}
+          originalSculpture={originalSculpture}
+          tags={tags}
+          onUpdate={onUpdate}
+        />
+        <Separator />
+        <SculptureFabricationQuotes sculpture={sculpture} />
+      </div>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { SculptureDetailImage } from "../SculptureDetailImage";
 import { SculptureDescription } from "./SculptureDescription";
-import { SculptureName } from "./SculptureName";
 import { SculptureFiles } from "../SculptureFiles";
 import { Sculpture } from "@/types/sculpture";
 import { useToast } from "@/hooks/use-toast";
@@ -12,12 +11,14 @@ interface SculptureMainContentProps {
   sculpture: Sculpture;
   isRegenerating: boolean;
   onRegenerate: () => Promise<void>;
+  onNameChanged?: (newName: string) => void;
 }
 
 export function SculptureMainContent({ 
   sculpture, 
   isRegenerating, 
-  onRegenerate 
+  onRegenerate,
+  onNameChanged
 }: SculptureMainContentProps) {
   const { toast } = useToast();
   const descriptionComponentRef = useRef<HTMLDivElement>(null);
@@ -28,14 +29,6 @@ export function SculptureMainContent({
       title: "Coming Soon",
       description: "Tag management will be available soon.",
     });
-  };
-
-  const handleNameChanged = (newName: string) => {
-    // After name change, trigger description regeneration
-    const descriptionButton = descriptionComponentRef.current?.querySelector('button[aria-label="Regenerate Description"]');
-    if (descriptionButton instanceof HTMLButtonElement) {
-      descriptionButton.click();
-    }
   };
 
   return (
@@ -54,12 +47,6 @@ export function SculptureMainContent({
         />
       </AspectRatio>
       <div className="space-y-6">
-        <SculptureName
-          sculptureId={sculpture.id}
-          imageUrl={sculpture.image_url}
-          name={sculpture.ai_generated_name}
-          onNameChanged={handleNameChanged}
-        />
         <div ref={descriptionComponentRef}>
           <SculptureDescription
             sculptureId={sculpture.id}
