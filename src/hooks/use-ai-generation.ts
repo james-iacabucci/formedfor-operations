@@ -77,7 +77,14 @@ export function useAIGeneration() {
       } else {
         // Clean the description and format it with the name in capitals
         const cleanedDescription = cleanDescription(data.description);
-        const finalDescription = `${name.toUpperCase()} ${cleanedDescription}`;
+        
+        // Make the first letter of the description lowercase to ensure it flows naturally from the name
+        let formattedDescription = cleanedDescription;
+        if (formattedDescription.length > 0) {
+          formattedDescription = formattedDescription.charAt(0).toLowerCase() + formattedDescription.slice(1);
+        }
+        
+        const finalDescription = `${name.toUpperCase()} ${formattedDescription}`;
         onSuccess(finalDescription);
       }
 
