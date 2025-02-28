@@ -58,7 +58,7 @@ export function SculptureCard({
       <RegenerationSheet
         open={isRegenerationSheetOpen}
         onOpenChange={setIsRegenerationSheetOpen}
-        onRegenerate={(options) => generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options)}
+        onRegenerate={(options) => generateVariant(sculpture.id, sculpture.created_by, sculpture.prompt, options)}
         isRegenerating={isRegenerating(sculpture.id)}
         defaultPrompt={sculpture.prompt}
       />

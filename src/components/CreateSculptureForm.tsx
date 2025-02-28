@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface FormData {
@@ -30,7 +31,9 @@ export function CreateSculptureForm() {
         .insert([
           {
             prompt: data.prompt,
-            user_id: user.id
+            created_by: user.id,
+            ai_engine: "runware",
+            status: "idea"
           }
         ])
         .select()

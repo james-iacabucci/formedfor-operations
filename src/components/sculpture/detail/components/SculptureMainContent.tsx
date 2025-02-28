@@ -35,7 +35,7 @@ export function SculptureMainContent({
           prompt={sculpture.prompt}
           isRegenerating={isRegenerating}
           sculptureId={sculpture.id}
-          userId={sculpture.user_id}
+          userId={sculpture.created_by}
           onRegenerate={onRegenerate}
           hideButtons={false}
           status={sculpture.status}

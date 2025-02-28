@@ -55,7 +55,7 @@ export function SculptureDetailContent({
     regenerateMetadata: boolean;
   }) => {
     try {
-      await generateVariant(sculpture.id, sculpture.user_id, sculpture.prompt, options);
+      await generateVariant(sculpture.id, sculpture.created_by, sculpture.prompt, options);
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });
       
       toast({

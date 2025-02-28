@@ -1,58 +1,139 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { Sculpture } from "@/types/sculpture";
+import { SculptureCard } from "../SculptureCard";
+import { useState } from "react";
+import { DeleteSculptureDialog } from "../DeleteSculptureDialog";
+import { ManageTagsDialog } from "@/components/tags/ManageTagsDialog";
 
 interface SculptureVariationsProps {
-  sculptureId: string;
+  sculpture: Sculpture;
 }
 
-export function SculptureVariations({ sculptureId }: SculptureVariationsProps) {
-  const navigate = useNavigate();
-  
+export function SculptureVariations({ sculpture }: SculptureVariationsProps) {
+  const originalId = sculpture.original_sculpture_id || sculpture.id;
+  const [selectedSculpture, setSelectedSculpture] = useState<Sculpture | null>(null);
+  const [isTagsDialogOpen, setIsTagsDialogOpen] = useState(false);
+  const hasVariants = !!sculpture.original_sculpture_id;
+
+  // This query fetches variants of the current sculpture or variants of its original
   const { data: variations } = useQuery({
-    queryKey: ["sculpture-variations", sculptureId],
+    queryKey: ["sculpture_variations", originalId],
     queryFn: async () => {
-      console.log("Fetching variations for sculpture:", sculptureId);
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
+      if (!originalId) return [];
 
       const { data, error } = await supabase
         .from("sculptures")
         .select("*")
-        .eq("original_sculpture_id", sculptureId)
-        .eq("user_id", user.user.id);
+        .or(`id.eq.${originalId},original_sculpture_id.eq.${originalId}`)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      console.log("Fetched variations:", data);
+
+      // Transform to match Sculpture type
+      return data.map((item: any): Sculpture => ({
+        ...item,
+        models: Array.isArray(item.models) ? item.models : [],
+        renderings: Array.isArray(item.renderings) ? item.renderings : [],
+        dimensions: Array.isArray(item.dimensions) ? item.dimensions : [],
+      }));
+    },
+    enabled: !!originalId,
+  });
+
+  // Query to fetch tags for all these sculptures
+  const { data: sculptureTagRelations } = useQuery({
+    queryKey: ["sculpture_variations_tags", originalId],
+    queryFn: async () => {
+      if (!originalId) return [];
+
+      const { data, error } = await supabase
+        .from("sculpture_tags")
+        .select("sculpture_id, tag_id")
+        .or(`sculpture_id.eq.${originalId},sculpture_id.in.(${variations?.filter(v => v.id !== originalId).map(v => v.id).join(",")})`)
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!variations?.length,
+  });
+
+  // Query to fetch all tags
+  const { data: tags } = useQuery({
+    queryKey: ["tags_for_variations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tags")
+        .select("*");
+
+      if (error) throw error;
       return data;
     },
   });
 
-  if (!variations?.length) {
-    return null;
-  }
+  const handleDelete = (variation: Sculpture) => {
+    setSelectedSculpture(variation);
+  };
+
+  const handleManageTags = (variation: Sculpture) => {
+    setSelectedSculpture(variation);
+    setIsTagsDialogOpen(true);
+  };
+
+  if (!variations || !tags) return null;
 
   return (
-    <div className="mt-8">
-      <h2 className="text-lg font-semibold mb-4">Variations</h2>
-      <div className="grid grid-cols-4 gap-4">
-        {variations.map((variation) => (
-          <div
-            key={variation.id}
-            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-muted hover:opacity-80 transition-opacity"
-            onClick={() => navigate(`/sculpture/${variation.id}`)}
-          >
-            <img
-              src={variation.image_url}
-              alt={variation.prompt}
-              className="object-cover w-full h-full"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
-              <span className="capitalize">{variation.creativity_level} variation</span>
-            </div>
-          </div>
-        ))}
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {hasVariants ? "Other Variants" : "Variants"}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {variations
+            ?.filter(
+              (variation) => variation.id !== sculpture.id
+            )
+            .map((variation) => {
+              const variationTags = tags.filter(
+                (tag) =>
+                  sculptureTagRelations?.some(
+                    (relation) =>
+                      relation.sculpture_id === variation.id &&
+                      relation.tag_id === tag.id
+                  )
+              );
+
+              return (
+                <SculptureCard
+                  key={variation.id}
+                  sculpture={variation}
+                  tags={variationTags}
+                  onDelete={() => handleDelete(variation)}
+                  onManageTags={() => handleManageTags(variation)}
+                />
+              );
+            })}
+        </div>
       </div>
+
+      {selectedSculpture && (
+        <DeleteSculptureDialog
+          sculpture={selectedSculpture}
+          onDeleted={() => {
+            // Refetch queries after deletion
+          }}
+        />
+      )}
+
+      {selectedSculpture && (
+        <ManageTagsDialog
+          open={isTagsDialogOpen}
+          onOpenChange={setIsTagsDialogOpen}
+          sculptureId={selectedSculpture.id}
+          title={`Manage Tags: ${selectedSculpture.ai_generated_name || "Untitled"}`}
+        />
+      )}
     </div>
   );
 }
