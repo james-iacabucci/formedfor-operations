@@ -10,13 +10,9 @@ export function useProductLines() {
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       const { data, error } = await supabase
         .from("product_lines")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*");
 
       if (error) throw error;
       return data as ProductLine[];
@@ -60,9 +56,6 @@ export function useProductLines() {
 
   const handleSubmit = async (data: Partial<ProductLine>) => {
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("No user found");
-
       if (!data.name) {
         toast.error("Name is required");
         return;
@@ -84,7 +77,7 @@ export function useProductLines() {
 
         if (error) throw error;
       } else {
-        // For new records, insert with user_id
+        // For new records, insert without user_id
         const { error } = await supabase
           .from("product_lines")
           .insert({
@@ -94,7 +87,6 @@ export function useProductLines() {
             white_logo_url: data.white_logo_url,
             black_logo_url: data.black_logo_url,
             product_line_code: data.product_line_code,
-            user_id: user.user.id
           });
 
         if (error) throw error;
