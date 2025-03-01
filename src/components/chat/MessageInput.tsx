@@ -35,14 +35,17 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
     }
   }, [autoFocus]);
 
+  // Function to adjust the textarea height
+  const adjustHeight = () => {
+    if (!textareaRef.current) return;
+    const textarea = textareaRef.current;
+    textarea.style.height = "0";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+  };
+
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-
-    const adjustHeight = () => {
-      textarea.style.height = "0";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-    };
 
     textarea.addEventListener("input", adjustHeight);
     
@@ -140,8 +143,14 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
       }
 
       setMessage("");
+      
+      // Reset textarea height to single line
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
+        // Force a single-line height after clearing the message
+        requestAnimationFrame(() => {
+          adjustHeight();
+        });
       }
 
       // Clear uploading files
