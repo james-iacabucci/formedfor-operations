@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -29,18 +29,24 @@ export function MessageItem({
   const [isHovered, setIsHovered] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState<Message>(message);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { handleReaction } = useMessageReactions(message);
+  const { handleReaction } = useMessageReactions(currentMessage);
   
-  const isOwnMessage = user && user.id === message.user_id;
-  const isDeleted = message.content === "[This message was deleted]";
+  const isOwnMessage = user && user.id === currentMessage.user_id;
+  const isDeleted = currentMessage.content === "[This message was deleted]";
+  
+  // Update local message state when props change
+  useEffect(() => {
+    setCurrentMessage(message);
+  }, [message]);
   
   const handleEdit = () => {
     if (!isDeleted) {
       setIsEditing(true);
       if (setEditingMessage) {
-        setEditingMessage(message);
+        setEditingMessage(currentMessage);
       }
     }
   };
@@ -54,16 +60,28 @@ export function MessageItem({
   
   const handleSaveEdit = async (content: string, attachments: any[]) => {
     try {
-      const { error: messageError } = await supabase
+      const { data, error: messageError } = await supabase
         .from("chat_messages")
         .update({
           content: content.trim(),
           attachments: attachments,
           edited_at: new Date().toISOString()
         })
-        .eq("id", message.id);
+        .eq("id", currentMessage.id)
+        .select();
 
       if (messageError) throw messageError;
+      
+      // Update the local message state with the edited content and attachments
+      if (data && data.length > 0) {
+        const updatedMessage = {
+          ...currentMessage,
+          content: content.trim(),
+          attachments: attachments,
+          edited_at: new Date().toISOString()
+        };
+        setCurrentMessage(updatedMessage);
+      }
       
       toast({
         description: "Message updated successfully",
@@ -89,8 +107,8 @@ export function MessageItem({
   };
   
   const handleCopy = () => {
-    if (message.content) {
-      navigator.clipboard.writeText(message.content);
+    if (currentMessage.content) {
+      navigator.clipboard.writeText(currentMessage.content);
       toast({
         description: "Message copied to clipboard",
         duration: 2000
@@ -100,13 +118,14 @@ export function MessageItem({
   
   const confirmDelete = async () => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("chat_messages")
         .update({ 
           content: "[This message was deleted]",
           attachments: []
         })
-        .eq("id", message.id);
+        .eq("id", currentMessage.id)
+        .select();
       
       if (error) {
         console.error("Error deleting message:", error);
@@ -115,7 +134,14 @@ export function MessageItem({
           description: "Failed to delete message",
           variant: "destructive"
         });
-      } else {
+      } else if (data && data.length > 0) {
+        // Update the local message state
+        setCurrentMessage({
+          ...currentMessage,
+          content: "[This message was deleted]",
+          attachments: []
+        });
+        
         toast({
           description: "Message deleted successfully",
           duration: 2000
@@ -134,7 +160,7 @@ export function MessageItem({
   };
 
   // Check if this message is currently being edited
-  const isCurrentlyEditing = isEditing || (editingMessage && editingMessage.id === message.id);
+  const isCurrentlyEditing = isEditing || (editingMessage && editingMessage.id === currentMessage.id);
 
   return (
     <div 
@@ -148,15 +174,15 @@ export function MessageItem({
           : 'bg-accent/50'
       }`}>
         <Avatar className="h-8 w-8 mt-1">
-          <AvatarImage src={message.profiles?.avatar_url || undefined} />
+          <AvatarImage src={currentMessage.profiles?.avatar_url || undefined} />
           <AvatarFallback>
             <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-1">
           <MessageHeader
-            username={message.profiles?.username || "User"}
-            createdAt={message.created_at}
+            username={currentMessage.profiles?.username || "User"}
+            createdAt={currentMessage.created_at}
             isHovered={isHovered}
             isOwnMessage={isOwnMessage}
             isDeleted={isDeleted}
@@ -168,7 +194,7 @@ export function MessageItem({
           />
           
           <MessageContent 
-            message={message}
+            message={currentMessage}
             isDeleted={isDeleted}
             isEditing={isCurrentlyEditing}
             onCancelEdit={handleCancelEdit}

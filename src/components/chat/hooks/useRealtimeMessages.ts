@@ -40,6 +40,19 @@ export function useRealtimeMessages({
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `thread_id=eq.${threadId}`
+        },
+        async (payload) => {
+          console.log('Message updated:', payload);
+          await refetch();
+        }
+      )
       .subscribe();
 
     return () => {
