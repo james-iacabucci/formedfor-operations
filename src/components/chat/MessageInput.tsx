@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,12 +32,10 @@ export function MessageInput({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Set up editing mode
   useEffect(() => {
     if (editingMessage) {
       setMessage(editingMessage.content === "[This message was deleted]" ? "" : editingMessage.content);
       
-      // Convert the message attachments to uploading files
       if (editingMessage.attachments && editingMessage.attachments.length > 0) {
         const existingFiles: UploadingFile[] = editingMessage.attachments.map(attachment => ({
           id: crypto.randomUUID(),
@@ -51,6 +48,10 @@ export function MessageInput({
       } else {
         setUploadingFiles([]);
       }
+      
+      setTimeout(() => {
+        adjustHeight();
+      }, 0);
     }
   }, [editingMessage]);
 
@@ -83,6 +84,14 @@ export function MessageInput({
 
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
+
+  useEffect(() => {
+    if (message) {
+      setTimeout(() => {
+        adjustHeight();
+      }, 0);
+    }
+  }, [message]);
 
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = Array.from(e.clipboardData.items);
@@ -138,10 +147,8 @@ export function MessageInput({
     let messageId: string | null = null;
 
     try {
-      // Filter out files that already exist (from editing)
       const filesToUpload = uploadingFiles.filter(f => !f.existingUrl);
       
-      // Get existing files that should be kept
       const existingFiles = uploadingFiles
         .filter(f => f.existingUrl)
         .map(f => ({
@@ -151,7 +158,6 @@ export function MessageInput({
           size: f.file.size
         }));
       
-      // Upload new files
       let uploadedFiles: any[] = [];
 
       if (filesToUpload.length > 0) {
@@ -168,11 +174,9 @@ export function MessageInput({
         console.log("Successfully uploaded files:", uploadedFiles);
       }
       
-      // Combine existing files and newly uploaded files
       const allAttachments = [...existingFiles, ...uploadedFiles];
 
       if (editingMessage) {
-        // Update existing message
         const { error: messageError } = await supabase
           .from("chat_messages")
           .update({
@@ -189,10 +193,8 @@ export function MessageInput({
           duration: 2000
         });
         
-        // Clear editing state
         setEditingMessage(null);
       } else {
-        // Create new message
         const { data: messageData, error: messageError } = await supabase
           .from("chat_messages")
           .insert({
