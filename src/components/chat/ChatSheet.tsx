@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -114,7 +115,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           
           <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4 flex-wrap gap-2">
-              <div className="w-full flex items-center">
+              <div className="w-full flex items-center space-x-4">
                 <Tabs
                   value={activeView}
                   onValueChange={(value) => setActiveView(value as "chat" | "files")}
@@ -139,7 +140,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                 <Tabs
                   value={currentTopic}
                   onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-                  className="bg-black p-1.5 rounded-md border border-muted ml-auto flex-grow flex"
+                  className="bg-black p-1.5 rounded-md border border-muted flex-grow flex"
                 >
                   <TabsList className="bg-transparent border-0 h-7 p-0 w-full flex">
                     <TabsTrigger 
