@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/components/AuthProvider";
-import { MessageReaction, FileAttachment } from "./types";
+import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
@@ -123,7 +123,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
   };
   
   return (
-    <div className="flex flex-wrap gap-1 mt-1">
+    <div className="flex flex-wrap gap-1 mt-2">
       {Object.entries(groupedReactions).map(([reactionType, reactors]) => {
         const userHasReacted = !!user && reactors.some(r => r.user_id === user.id);
         

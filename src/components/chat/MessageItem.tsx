@@ -1,5 +1,5 @@
 
-import { Reply, Trash2, User, Copy, ThumbsUp, Eye, Check } from "lucide-react";
+import { Edit, Reply, Trash2, User, Copy, ThumbsUp, Eye, Check } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message, FileAttachment } from "./types";
@@ -31,12 +31,18 @@ export function MessageItem({ message, children }: MessageItemProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
+  const isOwnMessage = user && user.id === message.user_id;
+  
   const handleReply = () => {
     console.log("Reply to message:", message.id);
   };
 
   const handleDelete = () => {
     console.log("Delete message:", message.id);
+  };
+  
+  const handleEdit = () => {
+    console.log("Edit message:", message.id);
   };
   
   const handleCopy = () => {
@@ -140,8 +146,8 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
 
   return (
-    <div className="group relative">
-      <div className="flex items-start gap-3">
+    <div className={`group relative py-6 ${isOwnMessage ? 'bg-accent/30' : 'bg-muted/30'}`}>
+      <div className="flex items-start gap-3 px-6 max-w-4xl mx-auto">
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -164,7 +170,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
             onMouseLeave={() => setIsHovered(false)}
           >
             {message.content && (
-              <div className="text-sm whitespace-pre-wrap rounded-md px-3 py-2 transition-colors">
+              <div className={`text-sm whitespace-pre-wrap rounded-xl px-4 py-3 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
                 {message.content}
               </div>
             )}
@@ -186,86 +192,106 @@ export function MessageItem({ message, children }: MessageItemProps) {
             
             <div className={`flex items-center mt-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
               <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => handleReaction("thumbs-up")}
-                    >
-                      <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Like</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => handleReaction("eyes")}
-                    >
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Seen</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => handleReaction("check")}
-                    >
-                      <Check className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Done</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full"
-                      onClick={handleCopy}
-                    >
-                      <Copy className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Copy</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                {user && user.id === message.user_id && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full hover:bg-destructive/10"
-                        onClick={handleDelete}
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Delete</p>
-                    </TooltipContent>
-                  </Tooltip>
+                {isOwnMessage ? (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full"
+                          onClick={handleEdit}
+                        >
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full hover:bg-destructive/10"
+                          onClick={handleDelete}
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
+                ) : (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => handleReaction("thumbs-up")}
+                        >
+                          <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Like</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => handleReaction("eyes")}
+                        >
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Seen</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => handleReaction("check")}
+                        >
+                          <Check className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Done</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full"
+                          onClick={handleCopy}
+                        >
+                          <Copy className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
                 )}
               </TooltipProvider>
             </div>
