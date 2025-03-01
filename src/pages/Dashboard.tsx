@@ -170,6 +170,7 @@ const Dashboard = () => {
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
               variant="outline"
+              size="sm"
               className="gap-2 h-9 px-3"
             >
               <UploadIcon className="h-4 w-4" />
@@ -177,6 +178,7 @@ const Dashboard = () => {
             </Button>
             <Button 
               onClick={() => setIsCreateSheetOpen(true)}
+              size="sm"
               className="gap-2 h-9 px-3"
             >
               <PlusIcon className="h-4 w-4" />
