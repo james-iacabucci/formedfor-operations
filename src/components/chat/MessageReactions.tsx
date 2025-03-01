@@ -131,7 +131,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
           <Badge
             key={reactionType}
             variant={userHasReacted ? "default" : "outline"}
-            className={`px-2 h-6 py-0 rounded-full text-xs flex items-center gap-1 cursor-pointer transition-colors hover:bg-muted
+            className={`px-2 h-6 py-0 rounded-md text-xs flex items-center gap-1 cursor-pointer transition-colors hover:bg-muted
               ${userHasReacted ? 'bg-primary/10 text-primary border-primary/30' : 'bg-background hover:bg-muted/80'}`}
             onClick={() => userHasReacted && handleRemoveReaction(reactionType)}
             title={reactors.map(r => r.username || "User").join(", ")}

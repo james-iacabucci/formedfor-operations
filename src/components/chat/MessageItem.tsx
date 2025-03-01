@@ -147,11 +147,11 @@ export function MessageItem({ message, children }: MessageItemProps) {
 
   return (
     <div 
-      className="group relative py-1" 
+      className="group relative py-0.5" 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/5' : 'bg-accent/50'}`}>
+      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -159,7 +159,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-2">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <span className="font-semibold text-sm">
               {message.profiles?.username || "User"}
             </span>
@@ -176,10 +176,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-7 w-7 rounded-md"
                           onClick={handleEdit}
                         >
-                          <Edit className="h-4 w-4 text-muted-foreground" />
+                          <Edit className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -192,10 +192,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full hover:bg-destructive/10"
+                          className="h-7 w-7 rounded-md hover:bg-destructive/10"
                           onClick={handleDelete}
                         >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -210,10 +210,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-7 w-7 rounded-md"
                           onClick={() => handleReaction("thumbs-up")}
                         >
-                          <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+                          <ThumbsUp className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -226,10 +226,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-7 w-7 rounded-md"
                           onClick={() => handleReaction("eyes")}
                         >
-                          <Eye className="h-4 w-4 text-muted-foreground" />
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -242,10 +242,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-7 w-7 rounded-md"
                           onClick={() => handleReaction("check")}
                         >
-                          <Check className="h-4 w-4 text-muted-foreground" />
+                          <Check className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -258,10 +258,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-7 w-7 rounded-md"
                           onClick={handleCopy}
                         >
-                          <Copy className="h-4 w-4 text-muted-foreground" />
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
