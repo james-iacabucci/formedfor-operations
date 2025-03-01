@@ -151,7 +151,11 @@ export function MessageItem({ message, children }: MessageItemProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
+      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${
+        isOwnMessage 
+          ? 'bg-black text-white border border-muted' 
+          : 'bg-accent/50'
+      }`}>
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -305,4 +309,3 @@ export function MessageItem({ message, children }: MessageItemProps) {
     </div>
   );
 }
-
