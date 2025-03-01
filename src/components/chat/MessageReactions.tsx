@@ -54,29 +54,27 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       if (Array.isArray(message.attachments)) {
         for (const attachment of message.attachments) {
           if (typeof attachment === 'object' && attachment !== null) {
-            // Create a new object with only the properties we need
             const jsonAttachment: Record<string, Json> = {};
             
-            // Safely add properties with proper type checking
-            if ('name' in attachment && typeof attachment.name === 'string') {
+            if (attachment.name && typeof attachment.name === 'string') {
               jsonAttachment.name = attachment.name;
             } else {
               jsonAttachment.name = "";
             }
             
-            if ('url' in attachment && typeof attachment.url === 'string') {
+            if (attachment.url && typeof attachment.url === 'string') {
               jsonAttachment.url = attachment.url;
             } else {
               jsonAttachment.url = "";
             }
             
-            if ('type' in attachment && typeof attachment.type === 'string') {
+            if (attachment.type && typeof attachment.type === 'string') {
               jsonAttachment.type = attachment.type;
             } else {
               jsonAttachment.type = "";
             }
             
-            if ('size' in attachment && typeof attachment.size === 'number') {
+            if (attachment.size !== undefined && typeof attachment.size === 'number') {
               jsonAttachment.size = attachment.size;
             } else {
               jsonAttachment.size = 0;
