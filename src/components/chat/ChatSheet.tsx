@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -43,7 +42,6 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     },
   });
 
-  // Fetch sculpture name
   useEffect(() => {
     const fetchSculptureName = async () => {
       if (!threadId) return;
@@ -69,7 +67,6 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     fetchSculptureName();
   }, [threadId]);
 
-  // Create default threads if they don't exist
   useEffect(() => {
     const createDefaultThreads = async () => {
       if (!threads || !user) return;
@@ -96,7 +93,6 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           }
         }
 
-        // Refetch threads after creating new ones
         refetch();
       }
     };
@@ -110,7 +106,6 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
         <div className="flex flex-col h-full">
-          {/* Sculpture name header */}
           <div className="border-b shrink-0 py-3 px-4">
             <div className="flex items-center justify-between">
               <div className="font-medium truncate">{sculptureName}</div>
@@ -119,68 +114,63 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           
           <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4 flex-wrap gap-2">
-              {/* Combined tabs in one row with app navigation styling */}
-              <div className="w-full bg-black p-1.5 rounded-md border border-muted">
-                <div className="flex items-center">
-                  {/* CHAT/FILES tabs */}
-                  <Tabs
-                    value={activeView}
-                    onValueChange={(value) => setActiveView(value as "chat" | "files")}
-                    className="mr-4"
-                  >
-                    <TabsList className="bg-transparent border-0 h-7 p-0">
-                      <TabsTrigger 
-                        value="chat" 
-                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
-                      >
-                        Chat
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="files" 
-                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
-                      >
-                        Files
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  
-                  {/* Topic tabs */}
-                  <Tabs
-                    value={currentTopic}
-                    onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-                    className="flex-1"
-                  >
-                    <TabsList className="bg-transparent border-0 h-7 p-0">
-                      <TabsTrigger 
-                        value="pricing" 
-                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
-                      >
-                        <div className="flex items-center gap-1">
-                          <MessageCircle className="h-3 w-3" />
-                          <span>Pricing</span>
-                        </div>
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="fabrication" 
-                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
-                      >
-                        <div className="flex items-center gap-1">
-                          <MessageSquare className="h-3 w-3" />
-                          <span>Fabrication</span>
-                        </div>
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="operations" 
-                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
-                      >
-                        <div className="flex items-center gap-1">
-                          <Wrench className="h-3 w-3" />
-                          <span>Operations</span>
-                        </div>
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
+              <div className="w-full flex justify-between items-center">
+                <Tabs
+                  value={activeView}
+                  onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                  className="bg-black p-1.5 rounded-md border border-muted"
+                >
+                  <TabsList className="bg-transparent border-0 h-7 p-0">
+                    <TabsTrigger 
+                      value="chat" 
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                    >
+                      Chat
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="files" 
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                    >
+                      Files
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                
+                <Tabs
+                  value={currentTopic}
+                  onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+                  className="bg-black p-1.5 rounded-md border border-muted"
+                >
+                  <TabsList className="bg-transparent border-0 h-7 p-0">
+                    <TabsTrigger 
+                      value="pricing" 
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                    >
+                      <div className="flex items-center gap-1">
+                        <MessageCircle className="h-3 w-3" />
+                        <span>Pricing</span>
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="fabrication" 
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                    >
+                      <div className="flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        <span>Fabrication</span>
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="operations" 
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                    >
+                      <div className="flex items-center gap-1">
+                        <Wrench className="h-3 w-3" />
+                        <span>Operations</span>
+                      </div>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
             </div>
           </div>
