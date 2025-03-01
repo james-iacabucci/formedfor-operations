@@ -146,8 +146,12 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
 
   return (
-    <div className="group relative py-2">
-      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
+    <div 
+      className="group relative py-1" 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/5' : 'bg-accent/50'}`}>
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -162,35 +166,8 @@ export function MessageItem({ message, children }: MessageItemProps) {
             <span className="text-xs text-muted-foreground">
               {formattedDate} at {formattedTime}
             </span>
-          </div>
-          
-          <div 
-            className="relative w-full"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            {message.content && (
-              <div className="text-sm whitespace-pre-wrap">
-                {message.content}
-              </div>
-            )}
             
-            {message.attachments && message.attachments.length > 0 && (
-              <div className="space-y-2 mt-2">
-                {message.attachments.map((attachment, index) => (
-                  <MessageAttachment key={index} attachment={attachment} />
-                ))}
-              </div>
-            )}
-            
-            {message.reactions && message.reactions.length > 0 && (
-              <MessageReactions 
-                messageId={message.id}
-                reactions={message.reactions}
-              />
-            )}
-            
-            <div className={`flex items-center mt-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`flex items-center ml-2 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
               <TooltipProvider delayDuration={300}>
                 {isOwnMessage ? (
                   <>
@@ -295,6 +272,29 @@ export function MessageItem({ message, children }: MessageItemProps) {
                 )}
               </TooltipProvider>
             </div>
+          </div>
+          
+          <div className="relative w-full">
+            {message.content && (
+              <div className="text-sm whitespace-pre-wrap">
+                {message.content}
+              </div>
+            )}
+            
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {message.attachments.map((attachment, index) => (
+                  <MessageAttachment key={index} attachment={attachment} />
+                ))}
+              </div>
+            )}
+            
+            {message.reactions && message.reactions.length > 0 && (
+              <MessageReactions 
+                messageId={message.id}
+                reactions={message.reactions}
+              />
+            )}
           </div>
 
           {children}

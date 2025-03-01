@@ -23,7 +23,7 @@ export function MessageListContent({
   threadId
 }: MessageListContentProps) {
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-2">
       {isFetchingNextPage && (
         <div className="h-8 flex items-center justify-center">
           <Loader2 className="h-4 w-4 animate-spin" />
