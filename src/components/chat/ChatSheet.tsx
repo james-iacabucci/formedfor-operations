@@ -3,7 +3,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
 import { useState, useEffect } from "react";
-import { UploadingFile } from "./types";
+import { UploadingFile, Message } from "./types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileList } from "./FileList";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const { user } = useAuth();
   const [sculptureName, setSculptureName] = useState<string>("");
   const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
@@ -195,6 +196,8 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                         threadId={currentThreadId} 
                         autoFocus={true} 
                         onUploadingFiles={setUploadingFiles}
+                        editingMessage={editingMessage}
+                        setEditingMessage={setEditingMessage}
                       />
                     </>
                   )}
