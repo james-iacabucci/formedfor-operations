@@ -3,7 +3,7 @@ import {
   Check, 
   Heart, 
   ThumbsUp, 
-  QuestionMark
+  HelpCircle 
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +27,7 @@ export function MessageReactionPicker({
   const reactions = [
     { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4" />, label: "👍 Thumbs up" },
     { id: "check", icon: <Check className="h-4 w-4" />, label: "✅ Check" },
-    { id: "question-mark", icon: <QuestionMark className="h-4 w-4" />, label: "❓ Question" },
+    { id: "question-mark", icon: <HelpCircle className="h-4 w-4" />, label: "❓ Question" },
     { id: "heart", icon: <Heart className="h-4 w-4" />, label: "❤️ Love" },
     { id: "strong", icon: <span className="text-sm">💪</span>, label: "💪 Strong" },
     { id: "thank-you", icon: <span className="text-sm">🙏</span>, label: "🙏 Thank you" },
@@ -62,9 +62,27 @@ export function MessageReactionPicker({
       }
       
       // Update the message with the new reactions
+      // We need to fetch the message first, then update it
+      const { data: message, error: fetchError } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .eq("id", messageId)
+        .single();
+      
+      if (fetchError) {
+        console.error("Error fetching message:", fetchError);
+        return;
+      }
+      
+      // Now update the message with the updated reactions
       const { error } = await supabase
         .from("chat_messages")
-        .update({ reactions: updatedReactions })
+        .update({ 
+          attachments: message.attachments,
+          content: message.content,
+          mentions: message.mentions,
+          reactions: updatedReactions 
+        })
         .eq("id", messageId);
       
       if (error) {

@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,10 +36,27 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       // Get all reactions except the one to remove
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      // Update message with new reactions
+      // Fetch the message first to get all its current data
+      const { data: message, error: fetchError } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .eq("id", messageId)
+        .single();
+      
+      if (fetchError) {
+        console.error("Error fetching message:", fetchError);
+        return;
+      }
+      
+      // Update message with new reactions while keeping other data
       const { error } = await supabase
         .from("chat_messages")
-        .update({ reactions: updatedReactions })
+        .update({ 
+          attachments: message.attachments,
+          content: message.content,
+          mentions: message.mentions,
+          reactions: updatedReactions 
+        })
         .eq("id", messageId);
       
       if (error) {
