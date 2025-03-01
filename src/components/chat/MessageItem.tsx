@@ -17,14 +17,17 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
+import { DeleteMessageDialog } from "./DeleteMessageDialog";
 
 interface MessageItemProps {
   message: Message;
   children?: React.ReactNode;
+  onEditMessage?: (message: Message) => void;
 }
 
-export function MessageItem({ message, children }: MessageItemProps) {
+export function MessageItem({ message, children, onEditMessage }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const messageDate = new Date(message.created_at);
   const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
   const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -32,17 +35,20 @@ export function MessageItem({ message, children }: MessageItemProps) {
   const { toast } = useToast();
   
   const isOwnMessage = user && user.id === message.user_id;
+  const isDeleted = message.content === "[This message was deleted]";
   
   const handleReply = () => {
     console.log("Reply to message:", message.id);
   };
 
   const handleDelete = () => {
-    console.log("Delete message:", message.id);
+    setIsDeleteDialogOpen(true);
   };
   
   const handleEdit = () => {
-    console.log("Edit message:", message.id);
+    if (onEditMessage && !isDeleted) {
+      onEditMessage(message);
+    }
   };
   
   const handleCopy = () => {
@@ -51,6 +57,41 @@ export function MessageItem({ message, children }: MessageItemProps) {
       toast({
         description: "Message copied to clipboard",
         duration: 2000
+      });
+    }
+  };
+  
+  const confirmDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from("chat_messages")
+        .update({ 
+          content: "[This message was deleted]",
+          attachments: []
+        })
+        .eq("id", message.id);
+      
+      if (error) {
+        console.error("Error deleting message:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete message",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          description: "Message deleted successfully",
+          duration: 2000
+        });
+      }
+      
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete message",
+        variant: "destructive"
       });
     }
   };
@@ -177,37 +218,41 @@ export function MessageItem({ message, children }: MessageItemProps) {
               <TooltipProvider delayDuration={300}>
                 {isOwnMessage ? (
                   <>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md"
-                          onClick={handleEdit}
-                        >
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {!isDeleted && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-md"
+                            onClick={handleEdit}
+                          >
+                            <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md hover:bg-destructive/10"
-                          onClick={handleDelete}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {!isDeleted && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-md hover:bg-destructive/10"
+                            onClick={handleDelete}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                   </>
                 ) : (
                   <>
@@ -282,12 +327,12 @@ export function MessageItem({ message, children }: MessageItemProps) {
           
           <div className="relative w-full">
             {message.content && (
-              <div className="text-sm whitespace-pre-wrap">
+              <div className={`text-sm whitespace-pre-wrap ${isDeleted ? 'italic text-muted-foreground' : ''}`}>
                 {message.content}
               </div>
             )}
             
-            {message.attachments && message.attachments.length > 0 && (
+            {!isDeleted && message.attachments && message.attachments.length > 0 && (
               <div className="space-y-2 mt-2">
                 {message.attachments.map((attachment, index) => (
                   <MessageAttachment key={index} attachment={attachment} />
@@ -306,6 +351,12 @@ export function MessageItem({ message, children }: MessageItemProps) {
           {children}
         </div>
       </div>
+      
+      <DeleteMessageDialog 
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

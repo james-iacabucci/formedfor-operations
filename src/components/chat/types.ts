@@ -12,6 +12,7 @@ export interface UploadingFile {
   id: string;
   file: File;
   progress: number;
+  existingUrl?: string;
 }
 
 export interface MessageReaction {

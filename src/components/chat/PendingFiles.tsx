@@ -19,19 +19,28 @@ export function PendingFiles({ files, isSending, onRemove }: PendingFilesProps) 
       {files.map((file) => (
         <div key={file.id} className="relative">
           <FileCard file={file.file} />
-          {file.progress > 0 && (
+          {file.existingUrl ? (
             <div className="mt-1">
-              <Progress 
-                value={file.progress} 
-                className="h-1" 
-                indicatorClassName={file.progress === 100 ? "bg-green-500" : ""}
-              />
+              <Progress value={100} className="h-1" indicatorClassName="bg-green-500" />
               <p className="text-xs text-right mt-0.5 text-muted-foreground">
-                {file.progress === 100 ? 'Upload complete' : `Uploading... ${file.progress}%`}
+                File already uploaded
               </p>
             </div>
+          ) : (
+            file.progress > 0 && (
+              <div className="mt-1">
+                <Progress 
+                  value={file.progress} 
+                  className="h-1" 
+                  indicatorClassName={file.progress === 100 ? "bg-green-500" : ""}
+                />
+                <p className="text-xs text-right mt-0.5 text-muted-foreground">
+                  {file.progress === 100 ? 'Upload complete' : `Uploading... ${file.progress}%`}
+                </p>
+              </div>
+            )
           )}
-          {!isSending && file.progress === 0 && (
+          {!isSending && (
             <Button
               variant="ghost"
               size="icon"

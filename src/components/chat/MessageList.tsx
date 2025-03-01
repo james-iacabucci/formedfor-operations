@@ -1,13 +1,14 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/AuthProvider";
-import { UploadingFile } from "./types";
+import { UploadingFile, Message } from "./types";
 import { useMessages } from "./hooks/useMessages";
 import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
 import { useMessageScroll } from "./hooks/useMessageScroll";
 import { MessageLoading } from "./components/MessageLoading";
 import { MessageListContent } from "./components/MessageListContent";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { MessageInput } from "./MessageInput";
 
 interface MessageListProps {
   threadId: string;
@@ -21,6 +22,8 @@ export function MessageList({
   pendingMessageSubmitted = false 
 }: MessageListProps) {
   const { user } = useAuth();
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [uploadingFilesState, setUploadingFilesState] = useState<UploadingFile[]>([]);
   
   const {
     messages,
@@ -63,6 +66,14 @@ export function MessageList({
     setScrollToBottom: setShouldScrollToBottom
   });
 
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+  };
+
+  const handleUploadingFilesChange = (files: UploadingFile[]) => {
+    setUploadingFilesState(files);
+  };
+
   if (isLoading) {
     return <MessageLoading />;
   }
@@ -74,18 +85,29 @@ export function MessageList({
   });
 
   return (
-    <ScrollArea 
-      ref={scrollRef} 
-      className="h-full"
-    >
-      <MessageListContent
-        messages={messages}
-        isFetchingNextPage={isFetchingNextPage}
-        isLoading={isLoading}
-        uploadingFiles={uploadingFiles}
-        user={user}
+    <div className="flex flex-col h-full">
+      <ScrollArea 
+        ref={scrollRef} 
+        className="flex-1"
+      >
+        <MessageListContent
+          messages={messages}
+          isFetchingNextPage={isFetchingNextPage}
+          isLoading={isLoading}
+          uploadingFiles={uploadingFilesState}
+          user={user}
+          threadId={threadId}
+          onEditMessage={handleEditMessage}
+        />
+      </ScrollArea>
+      
+      <MessageInput 
         threadId={threadId}
+        autoFocus
+        onUploadingFiles={handleUploadingFilesChange}
+        editingMessage={editingMessage}
+        setEditingMessage={setEditingMessage}
       />
-    </ScrollArea>
+    </div>
   );
 }
