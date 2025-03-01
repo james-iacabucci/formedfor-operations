@@ -1,4 +1,5 @@
-import { Check, Heart, MoreHorizontal, Reply, ThumbsUp, Trash2, User, HelpCircle } from "lucide-react";
+
+import { Check, Heart, MoreHorizontal, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "./types";
@@ -109,6 +110,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
     { id: "check", icon: <Check className="h-4 w-4" />, label: "✅ Check" },
     { id: "question-mark", icon: <HelpCircle className="h-4 w-4" />, label: "❓ Question" },
     { id: "heart", icon: <Heart className="h-4 w-4" />, label: "❤️ Love" },
+    { id: "eyes", icon: <Eye className="h-4 w-4" />, label: "👀 Looking" },
   ];
 
   return (

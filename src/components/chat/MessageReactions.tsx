@@ -3,7 +3,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Heart, ThumbsUp, HelpCircle } from "lucide-react";
+import { Check, Heart, ThumbsUp, HelpCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MessageReactionsProps {
@@ -81,6 +81,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       case "check": return <Check className="h-3 w-3" />;
       case "question-mark": return <HelpCircle className="h-3 w-3" />;
       case "heart": return <Heart className="h-3 w-3" />;
+      case "eyes": return <Eye className="h-3 w-3" />;
       case "strong": return <span className="text-xs">💪</span>;
       case "thank-you": return <span className="text-xs">🙏</span>;
       case "agree": return <span className="text-xs">💯</span>;
