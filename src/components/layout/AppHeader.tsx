@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
+import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const navigate = useNavigate();
@@ -68,28 +69,40 @@ export function AppHeader() {
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-7 px-2 py-0.5 text-sm rounded-sm"
+                    className={cn(
+                      "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
+                      "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
+                    )}
                   >
-                    {pl.name}
+                    {pl.name.toUpperCase()}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
+                  className={cn(
+                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
+                  )}
                 >
-                  Leads
+                  LEADS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
+                  className={cn(
+                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
+                  )}
                 >
-                  Orders
+                  ORDERS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
+                  className={cn(
+                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
+                  )}
                 >
-                  Messages
+                  MESSAGES
                 </TabsTrigger>
               </TabsList>
             </Tabs>
