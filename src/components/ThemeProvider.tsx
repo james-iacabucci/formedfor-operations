@@ -36,7 +36,7 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     
     // Apply transition styles to make theme changes smoother
-    root.style.transition = "background-color 0.3s ease, color 0.3s ease";
+    root.style.transition = "background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease";
     
     // Remove both classes first to ensure clean state
     root.classList.remove("light", "dark");

@@ -44,7 +44,26 @@
 
 /* Add smooth transitions for theme changes */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-duration: 0.3s;
-  transition-timing-function: ease;
+  transition-timing-function: ease-in-out;
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better hover effects */
+a, button, [role="button"] {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Smoother animations for dropdown menus and modals */
+.animate-in {
+  animation-duration: 300ms;
+}
+
+.animate-out {
+  animation-duration: 300ms;
 }
