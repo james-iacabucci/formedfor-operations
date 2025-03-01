@@ -121,12 +121,12 @@ export function SculptureInfo({
         </div>
       </div>
 
-      {/* Pricing row */}
-      <div className="text-sm text-white">
+      {/* Pricing row - reduce space after this element */}
+      <div className="text-sm text-white mb-1">
         {getPriceDisplay()}
       </div>
 
-      {/* Material row - using the same spacing as between price and dimensions */}
+      {/* Material row - now has reduced space above it due to mb-1 on pricing row */}
       <div className="space-y-2 text-sm">
         <div>
           {getMaterialName()}
