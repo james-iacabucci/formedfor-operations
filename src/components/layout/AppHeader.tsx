@@ -1,20 +1,54 @@
-
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ProductLine } from "@/types/product-line";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
 
+  // Fetch product lines
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines_for_header"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
   // Determine active tab based on current path
   const getActiveTab = () => {
-    if (currentPath.includes("/brodin")) return "brodin";
     if (currentPath.includes("/leads")) return "leads";
     if (currentPath.includes("/orders")) return "orders";
-    if (currentPath.includes("/chat")) return "chat";
-    return "formedfor"; // Default tab
+    if (currentPath.includes("/messages")) return "messages";
+    
+    // Check if the path contains a product line id
+    const productLineId = currentPath.split('/').pop();
+    if (productLineId && productLines?.some(pl => pl.id === productLineId)) {
+      return productLineId;
+    }
+    
+    // Default to first product line if available, otherwise fallback to home
+    return productLines && productLines.length > 0 ? productLines[0].id : "home";
+  };
+
+  const handleTabChange = (value: string) => {
+    // Check if the value is a special tab
+    if (value === "leads" || value === "orders" || value === "messages") {
+      navigate(`/${value}`);
+      return;
+    }
+    
+    // Otherwise, it's a product line ID - navigate to dashboard with product line filter
+    navigate(`/productline/${value}`);
   };
 
   return (
@@ -22,17 +56,39 @@ export function AppHeader() {
       <div className="mx-auto max-w-7xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <Tabs defaultValue={getActiveTab()} className="w-full" 
-                  onValueChange={(value) => {
-                    if (value === "formedfor") navigate("/");
-                    else navigate(`/${value}`);
-                  }}>
-              <TabsList className="inline-flex">
-                <TabsTrigger value="formedfor" className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary">Formed For</TabsTrigger>
-                <TabsTrigger value="brodin" className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary">Brodin</TabsTrigger>
-                <TabsTrigger value="leads" className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary">Leads</TabsTrigger>
-                <TabsTrigger value="orders" className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary">Orders</TabsTrigger>
-                <TabsTrigger value="chat" className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary">Chat</TabsTrigger>
+            <Tabs 
+              defaultValue={getActiveTab()} 
+              className="w-full" 
+              onValueChange={handleTabChange}
+            >
+              <TabsList className="inline-flex flex-wrap">
+                {productLines?.map(pl => (
+                  <TabsTrigger 
+                    key={pl.id} 
+                    value={pl.id}
+                    className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  >
+                    {pl.name}
+                  </TabsTrigger>
+                ))}
+                <TabsTrigger 
+                  value="leads" 
+                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                >
+                  Leads
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="orders" 
+                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                >
+                  Orders
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="messages" 
+                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                >
+                  Messages
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>

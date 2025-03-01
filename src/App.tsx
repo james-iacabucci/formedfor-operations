@@ -10,6 +10,10 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import SculptureDetail from "./pages/SculptureDetail";
+import LeadsPage from "./pages/LeadsPage";
+import OrdersPage from "./pages/OrdersPage";
+import MessagesPage from "./pages/MessagesPage";
+import ProductLinePage from "./pages/ProductLinePage";
 
 // Create a client with optimized configuration
 const queryClient = new QueryClient({
@@ -39,6 +43,38 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SculptureDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leads"
+                element={
+                  <ProtectedRoute>
+                    <LeadsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute>
+                    <OrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <MessagesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/productline/:productLineId"
+                element={
+                  <ProtectedRoute>
+                    <ProductLinePage />
                   </ProtectedRoute>
                 }
               />
