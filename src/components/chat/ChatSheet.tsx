@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileList } from "./FileList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, MessageSquare, Wrench, Files } from "lucide-react";
+import { MessageSquare, Files } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
 interface ChatSheetProps {
@@ -115,7 +114,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           
           <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4 flex-wrap gap-2">
-              <div className="w-full flex justify-between items-center">
+              <div className="w-full flex items-center">
                 <Tabs
                   value={activeView}
                   onValueChange={(value) => setActiveView(value as "chat" | "files")}
@@ -140,35 +139,26 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                 <Tabs
                   value={currentTopic}
                   onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-                  className="bg-black p-1.5 rounded-md border border-muted"
+                  className="bg-black p-1.5 rounded-md border border-muted ml-auto flex-grow flex"
                 >
-                  <TabsList className="bg-transparent border-0 h-7 p-0">
+                  <TabsList className="bg-transparent border-0 h-7 p-0 w-full flex">
                     <TabsTrigger 
                       value="pricing" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
                     >
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="h-3 w-3" />
-                        <span>Pricing</span>
-                      </div>
+                      Pricing
                     </TabsTrigger>
                     <TabsTrigger 
                       value="fabrication" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
                     >
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>Fabrication</span>
-                      </div>
+                      Fabrication
                     </TabsTrigger>
                     <TabsTrigger 
                       value="operations" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
                     >
-                      <div className="flex items-center gap-1">
-                        <Wrench className="h-3 w-3" />
-                        <span>Operations</span>
-                      </div>
+                      Operations
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
