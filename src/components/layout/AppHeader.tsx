@@ -1,4 +1,3 @@
-
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -28,13 +27,11 @@ export function AppHeader() {
 
   // Determine active tab based on current path
   const getActiveTab = () => {
-    if (currentPath.includes("/dashboard")) return "dashboard";
-    if (currentPath.includes("/leads")) return "leads";
     if (currentPath.includes("/clients")) return "clients";
+    if (currentPath.includes("/leads")) return "leads";
     if (currentPath.includes("/orders")) return "orders";
-    if (currentPath.includes("/tasks")) return "tasks";
-    if (currentPath.includes("/installs")) return "installs";
     if (currentPath.includes("/messages")) return "messages";
+    if (currentPath.includes("/tasks")) return "tasks";
     
     // Check if the path contains a product line id
     const productLineId = currentPath.split('/').pop();
@@ -42,18 +39,14 @@ export function AppHeader() {
       return productLineId;
     }
     
-    // Default to first product line if available, otherwise fallback to dashboard
-    return productLines && productLines.length > 0 ? productLines[0].id : "dashboard";
+    // Default to first product line if available, otherwise fallback to clients
+    return productLines && productLines.length > 0 ? productLines[0].id : "clients";
   };
 
   const handleTabChange = (value: string) => {
     // Check if the value is a special tab
-    if (value === "dashboard") {
-      navigate("/dashboard");
-      return;
-    }
-    if (value === "leads" || value === "clients" || value === "orders" || 
-        value === "tasks" || value === "installs" || value === "messages") {
+    if (value === "clients" || value === "leads" || value === "orders" || 
+        value === "messages" || value === "tasks") {
       navigate(`/${value}`);
       return;
     }
@@ -74,12 +67,6 @@ export function AppHeader() {
               value={getActiveTab()}
             >
               <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-full border border-[#333333]">
-                <TabsTrigger 
-                  value="dashboard" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Dashboard
-                </TabsTrigger>
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
@@ -90,16 +77,16 @@ export function AppHeader() {
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
-                  value="leads" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Leads
-                </TabsTrigger>
-                <TabsTrigger 
                   value="clients" 
                   className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
                   Clients
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="leads" 
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                >
+                  Leads
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
@@ -108,22 +95,16 @@ export function AppHeader() {
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="tasks" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Tasks
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="installs" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Installs
-                </TabsTrigger>
-                <TabsTrigger 
                   value="messages" 
                   className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
                   Messages
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tasks" 
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                >
+                  Tasks
                 </TabsTrigger>
               </TabsList>
             </Tabs>
