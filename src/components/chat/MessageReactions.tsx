@@ -1,10 +1,11 @@
 
 import { useAuth } from "@/components/AuthProvider";
-import { MessageReaction, FileAttachment, isFileAttachment } from "./types";
+import { MessageReaction, FileAttachment } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Heart, ThumbsUp, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Json } from "@/integrations/supabase/types";
 
 interface MessageReactionsProps {
@@ -112,18 +113,18 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     }
   };
   
-  const getReactionIcon = (reaction: string) => {
+  const getReactionEmoji = (reaction: string) => {
     switch (reaction) {
-      case "thumbs-up": return <ThumbsUp className="h-3 w-3 text-blue-500" />;
-      case "check": return <Check className="h-3 w-3 text-green-500" />;
-      case "heart": return <Heart className="h-3 w-3 text-red-500" />;
-      case "eyes": return <Eye className="h-3 w-3 text-amber-500" />;
-      case "task": return <FilePlus className="h-3 w-3 text-purple-500" />;
-      case "strong": return <span className="text-xs">💪</span>;
-      case "thank-you": return <span className="text-xs">🙏</span>;
-      case "agree": return <span className="text-xs">💯</span>;
-      case "question-mark": return <HelpCircle className="h-3 w-3 text-purple-500" />;
-      default: return <ThumbsUp className="h-3 w-3 text-blue-500" />;
+      case "thumbs-up": return "👍";
+      case "check": return "✓";
+      case "heart": return "❤️";
+      case "eyes": return "👀";
+      case "task": return "📋";
+      case "strong": return "💪";
+      case "thank-you": return "🙏";
+      case "agree": return "💯";
+      case "question-mark": return "❓";
+      default: return "👍";
     }
   };
   
@@ -133,18 +134,17 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         const userHasReacted = !!user && reactors.some(r => r.user_id === user.id);
         
         return (
-          <Button
+          <Badge
             key={reactionType}
-            variant="outline"
-            size="sm"
-            className={`h-6 py-0 px-1.5 rounded-full text-xs flex items-center gap-1
-              ${userHasReacted ? 'bg-primary/10 text-primary border-primary/30' : 'bg-muted hover:bg-muted/80'}`}
+            variant={userHasReacted ? "default" : "outline"}
+            className={`px-2 h-6 py-0 rounded-full text-xs flex items-center gap-1 cursor-pointer transition-colors hover:bg-muted
+              ${userHasReacted ? 'bg-primary/10 text-primary border-primary/30' : 'bg-background hover:bg-muted/80'}`}
             onClick={() => userHasReacted && handleRemoveReaction(reactionType)}
             title={reactors.map(r => r.username || "User").join(", ")}
           >
-            <span>{getReactionIcon(reactionType)}</span>
+            <span className="text-sm">{getReactionEmoji(reactionType)}</span>
             <span>{reactors.length}</span>
-          </Button>
+          </Badge>
         );
       })}
     </div>

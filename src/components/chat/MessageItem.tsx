@@ -1,5 +1,5 @@
 
-import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye, FilePlus } from "lucide-react";
+import { Reply, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message, FileAttachment } from "./types";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface MessageItemProps {
   message: Message;
@@ -25,7 +26,6 @@ interface MessageItemProps {
 
 export function MessageItem({ message, children }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [hoveredReaction, setHoveredReaction] = useState<string | null>(null);
   const messageDate = new Date(message.created_at);
   const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
   const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -131,11 +131,13 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
   
   const reactions = [
-    { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4 text-blue-500" /> },
-    { id: "check", icon: <Check className="h-4 w-4 text-green-500" /> },
-    { id: "heart", icon: <Heart className="h-4 w-4 text-red-500" /> },
-    { id: "eyes", icon: <Eye className="h-4 w-4 text-amber-500" /> },
-    { id: "task", icon: <FilePlus className="h-4 w-4 text-purple-500" /> },
+    { id: "thumbs-up", emoji: "👍" },
+    { id: "heart", emoji: "❤️" },
+    { id: "strong", emoji: "💪" },
+    { id: "thank-you", emoji: "🙏" },
+    { id: "agree", emoji: "💯" },
+    { id: "eyes", emoji: "👀" },
+    { id: "question-mark", emoji: "❓" },
   ];
 
   return (
@@ -169,34 +171,39 @@ export function MessageItem({ message, children }: MessageItemProps) {
             )}
             
             {isHovered && (
-              <div className="absolute right-0 -top-8 bg-black rounded-md px-2 border border-gray-600 shadow-md flex items-center">
-                {reactions.map((reaction) => {
-                  const userHasReacted = !!user && (message.reactions || []).some(
-                    r => r.reaction === reaction.id && r.user_id === user.id
-                  );
-                  
-                  return (
-                    <Button
-                      key={reaction.id}
-                      variant="ghost"
-                      size="icon"
-                      className={`h-8 w-8 text-white hover:bg-gray-700 ${userHasReacted ? 'bg-primary/20' : ''}`}
-                      onClick={() => handleReaction(reaction.id)}
-                      onMouseEnter={() => setHoveredReaction(reaction.id)}
-                      onMouseLeave={() => setHoveredReaction(null)}
+              <div className="absolute -top-2 right-0 flex">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-muted-foreground hover:bg-accent/50 h-8 px-2"
                     >
-                      {reaction.icon}
+                      <span className="text-base">😀</span>
                     </Button>
-                  );
-                })}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2 mb-1 flex gap-1.5" side="top" align="end">
+                    {reactions.map((reaction) => (
+                      <Button
+                        key={reaction.id}
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full hover:bg-accent"
+                        onClick={() => handleReaction(reaction.id)}
+                      >
+                        <span className="text-lg">{reaction.emoji}</span>
+                      </Button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
                 
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-white hover:bg-gray-700"
+                        size="sm" 
+                        className="text-muted-foreground hover:bg-accent/50 h-8 px-2"
                         onClick={handleReply}
                       >
                         <Reply className="h-4 w-4" />
@@ -212,8 +219,8 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       <TooltipTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-white hover:bg-destructive/60"
+                          size="sm" 
+                          className="text-muted-foreground hover:bg-destructive/60 h-8 px-2"
                           onClick={handleDelete}
                         >
                           <Trash2 className="h-4 w-4" />
