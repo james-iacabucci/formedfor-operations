@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -12,7 +12,11 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardActions } from "@/components/dashboard/DashboardActions";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 
-const Dashboard = () => {
+interface DashboardProps {
+  initialProductLineId?: string;
+}
+
+const Dashboard = ({ initialProductLineId }: DashboardProps) => {
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
@@ -22,6 +26,19 @@ const Dashboard = () => {
   const { viewSettings, isLoading: preferencesLoading, savePreferences } = useUserPreferences();
   
   const { tags } = useTagsManagement(undefined);
+
+  // Set the product line filter if initialProductLineId is provided
+  useEffect(() => {
+    if (initialProductLineId && !preferencesLoading) {
+      // Only update if the product line isn't already selected
+      if (!viewSettings.selectedProductLines.includes(initialProductLineId)) {
+        savePreferences({
+          ...viewSettings,
+          selectedProductLines: [initialProductLineId]
+        });
+      }
+    }
+  }, [initialProductLineId, viewSettings, savePreferences, preferencesLoading]);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],

@@ -9,6 +9,7 @@ import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
 import LeadsPage from "./pages/LeadsPage";
 import OrdersPage from "./pages/OrdersPage";
@@ -38,6 +39,14 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/sculpture/:id"
                 element={
