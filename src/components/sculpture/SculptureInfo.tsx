@@ -116,7 +116,7 @@ export function SculptureInfo({
             status={sculpture.status}
             variant="small"
           />
-          <div className="border border-muted rounded-md h-5 px-2 flex items-center text-[10px] text-muted-foreground">
+          <div className="border border-muted rounded-md h-5 px-2 flex items-center text-[10px] text-white">
             {getPriceDisplay()}
           </div>
         </div>
