@@ -39,16 +39,6 @@ const Dashboard = () => {
     },
   });
 
-  useEffect(() => {
-    if (productLines && viewSettings.selectedProductLines.length === 0 && !preferencesLoading) {
-      const ffProductLine = productLines.find(pl => pl.product_line_code === 'FF');
-      if (ffProductLine) {
-        const defaultSelection = [ffProductLine.id];
-        handleProductLineChange(defaultSelection);
-      }
-    }
-  }, [productLines, viewSettings.selectedProductLines, preferencesLoading]);
-
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
     queryFn: async () => {
@@ -100,13 +90,6 @@ const Dashboard = () => {
     savePreferences({ searchValue: value });
   };
 
-  const handleProductLineChange = (values: string[]) => {
-    savePreferences({
-      selectedProductLines: values,
-      productLineId: values.length === 1 ? values[0] : null
-    });
-  };
-
   const handleGridViewToggle = (isGrid: boolean) => {
     savePreferences({ isGridView: isGrid });
   };
@@ -139,27 +122,6 @@ const Dashboard = () => {
                 <List className="h-4 w-4" />
               </Toggle>
             </div>
-
-            {productLines && productLines.length > 0 && (
-              <ToggleGroup 
-                type="multiple"
-                value={viewSettings.selectedProductLines}
-                onValueChange={handleProductLineChange}
-                className="flex flex-wrap gap-1"
-              >
-                {productLines.map((pl) => (
-                  <ToggleGroupItem
-                    key={pl.id}
-                    value={pl.id}
-                    variant="primary"
-                    size="sm"
-                    className="h-10 px-[10px] py-[10px] text-xs"
-                  >
-                    {pl.product_line_code || pl.name}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            )}
 
             {isSearchExpanded ? (
               <div className="relative">
