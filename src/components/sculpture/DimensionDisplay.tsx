@@ -37,13 +37,13 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
 
   return (
     <div className="flex items-center gap-2" onClick={handleTabClick}>
-      <span>
+      <span className="flex items-center">
         {formatDimensionString(height, width, depth, unit)}
       </span>
       <Tabs
         value={unit}
         onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
-        className="h-5"
+        className="h-5 flex items-center"
       >
         <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
           <TabsTrigger 
