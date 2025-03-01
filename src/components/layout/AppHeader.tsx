@@ -62,31 +62,31 @@ export function AppHeader() {
               className="w-full" 
               onValueChange={handleTabChange}
             >
-              <TabsList className="inline-flex flex-wrap h-auto bg-transparent p-0">
+              <TabsList className="inline-flex h-auto bg-muted p-0.5 rounded-md">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
+                    className="h-7 px-2 py-0.5 text-sm rounded-sm"
                   >
                     {pl.name}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
+                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
                 >
                   Leads
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
+                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
                 >
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
+                  className="h-7 px-2 py-0.5 text-sm rounded-sm"
                 >
                   Messages
                 </TabsTrigger>
