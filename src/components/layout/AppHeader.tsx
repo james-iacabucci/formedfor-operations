@@ -64,7 +64,7 @@ export function AppHeader() {
               onValueChange={handleTabChange}
               value={getActiveTab()}
             >
-              <TabsList className="inline-flex h-auto bg-black p-1 rounded-full border-0">
+              <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-full border border-[#333333]">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 

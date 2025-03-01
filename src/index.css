@@ -45,7 +45,7 @@
     --sidebar-ring: 0 0% 59.8%;
 
     /* New navigation pill styles */
-    --nav-pill-bg: 0 0% 13%;
+    --nav-pill-bg: 0 0% 0%;
     --nav-pill-active: 0 0% 20%;
     --nav-pill-text: 0 0% 100%;
   }
@@ -89,7 +89,7 @@
     --sidebar-ring: 0 0% 59.8%;
 
     /* New navigation pill styles for dark mode */
-    --nav-pill-bg: 0 0% 13%;
+    --nav-pill-bg: 0 0% 0%;
     --nav-pill-active: 0 0% 20%;
     --nav-pill-text: 0 0% 100%;
   }
