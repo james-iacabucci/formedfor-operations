@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -184,22 +183,15 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               {activeView === "chat" ? (
                 <>
                   {currentThreadId && (
-                    <>
-                      <div className="flex-1 min-h-0 overflow-hidden">
-                        <MessageList 
-                          threadId={currentThreadId} 
-                          uploadingFiles={uploadingFiles} 
-                          key={`${currentThreadId}-${resetScroll}`} // Force remount when topic changes
-                        />
-                      </div>
-                      <MessageInput 
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <MessageList 
                         threadId={currentThreadId} 
-                        autoFocus={true} 
-                        onUploadingFiles={setUploadingFiles}
+                        uploadingFiles={uploadingFiles} 
+                        key={`${currentThreadId}-${resetScroll}`} // Force remount when topic changes
                         editingMessage={editingMessage}
                         setEditingMessage={setEditingMessage}
                       />
-                    </>
+                    </div>
                   )}
                 </>
               ) : (
