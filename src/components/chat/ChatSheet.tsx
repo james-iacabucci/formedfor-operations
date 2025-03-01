@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -7,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileList } from "./FileList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, MessageSquare, Wrench } from "lucide-react";
+import { MessageCircle, MessageSquare, Wrench, Files } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
 interface ChatSheetProps {
@@ -125,13 +126,13 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                       value="chat" 
                       className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
                     >
-                      Chat
+                      <MessageSquare className="h-4 w-4" />
                     </TabsTrigger>
                     <TabsTrigger 
                       value="files" 
                       className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
                     >
-                      Files
+                      <Files className="h-4 w-4" />
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
