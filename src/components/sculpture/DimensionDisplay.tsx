@@ -45,17 +45,17 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
         onValueChange={(value) => setUnit(value as "inches" | "centimeters")}
         className="h-5"
       >
-        <TabsList className="h-5 p-0.5">
+        <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
           <TabsTrigger 
             value="inches" 
-            className="h-4 px-2 text-xs"
+            className="h-5 px-2 text-xs rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
             onClick={handleTabTriggerClick}
           >
             in
           </TabsTrigger>
           <TabsTrigger 
             value="centimeters" 
-            className="h-4 px-2 text-xs"
+            className="h-5 px-2 text-xs rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
             onClick={handleTabTriggerClick}
           >
             cm
