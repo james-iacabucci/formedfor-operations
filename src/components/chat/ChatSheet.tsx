@@ -179,7 +179,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                       <div className="shrink-0 p-4 pt-2">
                         <MessageInput 
                           threadId={currentThreadId} 
-                          autoFocus 
+                          autoFocus={true} 
                           onUploadingFiles={setUploadingFiles}
                         />
                       </div>

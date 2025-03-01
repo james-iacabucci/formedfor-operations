@@ -45,6 +45,12 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
     };
 
     textarea.addEventListener("input", adjustHeight);
+    
+    // Initialize textarea height to ensure it's single line initially
+    requestAnimationFrame(() => {
+      adjustHeight();
+    });
+
     return () => textarea.removeEventListener("input", adjustHeight);
   }, []);
 
@@ -168,36 +174,34 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t bg-background space-y-2">
-      <div className="relative flex items-end gap-2">
-        <div className="flex-1">
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder="Type a message..."
-            className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
+      <div className="relative">
+        <Textarea
+          ref={textareaRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          placeholder="Type a message..."
+          className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
+          disabled={isSending}
+        />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <FileUpload 
             disabled={isSending}
+            onFilesSelected={handleFilesSelected}
           />
-          <div className="absolute right-2 bottom-2 flex items-center gap-1">
-            <FileUpload 
-              disabled={isSending}
-              onFilesSelected={handleFilesSelected}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-              disabled={isSending || (!message.trim() && !uploadingFiles.length)}
-            >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            size="icon"
+            className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
+            disabled={isSending || (!message.trim() && !uploadingFiles.length)}
+          >
+            {isSending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
       
