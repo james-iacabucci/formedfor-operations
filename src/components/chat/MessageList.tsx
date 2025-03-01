@@ -13,16 +13,17 @@ import { MessageInput } from "./MessageInput";
 interface MessageListProps {
   threadId: string;
   uploadingFiles?: UploadingFile[];
-  pendingMessageSubmitted?: boolean;
+  editingMessage?: Message | null;
+  setEditingMessage?: (message: Message | null) => void;
 }
 
 export function MessageList({ 
   threadId, 
-  uploadingFiles = [], 
-  pendingMessageSubmitted = false 
+  uploadingFiles = [],
+  editingMessage = null,
+  setEditingMessage = () => {}
 }: MessageListProps) {
   const { user } = useAuth();
-  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [uploadingFilesState, setUploadingFilesState] = useState<UploadingFile[]>([]);
   
   const {
