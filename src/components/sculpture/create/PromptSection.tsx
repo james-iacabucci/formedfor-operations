@@ -56,7 +56,7 @@ export function PromptSection({
           size="sm"
           onClick={improvePrompt}
           disabled={isImproving || !prompt.trim()}
-          className="h-8 px-2"
+          className="h-8 px-2 transition-all duration-500 ease-in-out"
         >
           {isImproving ? (
             <>
@@ -77,7 +77,7 @@ export function PromptSection({
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         className={cn(
-          "min-h-[80px] resize-y transition-colors duration-300",
+          "min-h-[80px] resize-y transition-colors duration-500 ease-in-out",
           isPromptUpdated && "bg-green-50 dark:bg-green-900/20"
         )}
         rows={3}

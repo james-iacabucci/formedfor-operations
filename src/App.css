@@ -45,8 +45,8 @@
 /* Add smooth transitions for theme changes */
 * {
   transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-duration: 0.3s;
-  transition-timing-function: ease-in-out;
+  transition-duration: 0.5s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Add smooth scrolling */
@@ -56,31 +56,30 @@ html {
 
 /* Better hover effects */
 a, button, [role="button"] {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Smoother animations for dropdown menus and modals */
 .animate-in {
-  animation-duration: 300ms;
+  animation-duration: 500ms;
 }
 
 .animate-out {
-  animation-duration: 300ms;
+  animation-duration: 500ms;
 }
 
 /* Apply smooth transitions to all transforms and movements */
 [data-state="open"],
 [data-state="closed"] {
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Ensure all radix components have smooth transitions */
 [data-radix-popper-content-wrapper] {
-  transition: all 0.3s ease-in-out !important;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Make panel transitions smoother */
 .radix-side-panel {
-  transition: transform 0.3s ease-in-out !important;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
-
