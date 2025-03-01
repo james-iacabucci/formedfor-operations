@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -105,12 +104,12 @@ const Dashboard = () => {
       <div className="mx-auto max-w-7xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex gap-2 border rounded-md p-0.5">
+            <div className="flex gap-2 border rounded-md p-0.5 h-9">
               <Toggle
                 pressed={viewSettings.isGridView}
                 onPressedChange={() => handleGridViewToggle(true)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-9 w-9"
+                className="data-[state=on]:bg-muted h-8 w-8"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
@@ -118,7 +117,7 @@ const Dashboard = () => {
                 pressed={!viewSettings.isGridView}
                 onPressedChange={() => handleGridViewToggle(false)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-9 w-9"
+                className="data-[state=on]:bg-muted h-8 w-8"
               >
                 <List className="h-4 w-4" />
               </Toggle>
