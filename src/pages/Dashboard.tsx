@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { SculpturesList } from "@/components/SculpturesList";
 import { CreateSculptureSheet } from "@/components/CreateSculptureSheet";
@@ -109,7 +110,7 @@ const Dashboard = () => {
                 pressed={viewSettings.isGridView}
                 onPressedChange={() => handleGridViewToggle(true)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-10 w-10"
+                className="data-[state=on]:bg-muted h-9 w-9"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Toggle>
@@ -117,7 +118,7 @@ const Dashboard = () => {
                 pressed={!viewSettings.isGridView}
                 onPressedChange={() => handleGridViewToggle(false)}
                 size="sm"
-                className="data-[state=on]:bg-muted h-10 w-10"
+                className="data-[state=on]:bg-muted h-9 w-9"
               >
                 <List className="h-4 w-4" />
               </Toggle>
@@ -131,18 +132,18 @@ const Dashboard = () => {
                   value={viewSettings.searchValue}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  className="h-10 w-[200px] pl-8"
+                  className="h-9 w-[200px] pl-8"
                   onBlur={() => !viewSettings.searchValue && setIsSearchExpanded(false)}
                   placeholder="Search sculptures..."
                 />
-                <Search className="h-4 w-4 absolute left-2 top-3 text-muted-foreground" />
+                <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
               </div>
             ) : (
               <div className="flex gap-1">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-9 w-9 p-0"
                   onClick={handleSearchClick}
                 >
                   <Search className="h-4 w-4" />
@@ -150,7 +151,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-9 w-9 p-0"
                   onClick={() => setIsViewSettingsOpen(true)}
                 >
                   <Settings2 className="h-4 w-4" />
@@ -170,14 +171,14 @@ const Dashboard = () => {
             <Button 
               onClick={() => setIsAddSheetOpen(true)}
               variant="outline"
-              className="gap-2 h-10"
+              className="gap-2 h-9 px-3"
             >
               <UploadIcon className="h-4 w-4" />
               Add
             </Button>
             <Button 
               onClick={() => setIsCreateSheetOpen(true)}
-              className="gap-2 h-10"
+              className="gap-2 h-9 px-3"
             >
               <PlusIcon className="h-4 w-4" />
               Create
