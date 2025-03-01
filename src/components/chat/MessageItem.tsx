@@ -146,8 +146,8 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
 
   return (
-    <div className={`group relative py-6 ${isOwnMessage ? 'bg-accent/30' : 'bg-muted/30'}`}>
-      <div className="flex items-start gap-3 px-6 max-w-4xl mx-auto">
+    <div className="group relative py-2">
+      <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -170,7 +170,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
             onMouseLeave={() => setIsHovered(false)}
           >
             {message.content && (
-              <div className={`text-sm whitespace-pre-wrap rounded-xl px-4 py-3 ${isOwnMessage ? 'bg-primary/10' : 'bg-accent/50'}`}>
+              <div className="text-sm whitespace-pre-wrap">
                 {message.content}
               </div>
             )}
