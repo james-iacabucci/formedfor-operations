@@ -11,7 +11,6 @@ interface MessageListContentProps {
   uploadingFiles: UploadingFile[];
   user: User | null;
   threadId: string;
-  onEditMessage?: (message: Message) => void;
 }
 
 export function MessageListContent({
@@ -20,8 +19,7 @@ export function MessageListContent({
   isLoading,
   uploadingFiles,
   user,
-  threadId,
-  onEditMessage
+  threadId
 }: MessageListContentProps) {
   return (
     <div className="pb-4 pt-2">
@@ -35,7 +33,6 @@ export function MessageListContent({
         <MessageItem 
           key={message.id} 
           message={message}
-          onEditMessage={onEditMessage}
         />
       ))}
       

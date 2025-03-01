@@ -8,6 +8,7 @@ interface MessageHeaderProps {
   isHovered: boolean;
   isOwnMessage: boolean;
   isDeleted: boolean;
+  isEditing: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onCopy: () => void;
@@ -20,6 +21,7 @@ export function MessageHeader({
   isHovered,
   isOwnMessage,
   isDeleted,
+  isEditing,
   onEdit,
   onDelete,
   onCopy,
@@ -38,17 +40,24 @@ export function MessageHeader({
         <span className="text-xs text-muted-foreground">
           {formattedDate} at {formattedTime}
         </span>
+        {isEditing && (
+          <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+            Editing
+          </span>
+        )}
       </div>
       
-      <MessageItemActions 
-        isHovered={isHovered}
-        isOwnMessage={isOwnMessage}
-        isDeleted={isDeleted}
-        handleEdit={onEdit}
-        handleDelete={onDelete}
-        handleCopy={onCopy}
-        handleReaction={onReaction}
-      />
+      {!isEditing && (
+        <MessageItemActions 
+          isHovered={isHovered}
+          isOwnMessage={isOwnMessage}
+          isDeleted={isDeleted}
+          handleEdit={onEdit}
+          handleDelete={onDelete}
+          handleCopy={onCopy}
+          handleReaction={onReaction}
+        />
+      )}
     </div>
   );
 }

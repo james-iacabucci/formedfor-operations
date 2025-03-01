@@ -20,6 +20,7 @@ interface MessageItemProps {
 export function MessageItem({ message, children, onEditMessage }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const { handleReaction } = useMessageReactions(message);
@@ -28,8 +29,41 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
   const isDeleted = message.content === "[This message was deleted]";
   
   const handleEdit = () => {
-    if (onEditMessage && !isDeleted) {
-      onEditMessage(message);
+    if (!isDeleted) {
+      setIsEditing(true);
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+  
+  const handleSaveEdit = async (content: string, attachments: any[]) => {
+    try {
+      const { error: messageError } = await supabase
+        .from("chat_messages")
+        .update({
+          content: content.trim(),
+          attachments: attachments,
+          edited_at: new Date().toISOString()
+        })
+        .eq("id", message.id);
+
+      if (messageError) throw messageError;
+      
+      toast({
+        description: "Message updated successfully",
+        duration: 2000
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update message",
+        variant: "destructive"
+      });
     }
   };
   
@@ -106,6 +140,7 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
             isHovered={isHovered}
             isOwnMessage={isOwnMessage}
             isDeleted={isDeleted}
+            isEditing={isEditing}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onCopy={handleCopy}
@@ -115,6 +150,9 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
           <MessageContent 
             message={message}
             isDeleted={isDeleted}
+            isEditing={isEditing}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
           />
 
           {children}

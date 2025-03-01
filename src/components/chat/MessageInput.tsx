@@ -1,11 +1,12 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, X } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { UploadingFile, Message, FileAttachment } from "./types";
+import { UploadingFile } from "./types";
 import { FileUpload } from "./FileUpload";
 import { PendingFiles } from "./PendingFiles";
 import { uploadFiles } from "./uploadService";
@@ -14,16 +15,12 @@ interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
   onUploadingFiles: (files: UploadingFile[]) => void;
-  editingMessage: Message | null;
-  setEditingMessage: (message: Message | null) => void;
 }
 
 export function MessageInput({ 
   threadId, 
   autoFocus = false, 
-  onUploadingFiles,
-  editingMessage,
-  setEditingMessage
+  onUploadingFiles
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -31,29 +28,6 @@ export function MessageInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (editingMessage) {
-      setMessage(editingMessage.content === "[This message was deleted]" ? "" : editingMessage.content);
-      
-      if (editingMessage.attachments && editingMessage.attachments.length > 0) {
-        const existingFiles: UploadingFile[] = editingMessage.attachments.map(attachment => ({
-          id: crypto.randomUUID(),
-          file: new File([], attachment.name, { type: attachment.type }),
-          progress: 100,
-          existingUrl: attachment.url
-        }));
-        
-        setUploadingFiles(existingFiles);
-      } else {
-        setUploadingFiles([]);
-      }
-      
-      setTimeout(() => {
-        adjustHeight();
-      }, 0);
-    }
-  }, [editingMessage]);
 
   useEffect(() => {
     onUploadingFiles(uploadingFiles);
@@ -133,12 +107,6 @@ export function MessageInput({
     setUploadingFiles(prev => prev.filter(f => f.id !== id));
   };
 
-  const cancelEditing = () => {
-    setEditingMessage(null);
-    setMessage("");
-    setUploadingFiles([]);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || (!message.trim() && !uploadingFiles.length)) return;
@@ -147,17 +115,7 @@ export function MessageInput({
     let messageId: string | null = null;
 
     try {
-      const filesToUpload = uploadingFiles.filter(f => !f.existingUrl);
-      
-      const existingFiles = uploadingFiles
-        .filter(f => f.existingUrl)
-        .map(f => ({
-          name: f.file.name,
-          url: f.existingUrl as string,
-          type: f.file.type,
-          size: f.file.size
-        }));
-      
+      const filesToUpload = uploadingFiles;
       let uploadedFiles: any[] = [];
 
       if (filesToUpload.length > 0) {
@@ -173,44 +131,22 @@ export function MessageInput({
         
         console.log("Successfully uploaded files:", uploadedFiles);
       }
+
+      const { data: messageData, error: messageError } = await supabase
+        .from("chat_messages")
+        .insert({
+          thread_id: threadId,
+          user_id: user.id,
+          content: message.trim(),
+          attachments: uploadedFiles
+        })
+        .select();
+
+      if (messageError) throw messageError;
       
-      const allAttachments = [...existingFiles, ...uploadedFiles];
-
-      if (editingMessage) {
-        const { error: messageError } = await supabase
-          .from("chat_messages")
-          .update({
-            content: message.trim(),
-            attachments: allAttachments,
-            edited_at: new Date().toISOString()
-          })
-          .eq("id", editingMessage.id);
-
-        if (messageError) throw messageError;
-        
-        toast({
-          description: "Message updated successfully",
-          duration: 2000
-        });
-        
-        setEditingMessage(null);
-      } else {
-        const { data: messageData, error: messageError } = await supabase
-          .from("chat_messages")
-          .insert({
-            thread_id: threadId,
-            user_id: user.id,
-            content: message.trim(),
-            attachments: allAttachments
-          })
-          .select();
-
-        if (messageError) throw messageError;
-        
-        if (messageData && messageData.length > 0) {
-          messageId = messageData[0].id;
-          console.log("Created message with ID:", messageId, "and attachments:", allAttachments);
-        }
+      if (messageData && messageData.length > 0) {
+        messageId = messageData[0].id;
+        console.log("Created message with ID:", messageId, "and attachments:", uploadedFiles);
       }
 
       setMessage("");
@@ -233,7 +169,7 @@ export function MessageInput({
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: editingMessage ? "Failed to update message" : "Failed to send message",
+        description: "Failed to send message",
         variant: "destructive",
       });
     } finally {
@@ -249,22 +185,7 @@ export function MessageInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t bg-background space-y-2">
-      {editingMessage && (
-        <div className="flex items-center justify-between bg-muted/50 p-2 rounded mb-2">
-          <span className="text-sm font-medium">Editing message</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={cancelEditing}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Cancel
-          </Button>
-        </div>
-      )}
-      
+    <form onSubmit={handleSubmit} className="p-4 border-t bg-background space-y-2">      
       <div className="relative">
         <Textarea
           ref={textareaRef}

@@ -13,15 +13,11 @@ import { MessageInput } from "./MessageInput";
 interface MessageListProps {
   threadId: string;
   uploadingFiles?: UploadingFile[];
-  editingMessage?: Message | null;
-  setEditingMessage?: (message: Message | null) => void;
 }
 
 export function MessageList({ 
   threadId, 
-  uploadingFiles = [],
-  editingMessage = null,
-  setEditingMessage = () => {}
+  uploadingFiles = []
 }: MessageListProps) {
   const { user } = useAuth();
   const [uploadingFilesState, setUploadingFilesState] = useState<UploadingFile[]>([]);
@@ -67,10 +63,6 @@ export function MessageList({
     setScrollToBottom: setShouldScrollToBottom
   });
 
-  const handleEditMessage = (message: Message) => {
-    setEditingMessage(message);
-  };
-
   const handleUploadingFilesChange = (files: UploadingFile[]) => {
     setUploadingFilesState(files);
   };
@@ -98,7 +90,6 @@ export function MessageList({
           uploadingFiles={uploadingFilesState}
           user={user}
           threadId={threadId}
-          onEditMessage={handleEditMessage}
         />
       </ScrollArea>
       
@@ -106,8 +97,6 @@ export function MessageList({
         threadId={threadId}
         autoFocus
         onUploadingFiles={handleUploadingFilesChange}
-        editingMessage={editingMessage}
-        setEditingMessage={setEditingMessage}
       />
     </div>
   );
