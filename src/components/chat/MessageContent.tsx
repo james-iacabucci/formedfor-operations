@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, KeyboardEvent } from "react";
 import { Message } from "./types";
 import { MessageAttachment } from "./MessageAttachment";
 import { MessageReactions } from "./MessageReactions";
@@ -39,6 +39,11 @@ export function MessageContent({
   );
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  // Reset the edit content when message changes or edit mode toggles
+  useEffect(() => {
+    setEditContent(message.content);
+  }, [message.content, isEditing]);
 
   const handleFilesSelected = (files: UploadingFile[]) => {
     setUploadingFiles(prev => [...prev, ...files]);
@@ -90,6 +95,23 @@ export function MessageContent({
     }
   };
 
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter without shift to save
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!isSaving && (editContent.trim() || uploadingFiles.length > 0)) {
+        handleSaveEdit();
+      }
+    }
+    // Escape to cancel
+    else if (e.key === 'Escape') {
+      e.preventDefault();
+      onCancelEdit();
+    }
+    // Shift+Enter allows line break (default behavior, no need to handle)
+  };
+
   // Regular view
   if (!isEditing) {
     return (
@@ -125,6 +147,7 @@ export function MessageContent({
         <Textarea
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="min-h-[100px] resize-none text-sm mb-2"
           placeholder="Edit your message..."
         />

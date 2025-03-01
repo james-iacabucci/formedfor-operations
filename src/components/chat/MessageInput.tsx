@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Loader2 } from "lucide-react";
@@ -177,10 +176,21 @@ export function MessageInput({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+    }
+    else if (e.key === "Escape") {
+      e.preventDefault();
+      setMessage("");
+      setUploadingFiles([]);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        requestAnimationFrame(() => {
+          adjustHeight();
+        });
+      }
     }
   };
 
