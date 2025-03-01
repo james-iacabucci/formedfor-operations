@@ -7,6 +7,7 @@ import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
 import { useMessageScroll } from "./hooks/useMessageScroll";
 import { MessageLoading } from "./components/MessageLoading";
 import { MessageListContent } from "./components/MessageListContent";
+import { useEffect } from "react";
 
 interface MessageListProps {
   threadId: string;
@@ -47,6 +48,11 @@ export function MessageList({
     setIsInitialLoad,
     lastMessageRef
   });
+
+  // Force scroll to bottom when component mounts
+  useEffect(() => {
+    setIsInitialLoad(true);
+  }, [threadId]);
 
   // Set up realtime subscriptions
   useRealtimeMessages({

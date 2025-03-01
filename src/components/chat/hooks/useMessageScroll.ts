@@ -31,17 +31,19 @@ export function useMessageScroll({
   // Effect to handle initial render scroll to bottom
   useEffect(() => {
     if (isInitialLoad && !isLoading && messages.length > 0) {
-      // Use a slight delay to ensure the DOM has rendered
+      console.log("Initial load, scrolling to bottom immediately");
+      // Ensure DOM has fully rendered before scrolling
       setTimeout(() => {
         scrollToBottom(true);
         setIsInitialLoad(false);
-      }, 100);
+      }, 150); // Slightly increased delay to ensure DOM is ready
     }
   }, [isLoading, messages, isInitialLoad, setIsInitialLoad]);
 
   // Effect to handle smooth scrolling to bottom when new messages arrive
   useEffect(() => {
     if (shouldScrollToBottom && !isLoading) {
+      console.log("New messages arrived, scrolling to bottom smoothly");
       requestAnimationFrame(() => {
         scrollToBottom(false);
         setShouldScrollToBottom(false);
@@ -49,16 +51,25 @@ export function useMessageScroll({
     }
   }, [messages, shouldScrollToBottom, isLoading]);
 
+  // Effect to handle scrolling when switching between threads
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Reset state when messages change (like when switching threads)
+      setHasScrolled(false);
+      setIsInitialLoad(true);
+    }
+  }, [messages.length === 0]);
+
   const scrollToBottom = (instant: boolean) => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current) {
+      console.log("ScrollRef not available for scrolling");
+      return;
+    }
     
     const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
     if (scrollElement) {
+      console.log(`Scrolling to bottom (instant: ${instant})`);
       setIsAutoScrolling(true);
-      
-      // Get the input area height to adjust scrolling
-      const inputArea = document.querySelector('.shrink-0.p-4.pt-2');
-      const inputAreaHeight = inputArea ? inputArea.clientHeight : 80; // Default fallback if not found
       
       if (instant) {
         // Instant scroll (for initial load)
@@ -71,7 +82,7 @@ export function useMessageScroll({
           behavior: 'smooth'
         });
         
-        // Reset auto-scrolling flag after animation completes (roughly 300ms)
+        // Reset auto-scrolling flag after animation completes
         setTimeout(() => setIsAutoScrolling(false), 350);
       }
       
@@ -79,6 +90,8 @@ export function useMessageScroll({
       if (messages.length > 0) {
         lastMessageRef.current = messages[messages.length - 1].id;
       }
+    } else {
+      console.log("Scroll element not found");
     }
   };
 

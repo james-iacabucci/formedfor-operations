@@ -4,7 +4,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { convertToMessage } from "../types";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50; // Increased from 20 to 50 messages
 
 export function useMessages(threadId: string) {
   const lastMessageRef = useRef<string | null>(null);

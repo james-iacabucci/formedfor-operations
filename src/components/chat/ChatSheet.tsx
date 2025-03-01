@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -22,9 +23,16 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
   const { user } = useAuth();
   const [sculptureName, setSculptureName] = useState<string>("");
+  const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
 
   const handleViewChange = (value: string) => {
     setActiveView(value as "chat" | "files");
+  };
+
+  const handleTopicChange = (value: "pricing" | "fabrication" | "operations") => {
+    setCurrentTopic(value);
+    // Trigger scroll reset when changing topics
+    setResetScroll(prev => prev + 1);
   };
 
   const { data: threads, refetch } = useQuery({
@@ -142,7 +150,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                 
                 <Tabs
                   value={currentTopic}
-                  onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+                  onValueChange={handleTopicChange}
                   className="bg-black p-1.5 rounded-md border border-muted flex-grow flex"
                 >
                   <TabsList className="bg-transparent border-0 h-7 p-0 w-full flex">
@@ -177,7 +185,11 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                   {currentThreadId && (
                     <>
                       <div className="flex-1 min-h-0 overflow-hidden">
-                        <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
+                        <MessageList 
+                          threadId={currentThreadId} 
+                          uploadingFiles={uploadingFiles} 
+                          key={`${currentThreadId}-${resetScroll}`} // Force remount when topic changes
+                        />
                       </div>
                       <MessageInput 
                         threadId={currentThreadId} 
