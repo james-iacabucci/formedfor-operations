@@ -4,6 +4,7 @@ import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Heart, ThumbsUp, HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -93,16 +94,18 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         const userHasReacted = !!user && reactors.some(r => r.user_id === user.id);
         
         return (
-          <button
+          <Button
             key={reactionType}
-            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full 
-              ${userHasReacted ? 'bg-primary/10 text-primary' : 'bg-muted hover:bg-muted/80'}`}
+            variant="outline"
+            size="sm"
+            className={`h-6 py-0 px-1.5 rounded-full text-xs flex items-center gap-1
+              ${userHasReacted ? 'bg-primary/10 text-primary border-primary/30' : 'bg-muted hover:bg-muted/80'}`}
             onClick={() => userHasReacted && handleRemoveReaction(reactionType)}
             title={reactors.map(r => r.username || "User").join(", ")}
           >
             <span>{getReactionIcon(reactionType)}</span>
             <span>{reactors.length}</span>
-          </button>
+          </Button>
         );
       })}
     </div>
