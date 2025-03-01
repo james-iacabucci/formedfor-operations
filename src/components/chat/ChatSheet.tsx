@@ -119,49 +119,69 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           
           <div className="border-b shrink-0 pb-4">
             <div className="flex items-start px-4 pt-4 flex-wrap gap-2">
-              {/* CHAT/FILES tabs moved to the left */}
-              <Tabs
-                value={activeView}
-                onValueChange={(value) => setActiveView(value as "chat" | "files")}
-                className="w-[120px] shrink-0"
-              >
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="chat" className="text-xs px-2">
-                    CHAT
-                  </TabsTrigger>
-                  <TabsTrigger value="files" className="text-xs px-2">
-                    FILES
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              
-              {/* Topics tabs moved to the right with same styling */}
-              <Tabs
-                value={currentTopic}
-                onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
-                className="flex-1"
-              >
-                <TabsList className="w-full grid grid-cols-3">
-                  <TabsTrigger value="pricing" className="text-xs px-2">
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="h-3 w-3" />
-                      <span>Pricing</span>
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger value="fabrication" className="text-xs px-2">
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      <span>Fabrication</span>
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger value="operations" className="text-xs px-2">
-                    <div className="flex items-center gap-1">
-                      <Wrench className="h-3 w-3" />
-                      <span>Operations</span>
-                    </div>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {/* Combined tabs in one row with app navigation styling */}
+              <div className="w-full bg-black p-1.5 rounded-md border border-muted">
+                <div className="flex items-center">
+                  {/* CHAT/FILES tabs */}
+                  <Tabs
+                    value={activeView}
+                    onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                    className="mr-4"
+                  >
+                    <TabsList className="bg-transparent border-0 h-7 p-0">
+                      <TabsTrigger 
+                        value="chat" 
+                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      >
+                        Chat
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="files" 
+                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      >
+                        Files
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  
+                  {/* Topic tabs */}
+                  <Tabs
+                    value={currentTopic}
+                    onValueChange={(value) => setCurrentTopic(value as "pricing" | "fabrication" | "operations")}
+                    className="flex-1"
+                  >
+                    <TabsList className="bg-transparent border-0 h-7 p-0">
+                      <TabsTrigger 
+                        value="pricing" 
+                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      >
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="h-3 w-3" />
+                          <span>Pricing</span>
+                        </div>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="fabrication" 
+                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      >
+                        <div className="flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          <span>Fabrication</span>
+                        </div>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="operations" 
+                        className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      >
+                        <div className="flex items-center gap-1">
+                          <Wrench className="h-3 w-3" />
+                          <span>Operations</span>
+                        </div>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </div>
             </div>
           </div>
 
