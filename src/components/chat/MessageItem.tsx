@@ -15,6 +15,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageItemProps {
   message: Message;
@@ -64,13 +65,20 @@ export function MessageItem({ message, children }: MessageItemProps) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
+      const attachmentsAsJson: Json[] = (message.attachments || []).map(attachment => ({
+        name: attachment.name,
+        url: attachment.url,
+        type: attachment.type,
+        size: attachment.size
+      }));
+      
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
           reactions: updatedReactions,
           content: message.content,
           thread_id: message.thread_id,
-          attachments: message.attachments || [],
+          attachments: attachmentsAsJson,
           mentions: message.mentions || []
         })
         .eq("id", message.id);

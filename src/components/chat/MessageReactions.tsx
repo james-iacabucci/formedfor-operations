@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Heart, ThumbsUp, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -47,13 +48,23 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         return;
       }
       
+      // Convert FileAttachment[] to Json[] for Supabase if needed
+      const attachmentsAsJson: Json[] = Array.isArray(message.attachments) 
+        ? message.attachments.map(attachment => ({
+            name: attachment.name,
+            url: attachment.url,
+            type: attachment.type,
+            size: attachment.size
+          }))
+        : [];
+      
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
           reactions: updatedReactions,
           content: message.content,
           thread_id: message.thread_id,
-          attachments: message.attachments || [],
+          attachments: attachmentsAsJson,
           mentions: message.mentions || []
         })
         .eq("id", messageId);
