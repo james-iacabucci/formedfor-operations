@@ -162,7 +162,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
             <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-1"> {/* Changed from space-y-2 to space-y-1 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm">
