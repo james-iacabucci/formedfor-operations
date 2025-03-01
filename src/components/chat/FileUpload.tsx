@@ -9,8 +9,8 @@ interface FileUploadProps {
   onFilesSelected: (files: UploadingFile[]) => void;
   children?: React.ReactNode;
   buttonProps?: {
-    variant?: string;
-    size?: string;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "primary";
+    size?: "default" | "sm" | "lg" | "icon";
     className?: string;
   };
 }
