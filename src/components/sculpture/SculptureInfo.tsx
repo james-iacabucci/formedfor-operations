@@ -115,7 +115,7 @@ export function SculptureInfo({
             variant="small"
           />
         </div>
-        <div className="border rounded-full px-3 py-0.5 text-sm border-muted text-muted-foreground">
+        <div className="bg-secondary h-5 px-2 text-[10px] rounded-md text-secondary-foreground">
           {getPriceDisplay()}
         </div>
       </div>
