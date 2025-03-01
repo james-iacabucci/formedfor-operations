@@ -1,4 +1,3 @@
-
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -64,43 +63,31 @@ export function AppHeader() {
               onValueChange={handleTabChange}
               value={getActiveTab()}
             >
-              <TabsList className="inline-flex h-auto bg-muted p-1.5 rounded-md">
+              <TabsList className="inline-flex h-auto bg-black p-1.5 rounded-md border border-muted">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className={cn(
-                      "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
-                      "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
-                    )}
+                    className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
                   >
                     {pl.name.toUpperCase()}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className={cn(
-                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
-                  )}
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
                 >
                   LEADS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className={cn(
-                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
-                  )}
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
                 >
                   ORDERS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className={cn(
-                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
-                  )}
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
                 >
                   MESSAGES
                 </TabsTrigger>
