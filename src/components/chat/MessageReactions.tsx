@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";

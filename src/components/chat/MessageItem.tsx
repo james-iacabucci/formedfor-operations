@@ -105,11 +105,11 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
   
   const reactions = [
-    { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4" />, label: "👍 Thumbs up" },
-    { id: "check", icon: <Check className="h-4 w-4" />, label: "✅ Check" },
-    { id: "question-mark", icon: <HelpCircle className="h-4 w-4" />, label: "❓ Question" },
-    { id: "heart", icon: <Heart className="h-4 w-4" />, label: "❤️ Love" },
-    { id: "eyes", icon: <Eye className="h-4 w-4" />, label: "👀 Looking" },
+    { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4" /> },
+    { id: "check", icon: <Check className="h-4 w-4" /> },
+    { id: "question-mark", icon: <HelpCircle className="h-4 w-4" /> },
+    { id: "heart", icon: <Heart className="h-4 w-4" /> },
+    { id: "eyes", icon: <Eye className="h-4 w-4" /> },
   ];
 
   return (
@@ -145,31 +145,25 @@ export function MessageItem({ message, children }: MessageItemProps) {
             {/* Slack-like action bar */}
             {isHovered && (
               <div className="absolute right-0 -top-8 bg-accent/50 rounded-full border shadow-md flex items-center">
-                <TooltipProvider delayDuration={300}>
-                  {reactions.map((reaction) => {
-                    const userHasReacted = !!user && (message.reactions || []).some(
-                      r => r.reaction === reaction.id && r.user_id === user.id
-                    );
-                    
-                    return (
-                      <Tooltip key={reaction.id}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-8 w-8 rounded-full ${userHasReacted ? 'text-primary bg-primary/10' : ''}`}
-                            onClick={() => handleReaction(reaction.id)}
-                          >
-                            {reaction.icon}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{reaction.label}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
+                {reactions.map((reaction) => {
+                  const userHasReacted = !!user && (message.reactions || []).some(
+                    r => r.reaction === reaction.id && r.user_id === user.id
+                  );
                   
+                  return (
+                    <Button
+                      key={reaction.id}
+                      variant="ghost"
+                      size="icon"
+                      className={`h-8 w-8 rounded-full ${userHasReacted ? 'text-primary bg-primary/10' : ''}`}
+                      onClick={() => handleReaction(reaction.id)}
+                    >
+                      {reaction.icon}
+                    </Button>
+                  );
+                })}
+                
+                <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
