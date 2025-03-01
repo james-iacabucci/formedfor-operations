@@ -7,9 +7,20 @@ import { UploadingFile } from "./types";
 interface FileUploadProps {
   disabled: boolean;
   onFilesSelected: (files: UploadingFile[]) => void;
+  children?: React.ReactNode;
+  buttonProps?: {
+    variant?: string;
+    size?: string;
+    className?: string;
+  };
 }
 
-export function FileUpload({ disabled, onFilesSelected }: FileUploadProps) {
+export function FileUpload({ 
+  disabled, 
+  onFilesSelected, 
+  children, 
+  buttonProps 
+}: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,13 +48,13 @@ export function FileUpload({ disabled, onFilesSelected }: FileUploadProps) {
       />
       <Button
         type="button"
-        size="icon"
-        variant="ghost"
-        className="h-8 w-8 shrink-0 rounded-full"
+        size={buttonProps?.size || "icon"}
+        variant={buttonProps?.variant || "ghost"}
+        className={buttonProps?.className || "h-8 w-8 shrink-0 rounded-full"}
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
       >
-        <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
+        {children || <PaperclipIcon className="h-4 w-4 text-muted-foreground" />}
       </Button>
     </>
   );

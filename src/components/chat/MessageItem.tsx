@@ -15,9 +15,17 @@ interface MessageItemProps {
   message: Message;
   children?: React.ReactNode;
   onEditMessage?: (message: Message) => void;
+  editingMessage?: Message | null;
+  setEditingMessage?: (message: Message | null) => void;
 }
 
-export function MessageItem({ message, children, onEditMessage }: MessageItemProps) {
+export function MessageItem({ 
+  message, 
+  children, 
+  onEditMessage,
+  editingMessage,
+  setEditingMessage
+}: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -31,11 +39,17 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
   const handleEdit = () => {
     if (!isDeleted) {
       setIsEditing(true);
+      if (setEditingMessage) {
+        setEditingMessage(message);
+      }
     }
   };
   
   const handleCancelEdit = () => {
     setIsEditing(false);
+    if (setEditingMessage) {
+      setEditingMessage(null);
+    }
   };
   
   const handleSaveEdit = async (content: string, attachments: any[]) => {
@@ -57,6 +71,9 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
       });
       
       setIsEditing(false);
+      if (setEditingMessage) {
+        setEditingMessage(null);
+      }
     } catch (error) {
       console.error("Error updating message:", error);
       toast({
@@ -116,6 +133,9 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
     }
   };
 
+  // Check if this message is currently being edited
+  const isCurrentlyEditing = isEditing || (editingMessage && editingMessage.id === message.id);
+
   return (
     <div 
       className="group relative py-0.5" 
@@ -140,7 +160,7 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
             isHovered={isHovered}
             isOwnMessage={isOwnMessage}
             isDeleted={isDeleted}
-            isEditing={isEditing}
+            isEditing={isCurrentlyEditing}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onCopy={handleCopy}
@@ -150,7 +170,7 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
           <MessageContent 
             message={message}
             isDeleted={isDeleted}
-            isEditing={isEditing}
+            isEditing={isCurrentlyEditing}
             onCancelEdit={handleCancelEdit}
             onSaveEdit={handleSaveEdit}
           />
