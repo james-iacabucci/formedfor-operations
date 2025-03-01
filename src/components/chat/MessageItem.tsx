@@ -24,6 +24,7 @@ interface MessageItemProps {
 
 export function MessageItem({ message, children }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [hoveredReaction, setHoveredReaction] = useState<string | null>(null);
   const messageDate = new Date(message.created_at);
   const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
   const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -113,6 +114,24 @@ export function MessageItem({ message, children }: MessageItemProps) {
     { id: "eyes", icon: <Eye className="h-4 w-4" /> },
   ];
 
+  // Get colored version of icon on hover
+  const getColoredIcon = (reactionId: string) => {
+    switch (reactionId) {
+      case "thumbs-up":
+        return <ThumbsUp className="h-4 w-4 text-blue-500" />;
+      case "check":
+        return <Check className="h-4 w-4 text-green-500" />;
+      case "question-mark":
+        return <HelpCircle className="h-4 w-4 text-purple-500" />;
+      case "heart":
+        return <Heart className="h-4 w-4 text-red-500" />;
+      case "eyes":
+        return <Eye className="h-4 w-4 text-amber-500" />;
+      default:
+        return reactions.find(r => r.id === reactionId)?.icon;
+    }
+  };
+
   return (
     <div className="group relative">
       <div className="flex items-start gap-3">
@@ -158,8 +177,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       size="icon"
                       className={`h-8 w-8 ${userHasReacted ? 'text-primary bg-primary/10' : 'text-black'}`}
                       onClick={() => handleReaction(reaction.id)}
+                      onMouseEnter={() => setHoveredReaction(reaction.id)}
+                      onMouseLeave={() => setHoveredReaction(null)}
                     >
-                      {reaction.icon}
+                      {hoveredReaction === reaction.id ? getColoredIcon(reaction.id) : reaction.icon}
                     </Button>
                   );
                 })}
