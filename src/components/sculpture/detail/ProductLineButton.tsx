@@ -15,7 +15,7 @@ import { useRef } from "react";
 
 interface ProductLineButtonProps {
   sculptureId: string;
-  productLineId: string | null;
+  productLineId: string;  // Changed from string | null to string (required)
   productLines: ProductLine[] | undefined;
   currentProductLine: ProductLine | null;
   variant?: "small" | "large";

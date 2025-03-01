@@ -61,6 +61,7 @@ export function AppHeader() {
               defaultValue={getActiveTab()} 
               className="w-full" 
               onValueChange={handleTabChange}
+              value={getActiveTab()}
             >
               <TabsList className="inline-flex h-auto bg-muted p-0.5 rounded-md">
                 {productLines?.map(pl => (

@@ -31,8 +31,8 @@ export type Sculpture = {
   weight_lbs: number | null;
   method_id: string | null;
   material_id: string | null;
-  product_line_id: string | null;
-  // Add base-related properties
+  product_line_id: string; // Changed from string | null to string (required)
+  // Base-related properties
   base_material_id: string | null;
   base_method_id: string | null;
   base_height_in: number | null;

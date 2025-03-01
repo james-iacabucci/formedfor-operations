@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +24,25 @@ export default function SculptureDetail() {
         .single();
 
       if (error) throw error;
+      
+      if (!data.product_line_id) {
+        const { data: firstProductLine } = await supabase
+          .from("product_lines")
+          .select("id")
+          .limit(1)
+          .maybeSingle();
+        
+        if (firstProductLine) {
+          await supabase
+            .from("sculptures")
+            .update({ product_line_id: firstProductLine.id })
+            .eq("id", id);
+            
+          data.product_line_id = firstProductLine.id;
+        } else {
+          throw new Error("No product lines available");
+        }
+      }
       
       const validatedData: Sculpture = {
         ...data,

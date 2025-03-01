@@ -44,6 +44,7 @@ export function ProductLineSelector({ sculptureId, productLineId, productLines }
     <Select
       value={productLineId || undefined}
       onValueChange={handleProductLineChange}
+      required
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select product line" />

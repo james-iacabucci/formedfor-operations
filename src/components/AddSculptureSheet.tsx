@@ -14,6 +14,8 @@ import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { FileUploadField } from "./sculpture/FileUploadField";
 import { FileUpload } from "@/types/sculpture";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { ProductLine } from "@/types/product-line";
 
 interface AddSculptureSheetProps {
   open: boolean;
@@ -37,6 +39,21 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
   const [heightIn, setHeightIn] = useState<string>("");
   const [widthIn, setWidthIn] = useState<string>("");
   const [depthIn, setDepthIn] = useState<string>("");
+  const [productLineId, setProductLineId] = useState<string>("");
+
+  // Fetch product lines
+  const { data: productLines } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
 
   const handleDimensionChange = (value: string, setter: (value: string) => void) => {
     const sanitizedValue = value.replace(/[^0-9.]/g, '');
@@ -58,7 +75,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !file) return;
+    if (!user || !file || !productLineId) return;
     
     setIsLoading(true);
     try {
@@ -86,7 +103,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             image_url: publicUrl,
             prompt: "Manually added sculpture",
             ai_engine: "manual",
-            status: "idea",
+            status: status,
             models,
             renderings,
             dimensions,
@@ -96,6 +113,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             height_cm: heightIn ? calculateCm(heightIn) : null,
             width_cm: widthIn ? calculateCm(widthIn) : null,
             depth_cm: depthIn ? calculateCm(depthIn) : null,
+            product_line_id: productLineId,
           }
         ])
         .select()
@@ -114,6 +132,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
       setHeightIn("");
       setWidthIn("");
       setDepthIn("");
+      setProductLineId("");
       
       onOpenChange(false);
       toast({
@@ -184,6 +203,26 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
           </AIField>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Product Line *</label>
+              <Select 
+                value={productLineId} 
+                onValueChange={setProductLineId}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select product line" />
+                </SelectTrigger>
+                <SelectContent>
+                  {productLines?.map((productLine) => (
+                    <SelectItem key={productLine.id} value={productLine.id}>
+                      {productLine.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
               <Select 
@@ -268,7 +307,7 @@ export function AddSculptureSheet({ open, onOpenChange }: AddSculptureSheetProps
             </div>
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">
+          <Button type="submit" disabled={isLoading || !productLineId} className="w-full">
             {isLoading ? "Adding..." : "Add Sculpture"}
           </Button>
         </form>

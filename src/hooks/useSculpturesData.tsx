@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sculpture, FileUpload } from "@/types/sculpture";
@@ -20,9 +19,6 @@ export function useSculpturesData(
       // Handle product line filtering
       if (selectedProductLines.length > 0) {
         query = query.in('product_line_id', selectedProductLines);
-      } else {
-        // When no product lines are selected, show sculptures with no assigned product line
-        query = query.is('product_line_id', null);
       }
 
       // Apply search filter if query exists
@@ -69,10 +65,11 @@ export function useSculpturesData(
         models: Array.isArray(item.models) ? item.models as FileUpload[] : [],
         renderings: Array.isArray(item.renderings) ? item.renderings as FileUpload[] : [],
         dimensions: Array.isArray(item.dimensions) ? item.dimensions as FileUpload[] : [],
-        status: item.status as "ideas" | "pending_additions" | "approved",
+        status: item.status as "idea" | "pending" | "approved" | "archived",
         ai_engine: item.ai_engine as "runware" | "manual",
-        creativity_level: item.creativity_level as "none" | "small" | "medium" | "large" | null,
+        creativity_level: item.creativity_level as "none" | "low" | "medium" | "high" | null,
         created_by: item.created_by,
+        product_line_id: item.product_line_id 
       }));
 
       return transformedData;
