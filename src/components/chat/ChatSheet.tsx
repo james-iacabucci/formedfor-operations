@@ -124,13 +124,13 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                   <TabsList className="bg-transparent border-0 h-7 p-0">
                     <TabsTrigger 
                       value="chat" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black"
                     >
                       <MessageSquare className="h-4 w-4" />
                     </TabsTrigger>
                     <TabsTrigger 
                       value="files" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black"
                     >
                       <Files className="h-4 w-4" />
                     </TabsTrigger>
@@ -145,19 +145,19 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                   <TabsList className="bg-transparent border-0 h-7 p-0 w-full flex">
                     <TabsTrigger 
                       value="pricing" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
                     >
                       Pricing
                     </TabsTrigger>
                     <TabsTrigger 
                       value="fabrication" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
                     >
                       Fabrication
                     </TabsTrigger>
                     <TabsTrigger 
                       value="operations" 
-                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-white flex-1"
+                      className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
                     >
                       Operations
                     </TabsTrigger>
