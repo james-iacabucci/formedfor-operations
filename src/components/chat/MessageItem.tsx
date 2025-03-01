@@ -1,7 +1,8 @@
+
 import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Message } from "./types";
+import { Message, FileAttachment } from "./types";
 import { MessageAttachment } from "./MessageAttachment";
 import { format } from "date-fns";
 import { MessageReactions } from "./MessageReactions";
@@ -65,12 +66,19 @@ export function MessageItem({ message, children }: MessageItemProps) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      const attachmentsAsJson: Json[] = (message.attachments || []).map(attachment => ({
-        name: attachment.name,
-        url: attachment.url,
-        type: attachment.type,
-        size: attachment.size
-      }));
+      // Convert attachments to Json[] for Supabase
+      const attachmentsAsJson: Json[] = [];
+      
+      if (Array.isArray(message.attachments)) {
+        for (const attachment of message.attachments) {
+          attachmentsAsJson.push({
+            name: attachment.name,
+            url: attachment.url,
+            type: attachment.type,
+            size: attachment.size
+          });
+        }
+      }
       
       const { error } = await supabase
         .from("chat_messages")
