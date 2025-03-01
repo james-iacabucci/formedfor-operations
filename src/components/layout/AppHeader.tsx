@@ -1,3 +1,4 @@
+
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -30,7 +31,7 @@ export function AppHeader() {
     if (currentPath.includes("/clients")) return "clients";
     if (currentPath.includes("/leads")) return "leads";
     if (currentPath.includes("/orders")) return "orders";
-    if (currentPath.includes("/messages")) return "messages";
+    if (currentPath.includes("/chats")) return "chats";
     if (currentPath.includes("/tasks")) return "tasks";
     
     // Check if the path contains a product line id
@@ -46,7 +47,7 @@ export function AppHeader() {
   const handleTabChange = (value: string) => {
     // Check if the value is a special tab
     if (value === "clients" || value === "leads" || value === "orders" || 
-        value === "messages" || value === "tasks") {
+        value === "chats" || value === "tasks") {
       navigate(`/${value}`);
       return;
     }
@@ -95,10 +96,10 @@ export function AppHeader() {
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="messages" 
+                  value="chats" 
                   className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
-                  Messages
+                  Chats
                 </TabsTrigger>
                 <TabsTrigger 
                   value="tasks" 
