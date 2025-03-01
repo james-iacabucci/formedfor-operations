@@ -1,4 +1,3 @@
-
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -69,38 +68,26 @@ export function AppHeader() {
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className={cn(
-                      "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
-                      "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-                    )}
+                    className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
                   >
                     {pl.name.toUpperCase()}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className={cn(
-                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-                  )}
+                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
                 >
                   LEADS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className={cn(
-                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-                  )}
+                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
                 >
                   ORDERS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className={cn(
-                    "h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-black dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-                  )}
+                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
                 >
                   MESSAGES
                 </TabsTrigger>
