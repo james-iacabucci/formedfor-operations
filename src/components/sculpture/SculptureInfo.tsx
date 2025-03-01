@@ -121,16 +121,19 @@ export function SculptureInfo({
         </div>
       </div>
 
-      {/* Pricing row - reduce space after this element */}
-      <div className="text-sm text-white mb-1">
-        {getPriceDisplay()}
-      </div>
-
-      {/* Material row - now has reduced space above it due to mb-1 on pricing row */}
+      {/* Create a more evenly spaced layout using a space-y-2 wrapper */}
       <div className="space-y-2 text-sm">
+        {/* Pricing row */}
+        <div className="text-white">
+          {getPriceDisplay()}
+        </div>
+
+        {/* Material row */}
         <div>
           {getMaterialName()}
         </div>
+        
+        {/* Dimensions */}
         <DimensionDisplay
           height={sculpture.height_in}
           width={sculpture.width_in}
