@@ -91,12 +91,12 @@ export function SculptureInfo({
     const tradePrice = calculateTradePrice(selectedQuote);
     const retailPrice = calculateRetailPrice(tradePrice);
     
-    return `$${formatNumber(tradePrice)} / $${formatNumber(retailPrice)}`;
+    return `Trade $${formatNumber(tradePrice)} | Retail $${formatNumber(retailPrice)}`;
   };
 
   return (
     <div className="space-y-3">
-      {/* Title row with product line, status, and price */}
+      {/* Title row with product line and status */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <h3 className="font-semibold line-clamp-1">
@@ -118,10 +118,12 @@ export function SculptureInfo({
             variant="small"
             className="h-5 text-xs"
           />
-          <div className="border border-muted rounded-full h-5 px-2 flex items-center text-xs text-white">
-            {getPriceDisplay()}
-          </div>
         </div>
+      </div>
+
+      {/* Pricing row */}
+      <div className="text-xs text-white">
+        {getPriceDisplay()}
       </div>
 
       <div className="space-y-2 text-sm">
