@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,10 +50,11 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
-          attachments: message.attachments,
+          reactions: updatedReactions,
           content: message.content,
-          mentions: message.mentions,
-          reactions: updatedReactions 
+          thread_id: message.thread_id,
+          attachments: message.attachments || [],
+          mentions: message.mentions || []
         })
         .eq("id", messageId);
       

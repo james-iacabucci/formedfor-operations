@@ -64,24 +64,14 @@ export function MessageItem({ message, children }: MessageItemProps) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      const { data: messageData, error: fetchError } = await supabase
-        .from("chat_messages")
-        .select("*")
-        .eq("id", message.id)
-        .single();
-      
-      if (fetchError) {
-        console.error("Error fetching message:", fetchError);
-        return;
-      }
-      
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
-          attachments: messageData.attachments,
-          content: messageData.content,
-          mentions: messageData.mentions,
-          reactions: updatedReactions 
+          reactions: updatedReactions,
+          content: message.content,
+          thread_id: message.thread_id,
+          attachments: message.attachments || [],
+          mentions: message.mentions || []
         })
         .eq("id", message.id);
       
