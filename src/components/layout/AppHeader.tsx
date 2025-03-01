@@ -64,33 +64,33 @@ export function AppHeader() {
               onValueChange={handleTabChange}
               value={getActiveTab()}
             >
-              <TabsList className="inline-flex h-auto bg-black p-1.5 rounded-md border border-muted">
+              <TabsList className="inline-flex h-auto bg-black p-1 rounded-full border-0">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
+                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                   >
-                    {pl.name.toUpperCase()}
+                    {pl.name}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
-                  LEADS
+                  Leads
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
-                  ORDERS
+                  Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm text-muted-foreground"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
                 >
-                  MESSAGES
+                  Messages
                 </TabsTrigger>
               </TabsList>
             </Tabs>
