@@ -274,7 +274,7 @@ export function FileList({ threadId }: FileListProps) {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="modified">Last Modified</TabsTrigger>
               <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
-              <TabsTrigger value="user">User</TabsTrigger>
+              <TabsTrigger value="user">Uploaded By</TabsTrigger>
             </TabsList>
           </Tabs>
           
