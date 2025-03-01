@@ -56,7 +56,7 @@ html {
 
 /* Better hover effects */
 a, button, [role="button"] {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 /* Smoother animations for dropdown menus and modals */
@@ -67,3 +67,20 @@ a, button, [role="button"] {
 .animate-out {
   animation-duration: 300ms;
 }
+
+/* Apply smooth transitions to all transforms and movements */
+[data-state="open"],
+[data-state="closed"] {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Ensure all radix components have smooth transitions */
+[data-radix-popper-content-wrapper] {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* Make panel transitions smoother */
+.radix-side-panel {
+  transition: transform 0.3s ease-in-out !important;
+}
+

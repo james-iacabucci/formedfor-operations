@@ -111,8 +111,12 @@ export function UserMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            <Avatar className="h-8 w-8 border border-border">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative p-0 h-9 w-9 transition-all duration-300 ease-in-out hover:bg-transparent focus:bg-transparent"
+          >
+            <Avatar className="h-full w-full overflow-hidden">
               <AvatarImage src={avatar || undefined} />
               <AvatarFallback>
                 <User className="h-4 w-4" />
@@ -121,7 +125,7 @@ export function UserMenu() {
             <span className="sr-only">User menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="transition-all duration-300 ease-in-out">
           <DropdownMenuItem onClick={() => setShowPreferences(true)}>
             <User className="mr-2 h-4 w-4" />
             User Profile
