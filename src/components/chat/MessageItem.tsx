@@ -1,5 +1,4 @@
-
-import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye } from "lucide-react";
+import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "./types";
@@ -32,12 +31,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
   const { toast } = useToast();
   
   const handleReply = () => {
-    // This would be implemented later to reply to messages
     console.log("Reply to message:", message.id);
   };
 
   const handleDelete = () => {
-    // This would be implemented later to delete messages
     console.log("Delete message:", message.id);
   };
   
@@ -47,7 +44,6 @@ export function MessageItem({ message, children }: MessageItemProps) {
     try {
       const existingReactions = message.reactions || [];
       
-      // Check if user already has this reaction
       const existingReaction = existingReactions.find(
         r => r.reaction === reactionType && r.user_id === user.id
       );
@@ -55,12 +51,10 @@ export function MessageItem({ message, children }: MessageItemProps) {
       let updatedReactions;
       
       if (existingReaction) {
-        // Remove the reaction if it already exists
         updatedReactions = existingReactions.filter(
           r => !(r.reaction === reactionType && r.user_id === user.id)
         );
       } else {
-        // Add the new reaction
         const newReaction = {
           reaction: reactionType,
           user_id: user.id,
@@ -70,7 +64,6 @@ export function MessageItem({ message, children }: MessageItemProps) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Fetch the message first to get all its current data
       const { data: messageData, error: fetchError } = await supabase
         .from("chat_messages")
         .select("*")
@@ -82,7 +75,6 @@ export function MessageItem({ message, children }: MessageItemProps) {
         return;
       }
       
-      // Update message with new reactions while keeping other data
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
@@ -107,30 +99,12 @@ export function MessageItem({ message, children }: MessageItemProps) {
   };
   
   const reactions = [
-    { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4" /> },
-    { id: "check", icon: <Check className="h-4 w-4" /> },
-    { id: "question-mark", icon: <HelpCircle className="h-4 w-4" /> },
-    { id: "heart", icon: <Heart className="h-4 w-4" /> },
-    { id: "eyes", icon: <Eye className="h-4 w-4" /> },
+    { id: "thumbs-up", icon: <ThumbsUp className="h-4 w-4 text-blue-500" /> },
+    { id: "check", icon: <Check className="h-4 w-4 text-green-500" /> },
+    { id: "heart", icon: <Heart className="h-4 w-4 text-red-500" /> },
+    { id: "eyes", icon: <Eye className="h-4 w-4 text-amber-500" /> },
+    { id: "task", icon: <FilePlus className="h-4 w-4 text-purple-500" /> },
   ];
-
-  // Get colored version of icon on hover
-  const getColoredIcon = (reactionId: string) => {
-    switch (reactionId) {
-      case "thumbs-up":
-        return <ThumbsUp className="h-4 w-4 text-blue-500" />;
-      case "check":
-        return <Check className="h-4 w-4 text-green-500" />;
-      case "question-mark":
-        return <HelpCircle className="h-4 w-4 text-purple-500" />;
-      case "heart":
-        return <Heart className="h-4 w-4 text-red-500" />;
-      case "eyes":
-        return <Eye className="h-4 w-4 text-amber-500" />;
-      default:
-        return reactions.find(r => r.id === reactionId)?.icon;
-    }
-  };
 
   return (
     <div className="group relative">
@@ -162,9 +136,8 @@ export function MessageItem({ message, children }: MessageItemProps) {
               </div>
             )}
             
-            {/* Slack-like action bar */}
             {isHovered && (
-              <div className="absolute right-0 -top-8 bg-white rounded-md px-2 border shadow-md flex items-center">
+              <div className="absolute right-0 -top-8 bg-black rounded-md px-2 border border-gray-600 shadow-md flex items-center">
                 {reactions.map((reaction) => {
                   const userHasReacted = !!user && (message.reactions || []).some(
                     r => r.reaction === reaction.id && r.user_id === user.id
@@ -175,12 +148,12 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       key={reaction.id}
                       variant="ghost"
                       size="icon"
-                      className={`h-8 w-8 ${userHasReacted ? 'text-primary bg-primary/10' : 'text-black'}`}
+                      className={`h-8 w-8 text-white hover:bg-gray-700 ${userHasReacted ? 'bg-primary/20' : ''}`}
                       onClick={() => handleReaction(reaction.id)}
                       onMouseEnter={() => setHoveredReaction(reaction.id)}
                       onMouseLeave={() => setHoveredReaction(null)}
                     >
-                      {hoveredReaction === reaction.id ? getColoredIcon(reaction.id) : reaction.icon}
+                      {reaction.icon}
                     </Button>
                   );
                 })}
@@ -191,7 +164,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-black"
+                        className="h-8 w-8 text-white hover:bg-gray-700"
                         onClick={handleReply}
                       >
                         <Reply className="h-4 w-4" />
@@ -208,7 +181,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-black hover:bg-destructive/10"
+                          className="h-8 w-8 text-white hover:bg-destructive/60"
                           onClick={handleDelete}
                         >
                           <Trash2 className="h-4 w-4" />

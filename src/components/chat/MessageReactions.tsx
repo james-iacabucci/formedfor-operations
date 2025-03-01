@@ -2,7 +2,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Heart, ThumbsUp, HelpCircle, Eye } from "lucide-react";
+import { Check, Heart, ThumbsUp, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MessageReactionsProps {
@@ -18,7 +18,6 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     return null;
   }
   
-  // Group reactions by type
   const groupedReactions = reactions.reduce<Record<string, MessageReaction[]>>((acc, reaction) => {
     if (!acc[reaction.reaction]) {
       acc[reaction.reaction] = [];
@@ -31,14 +30,11 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     if (!user) return;
     
     try {
-      // Check if user has this reaction
       const hasReaction = reactions.some(r => r.reaction === reactionType && r.user_id === user.id);
       if (!hasReaction) return;
       
-      // Get all reactions except the one to remove
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      // Fetch the message first to get all its current data
       const { data: message, error: fetchError } = await supabase
         .from("chat_messages")
         .select("*")
@@ -50,7 +46,6 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         return;
       }
       
-      // Update message with new reactions while keeping other data
       const { error } = await supabase
         .from("chat_messages")
         .update({ 
@@ -76,15 +71,16 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
   
   const getReactionIcon = (reaction: string) => {
     switch (reaction) {
-      case "thumbs-up": return <ThumbsUp className="h-3 w-3" />;
-      case "check": return <Check className="h-3 w-3" />;
-      case "question-mark": return <HelpCircle className="h-3 w-3" />;
-      case "heart": return <Heart className="h-3 w-3" />;
-      case "eyes": return <Eye className="h-3 w-3" />;
+      case "thumbs-up": return <ThumbsUp className="h-3 w-3 text-blue-500" />;
+      case "check": return <Check className="h-3 w-3 text-green-500" />;
+      case "heart": return <Heart className="h-3 w-3 text-red-500" />;
+      case "eyes": return <Eye className="h-3 w-3 text-amber-500" />;
+      case "task": return <FilePlus className="h-3 w-3 text-purple-500" />;
       case "strong": return <span className="text-xs">💪</span>;
       case "thank-you": return <span className="text-xs">🙏</span>;
       case "agree": return <span className="text-xs">💯</span>;
-      default: return <ThumbsUp className="h-3 w-3" />;
+      case "question-mark": return <HelpCircle className="h-3 w-3 text-purple-500" />;
+      default: return <ThumbsUp className="h-3 w-3 text-blue-500" />;
     }
   };
   
