@@ -30,7 +30,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [isPromptUpdated, setIsPromptUpdated] = useState(false);
-  const [selectedProductLineId, setSelectedProductLineId] = useState<string | "unassigned">("unassigned");
+  const [selectedProductLineId, setSelectedProductLineId] = useState<string>("");
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -43,6 +43,13 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       return data;
     },
   });
+
+  // Set the first product line as default when data is loaded
+  useEffect(() => {
+    if (productLines && productLines.length > 0 && !selectedProductLineId) {
+      setSelectedProductLineId(productLines[0].id);
+    }
+  }, [productLines, selectedProductLineId]);
 
   const handleSelect = (imageId: string) => {
     const newSelectedIds = new Set(selectedIds);
@@ -128,7 +135,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             creativity_level: creativity,
             ai_generated_name: aiName,
             ai_description: aiDescription,
-            product_line_id: selectedProductLineId === "unassigned" ? null : selectedProductLineId
+            product_line_id: selectedProductLineId || null
           }
         ]);
 
@@ -188,9 +195,13 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
       setGeneratedImages([]);
       clearSelection();
       setIsSaving(false);
-      setSelectedProductLineId("unassigned");
+      if (productLines && productLines.length > 0) {
+        setSelectedProductLineId(productLines[0].id);
+      } else {
+        setSelectedProductLineId("");
+      }
     }
-  }, [open]);
+  }, [open, productLines]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -214,16 +225,17 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               </TabsList>
             </Tabs>
 
-            <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId}>
-              <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(100px,1fr))]">
-                <TabsTrigger value="unassigned">Unassigned</TabsTrigger>
-                {productLines?.map((pl) => (
-                  <TabsTrigger key={pl.id} value={pl.id}>
-                    {pl.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+            {productLines && productLines.length > 0 && (
+              <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId}>
+                <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(100px,1fr))]">
+                  {productLines.map((pl) => (
+                    <TabsTrigger key={pl.id} value={pl.id}>
+                      {pl.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            )}
           </div>
           
           {generatedImages.length > 0 && (
