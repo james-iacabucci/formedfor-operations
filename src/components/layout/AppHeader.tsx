@@ -67,26 +67,26 @@ export function AppHeader() {
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                    className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
                   >
                     {pl.name}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
                 >
                   Leads
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
                 >
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-black data-[state=active]:text-white border border-input"
                 >
                   Messages
                 </TabsTrigger>
