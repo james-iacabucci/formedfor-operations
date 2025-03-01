@@ -1,23 +1,15 @@
 
-import { Edit, Reply, Trash2, User, Copy, ThumbsUp, Eye, Check } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Message, FileAttachment } from "./types";
-import { MessageAttachment } from "./MessageAttachment";
-import { format } from "date-fns";
-import { MessageReactions } from "./MessageReactions";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
+import { User } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { Message } from "./types";
+import { MessageHeader } from "./MessageHeader";
+import { MessageContent } from "./MessageContent";
 import { DeleteMessageDialog } from "./DeleteMessageDialog";
+import { useMessageReactions } from "./hooks/useMessageReactions";
 
 interface MessageItemProps {
   message: Message;
@@ -28,27 +20,21 @@ interface MessageItemProps {
 export function MessageItem({ message, children, onEditMessage }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const messageDate = new Date(message.created_at);
-  const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
-  const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const { user } = useAuth();
   const { toast } = useToast();
+  const { handleReaction } = useMessageReactions(message);
   
   const isOwnMessage = user && user.id === message.user_id;
   const isDeleted = message.content === "[This message was deleted]";
-  
-  const handleReply = () => {
-    console.log("Reply to message:", message.id);
-  };
-
-  const handleDelete = () => {
-    setIsDeleteDialogOpen(true);
-  };
   
   const handleEdit = () => {
     if (onEditMessage && !isDeleted) {
       onEditMessage(message);
     }
+  };
+  
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
   };
   
   const handleCopy = () => {
@@ -95,96 +81,6 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
       });
     }
   };
-  
-  const handleReaction = async (reactionType: string) => {
-    if (!user) return;
-    
-    try {
-      const existingReactions = message.reactions || [];
-      
-      const existingReaction = existingReactions.find(
-        r => r.reaction === reactionType && r.user_id === user.id
-      );
-      
-      let updatedReactions;
-      
-      if (existingReaction) {
-        updatedReactions = existingReactions.filter(
-          r => !(r.reaction === reactionType && r.user_id === user.id)
-        );
-      } else {
-        const newReaction = {
-          reaction: reactionType,
-          user_id: user.id,
-          username: user.user_metadata?.username || user.email
-        };
-        
-        updatedReactions = [...existingReactions, newReaction];
-      }
-      
-      // Convert attachments to Json[] for Supabase
-      const attachmentsAsJson: Json[] = [];
-      
-      if (Array.isArray(message.attachments)) {
-        for (const attachment of message.attachments) {
-          if (typeof attachment === 'object' && attachment !== null) {
-            const jsonAttachment: Record<string, Json> = {};
-            
-            // Convert to unknown first, then to Record<string, Json>
-            const att = attachment as unknown as Record<string, Json>;
-            
-            if ('name' in att && typeof att.name === 'string') {
-              jsonAttachment.name = att.name;
-            } else {
-              jsonAttachment.name = "";
-            }
-            
-            if ('url' in att && typeof att.url === 'string') {
-              jsonAttachment.url = att.url;
-            } else {
-              jsonAttachment.url = "";
-            }
-            
-            if ('type' in att && typeof att.type === 'string') {
-              jsonAttachment.type = att.type;
-            } else {
-              jsonAttachment.type = "";
-            }
-            
-            if ('size' in att && typeof att.size === 'number') {
-              jsonAttachment.size = att.size;
-            } else {
-              jsonAttachment.size = 0;
-            }
-            
-            attachmentsAsJson.push(jsonAttachment);
-          }
-        }
-      }
-      
-      const { error } = await supabase
-        .from("chat_messages")
-        .update({ 
-          reactions: updatedReactions,
-          content: message.content,
-          thread_id: message.thread_id,
-          attachments: attachmentsAsJson,
-          mentions: message.mentions || []
-        })
-        .eq("id", message.id);
-      
-      if (error) {
-        console.error("Error adding reaction:", error);
-        toast({
-          title: "Error",
-          description: "Failed to add reaction",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Error adding reaction:", error);
-    }
-  };
 
   return (
     <div 
@@ -203,150 +99,23 @@ export function MessageItem({ message, children, onEditMessage }: MessageItemPro
             <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 space-y-1"> {/* Changed from space-y-2 to space-y-1 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">
-                {message.profiles?.username || "User"}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {formattedDate} at {formattedTime}
-              </span>
-            </div>
-            
-            <div className={`flex items-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-              <TooltipProvider delayDuration={300}>
-                {isOwnMessage ? (
-                  <>
-                    {!isDeleted && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 rounded-md"
-                            onClick={handleEdit}
-                          >
-                            <Edit className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Edit</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    
-                    {!isDeleted && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 rounded-md hover:bg-destructive/10"
-                            onClick={handleDelete}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Delete</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md"
-                          onClick={() => handleReaction("thumbs-up")}
-                        >
-                          <ThumbsUp className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Like</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md"
-                          onClick={() => handleReaction("eyes")}
-                        >
-                          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Seen</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md"
-                          onClick={() => handleReaction("check")}
-                        >
-                          <Check className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Done</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 rounded-md"
-                          onClick={handleCopy}
-                        >
-                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Copy</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </>
-                )}
-              </TooltipProvider>
-            </div>
-          </div>
+        <div className="flex-1 space-y-1">
+          <MessageHeader
+            username={message.profiles?.username || "User"}
+            createdAt={message.created_at}
+            isHovered={isHovered}
+            isOwnMessage={isOwnMessage}
+            isDeleted={isDeleted}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onCopy={handleCopy}
+            onReaction={handleReaction}
+          />
           
-          <div className="relative w-full">
-            {message.content && (
-              <div className={`text-sm whitespace-pre-wrap ${isDeleted ? 'italic text-muted-foreground' : ''}`}>
-                {message.content}
-              </div>
-            )}
-            
-            {!isDeleted && message.attachments && message.attachments.length > 0 && (
-              <div className="space-y-2 mt-2">
-                {message.attachments.map((attachment, index) => (
-                  <MessageAttachment key={index} attachment={attachment} />
-                ))}
-              </div>
-            )}
-            
-            {message.reactions && message.reactions.length > 0 && (
-              <MessageReactions 
-                messageId={message.id}
-                reactions={message.reactions}
-              />
-            )}
-          </div>
+          <MessageContent 
+            message={message}
+            isDeleted={isDeleted}
+          />
 
           {children}
         </div>
