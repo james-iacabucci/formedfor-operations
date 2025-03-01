@@ -73,26 +73,28 @@ export function MessageItem({ message, children }: MessageItemProps) {
           if (typeof attachment === 'object' && attachment !== null) {
             const jsonAttachment: Record<string, Json> = {};
             
-            if (attachment.name && typeof attachment.name === 'string') {
-              jsonAttachment.name = attachment.name;
+            const att = attachment as Record<string, Json>;
+            
+            if (att && 'name' in att && typeof att.name === 'string') {
+              jsonAttachment.name = att.name;
             } else {
               jsonAttachment.name = "";
             }
             
-            if (attachment.url && typeof attachment.url === 'string') {
-              jsonAttachment.url = attachment.url;
+            if (att && 'url' in att && typeof att.url === 'string') {
+              jsonAttachment.url = att.url;
             } else {
               jsonAttachment.url = "";
             }
             
-            if (attachment.type && typeof attachment.type === 'string') {
-              jsonAttachment.type = attachment.type;
+            if (att && 'type' in att && typeof att.type === 'string') {
+              jsonAttachment.type = att.type;
             } else {
               jsonAttachment.type = "";
             }
             
-            if (attachment.size !== undefined && typeof attachment.size === 'number') {
-              jsonAttachment.size = attachment.size;
+            if (att && 'size' in att && typeof att.size === 'number') {
+              jsonAttachment.size = att.size;
             } else {
               jsonAttachment.size = 0;
             }
