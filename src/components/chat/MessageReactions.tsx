@@ -3,8 +3,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction, FileAttachment } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Heart, ThumbsUp, HelpCircle, Eye, FilePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Json } from "@/integrations/supabase/types";
 
@@ -57,7 +56,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
           if (typeof attachment === 'object' && attachment !== null) {
             const jsonAttachment: Record<string, Json> = {};
             
-            // First convert to unknown, then to Record<string, Json> to avoid TypeScript error
+            // First convert to unknown, then to Record<string, Json>
             const att = attachment as unknown as Record<string, Json>;
             
             if ('name' in att && typeof att.name === 'string') {
@@ -113,18 +112,13 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     }
   };
   
-  const getReactionEmoji = (reaction: string) => {
+  const getReactionIcon = (reaction: string) => {
     switch (reaction) {
-      case "thumbs-up": return "👍";
-      case "check": return "✓";
-      case "heart": return "❤️";
-      case "eyes": return "👀";
-      case "task": return "📋";
-      case "strong": return "💪";
-      case "thank-you": return "🙏";
-      case "agree": return "💯";
-      case "question-mark": return "❓";
-      default: return "👍";
+      case "thumbs-up": return <ThumbsUp className="h-3 w-3 mr-1" />;
+      case "check": return <Check className="h-3 w-3 mr-1" />;
+      case "eyes": return <Eye className="h-3 w-3 mr-1" />;
+      case "copy": return <Copy className="h-3 w-3 mr-1" />;
+      default: return <ThumbsUp className="h-3 w-3 mr-1" />;
     }
   };
   
@@ -142,7 +136,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
             onClick={() => userHasReacted && handleRemoveReaction(reactionType)}
             title={reactors.map(r => r.username || "User").join(", ")}
           >
-            <span className="text-sm">{getReactionEmoji(reactionType)}</span>
+            {getReactionIcon(reactionType)}
             <span>{reactors.length}</span>
           </Badge>
         );

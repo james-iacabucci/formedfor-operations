@@ -1,5 +1,5 @@
 
-import { Reply, Trash2, User } from "lucide-react";
+import { Reply, Trash2, User, Copy, ThumbsUp, Eye, Check } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message, FileAttachment } from "./types";
@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface MessageItemProps {
   message: Message;
@@ -38,6 +37,16 @@ export function MessageItem({ message, children }: MessageItemProps) {
 
   const handleDelete = () => {
     console.log("Delete message:", message.id);
+  };
+  
+  const handleCopy = () => {
+    if (message.content) {
+      navigator.clipboard.writeText(message.content);
+      toast({
+        description: "Message copied to clipboard",
+        duration: 2000
+      });
+    }
   };
   
   const handleReaction = async (reactionType: string) => {
@@ -74,7 +83,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
           if (typeof attachment === 'object' && attachment !== null) {
             const jsonAttachment: Record<string, Json> = {};
             
-            // First convert to unknown, then to Record<string, Json> to avoid TypeScript error
+            // Convert to unknown first, then to Record<string, Json>
             const att = attachment as unknown as Record<string, Json>;
             
             if ('name' in att && typeof att.name === 'string') {
@@ -129,16 +138,6 @@ export function MessageItem({ message, children }: MessageItemProps) {
       console.error("Error adding reaction:", error);
     }
   };
-  
-  const reactions = [
-    { id: "thumbs-up", emoji: "👍" },
-    { id: "heart", emoji: "❤️" },
-    { id: "strong", emoji: "💪" },
-    { id: "thank-you", emoji: "🙏" },
-    { id: "agree", emoji: "💯" },
-    { id: "eyes", emoji: "👀" },
-    { id: "question-mark", emoji: "❓" },
-  ];
 
   return (
     <div className="group relative">
@@ -165,73 +164,16 @@ export function MessageItem({ message, children }: MessageItemProps) {
             onMouseLeave={() => setIsHovered(false)}
           >
             {message.content && (
-              <div className={`text-sm whitespace-pre-wrap rounded-md px-3 py-2 ${isHovered ? 'bg-accent/50' : ''} transition-colors`}>
+              <div className="text-sm whitespace-pre-wrap rounded-md px-3 py-2 transition-colors">
                 {message.content}
               </div>
             )}
             
-            {isHovered && (
-              <div className="absolute -top-2 right-0 flex">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-muted-foreground hover:bg-accent/50 h-8 px-2"
-                    >
-                      <span className="text-base">😀</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-2 mb-1 flex gap-1.5" side="top" align="end">
-                    {reactions.map((reaction) => (
-                      <Button
-                        key={reaction.id}
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-full hover:bg-accent"
-                        onClick={() => handleReaction(reaction.id)}
-                      >
-                        <span className="text-lg">{reaction.emoji}</span>
-                      </Button>
-                    ))}
-                  </PopoverContent>
-                </Popover>
-                
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-muted-foreground hover:bg-accent/50 h-8 px-2"
-                        onClick={handleReply}
-                      >
-                        <Reply className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Reply</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  {user && user.id === message.user_id && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-muted-foreground hover:bg-destructive/60 h-8 px-2"
-                          onClick={handleDelete}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </TooltipProvider>
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {message.attachments.map((attachment, index) => (
+                  <MessageAttachment key={index} attachment={attachment} />
+                ))}
               </div>
             )}
             
@@ -241,15 +183,93 @@ export function MessageItem({ message, children }: MessageItemProps) {
                 reactions={message.reactions}
               />
             )}
-          </div>
-          
-          {message.attachments && message.attachments.length > 0 && (
-            <div className="space-y-2">
-              {message.attachments.map((attachment, index) => (
-                <MessageAttachment key={index} attachment={attachment} />
-              ))}
+            
+            <div className={`flex items-center mt-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => handleReaction("thumbs-up")}
+                    >
+                      <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Like</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => handleReaction("eyes")}
+                    >
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Seen</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => handleReaction("check")}
+                    >
+                      <Check className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Done</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={handleCopy}
+                    >
+                      <Copy className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                {user && user.id === message.user_id && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-full hover:bg-destructive/10"
+                        onClick={handleDelete}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </TooltipProvider>
             </div>
-          )}
+          </div>
 
           {children}
         </div>
