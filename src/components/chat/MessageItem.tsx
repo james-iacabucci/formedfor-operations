@@ -1,5 +1,5 @@
 
-import { User } from "lucide-react";
+import { Reply, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "./types";
@@ -8,10 +8,13 @@ import { format } from "date-fns";
 import { MessageReactions } from "./MessageReactions";
 import { MessageReactionPicker } from "./MessageReactionPicker";
 import { 
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent
-} from "@/components/ui/hover-card";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
+import { useAuth } from "@/components/AuthProvider";
+import { Button } from "@/components/ui/button";
 
 interface MessageItemProps {
   message: Message;
@@ -23,6 +26,21 @@ export function MessageItem({ message, children }: MessageItemProps) {
   const messageDate = new Date(message.created_at);
   const formattedDate = format(messageDate, "EEE, MMM d"); // "Wed, Mar 13" format
   const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const { user } = useAuth();
+  
+  const handleReply = () => {
+    // This would be implemented later to reply to messages
+    console.log("Reply to message:", message.id);
+    // Close the emoji picker after action
+    setShowReactionPicker(false);
+  };
+
+  const handleDelete = () => {
+    // This would be implemented later to delete messages
+    console.log("Delete message:", message.id);
+    // Close the emoji picker after action
+    setShowReactionPicker(false);
+  };
   
   return (
     <div className="group relative">
@@ -53,24 +71,60 @@ export function MessageItem({ message, children }: MessageItemProps) {
                 {message.content}
                 
                 {showReactionPicker && (
-                  <div className="absolute top-0 right-0 -translate-y-full">
-                    <HoverCard openDelay={0} closeDelay={300}>
-                      <HoverCardTrigger asChild>
-                        <button 
-                          className="p-1 rounded-full bg-muted hover:bg-muted/80"
-                          aria-label="Add reaction"
-                        >
-                          <span className="text-sm">😀</span>
-                        </button>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="p-0 w-auto" side="top" align="end">
-                        <MessageReactionPicker 
-                          messageId={message.id}
-                          existingReactions={message.reactions || []}
-                          onClose={() => setShowReactionPicker(false)}
-                        />
-                      </HoverCardContent>
-                    </HoverCard>
+                  <div 
+                    className="absolute left-0 top-0 -translate-y-full transform"
+                    onMouseEnter={() => setShowReactionPicker(true)}
+                    onMouseLeave={() => setShowReactionPicker(false)}
+                  >
+                    <div className="flex items-center bg-background rounded-lg border shadow-md p-1 mb-2">
+                      <MessageReactionPicker 
+                        messageId={message.id}
+                        existingReactions={message.reactions || []}
+                        onClose={() => setShowReactionPicker(false)}
+                      />
+                      
+                      <div className="border-l border-border ml-1 pl-1 flex items-center gap-1">
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={handleReply}
+                              >
+                                <Reply className="h-4 w-4" />
+                                <span className="sr-only">Reply</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Reply</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {user && user.id === message.user_id && (
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                  onClick={handleDelete}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

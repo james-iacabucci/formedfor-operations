@@ -101,7 +101,7 @@ export function MessageReactionPicker({
   };
   
   return (
-    <div className="rounded-lg border bg-background shadow-md p-1 flex gap-1">
+    <div className="flex gap-1">
       {reactions.map((reaction) => {
         const userHasReacted = !!user && existingReactions.some(
           r => r.reaction === reaction.id && r.user_id === user.id

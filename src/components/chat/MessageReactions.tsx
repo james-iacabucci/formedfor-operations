@@ -1,7 +1,9 @@
+
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Check, Heart, ThumbsUp, HelpCircle } from "lucide-react";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -72,16 +74,16 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     }
   };
   
-  const getEmojiContent = (reaction: string) => {
+  const getReactionIcon = (reaction: string) => {
     switch (reaction) {
-      case "thumbs-up": return "👍";
-      case "check": return "✅";
-      case "question-mark": return "❓";
-      case "heart": return "❤️";
-      case "strong": return "💪";
-      case "thank-you": return "🙏";
-      case "agree": return "💯";
-      default: return "👍";
+      case "thumbs-up": return <ThumbsUp className="h-3 w-3" />;
+      case "check": return <Check className="h-3 w-3" />;
+      case "question-mark": return <HelpCircle className="h-3 w-3" />;
+      case "heart": return <Heart className="h-3 w-3" />;
+      case "strong": return <span className="text-xs">💪</span>;
+      case "thank-you": return <span className="text-xs">🙏</span>;
+      case "agree": return <span className="text-xs">💯</span>;
+      default: return <ThumbsUp className="h-3 w-3" />;
     }
   };
   
@@ -98,7 +100,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
             onClick={() => userHasReacted && handleRemoveReaction(reactionType)}
             title={reactors.map(r => r.username || "User").join(", ")}
           >
-            <span>{getEmojiContent(reactionType)}</span>
+            <span>{getReactionIcon(reactionType)}</span>
             <span>{reactors.length}</span>
           </button>
         );
