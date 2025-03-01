@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,7 +34,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
     }
   }, [autoFocus]);
 
-  // Function to adjust the textarea height
   const adjustHeight = () => {
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
@@ -49,7 +47,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
 
     textarea.addEventListener("input", adjustHeight);
     
-    // Initialize textarea height to ensure it's single line initially
     requestAnimationFrame(() => {
       adjustHeight();
     });
@@ -108,12 +105,10 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
       const currentUploadingFiles = [...uploadingFiles];
       let uploadedFiles: any[] = [];
 
-      // If there are files to upload, do that first
       if (currentUploadingFiles.length > 0) {
         const filesToUpload = currentUploadingFiles.map(f => f.file);
         uploadedFiles = await uploadFiles(filesToUpload, (fileId, progress) => {
           setUploadingFiles(prev => prev.map(f => {
-            // Match the file by name since we're using the filename as the ID in uploadFiles
             if (f.file.name === fileId) {
               return { ...f, progress };
             }
@@ -124,7 +119,6 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
         console.log("Successfully uploaded files:", uploadedFiles);
       }
 
-      // Create the message with attachments included from the start
       const { data: messageData, error: messageError } = await supabase
         .from("chat_messages")
         .insert({
@@ -144,19 +138,15 @@ export function MessageInput({ threadId, autoFocus = false, onUploadingFiles }: 
 
       setMessage("");
       
-      // Reset textarea height to single line
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
-        // Force a single-line height after clearing the message
         requestAnimationFrame(() => {
           adjustHeight();
         });
       }
 
-      // Clear uploading files
       setUploadingFiles([]);
 
-      // Set focus back to textarea after everything is done
       requestAnimationFrame(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();

@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -23,6 +22,10 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
   const { user } = useAuth();
   const [sculptureName, setSculptureName] = useState<string>("");
+
+  const handleViewChange = (value: string) => {
+    setActiveView(value as "chat" | "files");
+  };
 
   const { data: threads, refetch } = useQuery({
     queryKey: ["chat-threads", threadId],
@@ -118,7 +121,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               <div className="w-full flex items-center space-x-4">
                 <Tabs
                   value={activeView}
-                  onValueChange={(value) => setActiveView(value as "chat" | "files")}
+                  onValueChange={handleViewChange}
                   className="bg-black p-1.5 rounded-md border border-muted"
                 >
                   <TabsList className="bg-transparent border-0 h-7 p-0">
@@ -176,13 +179,11 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
                       <div className="flex-1 min-h-0 overflow-hidden">
                         <MessageList threadId={currentThreadId} uploadingFiles={uploadingFiles} />
                       </div>
-                      <div className="shrink-0 p-4 pt-2">
-                        <MessageInput 
-                          threadId={currentThreadId} 
-                          autoFocus={true} 
-                          onUploadingFiles={setUploadingFiles}
-                        />
-                      </div>
+                      <MessageInput 
+                        threadId={currentThreadId} 
+                        autoFocus={true} 
+                        onUploadingFiles={setUploadingFiles}
+                      />
                     </>
                   )}
                 </>
