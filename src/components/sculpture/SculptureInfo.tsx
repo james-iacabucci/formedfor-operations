@@ -121,8 +121,8 @@ export function SculptureInfo({
         </div>
       </div>
 
-      {/* Pricing row */}
-      <div className="text-xs text-white">
+      {/* Pricing row - updated to match the material text styling */}
+      <div className="text-sm text-white">
         {getPriceDisplay()}
       </div>
 
