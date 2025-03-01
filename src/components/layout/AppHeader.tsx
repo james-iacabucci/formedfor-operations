@@ -1,3 +1,4 @@
+
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -61,31 +62,31 @@ export function AppHeader() {
               className="w-full" 
               onValueChange={handleTabChange}
             >
-              <TabsList className="inline-flex flex-wrap">
+              <TabsList className="inline-flex flex-wrap h-auto bg-transparent p-0">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                    className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
                   >
                     {pl.name}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
                 >
                   Leads
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
                 >
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
+                  className="h-9 px-3 py-1 data-[state=active]:bg-transparent border border-input data-[state=active]:border-primary data-[state=active]:text-primary"
                 >
                   Messages
                 </TabsTrigger>
