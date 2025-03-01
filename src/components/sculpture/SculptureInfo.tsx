@@ -121,11 +121,12 @@ export function SculptureInfo({
         </div>
       </div>
 
-      {/* Pricing row - updated to match the material text styling */}
+      {/* Pricing row */}
       <div className="text-sm text-white">
         {getPriceDisplay()}
       </div>
 
+      {/* Material row - using the same spacing as between price and dimensions */}
       <div className="space-y-2 text-sm">
         <div>
           {getMaterialName()}
