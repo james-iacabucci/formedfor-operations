@@ -1,3 +1,4 @@
+
 import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye, FilePlus } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,27 +74,28 @@ export function MessageItem({ message, children }: MessageItemProps) {
           if (typeof attachment === 'object' && attachment !== null) {
             const jsonAttachment: Record<string, Json> = {};
             
-            const att = attachment as Record<string, Json>;
+            // First convert to unknown, then to Record<string, Json> to avoid TypeScript error
+            const att = attachment as unknown as Record<string, Json>;
             
-            if (att && 'name' in att && typeof att.name === 'string') {
+            if ('name' in att && typeof att.name === 'string') {
               jsonAttachment.name = att.name;
             } else {
               jsonAttachment.name = "";
             }
             
-            if (att && 'url' in att && typeof att.url === 'string') {
+            if ('url' in att && typeof att.url === 'string') {
               jsonAttachment.url = att.url;
             } else {
               jsonAttachment.url = "";
             }
             
-            if (att && 'type' in att && typeof att.type === 'string') {
+            if ('type' in att && typeof att.type === 'string') {
               jsonAttachment.type = att.type;
             } else {
               jsonAttachment.type = "";
             }
             
-            if (att && 'size' in att && typeof att.size === 'number') {
+            if ('size' in att && typeof att.size === 'number') {
               jsonAttachment.size = att.size;
             } else {
               jsonAttachment.size = 0;
