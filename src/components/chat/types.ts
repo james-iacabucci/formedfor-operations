@@ -14,6 +14,12 @@ export interface UploadingFile {
   progress: number;
 }
 
+export interface MessageReaction {
+  reaction: string;
+  user_id: string;
+  username?: string | null;
+}
+
 export interface Message {
   id: string;
   created_at: string;
@@ -27,6 +33,7 @@ export interface Message {
   mentions: Json[];
   edited_at: string | null;
   thread_id: string;
+  reactions?: MessageReaction[];
 }
 
 export interface RawMessage {
@@ -42,6 +49,7 @@ export interface RawMessage {
   mentions: Json[];
   edited_at: string | null;
   thread_id: string;
+  reactions?: Json[];
 }
 
 export type FileUpload = FileAttachment;
@@ -97,6 +105,18 @@ export function convertToMessage(rawMessage: any): Message {
     console.log("Message has no attachments array:", rawMessage.attachments);
   }
 
+  // Process reactions if they exist
+  let reactions: MessageReaction[] = [];
+  if (Array.isArray(rawMessage.reactions)) {
+    reactions = rawMessage.reactions
+      .filter(r => typeof r === 'object' && r !== null)
+      .map(r => ({
+        reaction: r.reaction as string,
+        user_id: r.user_id as string,
+        username: r.username as string | null
+      }));
+  }
+
   return {
     id: rawMessage.id,
     created_at: rawMessage.created_at,
@@ -106,7 +126,8 @@ export function convertToMessage(rawMessage: any): Message {
     attachments: attachments,
     mentions: Array.isArray(rawMessage.mentions) ? rawMessage.mentions : [],
     edited_at: rawMessage.edited_at,
-    thread_id: rawMessage.thread_id
+    thread_id: rawMessage.thread_id,
+    reactions: reactions
   };
 }
 
