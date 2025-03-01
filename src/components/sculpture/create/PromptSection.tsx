@@ -80,7 +80,7 @@ export function PromptSection({
           "min-h-[80px] resize-y transition-colors duration-300",
           isPromptUpdated && "bg-green-50 dark:bg-green-900/20"
         )}
-        rows={5}
+        rows={3}
       />
     </div>
   );
