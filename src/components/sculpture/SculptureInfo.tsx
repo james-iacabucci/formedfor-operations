@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureStatus } from "./detail/SculptureStatus";
 import { Badge } from "@/components/ui/badge";
+import { calculateTradePrice, calculateRetailPrice, formatNumber } from "@/utils/fabrication-quote-calculations";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -21,7 +22,7 @@ export function SculptureInfo({
   sculpture, 
   tags = [], 
   showAIContent,
-  showTags = false // Set default to false to hide tags
+  showTags = false
 }: SculptureInfoProps) {
   const { materials } = useMaterialFinishData(sculpture.material_id);
 
@@ -59,15 +60,43 @@ export function SculptureInfo({
     gcTime: 300000,
   });
 
+  // Query for the selected fabrication quote
+  const { data: selectedQuote } = useQuery({
+    queryKey: ["selected_fabrication_quote", sculpture.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fabrication_quotes")
+        .select("*")
+        .eq("sculpture_id", sculpture.id)
+        .eq("is_selected", true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 300000,
+  });
+
   const getMaterialName = () => {
     if (!sculpture.material_id || !materials) return "Not specified";
     const material = materials.find(m => m.id === sculpture.material_id);
     return material ? material.name : "Not specified";
   };
 
+  // Format the price display
+  const getPriceDisplay = () => {
+    if (!selectedQuote) return "Inquire";
+    
+    const tradePrice = calculateTradePrice(selectedQuote);
+    const retailPrice = calculateRetailPrice(tradePrice);
+    
+    return `$${formatNumber(tradePrice)} / $${formatNumber(retailPrice)}`;
+  };
+
   return (
     <div className="space-y-3">
-      {/* Title row with product line and status */}
+      {/* Title row with product line, status, and price */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold line-clamp-1">
@@ -85,6 +114,9 @@ export function SculptureInfo({
             status={sculpture.status}
             variant="small"
           />
+        </div>
+        <div className="border rounded-full px-3 py-0.5 text-sm border-muted text-muted-foreground">
+          {getPriceDisplay()}
         </div>
       </div>
 

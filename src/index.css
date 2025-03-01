@@ -165,3 +165,8 @@ a, button, [role="button"] {
 .pill-tabs .pill-tab {
   @apply transition-all duration-200 ease-in-out;
 }
+
+/* Price display styling */
+.price-display {
+  @apply border rounded-full px-3 py-0.5 text-sm border-muted text-muted-foreground transition-all duration-200;
+}
