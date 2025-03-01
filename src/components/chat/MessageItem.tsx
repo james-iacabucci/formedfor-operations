@@ -159,15 +159,17 @@ export function MessageItem({ message, children }: MessageItemProps) {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">
-              {message.profiles?.username || "User"}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {formattedDate} at {formattedTime}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">
+                {message.profiles?.username || "User"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {formattedDate} at {formattedTime}
+              </span>
+            </div>
             
-            <div className={`flex items-center ml-2 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`flex items-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
               <TooltipProvider delayDuration={300}>
                 {isOwnMessage ? (
                   <>
@@ -303,3 +305,4 @@ export function MessageItem({ message, children }: MessageItemProps) {
     </div>
   );
 }
+
