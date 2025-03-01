@@ -1,3 +1,4 @@
+
 import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -144,7 +145,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
             
             {/* Slack-like action bar */}
             {isHovered && (
-              <div className="absolute right-0 -top-8 bg-accent/50 rounded-full border shadow-md flex items-center">
+              <div className="absolute right-0 -top-8 bg-white rounded-full border shadow-md flex items-center">
                 {reactions.map((reaction) => {
                   const userHasReacted = !!user && (message.reactions || []).some(
                     r => r.reaction === reaction.id && r.user_id === user.id
@@ -155,7 +156,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       key={reaction.id}
                       variant="ghost"
                       size="icon"
-                      className={`h-8 w-8 rounded-full ${userHasReacted ? 'text-primary bg-primary/10' : ''}`}
+                      className={`h-8 w-8 rounded-full text-black ${userHasReacted ? 'text-primary bg-primary/10' : ''}`}
                       onClick={() => handleReaction(reaction.id)}
                     >
                       {reaction.icon}
@@ -169,7 +170,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 rounded-full"
+                        className="h-8 w-8 rounded-full text-black"
                         onClick={handleReply}
                       >
                         <Reply className="h-4 w-4" />
@@ -186,7 +187,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full text-white hover:bg-destructive/10"
+                          className="h-8 w-8 rounded-full text-black hover:bg-destructive/10"
                           onClick={handleDelete}
                         >
                           <Trash2 className="h-4 w-4" />
