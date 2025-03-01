@@ -1,4 +1,3 @@
-
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -58,10 +57,6 @@ export function AppHeader() {
       <div className="mx-auto max-w-7xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            {/* Logo or branding could go here */}
-          </div>
-          
-          <div className="flex items-center gap-4">
             <Tabs 
               defaultValue={getActiveTab()} 
               className="w-auto" 
@@ -98,6 +93,9 @@ export function AppHeader() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+          </div>
+          
+          <div className="flex items-center gap-4">
             <UserMenu />
           </div>
         </div>
