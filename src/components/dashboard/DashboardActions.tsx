@@ -24,6 +24,7 @@ export function DashboardActions({
       </Button>
       <Button 
         onClick={() => setIsCreateSheetOpen(true)}
+        variant="outline"
         size="sm"
         className="gap-2 h-9 px-3"
       >
