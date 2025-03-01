@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,9 +16,10 @@ interface SculptureStatusProps {
   sculptureId: string;
   status: SculptureStatusCode;
   variant?: "small" | "large";
+  className?: string;
 }
 
-export function SculptureStatus({ sculptureId, status, variant = "large" }: SculptureStatusProps) {
+export function SculptureStatus({ sculptureId, status, variant = "large", className }: SculptureStatusProps) {
   const queryClient = useQueryClient();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,7 +51,8 @@ export function SculptureStatus({ sculptureId, status, variant = "large" }: Scul
           variant="outline" 
           size="default"
           className={cn(
-            variant === "small" && "h-5 px-1.5 text-[10px]"
+            variant === "small" && "h-5 px-1.5 text-[10px]",
+            className
           )}
         >
           {getStatusDisplayName(status)}

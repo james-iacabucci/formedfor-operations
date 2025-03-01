@@ -19,6 +19,7 @@ interface ProductLineButtonProps {
   productLines: ProductLine[] | undefined;
   currentProductLine: ProductLine | null;
   variant?: "small" | "large";
+  className?: string;
 }
 
 export function ProductLineButton({ 
@@ -26,7 +27,8 @@ export function ProductLineButton({
   productLineId, 
   productLines,
   currentProductLine,
-  variant = "large" 
+  variant = "large",
+  className
 }: ProductLineButtonProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -76,7 +78,8 @@ export function ProductLineButton({
           variant="outline"
           className={cn(
             variant === "small" ? "h-5 w-8 px-1.5 text-[10px]" : "h-9 w-9 px-0",
-            "font-mono uppercase focus:bg-background focus:text-foreground"
+            "font-mono uppercase focus:bg-background focus:text-foreground",
+            className
           )}
         >
           {currentProductLine?.product_line_code?.slice(0, 2) || "--"}

@@ -110,13 +110,15 @@ export function SculptureInfo({
             productLines={productLines}
             currentProductLine={currentProductLine}
             variant="small"
+            className="h-5 text-xs"
           />
           <SculptureStatus
             sculptureId={sculpture.id}
             status={sculpture.status}
             variant="small"
+            className="h-5 text-xs"
           />
-          <div className="border border-muted rounded-md h-5 px-2 flex items-center text-[10px] text-white">
+          <div className="border border-muted rounded-full h-5 px-2 flex items-center text-xs text-white">
             {getPriceDisplay()}
           </div>
         </div>
