@@ -69,26 +69,38 @@ export function AppHeader() {
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
+                    className={cn(
+                      "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
+                      "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
+                    )}
                   >
                     {pl.name.toUpperCase()}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
+                  className={cn(
+                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
+                  )}
                 >
                   LEADS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
+                  className={cn(
+                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
+                  )}
                 >
                   ORDERS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
+                  className={cn(
+                    "h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm",
+                    "data-[state=inactive]:border data-[state=inactive]:border-muted-foreground/30 data-[state=inactive]:bg-transparent"
+                  )}
                 >
                   MESSAGES
                 </TabsTrigger>
