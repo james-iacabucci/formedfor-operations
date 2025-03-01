@@ -1,5 +1,4 @@
-
-import { Check, Heart, MoreHorizontal, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye } from "lucide-react";
+import { Check, Heart, Reply, ThumbsUp, Trash2, User, HelpCircle, Eye } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "./types";
@@ -145,7 +144,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
             
             {/* Slack-like action bar */}
             {isHovered && (
-              <div className="absolute right-0 -top-8 bg-background rounded-full border shadow-md flex items-center">
+              <div className="absolute right-0 -top-8 bg-accent/50 rounded-full border shadow-md flex items-center">
                 <TooltipProvider delayDuration={300}>
                   {reactions.map((reaction) => {
                     const userHasReacted = !!user && (message.reactions || []).some(
@@ -193,7 +192,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 rounded-full text-white hover:bg-destructive/10"
                           onClick={handleDelete}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -204,21 +203,6 @@ export function MessageItem({ message, children }: MessageItemProps) {
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>More actions</p>
-                    </TooltipContent>
-                  </Tooltip>
                 </TooltipProvider>
               </div>
             )}
