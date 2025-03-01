@@ -64,7 +64,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
           <div className="relative">
             {message.content && (
               <div 
-                className="text-sm whitespace-pre-wrap rounded-lg group"
+                className="text-sm whitespace-pre-wrap rounded-lg group px-3 py-2"
                 onMouseEnter={() => setShowReactionPicker(true)}
                 onMouseLeave={() => setShowReactionPicker(false)}
               >
@@ -72,7 +72,7 @@ export function MessageItem({ message, children }: MessageItemProps) {
                 
                 {showReactionPicker && (
                   <div 
-                    className="absolute left-0 top-0 -translate-y-full transform"
+                    className="absolute right-0 top-0 -translate-y-full transform"
                     onMouseEnter={() => setShowReactionPicker(true)}
                     onMouseLeave={() => setShowReactionPicker(false)}
                   >
