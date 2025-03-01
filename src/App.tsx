@@ -12,8 +12,10 @@ import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
 import LeadsPage from "./pages/LeadsPage";
 import OrdersPage from "./pages/OrdersPage";
-import MessagesPage from "./pages/MessagesPage";
+import ChatsPage from "./pages/ChatsPage";
 import ProductLinePage from "./pages/ProductLinePage";
+import ClientsPage from "./pages/ClientsPage";
+import TasksPage from "./pages/TasksPage";
 
 // Create a client with optimized configuration
 const queryClient = new QueryClient({
@@ -71,10 +73,26 @@ const App = () => (
                 }
               />
               <Route
-                path="/messages"
+                path="/chats"
                 element={
                   <ProtectedRoute>
-                    <MessagesPage />
+                    <ChatsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/clients"
+                element={
+                  <ProtectedRoute>
+                    <ClientsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tasks"
+                element={
+                  <ProtectedRoute>
+                    <TasksPage />
                   </ProtectedRoute>
                 }
               />
