@@ -122,6 +122,20 @@ a, button, [role="button"] {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Page transition styles */
+.page-transition {
+  transition: opacity 300ms ease-in-out;
+  min-height: 100vh;
+}
+
+.page-transition.fadeIn {
+  opacity: 1;
+}
+
+.page-transition.fadeOut {
+  opacity: 0;
+}
+
 /* Smoother animations for dropdown menus and modals */
 .animate-in {
   animation-duration: 300ms;

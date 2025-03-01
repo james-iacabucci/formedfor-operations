@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { PageTransition } from "./components/layout/PageTransition";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
@@ -44,7 +45,9 @@ const App = () => (
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <PageTransition>
+                      <Dashboard />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -52,7 +55,9 @@ const App = () => (
                 path="/sculpture/:id"
                 element={
                   <ProtectedRoute>
-                    <SculptureDetail />
+                    <PageTransition>
+                      <SculptureDetail />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -60,7 +65,9 @@ const App = () => (
                 path="/leads"
                 element={
                   <ProtectedRoute>
-                    <LeadsPage />
+                    <PageTransition>
+                      <LeadsPage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -68,7 +75,9 @@ const App = () => (
                 path="/orders"
                 element={
                   <ProtectedRoute>
-                    <OrdersPage />
+                    <PageTransition>
+                      <OrdersPage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -76,7 +85,9 @@ const App = () => (
                 path="/chats"
                 element={
                   <ProtectedRoute>
-                    <ChatsPage />
+                    <PageTransition>
+                      <ChatsPage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -84,7 +95,9 @@ const App = () => (
                 path="/clients"
                 element={
                   <ProtectedRoute>
-                    <ClientsPage />
+                    <PageTransition>
+                      <ClientsPage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -92,7 +105,9 @@ const App = () => (
                 path="/tasks"
                 element={
                   <ProtectedRoute>
-                    <TasksPage />
+                    <PageTransition>
+                      <TasksPage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
@@ -100,7 +115,9 @@ const App = () => (
                 path="/productline/:productLineId"
                 element={
                   <ProtectedRoute>
-                    <ProductLinePage />
+                    <PageTransition>
+                      <ProductLinePage />
+                    </PageTransition>
                   </ProtectedRoute>
                 }
               />
