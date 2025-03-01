@@ -1,3 +1,4 @@
+
 import { UserMenu } from "@/components/UserMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -63,31 +64,31 @@ export function AppHeader() {
               onValueChange={handleTabChange}
               value={getActiveTab()}
             >
-              <TabsList className="inline-flex h-auto bg-muted p-0.5 rounded-md">
+              <TabsList className="inline-flex h-auto bg-muted p-1.5 rounded-md">
                 {productLines?.map(pl => (
                   <TabsTrigger 
                     key={pl.id} 
                     value={pl.id}
-                    className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
+                    className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
                   >
                     {pl.name.toUpperCase()}
                   </TabsTrigger>
                 ))}
                 <TabsTrigger 
                   value="leads" 
-                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
                 >
                   LEADS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders" 
-                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
                 >
                   ORDERS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="h-7 px-2 py-0.5 text-xs uppercase font-medium rounded-sm"
+                  className="h-7 px-3 py-1 text-xs uppercase font-medium rounded-sm"
                 >
                   MESSAGES
                 </TabsTrigger>
