@@ -57,6 +57,10 @@ export function useRealtimeMessages({
           // Log reaction-specific information if available
           if (payload.new.reactions) {
             console.log('[REALTIME] Updated message reactions:', payload.new.reactions);
+            console.log('[REALTIME] Reactions count:', 
+              Array.isArray(payload.new.reactions) ? payload.new.reactions.length : 'not an array');
+            console.log('[REALTIME] Reactions data type:', 
+              typeof payload.new.reactions);
           }
           
           await refetch();

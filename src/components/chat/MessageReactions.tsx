@@ -16,7 +16,11 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
   const { user } = useAuth();
   const { toast } = useToast();
   
-  console.log('[REACTION-UI] Rendering message reactions:', { messageId, reactionsCount: reactions?.length });
+  console.log('[REACTION-UI] Rendering message reactions:', { 
+    messageId, 
+    reactionsCount: reactions?.length,
+    reactionsData: JSON.stringify(reactions)
+  });
   
   if (!reactions || reactions.length === 0) {
     console.log('[REACTION-UI] No reactions to render');
