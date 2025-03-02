@@ -22,20 +22,22 @@ export function ChatNavigation({
           <Tabs
             value={activeView}
             onValueChange={(value) => onViewChange(value as "chat" | "files")}
-            className="bg-black p-1.5 rounded-md border border-muted"
+            className="rounded-full border border-[#333333] p-1"
           >
-            <TabsList className="bg-transparent border-0 h-7 p-0">
+            <TabsList className="bg-transparent border-0 h-9 p-0">
               <TabsTrigger 
                 value="chat" 
-                className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black"
+                className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
               >
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Chat
               </TabsTrigger>
               <TabsTrigger 
                 value="files" 
-                className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black"
+                className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
               >
-                <Files className="h-4 w-4" />
+                <Files className="h-4 w-4 mr-2" />
+                Files
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -43,24 +45,24 @@ export function ChatNavigation({
           <Tabs
             value={currentTopic}
             onValueChange={(value) => onTopicChange(value as "pricing" | "fabrication" | "operations")}
-            className="bg-black p-1.5 rounded-md border border-muted flex-grow flex"
+            className="rounded-full border border-[#333333] p-1 flex-grow flex"
           >
-            <TabsList className="bg-transparent border-0 h-7 p-0 w-full flex">
+            <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
               <TabsTrigger 
                 value="pricing" 
-                className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
+                className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
               >
                 Pricing
               </TabsTrigger>
               <TabsTrigger 
                 value="fabrication" 
-                className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
+                className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
               >
                 Fabrication
               </TabsTrigger>
               <TabsTrigger 
                 value="operations" 
-                className="text-xs uppercase font-medium rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-black flex-1"
+                className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
               >
                 Operations
               </TabsTrigger>

@@ -33,17 +33,19 @@ export function MessageListContent({
         </div>
       )}
       
-      {messages.map((message) => (
-        <MessageItem 
-          key={message.id} 
-          message={message}
-          editingMessage={editingMessage}
-          setEditingMessage={setEditingMessage}
-        />
-      ))}
+      <div className="space-y-3">
+        {messages.map((message) => (
+          <MessageItem 
+            key={message.id} 
+            message={message}
+            editingMessage={editingMessage}
+            setEditingMessage={setEditingMessage}
+          />
+        ))}
+      </div>
       
       {uploadingFiles.length > 0 && (
-        <div className="py-0.5">
+        <div className="py-0.5 mt-3">
           <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${
             user ? 'bg-black text-white border border-muted' : 'bg-accent/50'
           }`}>
