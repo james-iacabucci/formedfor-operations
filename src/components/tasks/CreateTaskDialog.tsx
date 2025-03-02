@@ -106,7 +106,7 @@ export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTask
           <div className="space-y-2">
             <Label htmlFor="sculpture">Sculpture</Label>
             <Select
-              value={taskData.sculpture_id}
+              value={taskData.sculpture_id || ""}
               onValueChange={(value) => setTaskData(prev => ({ ...prev, sculpture_id: value }))}
             >
               <SelectTrigger id="sculpture">
@@ -114,7 +114,7 @@ export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTask
               </SelectTrigger>
               <SelectContent>
                 {sculptures.length === 0 ? (
-                  <SelectItem value="no-sculptures" disabled>No sculptures available</SelectItem>
+                  <SelectItem value="no-sculptures">No sculptures available</SelectItem>
                 ) : (
                   sculptures.map((sculpture) => (
                     <SelectItem key={sculpture.id} value={sculpture.id}>
