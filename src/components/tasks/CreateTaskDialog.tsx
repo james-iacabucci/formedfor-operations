@@ -10,6 +10,7 @@ import { useTaskRelatedEntity } from "@/hooks/tasks/useTaskRelatedEntity";
 import { RelatedEntitySection } from "./form-sections/RelatedEntitySection";
 import { TaskDetailsSection } from "./form-sections/TaskDetailsSection";
 import { TaskAssignmentSection } from "./form-sections/TaskAssignmentSection";
+import { useAuth } from "@/components/AuthProvider";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function CreateTaskDialog({
   const { toast } = useToast();
   const { createTask } = useTaskMutations();
   const { data: users = [] } = useUsers();
+  const { user: currentUser } = useAuth();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -54,9 +56,10 @@ export function CreateTaskDialog({
       setDescription("");
       setTaskRelatedType(relatedType);
       setStatus("todo");
-      setAssignedTo(null);
+      // Default to current user when the dialog opens
+      setAssignedTo(currentUser?.id || null);
     }
-  }, [open, relatedType]);
+  }, [open, relatedType, currentUser]);
 
   const handleRelatedTypeChange = (type: string) => {
     const newType = type === "none" ? null : type as TaskRelatedType;
@@ -118,6 +121,13 @@ export function CreateTaskDialog({
         </DialogHeader>
         
         <div className="space-y-4 py-2">
+          <TaskDetailsSection
+            title={title}
+            description={description}
+            onTitleChange={setTitle}
+            onDescriptionChange={setDescription}
+          />
+          
           <RelatedEntitySection
             relatedType={taskRelatedType}
             entityId={sculptureEntityId}
@@ -125,13 +135,6 @@ export function CreateTaskDialog({
             onRelatedTypeChange={handleRelatedTypeChange}
             sculptures={sculptures}
             sculpturesLoading={sculpturesLoading}
-          />
-          
-          <TaskDetailsSection
-            title={title}
-            description={description}
-            onTitleChange={setTitle}
-            onDescriptionChange={setDescription}
           />
           
           <TaskAssignmentSection

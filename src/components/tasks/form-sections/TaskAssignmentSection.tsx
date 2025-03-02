@@ -1,4 +1,5 @@
 
+import { useAuth } from "@/components/AuthProvider";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskStatus } from "@/types/task";
@@ -23,10 +24,12 @@ export function TaskAssignmentSection({
   onAssigneeChange,
   onStatusChange
 }: TaskAssignmentSectionProps) {
+  const { user: currentUser } = useAuth();
+  
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="assigned-to">Assigned To</Label>
+        <Label htmlFor="assigned-to">Assignee</Label>
         <Select
           value={assignedTo || "unassigned"}
           onValueChange={onAssigneeChange}
@@ -50,7 +53,7 @@ export function TaskAssignmentSection({
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
+        <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
         <Select
           value={status}
           onValueChange={(value) => onStatusChange(value as TaskStatus)}

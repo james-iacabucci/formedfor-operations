@@ -22,25 +22,23 @@ export function RelatedEntitySection({
   sculpturesLoading
 }: RelatedEntitySectionProps) {
   return (
-    <>
-      <div className="space-y-2">
-        <Label htmlFor="related-type">Task Related To</Label>
-        <Select
-          value={relatedType || "none"}
-          onValueChange={onRelatedTypeChange}
-        >
-          <SelectTrigger id="related-type">
-            <SelectValue placeholder="Not associated with anything" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Not associated</SelectItem>
-            <SelectItem value="sculpture">Sculpture</SelectItem>
-            <SelectItem value="client">Client</SelectItem>
-            <SelectItem value="order">Order</SelectItem>
-            <SelectItem value="lead">Lead</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="space-y-2">
+      <Label htmlFor="related-type">Relates To</Label>
+      <Select
+        value={relatedType || "none"}
+        onValueChange={onRelatedTypeChange}
+      >
+        <SelectTrigger id="related-type">
+          <SelectValue placeholder="Not associated with anything" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Not associated</SelectItem>
+          <SelectItem value="sculpture">Sculpture</SelectItem>
+          <SelectItem value="client">Client</SelectItem>
+          <SelectItem value="order">Order</SelectItem>
+          <SelectItem value="lead">Lead</SelectItem>
+        </SelectContent>
+      </Select>
       
       {relatedType === "sculpture" && (
         <div className="space-y-2">
@@ -73,7 +71,7 @@ export function RelatedEntitySection({
       {relatedType === "client" && (
         <div className="space-y-2">
           <Label htmlFor="client">Client</Label>
-          <Select disabled value="coming-soon">
+          <Select defaultValue="coming-soon">
             <SelectTrigger id="client">
               <SelectValue placeholder="Client functionality coming soon" />
             </SelectTrigger>
@@ -87,7 +85,7 @@ export function RelatedEntitySection({
       {relatedType === "order" && (
         <div className="space-y-2">
           <Label htmlFor="order">Order</Label>
-          <Select disabled value="coming-soon">
+          <Select defaultValue="coming-soon">
             <SelectTrigger id="order">
               <SelectValue placeholder="Order functionality coming soon" />
             </SelectTrigger>
@@ -101,7 +99,7 @@ export function RelatedEntitySection({
       {relatedType === "lead" && (
         <div className="space-y-2">
           <Label htmlFor="lead">Lead</Label>
-          <Select disabled value="coming-soon">
+          <Select defaultValue="coming-soon">
             <SelectTrigger id="lead">
               <SelectValue placeholder="Lead functionality coming soon" />
             </SelectTrigger>
@@ -111,6 +109,6 @@ export function RelatedEntitySection({
           </Select>
         </div>
       )}
-    </>
+    </div>
   );
 }

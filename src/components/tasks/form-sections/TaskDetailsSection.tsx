@@ -19,7 +19,7 @@ export function TaskDetailsSection({
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
         <Input
           id="title"
           placeholder="Task title"
