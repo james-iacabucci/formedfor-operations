@@ -10,8 +10,15 @@ export async function calculateNextPriorityOrder(
   entityId: string | null
 ): Promise<number> {
   if (relatedType && entityId) {
-    // Use a string literal type to avoid excessive type instantiation
-    const column = `${relatedType}_id` as string;
+    // Use a fixed string for column name instead of template literal
+    // This avoids the excessive type instantiation
+    let column = "";
+    
+    // Manually determine the column name based on the relatedType
+    if (relatedType === "sculpture") column = "sculpture_id";
+    else if (relatedType === "client") column = "client_id";
+    else if (relatedType === "order") column = "order_id";
+    else if (relatedType === "lead") column = "lead_id";
     
     const { data: existingTasks } = await supabase
       .from("tasks")
