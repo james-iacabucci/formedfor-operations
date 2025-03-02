@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -48,13 +47,11 @@ export function CreateTaskDialog({
     handleEntitySelection
   } = useTaskRelatedEntity(open, taskRelatedType as TaskRelatedType, sculptureId);
 
-  // Initialize form values when the dialog opens
   useEffect(() => {
     if (open) {
       setTitle("");
       setDescription("");
       setTaskRelatedType(relatedType || "general");
-      // Default to current user when the dialog opens
       setAssignedTo(currentUser?.id || null);
     }
   }, [open, relatedType, currentUser]);
@@ -80,10 +77,9 @@ export function CreateTaskDialog({
     try {
       let finalRelatedType: TaskRelatedType | null = null;
       
-      // Parse the related type
       if (taskRelatedType && typeof taskRelatedType === 'string') {
         if (taskRelatedType === 'general') {
-          finalRelatedType = null; // General tasks aren't related to anything specific
+          finalRelatedType = null;
         } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
                    taskRelatedType === 'lead' || taskRelatedType === 'order') {
           finalRelatedType = taskRelatedType as TaskRelatedType;
@@ -94,11 +90,10 @@ export function CreateTaskDialog({
         title,
         description: description || "",
         assigned_to: assignedTo,
-        status: "todo", // Always default to "todo"
+        status: "todo",
         related_type: finalRelatedType,
       };
       
-      // Set the appropriate entity ID based on the related type
       if (finalRelatedType === "sculpture") {
         taskData.sculpture_id = sculptureEntityId;
       } else if (finalRelatedType === "client") {
@@ -137,6 +132,14 @@ export function CreateTaskDialog({
             onDescriptionChange={setDescription}
           />
           
+          <TaskAssignmentSection
+            assignedTo={assignedTo}
+            status="todo"
+            users={users}
+            onAssigneeChange={handleAssigneeChange}
+            onStatusChange={() => {}}
+          />
+          
           <RelatedEntitySection
             relatedType={taskRelatedType as TaskRelatedType}
             entityId={sculptureEntityId}
@@ -144,14 +147,6 @@ export function CreateTaskDialog({
             onRelatedTypeChange={handleRelatedTypeChange}
             sculptures={sculptures}
             sculpturesLoading={sculpturesLoading}
-          />
-          
-          <TaskAssignmentSection
-            assignedTo={assignedTo}
-            status="todo" // Pass fixed status of "todo"
-            users={users}
-            onAssigneeChange={handleAssigneeChange}
-            onStatusChange={() => {}} // Empty function since we don't need status changes
           />
         </div>
         

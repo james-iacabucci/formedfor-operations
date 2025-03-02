@@ -145,6 +145,14 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
             onDescriptionChange={setDescription}
           />
           
+          <TaskAssignmentSection
+            assignedTo={assignedTo}
+            status={status}
+            users={users}
+            onAssigneeChange={handleAssigneeChange}
+            onStatusChange={setStatus}
+          />
+          
           <RelatedEntitySection
             relatedType={relatedType as TaskRelatedType}
             entityId={sculptureEntityId}
@@ -152,14 +160,6 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
             onRelatedTypeChange={handleRelatedTypeChange}
             sculptures={sculptures}
             sculpturesLoading={sculpturesLoading}
-          />
-          
-          <TaskAssignmentSection
-            assignedTo={assignedTo}
-            status={status}
-            users={users}
-            onAssigneeChange={handleAssigneeChange}
-            onStatusChange={setStatus}
           />
           
           <DialogFooter>
