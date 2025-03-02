@@ -10,22 +10,30 @@ export async function calculateNextPriorityOrder(
   entityId: string | null
 ): Promise<number> {
   if (relatedType && entityId) {
-    // Use a fixed string for column name instead of template literal
-    // This avoids the excessive type instantiation
-    let column = "";
+    // Define the column name using a simple string
+    // This avoids TypeScript excessive type instantiation
+    let columnName = "";
     
     // Manually determine the column name based on the relatedType
-    if (relatedType === "sculpture") column = "sculpture_id";
-    else if (relatedType === "client") column = "client_id";
-    else if (relatedType === "order") column = "order_id";
-    else if (relatedType === "lead") column = "lead_id";
+    if (relatedType === "sculpture") {
+      columnName = "sculpture_id";
+    } else if (relatedType === "client") {
+      columnName = "client_id";
+    } else if (relatedType === "order") {
+      columnName = "order_id";
+    } else if (relatedType === "lead") {
+      columnName = "lead_id";
+    }
     
-    const { data: existingTasks } = await supabase
+    // Use explicit type casting to avoid type recursion
+    const query = supabase
       .from("tasks")
       .select("priority_order")
-      .eq(column, entityId)
+      .eq(columnName as string, entityId)
       .order("priority_order", { ascending: false })
       .limit(1);
+    
+    const { data: existingTasks } = await query;
     
     if (existingTasks && existingTasks.length > 0) {
       return existingTasks[0].priority_order + 1;
