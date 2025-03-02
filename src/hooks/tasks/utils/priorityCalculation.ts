@@ -10,7 +10,8 @@ export async function calculateNextPriorityOrder(
   entityId: string | null
 ): Promise<number> {
   if (relatedType && entityId) {
-    const column = `${relatedType}_id`;
+    // Use explicit type and fix the potential infinite type issue
+    const column = `${relatedType}_id` as keyof Record<string, any>;
     
     const { data: existingTasks } = await supabase
       .from("tasks")

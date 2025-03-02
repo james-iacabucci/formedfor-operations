@@ -64,13 +64,13 @@ export function useCreateTask() {
       
       if (!data) throw new Error("Failed to retrieve created task");
       
-      // Transform to the correct return type
+      // Transform to the correct return type with explicit mapping to avoid type errors
       const createdTask: TaskWithAssignee = {
         id: data.id,
         sculpture_id: data.sculpture_id,
-        client_id: data.client_id,
-        order_id: data.order_id,
-        lead_id: data.lead_id,
+        client_id: data.client_id || null,
+        order_id: data.order_id || null,
+        lead_id: data.lead_id || null,
         related_type: data.related_type as TaskRelatedType,
         title: data.title,
         description: data.description,
@@ -80,7 +80,7 @@ export function useCreateTask() {
         created_at: data.created_at,
         created_by: data.created_by,
         updated_at: data.updated_at,
-        assignee: data.assignee,
+        assignee: data.assignee
       };
       
       return createdTask;

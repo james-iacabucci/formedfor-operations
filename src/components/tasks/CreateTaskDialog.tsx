@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useUsers } from "@/hooks/useTasks";
-import { useTaskMutations } from "@/hooks/useTasks";
+import { useUsers } from "@/hooks/tasks/useTaskQueries";
+import { useTaskMutations } from "@/hooks/tasks/useTaskMutations";
 import { CreateTaskInput, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -53,7 +52,6 @@ export function CreateTaskDialog({
     lead_id: leadId
   });
 
-  // Fetch available sculptures for the dropdown
   const { data: sculptures = [], isLoading: sculpturesLoading } = useQuery({
     queryKey: ["sculptures-minimal"],
     queryFn: async () => {
@@ -76,7 +74,6 @@ export function CreateTaskDialog({
     enabled: open && (taskData.related_type === "sculpture" || taskData.related_type === null), 
   });
 
-  // Update taskData when props change or when dialog opens
   useEffect(() => {
     if (open) {
       console.log("Setting initial task data in dialog");
@@ -91,11 +88,9 @@ export function CreateTaskDialog({
     }
   }, [open, sculptureId, clientId, orderId, leadId, relatedType]);
 
-  // Handle related type change
   const handleRelatedTypeChange = (type: string) => {
     const newType = type === "" ? null : type as TaskRelatedType;
     
-    // Reset all related entity IDs
     const newData = {
       ...taskData,
       related_type: newType,
@@ -105,7 +100,6 @@ export function CreateTaskDialog({
       lead_id: null
     };
     
-    // Set the previously selected ID if it matches the new type
     if (newType === "sculpture" && sculptureId) {
       newData.sculpture_id = sculptureId;
     } else if (newType === "client" && clientId) {
