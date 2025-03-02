@@ -36,11 +36,15 @@ export function TaskAssignmentSection({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="unassigned">Unassigned</SelectItem>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.username || user.id}
-              </SelectItem>
-            ))}
+            {users.length === 0 ? (
+              <SelectItem value="no-users">No users available</SelectItem>
+            ) : (
+              users.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.username || user.id}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>
