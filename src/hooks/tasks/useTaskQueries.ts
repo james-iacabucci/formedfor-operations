@@ -32,7 +32,10 @@ export function useSculptureTasks(sculptureId: string) {
       const typedData = data?.map(item => ({
         ...item,
         status: item.status as TaskStatus,
-        related_type: item.related_type as TaskRelatedType
+        related_type: item.related_type as TaskRelatedType,
+        client_id: item.client_id || null,
+        order_id: item.order_id || null,
+        lead_id: item.lead_id || null
       })) as TaskWithAssignee[];
 
       return typedData || [];
@@ -64,12 +67,15 @@ export function useAllTasks() {
         throw error;
       }
 
-      // Ensure the status and related_type are correctly typed
+      // Transform and ensure proper typing of the data
       const typedData = data?.map(item => ({
         ...item,
         status: item.status as TaskStatus,
-        related_type: item.related_type as TaskRelatedType
-      })) as TaskWithAssignee[];
+        related_type: item.related_type as TaskRelatedType,
+        client_id: item.client_id || null,
+        order_id: item.order_id || null,
+        lead_id: item.lead_id || null
+      })) as unknown as TaskWithAssignee[];
 
       return typedData || [];
     },

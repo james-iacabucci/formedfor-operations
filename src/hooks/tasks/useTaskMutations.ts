@@ -117,7 +117,10 @@ export function useTaskMutations() {
       return {
         ...data,
         status: data.status as TaskStatus,
-        related_type: data.related_type as TaskRelatedType
+        related_type: data.related_type as TaskRelatedType,
+        client_id: data.client_id || null,
+        order_id: data.order_id || null,
+        lead_id: data.lead_id || null
       } as Task;
     },
     onSuccess: (data) => {
@@ -209,7 +212,10 @@ export function useTaskMutations() {
       return {
         ...data,
         status: data.status as TaskStatus,
-        related_type: data.related_type as TaskRelatedType
+        related_type: data.related_type as TaskRelatedType,
+        client_id: data.client_id || null,
+        order_id: data.order_id || null,
+        lead_id: data.lead_id || null
       } as Task;
     },
     onSuccess: (data) => {
