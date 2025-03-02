@@ -66,7 +66,12 @@ export function useMessages(threadId: string) {
         }
         
         // Log reactions for debugging
-        console.log('First message reactions:', firstMsg.reactions);
+        console.log('First message reactions structure:', firstMsg.reactions);
+        console.log('First message reactions type:', typeof firstMsg.reactions);
+        console.log('First message reactions is array:', Array.isArray(firstMsg.reactions));
+        if (firstMsg.reactions && Array.isArray(firstMsg.reactions) && firstMsg.reactions.length > 0) {
+          console.log('First reaction example:', JSON.stringify(firstMsg.reactions[0]));
+        }
       }
 
       return data || [];

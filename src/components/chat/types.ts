@@ -108,14 +108,25 @@ export function convertToMessage(rawMessage: any): Message {
 
   // Process reactions if they exist
   let reactions: MessageReaction[] = [];
-  if (Array.isArray(rawMessage.reactions)) {
-    reactions = rawMessage.reactions
-      .filter(r => typeof r === 'object' && r !== null)
-      .map(r => ({
-        reaction: r.reaction as string,
-        user_id: r.user_id as string,
-        username: r.username as string | null
-      }));
+  if (rawMessage.reactions) {
+    console.log("Raw reactions data:", rawMessage.reactions);
+    console.log("Raw reactions type:", typeof rawMessage.reactions);
+    console.log("Raw reactions is array:", Array.isArray(rawMessage.reactions));
+    
+    if (Array.isArray(rawMessage.reactions)) {
+      reactions = rawMessage.reactions
+        .filter(r => {
+          const isValid = typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r;
+          console.log("Validating reaction:", { r, isValid });
+          return isValid;
+        })
+        .map(r => ({
+          reaction: r.reaction as string,
+          user_id: r.user_id as string,
+          username: r.username as string | null
+        }));
+      console.log("Processed reactions:", reactions);
+    }
   }
 
   return {

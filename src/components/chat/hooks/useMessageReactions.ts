@@ -24,7 +24,9 @@ export function useMessageReactions(message: Message) {
       
       // Get existing reactions or initialize empty array
       const existingReactions = Array.isArray(message.reactions) ? message.reactions : [];
-      console.log("[REACTION] Existing reactions:", existingReactions);
+      console.log("[REACTION] Existing reactions:", JSON.stringify(existingReactions));
+      console.log("[REACTION] Existing reactions type:", typeof existingReactions);
+      console.log("[REACTION] Is Array:", Array.isArray(existingReactions));
       
       const existingReaction = existingReactions.find(
         r => r.reaction === reactionType && r.user_id === user.id
@@ -48,7 +50,8 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      console.log("[REACTION] Updated reactions array:", updatedReactions);
+      console.log("[REACTION] Updated reactions array:", JSON.stringify(updatedReactions));
+      console.log("[REACTION] Updated reactions is array:", Array.isArray(updatedReactions));
       console.log("[REACTION] SQL function call params:", {
         message_id: message.id,
         reaction_data: updatedReactions
