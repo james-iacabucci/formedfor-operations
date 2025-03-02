@@ -1,11 +1,10 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -37,66 +36,10 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      const { data: message, error: fetchError } = await supabase
-        .from("chat_messages")
-        .select("*")
-        .eq("id", messageId)
-        .single();
-      
-      if (fetchError) {
-        console.error("Error fetching message:", fetchError);
-        return;
-      }
-      
-      // Convert attachments to Json[] for Supabase
-      const attachmentsAsJson: Json[] = [];
-      
-      if (Array.isArray(message.attachments)) {
-        for (const attachment of message.attachments) {
-          if (typeof attachment === 'object' && attachment !== null) {
-            const jsonAttachment: Record<string, Json> = {};
-            
-            // First convert to unknown, then to Record<string, Json>
-            const att = attachment as unknown as Record<string, Json>;
-            
-            if ('name' in att && typeof att.name === 'string') {
-              jsonAttachment.name = att.name;
-            } else {
-              jsonAttachment.name = "";
-            }
-            
-            if ('url' in att && typeof att.url === 'string') {
-              jsonAttachment.url = att.url;
-            } else {
-              jsonAttachment.url = "";
-            }
-            
-            if ('type' in att && typeof att.type === 'string') {
-              jsonAttachment.type = att.type;
-            } else {
-              jsonAttachment.type = "";
-            }
-            
-            if ('size' in att && typeof att.size === 'number') {
-              jsonAttachment.size = att.size;
-            } else {
-              jsonAttachment.size = 0;
-            }
-            
-            attachmentsAsJson.push(jsonAttachment);
-          }
-        }
-      }
-      
+      // Only update the reactions field, not the entire message
       const { error } = await supabase
         .from("chat_messages")
-        .update({ 
-          reactions: updatedReactions,
-          content: message.content,
-          thread_id: message.thread_id,
-          attachments: attachmentsAsJson,
-          mentions: message.mentions || []
-        })
+        .update({ reactions: updatedReactions })
         .eq("id", messageId);
       
       if (error) {
