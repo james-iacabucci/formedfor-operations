@@ -25,7 +25,7 @@ export function MessageContainer({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={`flex items-start gap-3 px-4 max-w-4xl mx-auto rounded-lg p-4 ${
+      <div className={`flex items-start gap-3 max-w-4xl mx-auto rounded-lg p-4 ${
         isOwnMessage 
           ? 'bg-black text-white border border-muted' 
           : 'bg-accent/50'
