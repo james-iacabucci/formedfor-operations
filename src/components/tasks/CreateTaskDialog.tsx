@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,18 @@ import { useUsers } from "@/hooks/useTasks";
 import { useTaskMutations } from "@/hooks/useTasks";
 import { CreateTaskInput, TaskStatus } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sculptureId: string;
+}
+
+interface SculptureOption {
+  id: string;
+  name: string;
 }
 
 export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTaskDialogProps) {
@@ -30,11 +37,45 @@ export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTask
     status: "todo",
   });
 
+  // Fetch available sculptures for the dropdown
+  const { data: sculptures = [] } = useQuery({
+    queryKey: ["sculptures-minimal"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sculptures")
+        .select("id, ai_generated_name")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      
+      return (data || []).map(s => ({
+        id: s.id,
+        name: s.ai_generated_name || "Unnamed Sculpture"
+      })) as SculptureOption[];
+    },
+  });
+
+  // Update taskData when sculptureId prop changes
+  useEffect(() => {
+    if (sculptureId) {
+      setTaskData(prev => ({ ...prev, sculpture_id: sculptureId }));
+    }
+  }, [sculptureId]);
+
   const handleCreateTask = async () => {
     if (!taskData.title.trim()) {
       toast({
         title: "Error",
         description: "Task title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!taskData.sculpture_id) {
+      toast({
+        title: "Error",
+        description: "Please select a sculpture",
         variant: "destructive",
       });
       return;
@@ -62,6 +103,29 @@ export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTask
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label htmlFor="sculpture">Sculpture</Label>
+            <Select
+              value={taskData.sculpture_id}
+              onValueChange={(value) => setTaskData(prev => ({ ...prev, sculpture_id: value }))}
+            >
+              <SelectTrigger id="sculpture">
+                <SelectValue placeholder="Select a sculpture" />
+              </SelectTrigger>
+              <SelectContent>
+                {sculptures.length === 0 ? (
+                  <SelectItem value="no-sculptures" disabled>No sculptures available</SelectItem>
+                ) : (
+                  sculptures.map((sculpture) => (
+                    <SelectItem key={sculpture.id} value={sculpture.id}>
+                      {sculpture.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input

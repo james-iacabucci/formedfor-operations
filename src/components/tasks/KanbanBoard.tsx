@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAllTasks } from "@/hooks/tasks";
 import { TaskItem } from "./TaskItem";
@@ -14,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sculpture } from "@/types/sculpture";
+import { useToast } from "@/hooks/use-toast";
 
 type GroupBy = "status" | "assignee" | "sculpture";
 
@@ -28,6 +28,7 @@ type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
 
 export function KanbanBoard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { data: tasks = [], isLoading } = useAllTasks();
   const [groupBy, setGroupBy] = useState<GroupBy>("status");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -37,7 +38,7 @@ export function KanbanBoard() {
   // Get sculptures for creating new tasks
   useEffect(() => {
     const fetchSculptures = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("sculptures")
         .select("id, ai_generated_name, image_url")
         .order("created_at", { ascending: false })
@@ -45,11 +46,17 @@ export function KanbanBoard() {
       
       if (data) {
         setSculptures(data as SculptureMinimal[]);
+      } else if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load sculptures",
+          variant: "destructive",
+        });
       }
     };
     
     fetchSculptures();
-  }, []);
+  }, [toast]);
   
   const { data: users = [] } = useQuery({
     queryKey: ["profiles"],
@@ -62,6 +69,23 @@ export function KanbanBoard() {
       return data || [];
     }
   });
+  
+  // Handle opening the create task dialog
+  const handleAddTaskClick = () => {
+    // If there are sculptures available, select the first one
+    if (sculptures.length > 0) {
+      setSelectedSculptureId(sculptures[0].id);
+    } else {
+      // If no sculptures are available, show a toast message
+      toast({
+        title: "No sculptures available",
+        description: "Please create a sculpture first before adding tasks",
+        variant: "destructive"
+      });
+      return;
+    }
+    setCreateDialogOpen(true);
+  };
   
   const getStatusDisplayName = (status: TaskStatus) => {
     switch (status) {
@@ -126,8 +150,6 @@ export function KanbanBoard() {
     
     return {};
   };
-  
-  const groupedTasks = getGroupedTasks();
   
   const renderGroupTitle = (key: string) => {
     if (groupBy === "status") {
@@ -205,10 +227,7 @@ export function KanbanBoard() {
             </TabsList>
           </Tabs>
           
-          <Button variant="outline" size="sm" onClick={() => {
-            setSelectedSculptureId(sculptures[0]?.id || null);
-            setCreateDialogOpen(true);
-          }}>
+          <Button variant="outline" size="sm" onClick={handleAddTaskClick}>
             <Plus className="h-4 w-4 mr-1" /> Add Task
           </Button>
         </div>
@@ -248,13 +267,12 @@ export function KanbanBoard() {
         </div>
       )}
       
-      {selectedSculptureId && (
-        <CreateTaskDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          sculptureId={selectedSculptureId}
-        />
-      )}
+      {/* Render the dialog regardless of whether a sculpture is selected */}
+      <CreateTaskDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        sculptureId={selectedSculptureId || ""}
+      />
     </div>
   );
 }
