@@ -9,49 +9,16 @@ export async function calculateNextPriorityOrder(
   relatedType: TaskRelatedType,
   entityId: string | null
 ): Promise<number> {
-  if (relatedType && entityId) {
-    // Define the column name using a simple string
-    // This avoids TypeScript excessive type instantiation
-    let columnName = "";
-    
-    // Manually determine the column name based on the relatedType
-    if (relatedType === "sculpture") {
-      columnName = "sculpture_id";
-    } else if (relatedType === "client") {
-      columnName = "client_id";
-    } else if (relatedType === "order") {
-      columnName = "order_id";
-    } else if (relatedType === "lead") {
-      columnName = "lead_id";
-    }
-    
-    // Create the query without chaining to avoid type recursion
-    const query = supabase.from("tasks");
-    const selectQuery = query.select("priority_order");
-    const filteredQuery = selectQuery.eq(columnName, entityId);
-    const orderedQuery = filteredQuery.order("priority_order", { ascending: false });
-    const limitedQuery = orderedQuery.limit(1);
-    
-    const { data: existingTasks } = await limitedQuery;
-    
-    if (existingTasks && existingTasks.length > 0) {
-      return existingTasks[0].priority_order + 1;
-    } else {
-      return 0;
-    }
-  } else {
-    // For unassociated tasks, get the highest priority among unassociated tasks
-    const { data: existingTasks } = await supabase
-      .from("tasks")
-      .select("priority_order")
-      .is("related_type", null)
-      .order("priority_order", { ascending: false })
-      .limit(1);
-    
-    if (existingTasks && existingTasks.length > 0) {
-      return existingTasks[0].priority_order + 1;
-    } else {
-      return 0;
-    }
+  // Call the PostgreSQL function to calculate the next priority order
+  const { data, error } = await supabase.rpc('get_next_priority_order', {
+    p_related_type: relatedType,
+    p_entity_id: entityId
+  });
+
+  if (error) {
+    console.error('Error calculating next priority order:', error);
+    return 0; // Default to 0 if there's an error
   }
+
+  return data || 0;
 }

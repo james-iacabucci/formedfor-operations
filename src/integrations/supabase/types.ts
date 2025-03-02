@@ -565,6 +565,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_next_priority_order: {
+        Args: {
+          p_related_type: string
+          p_entity_id: string
+        }
+        Returns: number
+      }
       update_message_reactions: {
         Args: {
           message_id: string
