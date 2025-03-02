@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import "@/integrations/supabase/function-types";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -16,74 +15,51 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
   const { user } = useAuth();
   const { toast } = useToast();
   
-  console.log('[REACTION-UI] Rendering message reactions:', { 
-    messageId, 
-    reactionsCount: reactions?.length,
-    reactionsData: JSON.stringify(reactions)
-  });
-  
   if (!reactions || reactions.length === 0) {
-    console.log('[REACTION-UI] No reactions to render');
     return null;
   }
   
+  // Group reactions by type and deduplicate users
   const groupedReactions = reactions.reduce<Record<string, MessageReaction[]>>((acc, reaction) => {
     if (!acc[reaction.reaction]) {
       acc[reaction.reaction] = [];
     }
-    acc[reaction.reaction].push(reaction);
+    
+    // Check if this user already has this reaction type
+    const existingReaction = acc[reaction.reaction].find(r => r.user_id === reaction.user_id);
+    if (!existingReaction) {
+      acc[reaction.reaction].push(reaction);
+    }
+    
     return acc;
   }, {});
   
-  console.log('[REACTION-UI] Grouped reactions:', groupedReactions);
-  
   const handleRemoveReaction = async (reactionType: string) => {
     if (!user) {
-      console.error('[REACTION-UI] No authenticated user found');
       return;
     }
     
     try {
       const hasReaction = reactions.some(r => r.reaction === reactionType && r.user_id === user.id);
       if (!hasReaction) {
-        console.log('[REACTION-UI] User does not have this reaction type');
         return;
       }
       
-      console.log('[REACTION-UI] Removing reaction:', { messageId, reactionType, userId: user.id });
-      
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      console.log("[REACTION-UI] Removing reaction - message_id:", messageId);
-      console.log("[REACTION-UI] Updated reactions:", JSON.stringify(updatedReactions));
-      
-      const { data, error } = await supabase.rpc(
-        'update_message_reactions',
-        {
-          message_id: messageId,
-          reaction_data: updatedReactions
-        }
-      );
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ reactions: updatedReactions })
+        .eq('id', messageId);
       
       if (error) {
-        console.error("[REACTION-UI] Error removing reaction:", error);
-        console.error("[REACTION-UI] Error code:", error.code);
-        console.error("[REACTION-UI] Error message:", error.message);
-        console.error("[REACTION-UI] Error details:", error.details);
         toast({
           title: "Error",
-          description: `Failed to remove reaction: ${error.message}`,
+          description: "Failed to update reaction",
           variant: "destructive"
-        });
-      } else {
-        console.log("[REACTION-UI] Reaction removed successfully:", data);
-        toast({
-          description: "Reaction removed",
-          duration: 2000
         });
       }
     } catch (error) {
-      console.error("[REACTION-UI] Exception in handleRemoveReaction:", error);
       toast({
         title: "Error", 
         description: "Failed to remove reaction",

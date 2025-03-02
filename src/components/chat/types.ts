@@ -60,19 +60,6 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
   
   const obj = value as Record<string, Json>;
   
-  // Log detailed information about the object being checked
-  console.log("Checking isFileAttachment:", { 
-    value,
-    hasName: 'name' in obj, 
-    nameType: obj.name ? typeof obj.name : 'undefined',
-    hasUrl: 'url' in obj, 
-    urlType: obj.url ? typeof obj.url : 'undefined',
-    hasType: 'type' in obj,
-    typeType: obj.type ? typeof obj.type : 'undefined',
-    hasSize: 'size' in obj,
-    sizeType: obj.size !== undefined ? typeof obj.size : 'undefined'
-  });
-  
   return (
     typeof obj.name === 'string' &&
     typeof obj.url === 'string' &&
@@ -83,50 +70,41 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
 
 // Helper function to convert raw message data to Message type
 export function convertToMessage(rawMessage: any): Message {
-  console.log("Converting raw message to Message:", rawMessage);
-  
   let attachments: FileAttachment[] = [];
   
   if (Array.isArray(rawMessage.attachments)) {
     attachments = rawMessage.attachments
-      .filter(att => {
-        const isValid = isFileAttachment(att);
-        console.log("Filtering attachment:", { att, isValid });
-        return isValid;
-      })
+      .filter(att => isFileAttachment(att))
       .map(att => ({
         name: att.name as string,
         url: att.url as string,
         type: att.type as string,
         size: att.size as number
       }));
-      
-    console.log("Processed attachments:", attachments);
-  } else {
-    console.log("Message has no attachments array:", rawMessage.attachments);
   }
 
-  // Process reactions if they exist
+  // Process reactions if they exist and deduplicate them
   let reactions: MessageReaction[] = [];
-  if (rawMessage.reactions) {
-    console.log("Raw reactions data:", rawMessage.reactions);
-    console.log("Raw reactions type:", typeof rawMessage.reactions);
-    console.log("Raw reactions is array:", Array.isArray(rawMessage.reactions));
+  if (rawMessage.reactions && Array.isArray(rawMessage.reactions)) {
+    // Create a map to track unique reactions by user
+    const reactionMap = new Map<string, MessageReaction>();
     
-    if (Array.isArray(rawMessage.reactions)) {
-      reactions = rawMessage.reactions
-        .filter(r => {
-          const isValid = typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r;
-          console.log("Validating reaction:", { r, isValid });
-          return isValid;
-        })
-        .map(r => ({
-          reaction: r.reaction as string,
-          user_id: r.user_id as string,
-          username: r.username as string | null
-        }));
-      console.log("Processed reactions:", reactions);
-    }
+    rawMessage.reactions.forEach(r => {
+      if (typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r) {
+        const key = `${r.reaction}-${r.user_id}`;
+        // Only add if this exact user+reaction combo doesn't exist yet
+        if (!reactionMap.has(key)) {
+          reactionMap.set(key, {
+            reaction: r.reaction as string,
+            user_id: r.user_id as string,
+            username: r.username as string | null
+          });
+        }
+      }
+    });
+    
+    // Convert map back to array
+    reactions = Array.from(reactionMap.values());
   }
 
   return {
