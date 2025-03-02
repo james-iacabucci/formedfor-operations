@@ -1,298 +1,200 @@
 
 import { useState, useEffect } from "react";
-import { useAllTasks, useTaskMutations } from "@/hooks/useTasks";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAllTasks } from "@/hooks/useTasks";
 import { TaskItem } from "./TaskItem";
-import { Button } from "@/components/ui/button";
-import { Plus, Filter, Users, Boxes } from "lucide-react";
-import { useAuth } from "@/components/AuthProvider";
-import { TaskWithAssignee, TaskStatus } from "@/types/task";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CreateTaskDialog } from "./CreateTaskDialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TaskWithAssignee, TaskStatus } from "@/types/task";
+import { useAuth } from "@/components/AuthProvider";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Users, Paintbrush } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sculpture } from "@/types/sculpture";
 
-// Kanban columns
-const STATUSES: TaskStatus[] = ["todo", "in_progress", "done"];
-const STATUS_LABELS = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  done: "Done"
-};
-
-// Group tasks by different criteria
-type GroupingMode = "status" | "assignee" | "sculpture";
+type GroupBy = "status" | "assignee" | "sculpture";
 
 export function KanbanBoard() {
   const { user } = useAuth();
   const { data: tasks = [], isLoading } = useAllTasks();
+  const [groupBy, setGroupBy] = useState<GroupBy>("status");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [activeSculptureId, setActiveSculptureId] = useState<string | null>(null);
-  const [groupingMode, setGroupingMode] = useState<GroupingMode>("status");
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
-  const [sculptureFilter, setSculptureFilter] = useState<string>("all");
-  const { updateTask } = useTaskMutations();
+  const [selectedSculptureId, setSelectedSculptureId] = useState<string | null>(null);
   const [sculptures, setSculptures] = useState<Sculpture[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-
-  // Fetch sculptures for the dropdown
+  
+  // Get sculptures for creating new tasks
   useEffect(() => {
     const fetchSculptures = async () => {
       const { data } = await supabase
         .from("sculptures")
-        .select("id, ai_generated_name, manual_name");
+        .select("id, ai_generated_name")
+        .order("created_at", { ascending: false })
+        .limit(10);
       
       if (data) {
         setSculptures(data);
       }
     };
-
-    const fetchUsers = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url");
-      
-      if (data) {
-        setUsers(data);
-      }
-    };
-
+    
     fetchSculptures();
-    fetchUsers();
   }, []);
-
-  // Filter and group tasks
-  const getFilteredTasks = () => {
-    let filtered = [...tasks];
-    
-    // Apply assignee filter
-    if (assigneeFilter !== "all") {
-      if (assigneeFilter === "me" && user) {
-        filtered = filtered.filter(task => task.assigned_to === user.id);
-      } else if (assigneeFilter === "unassigned") {
-        filtered = filtered.filter(task => !task.assigned_to);
-      } else {
-        filtered = filtered.filter(task => task.assigned_to === assigneeFilter);
-      }
+  
+  const { data: users = [] } = useQuery({
+    queryKey: ["profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*");
+      
+      if (error) throw error;
+      return data || [];
     }
-    
-    // Apply sculpture filter
-    if (sculptureFilter !== "all") {
-      filtered = filtered.filter(task => task.sculpture_id === sculptureFilter);
+  });
+  
+  const getStatusDisplayName = (status: TaskStatus) => {
+    switch (status) {
+      case "todo":
+        return "To Do";
+      case "in_progress":
+        return "In Progress";
+      case "done":
+        return "Done";
+      default:
+        return status;
     }
-    
-    return filtered;
   };
-
+  
   const getGroupedTasks = () => {
-    const filtered = getFilteredTasks();
-    const grouped: Record<string, TaskWithAssignee[]> = {};
+    if (!tasks.length) return {};
     
-    if (groupingMode === "status") {
-      // Group by status
-      STATUSES.forEach(status => {
-        grouped[status] = filtered.filter(task => task.status === status);
-      });
-    } else if (groupingMode === "assignee") {
-      // Group by assignee
-      const assignees = new Set<string>();
-      filtered.forEach(task => {
-        if (task.assigned_to) {
-          assignees.add(task.assigned_to);
+    if (groupBy === "status") {
+      const result: Record<TaskStatus, TaskWithAssignee[]> = {
+        "todo": [],
+        "in_progress": [],
+        "done": [],
+      };
+      
+      tasks.forEach(task => {
+        if (result[task.status]) {
+          result[task.status].push(task);
         }
       });
       
-      // Create "Unassigned" group
-      grouped["unassigned"] = filtered.filter(task => !task.assigned_to);
-      
-      // Create groups for each assignee
-      Array.from(assignees).forEach(assigneeId => {
-        grouped[assigneeId] = filtered.filter(task => task.assigned_to === assigneeId);
-      });
-    } else if (groupingMode === "sculpture") {
-      // Group by sculpture
-      const sculptureIds = new Set<string>();
-      filtered.forEach(task => {
-        sculptureIds.add(task.sculpture_id);
-      });
-      
-      Array.from(sculptureIds).forEach(sculptureId => {
-        grouped[sculptureId] = filtered.filter(task => task.sculpture_id === sculptureId);
-      });
+      return result;
     }
     
-    return grouped;
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetStatus: TaskStatus) => {
-    e.preventDefault();
-    const taskId = e.dataTransfer.getData("taskId");
-    
-    if (taskId) {
-      await updateTask.mutateAsync({
-        id: taskId,
-        status: targetStatus
+    if (groupBy === "assignee") {
+      const result: Record<string, TaskWithAssignee[]> = {
+        unassigned: []
+      };
+      
+      tasks.forEach(task => {
+        const assigneeId = task.assigned_to || "unassigned";
+        if (!result[assigneeId]) {
+          result[assigneeId] = [];
+        }
+        result[assigneeId].push(task);
       });
+      
+      return result;
     }
+    
+    if (groupBy === "sculpture") {
+      const result: Record<string, TaskWithAssignee[]> = {};
+      
+      tasks.forEach(task => {
+        if (!result[task.sculpture_id]) {
+          result[task.sculpture_id] = [];
+        }
+        result[task.sculpture_id].push(task);
+      });
+      
+      return result;
+    }
+    
+    return {};
   };
-
-  const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: string) => {
-    e.dataTransfer.setData("taskId", taskId);
-  };
-
-  const renderGroupTitle = (groupKey: string) => {
-    if (groupingMode === "status") {
-      return <span>{STATUS_LABELS[groupKey as TaskStatus]}</span>;
-    } else if (groupingMode === "assignee") {
-      if (groupKey === "unassigned") {
-        return <span>Unassigned</span>;
+  
+  const groupedTasks = getGroupedTasks();
+  
+  const renderGroupTitle = (key: string) => {
+    if (groupBy === "status") {
+      return getStatusDisplayName(key as TaskStatus);
+    }
+    
+    if (groupBy === "assignee") {
+      if (key === "unassigned") {
+        return "Unassigned";
       }
       
-      const assignee = users.find(u => u.id === groupKey);
+      const user = users.find(u => u.id === key);
       return (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={assignee?.avatar_url || ""} />
-            <AvatarFallback>
-              {assignee?.username?.[0].toUpperCase() || "U"}
-            </AvatarFallback>
+            <AvatarImage src={user?.avatar_url || ""} alt={user?.username || ""} />
+            <AvatarFallback>{user?.username?.substring(0, 2) || "??"}</AvatarFallback>
           </Avatar>
-          <span>{assignee?.username || "Unknown User"}</span>
+          <span>{user?.username || key}</span>
         </div>
       );
-    } else if (groupingMode === "sculpture") {
-      const sculpture = sculptures.find(s => s.id === groupKey);
-      return <span>{sculpture?.ai_generated_name || sculpture?.manual_name || "Unknown Sculpture"}</span>;
     }
     
-    return null;
-  };
-
-  const renderGroupHeaders = () => {
-    const grouped = getGroupedTasks();
-    return Object.keys(grouped).map(groupKey => (
-      <Card key={groupKey} className="flex-1 min-w-[300px] max-w-[400px]">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm font-medium flex items-center justify-between">
-            {renderGroupTitle(groupKey)}
-            <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-              {grouped[groupKey].length}
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent 
-          className="p-2 overflow-y-auto max-h-[calc(100vh-250px)]" 
-          onDragOver={handleDragOver}
-          onDrop={(e) => {
-            if (groupingMode === "status") {
-              handleDrop(e, groupKey as TaskStatus);
-            }
-          }}
-        >
-          {grouped[groupKey].length === 0 ? (
-            <div className="text-center text-sm text-muted-foreground py-8">
-              No tasks
+    if (groupBy === "sculpture") {
+      const sculpture = tasks.find(t => t.sculpture_id === key)?.sculpture as any;
+      return (
+        <div className="flex items-center gap-2">
+          {sculpture?.image_url ? (
+            <div className="h-6 w-6 rounded overflow-hidden">
+              <img src={sculpture.image_url} alt="Sculpture thumbnail" className="h-full w-full object-cover" />
             </div>
           ) : (
-            <div className="space-y-2">
-              {grouped[groupKey].map(task => (
-                <div 
-                  key={task.id}
-                  draggable={groupingMode === "status"}
-                  onDragStart={(e) => handleTaskDragStart(e, task.id)}
-                  className="cursor-grab"
-                >
-                  <TaskItem task={task} />
-                </div>
-              ))}
+            <div className="h-6 w-6 bg-muted rounded flex items-center justify-center">
+              <Paintbrush className="h-3 w-3" />
             </div>
           )}
-        </CardContent>
-      </Card>
-    ));
+          <span>{sculpture?.ai_generated_name || "Unknown sculpture"}</span>
+        </div>
+      );
+    }
+    
+    return key;
   };
-
+  
+  const getColumnStyles = (key: string) => {
+    if (groupBy === "status") {
+      switch (key) {
+        case "todo":
+          return "border-t-blue-500";
+        case "in_progress":
+          return "border-t-yellow-500";
+        case "done":
+          return "border-t-green-500";
+        default:
+          return "border-t-gray-500";
+      }
+    }
+    
+    return "border-t-primary";
+  };
+  
   return (
     <div className="container mx-auto py-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">Tasks</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Task Board</h1>
+        <div className="flex items-center gap-4 mt-4">
+          <Tabs value={groupBy} onValueChange={(value) => setGroupBy(value as GroupBy)}>
+            <TabsList>
+              <TabsTrigger value="status">By Status</TabsTrigger>
+              <TabsTrigger value="assignee">By Assignee</TabsTrigger>
+              <TabsTrigger value="sculpture">By Sculpture</TabsTrigger>
+            </TabsList>
+          </Tabs>
           
-          <div className="flex items-center ml-4 space-x-3">
-            <div className="flex items-center">
-              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-              <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-                <SelectTrigger className="w-[150px] h-8">
-                  <SelectValue placeholder="Filter by assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Assignees</SelectItem>
-                  <SelectItem value="me">Assigned to Me</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {users.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.username || "User"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center">
-              <Select value={sculptureFilter} onValueChange={setSculptureFilter}>
-                <SelectTrigger className="w-[150px] h-8">
-                  <SelectValue placeholder="Filter by sculpture" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sculptures</SelectItem>
-                  {sculptures.map(sculpture => (
-                    <SelectItem key={sculpture.id} value={sculpture.id}>
-                      {sculpture.ai_generated_name || sculpture.manual_name || "Untitled"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center border rounded-md p-0.5">
-            <Button
-              variant={groupingMode === "status" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setGroupingMode("status")}
-              className="text-xs px-3 py-1 h-8"
-            >
-              By Status
-            </Button>
-            <Button
-              variant={groupingMode === "assignee" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setGroupingMode("assignee")}
-              className="text-xs px-3 py-1 h-8"
-            >
-              <Users className="h-4 w-4 mr-1" />
-              By Assignee
-            </Button>
-            <Button
-              variant={groupingMode === "sculpture" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setGroupingMode("sculpture")}
-              className="text-xs px-3 py-1 h-8"
-            >
-              <Boxes className="h-4 w-4 mr-1" />
-              By Sculpture
-            </Button>
-          </div>
-          
-          <Button onClick={() => {
-            setActiveSculptureId(null);
+          <Button variant="outline" size="sm" onClick={() => {
+            setSelectedSculptureId(sculptures[0]?.id || null);
             setCreateDialogOpen(true);
           }}>
             <Plus className="h-4 w-4 mr-1" /> Add Task
@@ -301,25 +203,46 @@ export function KanbanBoard() {
       </div>
       
       {isLoading ? (
-        <div className="py-16 text-center text-muted-foreground">Loading tasks...</div>
-      ) : tasks.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-muted-foreground mb-4">No tasks found</p>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Create Your First Task
-          </Button>
+        <div className="p-8 text-center text-muted-foreground">Loading tasks...</div>
+      ) : !Object.keys(groupedTasks).length ? (
+        <div className="p-8 text-center text-muted-foreground">
+          No tasks found. Click "Add Task" to create one.
         </div>
       ) : (
-        <div className="flex space-x-4 overflow-x-auto pb-4">
-          {renderGroupHeaders()}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+          {Object.entries(groupedTasks).map(([key, tasksGroup]) => (
+            <Card key={key} className={`border-t-4 ${getColumnStyles(key)} h-full flex flex-col`}>
+              <CardHeader className="pb-1">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-sm font-medium">
+                    {renderGroupTitle(key)}
+                  </CardTitle>
+                  <Badge variant="outline">{tasksGroup.length}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="overflow-auto flex-grow">
+                {tasksGroup.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
+                ) : (
+                  <div className="space-y-2">
+                    {tasksGroup.map((task) => (
+                      <TaskItem key={task.id} task={task} />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
       
-      <CreateTaskDialog 
-        open={createDialogOpen} 
-        onOpenChange={setCreateDialogOpen}
-        sculptureId={activeSculptureId || (sculptures[0]?.id || "")}
-      />
+      {selectedSculptureId && (
+        <CreateTaskDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          sculptureId={selectedSculptureId}
+        />
+      )}
     </div>
   );
 }

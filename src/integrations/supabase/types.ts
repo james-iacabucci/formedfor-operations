@@ -458,6 +458,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          priority_order: number
+          sculpture_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          priority_order?: number
+          sculpture_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          priority_order?: number
+          sculpture_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_sculpture_id_fkey"
+            columns: ["sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -515,6 +569,15 @@ export type Database = {
         Args: {
           message_id: string
           reaction_data: Json[]
+        }
+        Returns: undefined
+      }
+      update_task_priorities: {
+        Args: {
+          p_sculpture_id: string
+          p_start_order: number
+          p_end_order: number
+          p_adjustment: number
         }
         Returns: undefined
       }

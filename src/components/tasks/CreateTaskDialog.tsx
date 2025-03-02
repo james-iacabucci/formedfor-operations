@@ -1,27 +1,15 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useTaskMutations, useUsers } from "@/hooks/useTasks";
-import { CreateTaskInput } from "@/types/task";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, ChevronsUpDown } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useUsers } from "@/hooks/useTasks";
+import { useTaskMutations } from "@/hooks/useTasks";
+import { CreateTaskInput, TaskStatus } from "@/types/task";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -30,144 +18,117 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ open, onOpenChange, sculptureId }: CreateTaskDialogProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState<string | null>(null);
-  const [openAssigneePopover, setOpenAssigneePopover] = useState(false);
-  
+  const { toast } = useToast();
   const { createTask } = useTaskMutations();
   const { data: users = [] } = useUsers();
+  
+  const [taskData, setTaskData] = useState<CreateTaskInput>({
+    sculpture_id: sculptureId,
+    title: "",
+    description: "",
+    assigned_to: null,
+    status: "todo",
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title.trim()) return;
-    
-    const taskInput: CreateTaskInput = {
-      sculpture_id: sculptureId,
-      title: title.trim(),
-      description: description.trim() || null,
-      assigned_to: assignedTo,
-    };
-    
-    await createTask.mutateAsync(taskInput);
-    resetForm();
-    onOpenChange(false);
-  };
-  
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setAssignedTo(null);
-  };
-  
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      resetForm();
+  const handleCreateTask = async () => {
+    if (!taskData.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Task title is required",
+        variant: "destructive",
+      });
+      return;
     }
-    onOpenChange(open);
+
+    await createTask.mutateAsync(taskData);
+    onOpenChange(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setTaskData({
+      sculpture_id: sculptureId,
+      title: "",
+      description: "",
+      assigned_to: null,
+      status: "todo",
+    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
               placeholder="Task title"
-              required
+              value={taskData.title}
+              onChange={(e) => setTaskData((prev) => ({ ...prev, title: e.target.value }))}
             />
           </div>
+          
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
               placeholder="Task description"
-              className="min-h-24"
+              value={taskData.description || ""}
+              onChange={(e) => setTaskData((prev) => ({ ...prev, description: e.target.value }))}
+              className="min-h-[100px]"
             />
           </div>
+          
           <div className="space-y-2">
-            <Label htmlFor="assignee">Assignee</Label>
-            <Popover open={openAssigneePopover} onOpenChange={setOpenAssigneePopover}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openAssigneePopover}
-                  className="w-full justify-between"
-                >
-                  {assignedTo ? (
-                    <>
-                      {users.find((user) => user.id === assignedTo)?.username || "Unassigned"}
-                      {users.find((user) => user.id === assignedTo) && (
-                        <Avatar className="h-6 w-6 ml-2">
-                          <AvatarImage src={users.find((user) => user.id === assignedTo)?.avatar_url || ""} />
-                          <AvatarFallback>
-                            {users.find((user) => user.id === assignedTo)?.username?.[0].toUpperCase() || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </>
-                  ) : (
-                    "Select assignee"
-                  )}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search assignee..." />
-                  <CommandEmpty>No user found.</CommandEmpty>
-                  <CommandGroup>
-                    {users.map((user) => (
-                      <CommandItem
-                        key={user.id}
-                        value={user.id}
-                        onSelect={() => {
-                          setAssignedTo(user.id);
-                          setOpenAssigneePopover(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            assignedTo === user.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <div className="flex items-center">
-                          <span>{user.username || "User"}</span>
-                          <Avatar className="h-6 w-6 ml-2">
-                            <AvatarImage src={user.avatar_url || ""} />
-                            <AvatarFallback>
-                              {user.username?.[0].toUpperCase() || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <DialogFooter>
-            <Button 
-              type="submit" 
-              disabled={createTask.isPending || !title.trim()}
+            <Label htmlFor="assigned-to">Assigned To</Label>
+            <Select
+              value={taskData.assigned_to || ""}
+              onValueChange={(value) => setTaskData((prev) => ({ ...prev, assigned_to: value || null }))}
             >
-              {createTask.isPending ? "Creating..." : "Create Task"}
-            </Button>
-          </DialogFooter>
-        </form>
+              <SelectTrigger id="assigned-to">
+                <SelectValue placeholder="Select assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Unassigned</SelectItem>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.username || user.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={taskData.status}
+              onValueChange={(value) => setTaskData((prev) => ({ ...prev, status: value as TaskStatus }))}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todo">To Do</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex justify-end gap-3">
+          <DialogClose asChild>
+            <Button variant="outline" onClick={resetForm}>Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleCreateTask} disabled={createTask.isPending}>
+            {createTask.isPending ? "Creating..." : "Create Task"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
