@@ -68,10 +68,6 @@ export function useCreateTask() {
       const createdTask: TaskWithAssignee = {
         id: data.id,
         sculpture_id: data.sculpture_id,
-        client_id: data.client_id || null,
-        order_id: data.order_id || null,
-        lead_id: data.lead_id || null,
-        related_type: data.related_type as TaskRelatedType,
         title: data.title,
         description: data.description,
         assigned_to: data.assigned_to,
@@ -80,6 +76,11 @@ export function useCreateTask() {
         created_at: data.created_at,
         created_by: data.created_by,
         updated_at: data.updated_at,
+        // Add the additional fields we need for our app logic
+        client_id: null,
+        order_id: null,
+        lead_id: null,
+        related_type: relatedType,
         assignee: data.assignee
       };
       

@@ -3,13 +3,10 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 
 export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | null;
 
+// Update the basic Task interface to match the actual database fields
 export interface Task {
   id: string;
-  sculpture_id: string | null;
-  client_id: string | null;
-  order_id: string | null;
-  lead_id: string | null;
-  related_type: TaskRelatedType;
+  sculpture_id: string;
   title: string;
   description: string | null;
   assigned_to: string | null;
@@ -18,6 +15,11 @@ export interface Task {
   created_at: string;
   created_by: string;
   updated_at: string;
+  // Add the missing fields that need to be included in queries/mutations
+  client_id?: string | null;
+  order_id?: string | null;
+  lead_id?: string | null;
+  related_type?: TaskRelatedType;
 }
 
 export interface TaskWithAssignee extends Task {

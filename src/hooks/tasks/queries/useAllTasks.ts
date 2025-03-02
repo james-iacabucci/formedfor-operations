@@ -35,10 +35,6 @@ export function useAllTasks() {
       const typedData: TaskWithAssignee[] = data.map(item => ({
         id: item.id,
         sculpture_id: item.sculpture_id,
-        client_id: item.client_id || null,
-        order_id: item.order_id || null,
-        lead_id: item.lead_id || null,
-        related_type: item.related_type as TaskRelatedType || null,
         title: item.title,
         description: item.description,
         assigned_to: item.assigned_to,
@@ -47,6 +43,11 @@ export function useAllTasks() {
         created_at: item.created_at,
         created_by: item.created_by,
         updated_at: item.updated_at,
+        // Add the fields our app expects but aren't in the database
+        client_id: null,
+        order_id: null,
+        lead_id: null,
+        related_type: "sculpture" as TaskRelatedType,
         assignee: item.assignee,
         sculpture: item.sculpture
       }));

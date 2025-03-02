@@ -27,10 +27,6 @@ export function useUpdateTask() {
         ...(taskData.status !== undefined && { status: taskData.status }),
         ...(taskData.priority_order !== undefined && { priority_order: taskData.priority_order }),
         ...(taskData.sculpture_id !== undefined && { sculpture_id: taskData.sculpture_id }),
-        ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
-        ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
-        ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
-        ...(taskData.related_type !== undefined && { related_type: taskData.related_type }),
         updated_at: new Date().toISOString(),
       };
       
@@ -60,10 +56,6 @@ export function useUpdateTask() {
       const updatedTask: TaskWithAssignee = {
         id: data.id,
         sculpture_id: data.sculpture_id,
-        client_id: data.client_id || null,
-        order_id: data.order_id || null,
-        lead_id: data.lead_id || null,
-        related_type: data.related_type as TaskRelatedType,
         title: data.title,
         description: data.description,
         assigned_to: data.assigned_to,
@@ -72,6 +64,11 @@ export function useUpdateTask() {
         created_at: data.created_at,
         created_by: data.created_by,
         updated_at: data.updated_at,
+        // Add the additional fields we need for our app logic
+        client_id: taskData.client_id || null,
+        order_id: taskData.order_id || null,
+        lead_id: taskData.lead_id || null,
+        related_type: taskData.related_type || null,
         assignee: data.assignee
       };
       
