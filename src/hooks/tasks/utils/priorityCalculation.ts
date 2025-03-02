@@ -25,15 +25,14 @@ export async function calculateNextPriorityOrder(
       columnName = "lead_id";
     }
     
-    // Use explicit type casting to avoid type recursion
-    const query = supabase
-      .from("tasks")
-      .select("priority_order")
-      .eq(columnName as string, entityId)
-      .order("priority_order", { ascending: false })
-      .limit(1);
+    // Create the query without chaining to avoid type recursion
+    const query = supabase.from("tasks");
+    const selectQuery = query.select("priority_order");
+    const filteredQuery = selectQuery.eq(columnName, entityId);
+    const orderedQuery = filteredQuery.order("priority_order", { ascending: false });
+    const limitedQuery = orderedQuery.limit(1);
     
-    const { data: existingTasks } = await query;
+    const { data: existingTasks } = await limitedQuery;
     
     if (existingTasks && existingTasks.length > 0) {
       return existingTasks[0].priority_order + 1;
