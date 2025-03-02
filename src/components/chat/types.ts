@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 
 export interface FileAttachment {
@@ -68,7 +67,6 @@ export function isFileAttachment(value: Json): value is Json & FileAttachment {
   );
 }
 
-// Helper function to convert raw message data to Message type
 export function convertToMessage(rawMessage: any): Message {
   let attachments: FileAttachment[] = [];
   
@@ -83,16 +81,14 @@ export function convertToMessage(rawMessage: any): Message {
       }));
   }
 
-  // Enhanced reaction deduplication with extra validation
   let reactions: MessageReaction[] = [];
   
   if (rawMessage.reactions && Array.isArray(rawMessage.reactions)) {
     try {
-      // Create a map using composite key to ensure unique reactions per user
-      const reactionMap = new Map<string, MessageReaction>();
+      console.log(`[DEBUG][convertToMessage] Processing message ${rawMessage.id} with ${rawMessage.reactions.length} reactions`);
+      console.log(`[DEBUG][convertToMessage] Raw reactions:`, JSON.stringify(rawMessage.reactions));
       
-      // Add DEBUG info
-      console.log(`[DEBUG] Processing ${rawMessage.reactions.length} reactions for message ${rawMessage.id}`);
+      const reactionMap = new Map<string, MessageReaction>();
       
       for (const r of rawMessage.reactions) {
         if (typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r) {
@@ -105,8 +101,8 @@ export function convertToMessage(rawMessage: any): Message {
           }
           
           const key = `${reaction}-${userId}`;
+          console.log(`[DEBUG][convertToMessage] Processing reaction: ${key}`);
           
-          // Skip duplicates with the same key
           if (!reactionMap.has(key)) {
             reactionMap.set(key, {
               reaction: reaction,
@@ -121,12 +117,12 @@ export function convertToMessage(rawMessage: any): Message {
         }
       }
       
-      // Convert map back to array
       reactions = Array.from(reactionMap.values());
-      console.log(`[DEBUG] Deduplicated to ${reactions.length} reactions`);
+      console.log(`[DEBUG][convertToMessage] Deduplicated to ${reactions.length} reactions for message ${rawMessage.id}`);
+      console.log(`[DEBUG][convertToMessage] Final reactions:`, JSON.stringify(reactions));
     } catch (error) {
       console.error('[REACTION] Error processing reactions:', error);
-      reactions = []; // Reset to empty on error for safety
+      reactions = [];
     }
   }
 

@@ -1,5 +1,5 @@
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { convertToMessage } from "../types";
@@ -9,6 +9,16 @@ const PAGE_SIZE = 50;
 export function useMessages(threadId: string) {
   const lastMessageRef = useRef<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const instanceId = useRef(`messages-instance-${Math.random().toString(36).substring(2, 9)}`).current;
+
+  // Add debugging log on mount
+  useEffect(() => {
+    console.log(`[DEBUG][useMessages] Instance ${instanceId} mounted for thread: ${threadId}`);
+    
+    return () => {
+      console.log(`[DEBUG][useMessages] Instance ${instanceId} unmounted for thread: ${threadId}`);
+    };
+  }, [threadId, instanceId]);
 
   const {
     data,
@@ -20,6 +30,8 @@ export function useMessages(threadId: string) {
   } = useInfiniteQuery({
     queryKey: ["messages", threadId],
     queryFn: async ({ pageParam = null }) => {
+      console.log(`[DEBUG][useMessages] Fetching page with pageParam: ${pageParam}, threadId: ${threadId}, instance: ${instanceId}`);
+      
       let query = supabase
         .from("chat_messages")
         .select(`
@@ -48,7 +60,21 @@ export function useMessages(threadId: string) {
       const { data, error } = await query;
 
       if (error) {
+        console.error(`[DEBUG][useMessages] Error fetching messages:`, error);
         throw error;
+      }
+      
+      console.log(`[DEBUG][useMessages] Fetched ${data?.length || 0} messages for thread: ${threadId}, instance: ${instanceId}`);
+      
+      // Check if we have any messages with reactions
+      if (data) {
+        const messagesWithReactions = data.filter(msg => msg.reactions && msg.reactions.length > 0);
+        if (messagesWithReactions.length > 0) {
+          console.log(`[DEBUG][useMessages] Found ${messagesWithReactions.length} messages with reactions`);
+          messagesWithReactions.forEach(msg => {
+            console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions?.length || 0} reactions in DB response`);
+          });
+        }
       }
       
       return data || [];
@@ -62,6 +88,8 @@ export function useMessages(threadId: string) {
     },
     initialPageParam: null,
     select: (data) => {
+      console.log(`[DEBUG][useMessages] Processing select data with ${data.pages.length} pages, instance: ${instanceId}`);
+      
       if (!data?.pages) return { pages: [], pageParams: [] };
       
       const processedData = {
@@ -75,8 +103,54 @@ export function useMessages(threadId: string) {
     },
   });
 
+  // Check for duplicate messages across pages
+  useEffect(() => {
+    if (data?.pages && data.pages.length > 1) {
+      const allMessageIds = data.pages.flatMap(page => page.map(msg => msg.id));
+      const uniqueIds = new Set(allMessageIds);
+      
+      if (allMessageIds.length !== uniqueIds.size) {
+        console.warn(`[DEBUG][useMessages] Found ${allMessageIds.length - uniqueIds.size} duplicate message IDs across pages!`);
+        
+        // Find the duplicates
+        const idCounts = allMessageIds.reduce((acc, id) => {
+          acc[id] = (acc[id] || 0) + 1;
+          return acc;
+        }, {});
+        
+        const duplicates = Object.entries(idCounts)
+          .filter(([_, count]) => count > 1)
+          .map(([id]) => id);
+          
+        console.warn(`[DEBUG][useMessages] Duplicate message IDs:`, duplicates);
+      }
+    }
+  }, [data?.pages]);
+
   // Process and convert the raw messages
-  const allMessages = data?.pages?.flatMap(page => page || []).reverse().map(convertToMessage) ?? [];
+  const allMessages = data?.pages?.flatMap(page => {
+    console.log(`[DEBUG][useMessages] Processing page with ${page?.length || 0} messages`);
+    return (Array.isArray(page) ? page : []);
+  }).reverse().map(msg => {
+    console.log(`[DEBUG][useMessages] Converting message ${msg.id} with ${msg.reactions?.length || 0} reactions`);
+    return convertToMessage(msg);
+  }) ?? [];
+
+  // Debug the final results
+  useEffect(() => {
+    if (allMessages.length > 0) {
+      console.log(`[DEBUG][useMessages] Final processed ${allMessages.length} messages, instance: ${instanceId}`);
+      
+      // Check for messages with reactions
+      const messagesWithReactions = allMessages.filter(msg => msg.reactions && msg.reactions.length > 0);
+      if (messagesWithReactions.length > 0) {
+        console.log(`[DEBUG][useMessages] Final result has ${messagesWithReactions.length} messages with reactions`);
+        messagesWithReactions.forEach(msg => {
+          console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions?.length} reactions in final result`);
+        });
+      }
+    }
+  }, [allMessages, instanceId]);
 
   return {
     messages: allMessages,
