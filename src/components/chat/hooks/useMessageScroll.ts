@@ -66,7 +66,7 @@ export function useMessageScroll({
       return;
     }
     
-    const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+    const scrollElement = scrollRef.current;
     if (scrollElement) {
       console.log(`Scrolling to bottom (instant: ${instant})`);
       setIsAutoScrolling(true);
@@ -95,45 +95,45 @@ export function useMessageScroll({
     }
   };
 
-  const handleScroll = () => {
-    const viewport = viewportRef.current;
-    if (!viewport || isAutoScrolling) return;
-
-    const scrollTop = viewport.scrollTop;
-    const scrollHeight = viewport.scrollHeight;
-    const clientHeight = viewport.clientHeight;
-
-    // Mark that user has manually scrolled (only if not auto-scrolling)
-    if (!hasScrolled) {
-      setHasScrolled(true);
-    }
-
-    // Load more messages when scrolling near the top
-    if (scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
-      console.log('Triggering next page load');
-      fetchNextPage();
-    }
-
-    // Check if user has scrolled to the bottom again
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
-    if (isNearBottom) {
-      setHasScrolled(false);
-      
-      // Update the last message reference for real-time updates
-      if (messages.length > 0) {
-        lastMessageRef.current = messages[messages.length - 1].id;
-      }
-    }
-  };
-
+  // Set up scroll event listener
   useEffect(() => {
-    const viewport = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (viewport) {
-      viewportRef.current = viewport as HTMLDivElement;
-      viewport.addEventListener('scroll', handleScroll);
-      return () => viewport.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      const viewport = scrollRef.current;
+      if (!viewport || isAutoScrolling) return;
+
+      const scrollTop = viewport.scrollTop;
+      const scrollHeight = viewport.scrollHeight;
+      const clientHeight = viewport.clientHeight;
+
+      // Mark that user has manually scrolled (only if not auto-scrolling)
+      if (!hasScrolled) {
+        setHasScrolled(true);
+      }
+
+      // Load more messages when scrolling near the top
+      if (scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
+        console.log('Triggering next page load');
+        fetchNextPage();
+      }
+
+      // Check if user has scrolled to the bottom again
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 20;
+      if (isNearBottom) {
+        setHasScrolled(false);
+        
+        // Update the last message reference for real-time updates
+        if (messages.length > 0) {
+          lastMessageRef.current = messages[messages.length - 1].id;
+        }
+      }
+    };
+
+    const scrollContainer = scrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }
-  }, [hasNextPage, isFetchingNextPage]);
+  }, [hasNextPage, isFetchingNextPage, hasScrolled, messages, isAutoScrolling, lastMessageRef, fetchNextPage]);
 
   return {
     scrollRef,

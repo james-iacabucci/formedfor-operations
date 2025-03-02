@@ -25,6 +25,7 @@ export function MessageList({
   const { user } = useAuth();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [initialScroll, setInitialScroll] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   
   const {
     messages: fetchedMessages,
@@ -38,44 +39,49 @@ export function MessageList({
     lastMessageRef
   } = useMessages(threadId);
   
-  // Apply real-time updates to messages
-  const { messages, newMessages } = useRealtimeMessages(fetchedMessages, threadId);
-
-  // Set up scroll behavior
-  const { handleScroll, scrollToBottom, isNearBottom } = useMessageScroll({
-    scrollContainerRef,
-    fetchNextPage,
+  // Setup scroll behavior first
+  const { 
+    scrollRef,
+    hasScrolled: scrollStateHasScrolled,
+    setShouldScrollToBottom,
+    scrollToBottom
+  } = useMessageScroll({
+    isLoading,
+    messages: fetchedMessages,
     hasNextPage,
-    newMessages,
+    fetchNextPage,
+    isFetchingNextPage,
     isInitialLoad,
-    setIsInitialLoad
+    setIsInitialLoad,
+    lastMessageRef
+  });
+  
+  // Apply real-time updates to messages
+  useRealtimeMessages({
+    threadId,
+    refetch,
+    lastMessageRef,
+    hasScrolled: scrollStateHasScrolled,
+    setScrollToBottom: setShouldScrollToBottom
   });
   
   // Scroll to bottom on initial load and when thread changes
   useEffect(() => {
-    if (messages.length > 0 && !initialScroll) {
+    if (fetchedMessages.length > 0 && !initialScroll) {
       setTimeout(() => {
-        scrollToBottom();
+        scrollToBottom(true);
         setInitialScroll(true);
       }, 200);
     }
-  }, [messages.length, initialScroll, scrollToBottom]);
-  
-  // Auto-scroll to bottom when new messages arrive if already near bottom
-  useEffect(() => {
-    if (isNearBottom && newMessages > 0) {
-      setTimeout(scrollToBottom, 100);
-    }
-  }, [newMessages, isNearBottom, scrollToBottom]);
+  }, [fetchedMessages.length, initialScroll, scrollToBottom]);
   
   return (
     <div
-      ref={scrollContainerRef}
+      ref={scrollRef}
       className="h-full overflow-y-auto overflow-x-hidden pt-1 px-4"
-      onScroll={handleScroll}
     >
       <MessageListContent
-        messages={messages}
+        messages={fetchedMessages}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
         uploadingFiles={uploadingFiles}
