@@ -19,9 +19,11 @@ export async function calculateNextPriorityOrder(
       .order("priority_order", { ascending: false })
       .limit(1);
     
-    return existingTasks && existingTasks.length > 0 
-      ? (existingTasks[0].priority_order + 1) 
-      : 0;
+    if (existingTasks && existingTasks.length > 0) {
+      return existingTasks[0].priority_order + 1;
+    } else {
+      return 0;
+    }
   } else {
     // For unassociated tasks, get the highest priority among unassociated tasks
     const { data: existingTasks } = await supabase
@@ -31,8 +33,10 @@ export async function calculateNextPriorityOrder(
       .order("priority_order", { ascending: false })
       .limit(1);
     
-    return existingTasks && existingTasks.length > 0 
-      ? (existingTasks[0].priority_order + 1) 
-      : 0;
+    if (existingTasks && existingTasks.length > 0) {
+      return existingTasks[0].priority_order + 1;
+    } else {
+      return 0;
+    }
   }
 }

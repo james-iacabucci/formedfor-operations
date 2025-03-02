@@ -1,45 +1,50 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Task, 
-  UpdateTaskInput,
-  TaskStatus,
-  TaskRelatedType
-} from "@/types/task";
+import { UpdateTaskInput, TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
-import { validateTaskEntityRelationships } from "../utils/taskValidation";
 
 export function useUpdateTask() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (input: UpdateTaskInput): Promise<Task> => {
-      // Validate relationships if they're being updated
-      validateTaskEntityRelationships(input);
-
+    mutationFn: async (taskData: UpdateTaskInput): Promise<TaskWithAssignee> => {
+      // Get the current task data first (for invalidation)
+      const { data: currentTask } = await supabase
+        .from("tasks")
+        .select("sculpture_id")
+        .eq("id", taskData.id)
+        .single();
+      
+      if (!currentTask) throw new Error("Task not found");
+      
+      // Prepare update data
       const updateData = {
-        ...(input.title !== undefined && { title: input.title }),
-        ...(input.description !== undefined && { description: input.description }),
-        ...(input.assigned_to !== undefined && { assigned_to: input.assigned_to }),
-        ...(input.status !== undefined && { status: input.status }),
-        ...(input.priority_order !== undefined && { priority_order: input.priority_order }),
-        ...(input.sculpture_id !== undefined && { sculpture_id: input.sculpture_id }),
-        ...(input.client_id !== undefined && { client_id: input.client_id }),
-        ...(input.order_id !== undefined && { order_id: input.order_id }),
-        ...(input.lead_id !== undefined && { lead_id: input.lead_id }),
-        ...(input.related_type !== undefined && { related_type: input.related_type }),
+        ...(taskData.title !== undefined && { title: taskData.title }),
+        ...(taskData.description !== undefined && { description: taskData.description }),
+        ...(taskData.assigned_to !== undefined && { assigned_to: taskData.assigned_to }),
+        ...(taskData.status !== undefined && { status: taskData.status }),
+        ...(taskData.priority_order !== undefined && { priority_order: taskData.priority_order }),
+        ...(taskData.sculpture_id !== undefined && { sculpture_id: taskData.sculpture_id }),
+        ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
+        ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
+        ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
+        ...(taskData.related_type !== undefined && { related_type: taskData.related_type }),
         updated_at: new Date().toISOString(),
       };
-
+      
+      // Update the task
       const { data, error } = await supabase
         .from("tasks")
         .update(updateData)
-        .eq("id", input.id)
-        .select()
+        .eq("id", taskData.id)
+        .select(`
+          *,
+          assignee:assigned_to(id, username, avatar_url)
+        `)
         .single();
-
+      
       if (error) {
         toast({
           title: "Error",
@@ -48,9 +53,11 @@ export function useUpdateTask() {
         });
         throw error;
       }
-
-      // Construct and return the task with proper types
-      const task: Task = {
+      
+      if (!data) throw new Error("Failed to retrieve updated task");
+      
+      // Transform to the correct return type
+      const updatedTask: TaskWithAssignee = {
         id: data.id,
         sculpture_id: data.sculpture_id,
         client_id: data.client_id,
@@ -64,20 +71,18 @@ export function useUpdateTask() {
         priority_order: data.priority_order,
         created_at: data.created_at,
         created_by: data.created_by,
-        updated_at: data.updated_at
+        updated_at: data.updated_at,
+        assignee: data.assignee,
       };
-
-      return task;
+      
+      return updatedTask;
     },
-    onSuccess: (data) => {
-      // Invalidate queries based on the type of entity the task is related to
-      if (data.sculpture_id) {
-        queryClient.invalidateQueries({ queryKey: ["tasks", data.sculpture_id] });
+    onSuccess: (task, variables) => {
+      // Invalidate queries for both old and new sculpture_id if changed
+      if (task.sculpture_id) {
+        queryClient.invalidateQueries({ queryKey: ["tasks", task.sculpture_id] });
       }
-      
-      // Always invalidate the general tasks query
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      
       toast({
         title: "Success",
         description: "Task updated successfully",

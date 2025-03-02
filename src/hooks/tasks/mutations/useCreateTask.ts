@@ -1,14 +1,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Task, 
-  CreateTaskInput,
-  TaskStatus,
-  TaskRelatedType
-} from "@/types/task";
+import { CreateTaskInput, TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
-import { validateTaskEntityRelationships } from "../utils/taskValidation";
 import { calculateNextPriorityOrder } from "../utils/priorityCalculation";
 
 export function useCreateTask() {
@@ -16,39 +10,49 @@ export function useCreateTask() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (input: CreateTaskInput): Promise<Task> => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("User not authenticated");
+    mutationFn: async (taskData: CreateTaskInput): Promise<TaskWithAssignee> => {
+      // Set the related_type based on which ID is provided
+      let relatedType: TaskRelatedType = null;
+      if (taskData.sculpture_id) relatedType = "sculpture";
+      else if (taskData.client_id) relatedType = "client";
+      else if (taskData.order_id) relatedType = "order";
+      else if (taskData.lead_id) relatedType = "lead";
 
-      // Validate task relationships
-      validateTaskEntityRelationships(input);
-      
       // Calculate the next priority order
-      const relatedType = input.related_type || null;
-      const entityId = input.sculpture_id || input.client_id || input.order_id || input.lead_id || null;
-      const newPriorityOrder = await calculateNextPriorityOrder(relatedType, entityId);
-
-      const taskData = {
-        sculpture_id: input.sculpture_id || null,
-        client_id: input.client_id || null,
-        order_id: input.order_id || null,
-        lead_id: input.lead_id || null,
-        related_type: input.related_type || null,
-        title: input.title,
-        description: input.description || null,
-        assigned_to: input.assigned_to || null,
-        status: input.status || "todo",
-        priority_order: newPriorityOrder,
-        created_by: user.user.id,
-        updated_at: new Date().toISOString(),
+      const nextPriorityOrder = await calculateNextPriorityOrder(
+        relatedType,
+        taskData.sculpture_id || taskData.client_id || taskData.order_id || taskData.lead_id || null
+      );
+      
+      // Get the current user ID for created_by
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User is not authenticated");
+      
+      // Prepare the task data
+      const newTask = {
+        sculpture_id: taskData.sculpture_id || null,
+        client_id: taskData.client_id || null,
+        order_id: taskData.order_id || null,
+        lead_id: taskData.lead_id || null,
+        related_type: relatedType,
+        title: taskData.title,
+        description: taskData.description || null,
+        assigned_to: taskData.assigned_to || null,
+        status: taskData.status || "todo" as TaskStatus,
+        priority_order: nextPriorityOrder,
+        created_by: user.id,
       };
-
+      
+      // Insert the task
       const { data, error } = await supabase
         .from("tasks")
-        .insert(taskData)
-        .select()
+        .insert(newTask)
+        .select(`
+          *,
+          assignee:assigned_to(id, username, avatar_url)
+        `)
         .single();
-
+      
       if (error) {
         toast({
           title: "Error",
@@ -57,9 +61,11 @@ export function useCreateTask() {
         });
         throw error;
       }
-
-      // Construct and return the task with proper types
-      const task: Task = {
+      
+      if (!data) throw new Error("Failed to retrieve created task");
+      
+      // Transform to the correct return type
+      const createdTask: TaskWithAssignee = {
         id: data.id,
         sculpture_id: data.sculpture_id,
         client_id: data.client_id,
@@ -73,20 +79,17 @@ export function useCreateTask() {
         priority_order: data.priority_order,
         created_at: data.created_at,
         created_by: data.created_by,
-        updated_at: data.updated_at
+        updated_at: data.updated_at,
+        assignee: data.assignee,
       };
-
-      return task;
+      
+      return createdTask;
     },
-    onSuccess: (data) => {
-      // Invalidate queries based on the type of entity the task is related to
-      if (data.sculpture_id) {
-        queryClient.invalidateQueries({ queryKey: ["tasks", data.sculpture_id] });
+    onSuccess: (task) => {
+      if (task.sculpture_id) {
+        queryClient.invalidateQueries({ queryKey: ["tasks", task.sculpture_id] });
       }
-      
-      // Always invalidate the general tasks query
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      
       toast({
         title: "Success",
         description: "Task created successfully",
