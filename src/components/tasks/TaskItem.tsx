@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -25,6 +26,7 @@ import { useTaskMutations } from "@/hooks/tasks";
 
 interface TaskItemProps {
   task: TaskWithAssignee;
+  isDragging?: boolean;
 }
 
 const statusColors: Record<TaskStatus, string> = {
@@ -33,7 +35,7 @@ const statusColors: Record<TaskStatus, string> = {
   done: "green",
 };
 
-export function TaskItem({ task }: TaskItemProps) {
+export function TaskItem({ task, isDragging }: TaskItemProps) {
   const { user } = useAuth();
   const { deleteTask } = useTaskMutations();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
@@ -41,7 +43,7 @@ export function TaskItem({ task }: TaskItemProps) {
   const statusColor = statusColors[task.status] || "gray";
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className={`shadow-sm hover:shadow-md transition-shadow duration-200 ${isDragging ? 'opacity-50' : ''}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
