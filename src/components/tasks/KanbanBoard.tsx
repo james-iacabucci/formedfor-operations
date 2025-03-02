@@ -15,10 +15,11 @@ import {
   groupTasksByStatus, 
   groupTasksByAssignee, 
   groupTasksBySculpture,
+  groupTasksByRelatedType,
   getColumnStyles
 } from "./utils/taskGrouping";
 
-type GroupBy = "status" | "assignee" | "sculpture";
+type GroupBy = "status" | "assignee" | "sculpture" | "relatedType";
 
 interface SculptureMinimal {
   id: string;
@@ -32,7 +33,7 @@ export function KanbanBoard() {
   const { data: tasks = [], isLoading: isTasksLoading } = useAllTasks();
   const [groupBy, setGroupBy] = useState<GroupBy>("status");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedSculptureId, setSelectedSculptureId] = useState<string>("");
+  const [selectedSculptureId, setSelectedSculptureId] = useState<string | null>(null);
   const [sculpturesLoading, setSculpturesLoading] = useState(true);
   const [sculptures, setSculptures] = useState<SculptureMinimal[]>([]);
   
@@ -52,9 +53,9 @@ export function KanbanBoard() {
         const sculpturesData = data as SculptureMinimal[];
         setSculptures(sculpturesData);
         
-        // If we have sculptures, preselect the first one
+        // If we have sculptures, preselect the first one (optional now)
         if (sculpturesData.length > 0) {
-          setSelectedSculptureId(sculpturesData[0].id);
+          setSelectedSculptureId(null); // Now we don't preselect
         }
       } catch (error) {
         console.error("Error fetching sculptures:", error);
@@ -85,26 +86,8 @@ export function KanbanBoard() {
   
   // Handle opening the create task dialog
   const handleAddTaskClick = () => {
-    if (sculpturesLoading) {
-      toast({
-        title: "Loading sculptures",
-        description: "Please wait while we load available sculptures",
-      });
-      return;
-    }
-    
-    // If there are sculptures available, select the first one
-    if (sculptures.length > 0) {
-      setSelectedSculptureId(sculptures[0].id);
-      setCreateDialogOpen(true);
-    } else {
-      // If no sculptures are available, show a toast message
-      toast({
-        title: "No sculptures available",
-        description: "Please create a sculpture first before adding tasks",
-        variant: "destructive"
-      });
-    }
+    // We now open the dialog directly, no need to check sculptures
+    setCreateDialogOpen(true);
   };
   
   const getGroupedTasks = (): GroupedTasksMap => {
@@ -122,6 +105,10 @@ export function KanbanBoard() {
       return groupTasksBySculpture(tasks);
     }
     
+    if (groupBy === "relatedType") {
+      return groupTasksByRelatedType(tasks);
+    }
+    
     return {};
   };
   
@@ -132,7 +119,7 @@ export function KanbanBoard() {
     <div className="container mx-auto py-6">
       <KanbanBoardHeader 
         groupBy={groupBy}
-        onGroupByChange={setGroupBy}
+        onGroupByChange={(value) => setGroupBy(value)}
         onAddTaskClick={handleAddTaskClick}
         sculpturesLoading={sculpturesLoading}
       />
@@ -164,14 +151,12 @@ export function KanbanBoard() {
         </div>
       )}
       
-      {/* Only render the dialog when we have a valid sculpture ID */}
-      {selectedSculptureId && (
-        <CreateTaskDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          sculptureId={selectedSculptureId}
-        />
-      )}
+      {/* Always render the dialog, even without sculptureId */}
+      <CreateTaskDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        sculptureId={selectedSculptureId}
+      />
     </div>
   );
 }

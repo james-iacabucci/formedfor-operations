@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TaskWithAssignee, TaskStatus } from "@/types/task";
+import { TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 
 export function useSculptureTasks(sculptureId: string) {
@@ -28,10 +28,11 @@ export function useSculptureTasks(sculptureId: string) {
         throw error;
       }
 
-      // Ensure the status is correctly typed
+      // Ensure the status and related_type are correctly typed
       const typedData = data?.map(item => ({
         ...item,
-        status: item.status as TaskStatus
+        status: item.status as TaskStatus,
+        related_type: item.related_type as TaskRelatedType
       })) as TaskWithAssignee[];
 
       return typedData || [];
@@ -63,10 +64,11 @@ export function useAllTasks() {
         throw error;
       }
 
-      // Ensure the status is correctly typed
+      // Ensure the status and related_type are correctly typed
       const typedData = data?.map(item => ({
         ...item,
-        status: item.status as TaskStatus
+        status: item.status as TaskStatus,
+        related_type: item.related_type as TaskRelatedType
       })) as TaskWithAssignee[];
 
       return typedData || [];

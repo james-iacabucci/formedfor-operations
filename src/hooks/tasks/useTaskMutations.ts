@@ -59,7 +59,7 @@ export function useTaskMutations() {
       if (input.related_type && 
           (input.sculpture_id || input.client_id || input.order_id || input.lead_id)) {
         const column = `${input.related_type}_id`;
-        const value = input[`${input.related_type}_id` as keyof CreateTaskInput];
+        const value = input[`${input.related_type}_id` as keyof typeof input];
         
         const { data: existingTasks } = await supabase
           .from("tasks")
