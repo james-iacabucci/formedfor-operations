@@ -27,13 +27,13 @@ export function RelatedEntitySection({
 }: RelatedEntitySectionProps) {
   // Determine the current tab value based on relatedType
   const getCurrentTabValue = () => {
-    if (!relatedType) return "operations";
+    if (!relatedType) return "general";
     if (relatedType === "sculpture") return "sculpture";
     if (relatedType === "client") return "client";
     if (relatedType === "lead") return "lead";
     if (relatedType === "order") return "order";
     
-    return "operations";
+    return "general";
   };
 
   return (
@@ -47,10 +47,10 @@ export function RelatedEntitySection({
       >
         <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-full border border-[#333333] w-full flex-wrap">
           <TabsTrigger 
-            value="operations" 
+            value="general" 
             className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
-            Operations
+            General
           </TabsTrigger>
           
           <TabsTrigger 

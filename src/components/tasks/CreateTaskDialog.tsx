@@ -38,7 +38,7 @@ export function CreateTaskDialog({
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType || "operations");
+  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType || "general");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   
   const {
@@ -53,7 +53,7 @@ export function CreateTaskDialog({
     if (open) {
       setTitle("");
       setDescription("");
-      setTaskRelatedType(relatedType || "operations");
+      setTaskRelatedType(relatedType || "general");
       // Default to current user when the dialog opens
       setAssignedTo(currentUser?.id || null);
     }
@@ -82,8 +82,8 @@ export function CreateTaskDialog({
       
       // Parse the related type
       if (taskRelatedType && typeof taskRelatedType === 'string') {
-        if (taskRelatedType === 'operations') {
-          finalRelatedType = null; // Operations tasks aren't related to anything specific
+        if (taskRelatedType === 'general') {
+          finalRelatedType = null; // General tasks aren't related to anything specific
         } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
                    taskRelatedType === 'lead' || taskRelatedType === 'order') {
           finalRelatedType = taskRelatedType as TaskRelatedType;
