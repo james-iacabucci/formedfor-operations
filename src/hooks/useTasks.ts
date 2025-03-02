@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Task, CreateTaskInput, UpdateTaskInput, ReorderTasksInput, TaskWithAssignee } from "@/types/task";
+import { Task, CreateTaskInput, UpdateTaskInput, ReorderTasksInput, TaskWithAssignee, TaskStatus } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 
 export function useSculptureTasks(sculptureId: string) {
@@ -28,7 +28,13 @@ export function useSculptureTasks(sculptureId: string) {
         throw error;
       }
 
-      return data || [];
+      // Ensure the status is correctly typed
+      const typedData = data?.map(item => ({
+        ...item,
+        status: item.status as TaskStatus
+      })) as TaskWithAssignee[];
+
+      return typedData || [];
     },
   });
 }
@@ -57,7 +63,13 @@ export function useAllTasks() {
         throw error;
       }
 
-      return data || [];
+      // Ensure the status is correctly typed
+      const typedData = data?.map(item => ({
+        ...item,
+        status: item.status as TaskStatus
+      })) as TaskWithAssignee[];
+
+      return typedData || [];
     },
   });
 }
@@ -107,7 +119,11 @@ export function useTaskMutations() {
         throw error;
       }
 
-      return data;
+      // Ensure correct type
+      return {
+        ...data,
+        status: data.status as TaskStatus
+      } as Task;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", variables.sculpture_id] });
@@ -146,7 +162,11 @@ export function useTaskMutations() {
         throw error;
       }
 
-      return data;
+      // Ensure correct type
+      return {
+        ...data,
+        status: data.status as TaskStatus
+      } as Task;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", data.sculpture_id] });
@@ -159,7 +179,7 @@ export function useTaskMutations() {
   });
 
   const deleteTask = useMutation({
-    mutationFn: async (taskId: string): Promise<void> => {
+    mutationFn: async (taskId: string): Promise<string | undefined> => {
       // Get the sculpture_id before deleting for cache invalidation
       const { data: taskData } = await supabase
         .from("tasks")

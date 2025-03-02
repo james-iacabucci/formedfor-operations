@@ -17,25 +17,31 @@ import { Sculpture } from "@/types/sculpture";
 
 type GroupBy = "status" | "assignee" | "sculpture";
 
+interface SculptureMinimal {
+  id: string;
+  ai_generated_name: string;
+  image_url?: string;
+}
+
 export function KanbanBoard() {
   const { user } = useAuth();
   const { data: tasks = [], isLoading } = useAllTasks();
   const [groupBy, setGroupBy] = useState<GroupBy>("status");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedSculptureId, setSelectedSculptureId] = useState<string | null>(null);
-  const [sculptures, setSculptures] = useState<Sculpture[]>([]);
+  const [sculptures, setSculptures] = useState<SculptureMinimal[]>([]);
   
   // Get sculptures for creating new tasks
   useEffect(() => {
     const fetchSculptures = async () => {
       const { data } = await supabase
         .from("sculptures")
-        .select("id, ai_generated_name")
+        .select("id, ai_generated_name, image_url")
         .order("created_at", { ascending: false })
         .limit(10);
       
       if (data) {
-        setSculptures(data);
+        setSculptures(data as SculptureMinimal[]);
       }
     };
     
@@ -143,19 +149,22 @@ export function KanbanBoard() {
     }
     
     if (groupBy === "sculpture") {
-      const sculpture = tasks.find(t => t.sculpture_id === key)?.sculpture as any;
+      // Find task with this sculpture ID and get sculpture info
+      const sculptureTask = tasks.find(t => t.sculpture_id === key);
+      const sculptureInfo = sculptures.find(s => s.id === key);
+      
       return (
         <div className="flex items-center gap-2">
-          {sculpture?.image_url ? (
+          {sculptureInfo?.image_url ? (
             <div className="h-6 w-6 rounded overflow-hidden">
-              <img src={sculpture.image_url} alt="Sculpture thumbnail" className="h-full w-full object-cover" />
+              <img src={sculptureInfo.image_url} alt="Sculpture thumbnail" className="h-full w-full object-cover" />
             </div>
           ) : (
             <div className="h-6 w-6 bg-muted rounded flex items-center justify-center">
               <Paintbrush className="h-3 w-3" />
             </div>
           )}
-          <span>{sculpture?.ai_generated_name || "Unknown sculpture"}</span>
+          <span>{sculptureInfo?.ai_generated_name || "Unknown sculpture"}</span>
         </div>
       );
     }
@@ -204,7 +213,7 @@ export function KanbanBoard() {
       
       {isLoading ? (
         <div className="p-8 text-center text-muted-foreground">Loading tasks...</div>
-      ) : !Object.keys(groupedTasks).length ? (
+      ) : Object.keys(groupedTasks).length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
           No tasks found. Click "Add Task" to create one.
         </div>
