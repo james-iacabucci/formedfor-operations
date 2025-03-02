@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { useToast } from "@/hooks/use-toast";
@@ -36,11 +35,11 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      // Only update the reactions field, not the entire message
       const { error } = await supabase
-        .from("chat_messages")
-        .update({ reactions: updatedReactions })
-        .eq("id", messageId);
+        .rpc('update_message_reactions', { 
+          message_id: messageId,
+          reaction_data: updatedReactions
+        });
       
       if (error) {
         console.error("Error removing reaction:", error);

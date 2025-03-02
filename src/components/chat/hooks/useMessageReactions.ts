@@ -35,11 +35,12 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Only update the reactions field, not the entire message
+      // Use RPC or raw SQL to update the reactions field since it's not in the TypeScript definitions
       const { error } = await supabase
-        .from("chat_messages")
-        .update({ reactions: updatedReactions })
-        .eq("id", message.id);
+        .rpc('update_message_reactions', { 
+          message_id: message.id,
+          reaction_data: updatedReactions
+        });
       
       if (error) {
         console.error("Error adding reaction:", error);
