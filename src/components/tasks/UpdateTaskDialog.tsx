@@ -7,8 +7,8 @@ import { useUsers } from "@/hooks/tasks/queries/useUsers";
 import { TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 import { useTaskRelatedEntity } from "@/hooks/tasks/useTaskRelatedEntity";
-import { RelatedEntitySection } from "./form-sections/RelatedEntitySection";
 import { TaskDetailsSection } from "./form-sections/TaskDetailsSection";
+import { RelatedEntitySection } from "./form-sections/RelatedEntitySection";
 import { TaskAssignmentSection } from "./form-sections/TaskAssignmentSection";
 
 interface UpdateTaskDialogProps {
@@ -26,7 +26,7 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   const [description, setDescription] = useState(task.description || "");
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "unassigned");
   const [status, setStatus] = useState<TaskStatus>(task.status);
-  const [relatedType, setRelatedType] = useState<TaskRelatedType>(task.related_type || null);
+  const [relatedType, setRelatedType] = useState<TaskRelatedType | null>(task.related_type || null);
   
   const {
     entityId: sculptureEntityId,
@@ -106,6 +106,13 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <TaskDetailsSection
+            title={title}
+            description={description}
+            onTitleChange={setTitle}
+            onDescriptionChange={setDescription}
+          />
+          
           <RelatedEntitySection
             relatedType={relatedType}
             entityId={sculptureEntityId}
@@ -113,13 +120,6 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
             onRelatedTypeChange={handleRelatedTypeChange}
             sculptures={sculptures}
             sculpturesLoading={sculpturesLoading}
-          />
-          
-          <TaskDetailsSection
-            title={title}
-            description={description}
-            onTitleChange={setTitle}
-            onDescriptionChange={setDescription}
           />
           
           <TaskAssignmentSection

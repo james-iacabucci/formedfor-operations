@@ -53,9 +53,9 @@ export function RelatedEntitySection({
             <SelectContent>
               <SelectItem value="none">None</SelectItem>
               {sculpturesLoading ? (
-                <SelectItem value="loading">Loading sculptures...</SelectItem>
+                <SelectItem value="loading-sculptures">Loading sculptures...</SelectItem>
               ) : sculptures.length === 0 ? (
-                <SelectItem value="no-sculptures">No sculptures available</SelectItem>
+                <SelectItem value="no-sculptures-available">No sculptures available</SelectItem>
               ) : (
                 sculptures.map((sculpture) => (
                   <SelectItem key={sculpture.id} value={sculpture.id}>

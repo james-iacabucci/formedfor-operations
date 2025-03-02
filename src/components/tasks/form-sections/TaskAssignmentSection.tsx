@@ -3,6 +3,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskStatus } from "@/types/task";
+import { useEffect } from "react";
 
 interface User {
   id: string;
@@ -26,6 +27,13 @@ export function TaskAssignmentSection({
 }: TaskAssignmentSectionProps) {
   const { user: currentUser } = useAuth();
   
+  // Set current user as default when component mounts
+  useEffect(() => {
+    if (currentUser && !assignedTo) {
+      onAssigneeChange(currentUser.id);
+    }
+  }, [currentUser, assignedTo, onAssigneeChange]);
+  
   return (
     <>
       <div className="space-y-2">
@@ -40,7 +48,7 @@ export function TaskAssignmentSection({
           <SelectContent>
             <SelectItem value="unassigned">Unassigned</SelectItem>
             {users.length === 0 ? (
-              <SelectItem value="no-users">No users available</SelectItem>
+              <SelectItem value="no-users-available">No users available</SelectItem>
             ) : (
               users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
