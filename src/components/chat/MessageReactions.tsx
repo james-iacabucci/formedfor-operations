@@ -1,11 +1,12 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
-import { useToast } from "@/hooks/use-toast";
 import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -15,12 +16,13 @@ interface MessageReactionsProps {
 export function MessageReactions({ messageId, reactions }: MessageReactionsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   if (!reactions || reactions.length === 0) {
     return null;
   }
   
-  // Group reactions by type - simplified version that trusts incoming data is already deduplicated
+  // Group reactions by type - trusting that incoming data is already deduplicated
   const groupedReactions = reactions.reduce<Record<string, MessageReaction[]>>((acc, reaction) => {
     if (!acc[reaction.reaction]) {
       acc[reaction.reaction] = [];
@@ -30,6 +32,82 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     
     return acc;
   }, {});
+  
+  // Set up mutation for removing reactions
+  const removeReactionMutation = useMutation({
+    mutationFn: async ({ updatedReactions }: { updatedReactions: MessageReaction[] }) => {
+      // Convert MessageReaction[] to Json[] for database
+      const jsonReactions = updatedReactions.map(r => ({ ...r } as Json));
+      
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ reactions: jsonReactions })
+        .eq('id', messageId);
+        
+      if (error) throw error;
+      return updatedReactions;
+    },
+    onMutate: async ({ updatedReactions }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["messages"] });
+      
+      // Optimistically update to the new value
+      queryClient.setQueriesData({ queryKey: ["messages"] }, (oldData: any) => {
+        if (!oldData?.pages) return oldData;
+        
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => {
+            if (!page) return page;
+            
+            return page.map((msg: any) => {
+              if (msg.id === messageId) {
+                return {
+                  ...msg,
+                  reactions: updatedReactions,
+                };
+              }
+              return msg;
+            });
+          }),
+        };
+      });
+      
+      // Return context with the previous value
+      return { previousReactions: reactions };
+    },
+    onError: (err, variables, context) => {
+      // Revert on error
+      if (context?.previousReactions) {
+        queryClient.setQueriesData({ queryKey: ["messages"] }, (oldData: any) => {
+          if (!oldData?.pages) return oldData;
+          
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => {
+              if (!page) return page;
+              
+              return page.map((msg: any) => {
+                if (msg.id === messageId) {
+                  return {
+                    ...msg,
+                    reactions: context.previousReactions,
+                  };
+                }
+                return msg;
+              });
+            }),
+          };
+        });
+      }
+      
+      toast({
+        title: "Error",
+        description: "Failed to remove reaction",
+        variant: "destructive"
+      });
+    }
+  });
   
   const handleRemoveReaction = async (reactionType: string) => {
     if (!user) {
@@ -43,29 +121,14 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       }
       
       // Filter out the reaction we want to remove
-      const updatedReactions = reactions
-        .filter(r => !(r.reaction === reactionType && r.user_id === user.id))
-        // Convert MessageReaction[] to Json[] by casting each object as Json
-        .map(r => ({ ...r } as Json));
+      const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      const { error } = await supabase
-        .from('chat_messages')
-        .update({ reactions: updatedReactions })
-        .eq('id', messageId);
-      
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update reaction",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error", 
-        description: "Failed to remove reaction",
-        variant: "destructive"
+      // Use the mutation to update
+      await removeReactionMutation.mutateAsync({
+        updatedReactions
       });
+    } catch (error) {
+      console.error("Error removing reaction:", error);
     }
   };
   

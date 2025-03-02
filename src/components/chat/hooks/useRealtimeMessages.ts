@@ -1,6 +1,8 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { Message, convertToMessage } from "../types";
 
 interface UseRealtimeMessagesProps {
   threadId: string;
@@ -17,6 +19,8 @@ export function useRealtimeMessages({
   hasScrolled,
   setScrollToBottom
 }: UseRealtimeMessagesProps) {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     console.log('[REALTIME] Setting up realtime subscriptions for thread:', threadId);
     
@@ -52,18 +56,37 @@ export function useRealtimeMessages({
         },
         async (payload) => {
           console.log('[REALTIME] Message updated:', payload);
-          console.log('[REALTIME] Updated message data:', payload.new);
           
-          // Log reaction-specific information if available
-          if (payload.new.reactions) {
+          // For reaction updates, handle them without full refetch
+          if (payload.new && 'reactions' in payload.new) {
             console.log('[REALTIME] Updated message reactions:', payload.new.reactions);
-            console.log('[REALTIME] Reactions count:', 
-              Array.isArray(payload.new.reactions) ? payload.new.reactions.length : 'not an array');
-            console.log('[REALTIME] Reactions data type:', 
-              typeof payload.new.reactions);
+            
+            // Optimistically update the cache instead of doing a full refetch
+            queryClient.setQueriesData({ queryKey: ["messages", threadId] }, (oldData: any) => {
+              if (!oldData?.pages) return oldData;
+
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page: any) => {
+                  if (!page) return page;
+                  
+                  return page.map((msg: any) => {
+                    if (msg.id === payload.new.id) {
+                      // Return updated message with the new reactions data
+                      return {
+                        ...msg,
+                        reactions: payload.new.reactions
+                      };
+                    }
+                    return msg;
+                  });
+                })
+              };
+            });
+          } else {
+            // For non-reaction updates, do a full refetch
+            await refetch();
           }
-          
-          await refetch();
         }
       )
       .subscribe((status) => {
@@ -74,5 +97,5 @@ export function useRealtimeMessages({
       console.log('[REALTIME] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [threadId, refetch, hasScrolled, lastMessageRef, setScrollToBottom]);
+  }, [threadId, refetch, hasScrolled, lastMessageRef, setScrollToBottom, queryClient]);
 }

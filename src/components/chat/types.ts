@@ -83,30 +83,51 @@ export function convertToMessage(rawMessage: any): Message {
       }));
   }
 
-  // Completely rewritten and simplified reaction handling for better deduplication
+  // Enhanced reaction deduplication with extra validation
   let reactions: MessageReaction[] = [];
   
   if (rawMessage.reactions && Array.isArray(rawMessage.reactions)) {
-    // Create a map using composite key to ensure unique reactions per user
-    const reactionMap = new Map<string, MessageReaction>();
-    
-    for (const r of rawMessage.reactions) {
-      if (typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r) {
-        const key = `${r.reaction as string}-${r.user_id as string}`;
-        
-        // Only add if this exact user+reaction combo doesn't exist yet
-        if (!reactionMap.has(key)) {
-          reactionMap.set(key, {
-            reaction: r.reaction as string,
-            user_id: r.user_id as string,
-            username: r.username as string | null
-          });
+    try {
+      // Create a map using composite key to ensure unique reactions per user
+      const reactionMap = new Map<string, MessageReaction>();
+      
+      // Add DEBUG info
+      console.log(`[DEBUG] Processing ${rawMessage.reactions.length} reactions for message ${rawMessage.id}`);
+      
+      for (const r of rawMessage.reactions) {
+        if (typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r) {
+          const reaction = r.reaction as string;
+          const userId = r.user_id as string;
+          
+          if (!reaction || !userId) {
+            console.warn('[REACTION] Invalid reaction data, missing required fields:', r);
+            continue;
+          }
+          
+          const key = `${reaction}-${userId}`;
+          
+          // Skip duplicates with the same key
+          if (!reactionMap.has(key)) {
+            reactionMap.set(key, {
+              reaction: reaction,
+              user_id: userId,
+              username: r.username as string | null
+            });
+          } else {
+            console.warn('[REACTION] Duplicate reaction found and skipped:', key);
+          }
+        } else {
+          console.warn('[REACTION] Invalid reaction format:', r);
         }
       }
+      
+      // Convert map back to array
+      reactions = Array.from(reactionMap.values());
+      console.log(`[DEBUG] Deduplicated to ${reactions.length} reactions`);
+    } catch (error) {
+      console.error('[REACTION] Error processing reactions:', error);
+      reactions = []; // Reset to empty on error for safety
     }
-    
-    // Convert map back to array
-    reactions = Array.from(reactionMap.values());
   }
 
   return {
