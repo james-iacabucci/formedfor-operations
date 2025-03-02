@@ -34,15 +34,11 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Use the generic parameter to define the return type
-      // and pass the parameters directly as an object
-      const { error } = await supabase.rpc(
-        'update_message_reactions',
-        {
-          message_id: message.id,
-          reaction_data: updatedReactions
-        }
-      );
+      // Explicitly type the parameters to avoid TypeScript errors
+      const { error } = await supabase.rpc('update_message_reactions', {
+        message_id: message.id,
+        reaction_data: updatedReactions
+      } as any);
       
       if (error) {
         console.error("Error adding reaction:", error);

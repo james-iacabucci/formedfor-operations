@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { useToast } from "@/hooks/use-toast";
@@ -36,14 +35,10 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      // Use the generic parameter approach and pass parameters directly
-      const { error } = await supabase.rpc(
-        'update_message_reactions',
-        {
-          message_id: messageId,
-          reaction_data: updatedReactions
-        }
-      );
+      const { error } = await supabase.rpc('update_message_reactions', {
+        message_id: messageId,
+        reaction_data: updatedReactions
+      } as any);
       
       if (error) {
         console.error("Error removing reaction:", error);
