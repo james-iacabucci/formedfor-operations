@@ -52,32 +52,23 @@ export function useMessageReactions(message: Message) {
       
       console.log("[REACTION] Updated reactions array:", JSON.stringify(updatedReactions));
       console.log("[REACTION] Updated reactions is array:", Array.isArray(updatedReactions));
-      console.log("[REACTION] SQL function call params:", {
-        message_id: message.id,
-        reaction_data: updatedReactions
-      });
       
-      // Call the RPC function
-      const { data, error } = await supabase.rpc(
-        'update_message_reactions',
-        {
-          message_id: message.id,
-          reaction_data: updatedReactions
-        }
-      );
+      // Updated: Use a direct update statement instead of calling the function
+      // This simplifies the process and avoids potential type conversion issues
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .update({ reactions: updatedReactions })
+        .eq('id', message.id);
       
       if (error) {
-        console.error("[REACTION] Error response from RPC call:", error);
-        console.error("[REACTION] Error code:", error.code);
-        console.error("[REACTION] Error message:", error.message);
-        console.error("[REACTION] Error details:", error.details);
+        console.error("[REACTION] Error updating message:", error);
         toast({
           title: "Error",
           description: `Failed to update reaction: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log("[REACTION] Success response from RPC call:", data);
+        console.log("[REACTION] Success updating reactions:", data);
         toast({
           description: existingReaction ? "Reaction removed" : "Reaction added",
           duration: 2000
