@@ -18,26 +18,16 @@ export function useMessageReactions(message: Message) {
       // Get existing reactions or initialize empty array
       const existingReactions = Array.isArray(message.reactions) ? message.reactions : [];
       
-      // First deduplicate existing reactions
-      const reactionMap = new Map<string, MessageReaction>();
+      // Check if this specific reaction already exists for this user
+      const existingReactionIndex = existingReactions.findIndex(
+        r => r.reaction === reactionType && r.user_id === user.id
+      );
       
-      for (const r of existingReactions) {
-        const key = `${r.reaction}-${r.user_id}`;
-        if (!reactionMap.has(key)) {
-          reactionMap.set(key, r);
-        }
-      }
+      let updatedReactions: MessageReaction[];
       
-      // Now check if this specific reaction already exists
-      const reactionKey = `${reactionType}-${user.id}`;
-      const existingReaction = reactionMap.has(reactionKey);
-      
-      let updatedReactions;
-      
-      if (existingReaction) {
+      if (existingReactionIndex >= 0) {
         // Remove the reaction if it exists
-        reactionMap.delete(reactionKey);
-        updatedReactions = Array.from(reactionMap.values()).map(r => ({ ...r } as Json));
+        updatedReactions = existingReactions.filter((_, index) => index !== existingReactionIndex);
       } else {
         // Add the reaction if it doesn't exist
         const newReaction: MessageReaction = {
@@ -46,14 +36,16 @@ export function useMessageReactions(message: Message) {
           username: user.user_metadata?.username || user.email
         };
         
-        reactionMap.set(reactionKey, newReaction);
-        updatedReactions = Array.from(reactionMap.values()).map(r => ({ ...r } as Json));
+        updatedReactions = [...existingReactions, newReaction];
       }
+      
+      // Convert MessageReaction[] to Json[] by casting each object
+      const jsonReactions = updatedReactions.map(r => ({ ...r } as Json));
       
       // Use a direct update statement
       const { error } = await supabase
         .from('chat_messages')
-        .update({ reactions: updatedReactions })
+        .update({ reactions: jsonReactions })
         .eq('id', message.id);
       
       if (error) {

@@ -20,14 +20,13 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     return null;
   }
   
-  // Improved grouping reactions by type with strict deduplication
-  const groupedReactions = reactions.reduce<Record<string, Set<string>>>((acc, reaction) => {
+  // Group reactions by type - simplified version that trusts incoming data is already deduplicated
+  const groupedReactions = reactions.reduce<Record<string, MessageReaction[]>>((acc, reaction) => {
     if (!acc[reaction.reaction]) {
-      acc[reaction.reaction] = new Set();
+      acc[reaction.reaction] = [];
     }
     
-    // Add user_id to the Set (Sets automatically handle deduplication)
-    acc[reaction.reaction].add(reaction.user_id);
+    acc[reaction.reaction].push(reaction);
     
     return acc;
   }, {});
@@ -80,16 +79,10 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     }
   };
   
-  // Get all users who reacted with a specific reaction
-  const getUsersForReaction = (reactionType: string): MessageReaction[] => {
-    return reactions.filter(r => r.reaction === reactionType);
-  };
-  
   return (
     <div className="flex flex-wrap gap-1 mt-2">
-      {Object.entries(groupedReactions).map(([reactionType, userIds]) => {
-        const userHasReacted = !!user && userIds.has(user.id);
-        const reactors = getUsersForReaction(reactionType);
+      {Object.entries(groupedReactions).map(([reactionType, reactors]) => {
+        const userHasReacted = !!user && reactors.some(r => r.user_id === user.id);
         
         return (
           <Badge
@@ -101,7 +94,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
             title={reactors.map(r => r.username || "User").join(", ")}
           >
             {getReactionIcon(reactionType)}
-            <span>{userIds.size}</span>
+            <span>{reactors.length}</span>
           </Badge>
         );
       })}

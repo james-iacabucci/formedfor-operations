@@ -83,11 +83,11 @@ export function convertToMessage(rawMessage: any): Message {
       }));
   }
 
-  // Completely rewritten reaction handling for better deduplication
+  // Completely rewritten and simplified reaction handling for better deduplication
   let reactions: MessageReaction[] = [];
   
   if (rawMessage.reactions && Array.isArray(rawMessage.reactions)) {
-    // Create a map using composite key for deduplication
+    // Create a map using composite key to ensure unique reactions per user
     const reactionMap = new Map<string, MessageReaction>();
     
     for (const r of rawMessage.reactions) {
