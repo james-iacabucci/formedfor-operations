@@ -36,6 +36,8 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
+      console.log("Sending updated reactions:", JSON.stringify(updatedReactions));
+      
       const { error } = await supabase.rpc(
         'update_message_reactions',
         {
@@ -51,9 +53,16 @@ export function useMessageReactions(message: Message) {
           description: "Failed to add reaction",
           variant: "destructive"
         });
+      } else {
+        console.log("Reaction updated successfully");
       }
     } catch (error) {
       console.error("Error adding reaction:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add reaction",
+        variant: "destructive"
+      });
     }
   };
   

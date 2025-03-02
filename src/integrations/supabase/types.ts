@@ -508,7 +508,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_message_reactions: {
+        Args: {
+          message_id: string
+          reaction_data: Json[]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       chat_topic: "pricing" | "fabrication" | "operations"
