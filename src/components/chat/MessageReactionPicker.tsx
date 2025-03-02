@@ -9,6 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MessageReaction } from "./types";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageReactionPickerProps {
   messageId: string;
@@ -61,42 +62,40 @@ export function MessageReactionPicker({
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Update the message with the new reactions
-      // We need to fetch the message first, then update it
-      const { data: message, error: fetchError } = await supabase
-        .from("chat_messages")
-        .select("*")
-        .eq("id", messageId)
-        .single();
+      console.log("[DEBUG] Updating reactions for message:", messageId);
+      console.log("[DEBUG] Updated reactions:", JSON.stringify(updatedReactions));
       
-      if (fetchError) {
-        console.error("Error fetching message:", fetchError);
-        return;
-      }
-      
-      // Now update the message with the updated reactions
-      const { error } = await supabase
-        .from("chat_messages")
-        .update({ 
-          attachments: message.attachments,
-          content: message.content,
-          mentions: message.mentions,
-          reactions: updatedReactions 
-        })
-        .eq("id", messageId);
+      // Use the update_message_reactions RPC function instead of direct update
+      const { data, error } = await supabase.rpc(
+        'update_message_reactions',
+        {
+          message_id: messageId,
+          reaction_data: updatedReactions as unknown as Json[]
+        }
+      );
       
       if (error) {
-        console.error("Error adding reaction:", error);
+        console.error("[DEBUG] Error adding reaction:", error);
+        console.error("[DEBUG] Error code:", error.code);
+        console.error("[DEBUG] Error message:", error.message);
+        console.error("[DEBUG] Error details:", error.details);
         toast({
           title: "Error",
-          description: "Failed to add reaction",
+          description: `Failed to add reaction: ${error.message}`,
           variant: "destructive"
         });
+      } else {
+        console.log("[DEBUG] Reaction updated successfully:", data);
       }
       
       onClose();
     } catch (error) {
-      console.error("Error adding reaction:", error);
+      console.error("[DEBUG] Exception in handleReaction:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add reaction",
+        variant: "destructive"
+      });
     }
   };
   
