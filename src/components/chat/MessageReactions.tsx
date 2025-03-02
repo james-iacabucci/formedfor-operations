@@ -11,12 +11,6 @@ interface MessageReactionsProps {
   reactions: MessageReaction[];
 }
 
-// Define type for the RPC function parameters
-interface UpdateMessageReactionsParams {
-  message_id: string;
-  reaction_data: MessageReaction[];
-}
-
 export function MessageReactions({ messageId, reactions }: MessageReactionsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -42,14 +36,14 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      // Use strongly-typed parameters
-      const params: UpdateMessageReactionsParams = {
-        message_id: messageId,
-        reaction_data: updatedReactions
-      };
-      
-      const { error } = await supabase
-        .rpc('update_message_reactions', params as unknown as Record<string, unknown>);
+      // Use the generic parameter approach and pass parameters directly
+      const { error } = await supabase.rpc(
+        'update_message_reactions',
+        {
+          message_id: messageId,
+          reaction_data: updatedReactions
+        }
+      );
       
       if (error) {
         console.error("Error removing reaction:", error);

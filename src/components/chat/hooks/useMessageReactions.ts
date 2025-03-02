@@ -4,12 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageReaction } from "../types";
 
-// Define type for the RPC function parameters
-interface UpdateMessageReactionsParams {
-  message_id: string;
-  reaction_data: MessageReaction[];
-}
-
 export function useMessageReactions(message: Message) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,15 +34,15 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Use strongly-typed parameters
-      const params: UpdateMessageReactionsParams = {
-        message_id: message.id,
-        reaction_data: updatedReactions
-      };
-      
-      // Use RPC to update the reactions field
-      const { error } = await supabase
-        .rpc('update_message_reactions', params as unknown as Record<string, unknown>);
+      // Use the generic parameter to define the return type
+      // and pass the parameters directly as an object
+      const { error } = await supabase.rpc(
+        'update_message_reactions',
+        {
+          message_id: message.id,
+          reaction_data: updatedReactions
+        }
+      );
       
       if (error) {
         console.error("Error adding reaction:", error);
