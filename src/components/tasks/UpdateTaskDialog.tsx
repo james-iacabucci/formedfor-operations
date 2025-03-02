@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useTaskMutations } from "@/hooks/tasks";
-import { useUsers } from "@/hooks/tasks";
+import { useTaskMutations } from "@/hooks/tasks/useTaskMutations";
+import { useUsers } from "@/hooks/tasks/queries/useUsers";
 import { TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -26,9 +26,9 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
-  const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
+  const [assignedTo, setAssignedTo] = useState(task.assigned_to || "unassigned");
   const [status, setStatus] = useState<TaskStatus>(task.status);
-  const [relatedType, setRelatedType] = useState<TaskRelatedType>(task.related_type);
+  const [relatedType, setRelatedType] = useState<TaskRelatedType>(task.related_type || null);
   const [sculptureId, setSculptureId] = useState<string | null>(task.sculpture_id);
   const [clientId, setClientId] = useState<string | null>(task.client_id);
   const [orderId, setOrderId] = useState<string | null>(task.order_id);
@@ -60,9 +60,9 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   useEffect(() => {
     setTitle(task.title);
     setDescription(task.description || "");
-    setAssignedTo(task.assigned_to || "");
+    setAssignedTo(task.assigned_to || "unassigned");
     setStatus(task.status);
-    setRelatedType(task.related_type);
+    setRelatedType(task.related_type || null);
     setSculptureId(task.sculpture_id);
     setClientId(task.client_id);
     setOrderId(task.order_id);
@@ -71,7 +71,7 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   
   // Handle related type change
   const handleRelatedTypeChange = (type: string) => {
-    const newType = type === "" ? null : type as TaskRelatedType;
+    const newType = type === "none" ? null : type as TaskRelatedType;
     setRelatedType(newType);
     
     // Reset all entity IDs
@@ -82,18 +82,36 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   };
   
   const handleEntitySelection = (id: string) => {
+    if (id === "none") {
+      switch (relatedType) {
+        case "sculpture":
+          setSculptureId(null);
+          break;
+        case "client":
+          setClientId(null);
+          break;
+        case "order":
+          setOrderId(null);
+          break;
+        case "lead":
+          setLeadId(null);
+          break;
+      }
+      return;
+    }
+    
     switch (relatedType) {
       case "sculpture":
-        setSculptureId(id || null);
+        setSculptureId(id);
         break;
       case "client":
-        setClientId(id || null);
+        setClientId(id);
         break;
       case "order":
-        setOrderId(id || null);
+        setOrderId(id);
         break;
       case "lead":
-        setLeadId(id || null);
+        setLeadId(id);
         break;
     }
   };
@@ -106,7 +124,7 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
         id: task.id,
         title,
         description: description || null,
-        assigned_to: assignedTo || null,
+        assigned_to: assignedTo === "unassigned" ? null : assignedTo,
         status,
         related_type: relatedType,
         sculpture_id: sculptureId,
@@ -156,14 +174,14 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
           <div className="space-y-2">
             <Label htmlFor="related-type">Task Related To</Label>
             <Select
-              value={relatedType || ""}
+              value={relatedType || "none"}
               onValueChange={handleRelatedTypeChange}
             >
               <SelectTrigger id="related-type">
                 <SelectValue placeholder="Not associated with anything" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Not associated</SelectItem>
+                <SelectItem value="none">Not associated</SelectItem>
                 <SelectItem value="sculpture">Sculpture</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
                 <SelectItem value="order">Order</SelectItem>
@@ -176,17 +194,18 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
             <div className="space-y-2">
               <Label htmlFor="sculpture">Sculpture</Label>
               <Select
-                value={sculptureId || ""}
+                value={sculptureId || "none"}
                 onValueChange={handleEntitySelection}
               >
                 <SelectTrigger id="sculpture">
                   <SelectValue placeholder="Select a sculpture" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
                   {sculpturesLoading ? (
-                    <SelectItem value="" disabled>Loading sculptures...</SelectItem>
+                    <SelectItem value="loading">Loading sculptures...</SelectItem>
                   ) : sculptures.length === 0 ? (
-                    <SelectItem value="" disabled>No sculptures available</SelectItem>
+                    <SelectItem value="no-sculptures">No sculptures available</SelectItem>
                   ) : (
                     sculptures.map((sculpture: any) => (
                       <SelectItem key={sculpture.id} value={sculpture.id}>
@@ -202,12 +221,12 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
           {relatedType === "client" && (
             <div className="space-y-2">
               <Label htmlFor="client">Client</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="client">
                   <SelectValue placeholder="Client functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Client functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Client functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -216,12 +235,12 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
           {relatedType === "order" && (
             <div className="space-y-2">
               <Label htmlFor="order">Order</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="order">
                   <SelectValue placeholder="Order functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Order functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Order functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -230,12 +249,12 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
           {relatedType === "lead" && (
             <div className="space-y-2">
               <Label htmlFor="lead">Lead</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="lead">
                   <SelectValue placeholder="Lead functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Lead functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Lead functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -262,7 +281,7 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
                 <SelectValue placeholder="Unassigned" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Unassigned</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.username || user.id}

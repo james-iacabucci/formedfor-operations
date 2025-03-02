@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useUsers } from "@/hooks/tasks/useTaskQueries";
+import { useUsers } from "@/hooks/tasks/queries/useUsers";
 import { useTaskMutations } from "@/hooks/tasks/useTaskMutations";
 import { CreateTaskInput, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
@@ -89,7 +90,7 @@ export function CreateTaskDialog({
   }, [open, sculptureId, clientId, orderId, leadId, relatedType]);
 
   const handleRelatedTypeChange = (type: string) => {
-    const newType = type === "" ? null : type as TaskRelatedType;
+    const newType = type === "none" ? null : type as TaskRelatedType;
     
     const newData = {
       ...taskData,
@@ -184,14 +185,14 @@ export function CreateTaskDialog({
           <div className="space-y-2">
             <Label htmlFor="related-type">Task Related To</Label>
             <Select
-              value={taskData.related_type || ""}
+              value={taskData.related_type || "none"}
               onValueChange={handleRelatedTypeChange}
             >
               <SelectTrigger id="related-type">
                 <SelectValue placeholder="Not associated with anything" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Not associated</SelectItem>
+                <SelectItem value="none">Not associated</SelectItem>
                 <SelectItem value="sculpture">Sculpture</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
                 <SelectItem value="order">Order</SelectItem>
@@ -204,7 +205,7 @@ export function CreateTaskDialog({
             <div className="space-y-2">
               <Label htmlFor="sculpture">Sculpture</Label>
               <Select
-                value={taskData.sculpture_id || ""}
+                value={taskData.sculpture_id || "none"}
                 onValueChange={handleEntitySelection}
               >
                 <SelectTrigger id="sculpture">
@@ -212,9 +213,9 @@ export function CreateTaskDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {sculpturesLoading ? (
-                    <SelectItem value="" disabled>Loading sculptures...</SelectItem>
+                    <SelectItem value="loading">Loading sculptures...</SelectItem>
                   ) : sculptures.length === 0 ? (
-                    <SelectItem value="" disabled>No sculptures available</SelectItem>
+                    <SelectItem value="none">No sculptures available</SelectItem>
                   ) : (
                     sculptures.map((sculpture) => (
                       <SelectItem key={sculpture.id} value={sculpture.id}>
@@ -230,12 +231,12 @@ export function CreateTaskDialog({
           {taskData.related_type === "client" && (
             <div className="space-y-2">
               <Label htmlFor="client">Client</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="client">
                   <SelectValue placeholder="Client functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Client functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Client functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -244,12 +245,12 @@ export function CreateTaskDialog({
           {taskData.related_type === "order" && (
             <div className="space-y-2">
               <Label htmlFor="order">Order</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="order">
                   <SelectValue placeholder="Order functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Order functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Order functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -258,12 +259,12 @@ export function CreateTaskDialog({
           {taskData.related_type === "lead" && (
             <div className="space-y-2">
               <Label htmlFor="lead">Lead</Label>
-              <Select disabled value="">
+              <Select disabled value="coming-soon">
                 <SelectTrigger id="lead">
                   <SelectValue placeholder="Lead functionality coming soon" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Lead functionality coming soon</SelectItem>
+                  <SelectItem value="coming-soon">Lead functionality coming soon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -293,14 +294,17 @@ export function CreateTaskDialog({
           <div className="space-y-2">
             <Label htmlFor="assigned-to">Assigned To</Label>
             <Select
-              value={taskData.assigned_to || ""}
-              onValueChange={(value) => setTaskData((prev) => ({ ...prev, assigned_to: value || null }))}
+              value={taskData.assigned_to || "unassigned"}
+              onValueChange={(value) => setTaskData((prev) => ({ 
+                ...prev, 
+                assigned_to: value === "unassigned" ? null : value 
+              }))}
             >
               <SelectTrigger id="assigned-to">
                 <SelectValue placeholder="Select assignee" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Unassigned</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.username || user.id}
