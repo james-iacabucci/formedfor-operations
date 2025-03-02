@@ -23,6 +23,9 @@ interface SculptureMinimal {
   image_url?: string;
 }
 
+// Define an explicit type for grouped tasks to avoid 'unknown' type errors
+type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
+
 export function KanbanBoard() {
   const { user } = useAuth();
   const { data: tasks = [], isLoading } = useAllTasks();
@@ -73,7 +76,7 @@ export function KanbanBoard() {
     }
   };
   
-  const getGroupedTasks = () => {
+  const getGroupedTasks = (): GroupedTasksMap => {
     if (!tasks.length) return {};
     
     if (groupBy === "status") {
@@ -93,7 +96,7 @@ export function KanbanBoard() {
     }
     
     if (groupBy === "assignee") {
-      const result: Record<string, TaskWithAssignee[]> = {
+      const result: GroupedTasksMap = {
         unassigned: []
       };
       
@@ -109,7 +112,7 @@ export function KanbanBoard() {
     }
     
     if (groupBy === "sculpture") {
-      const result: Record<string, TaskWithAssignee[]> = {};
+      const result: GroupedTasksMap = {};
       
       tasks.forEach(task => {
         if (!result[task.sculpture_id]) {
