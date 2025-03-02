@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { useToast } from "@/hooks/use-toast";
@@ -37,9 +36,10 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      console.log("Removing reaction, new reactions:", JSON.stringify(updatedReactions));
+      console.log("[DEBUG] Removing reaction - message_id:", messageId);
+      console.log("[DEBUG] Updated reactions:", JSON.stringify(updatedReactions));
       
-      const { error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc(
         'update_message_reactions',
         {
           message_id: messageId,
@@ -48,17 +48,20 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       );
       
       if (error) {
-        console.error("Error removing reaction:", error);
+        console.error("[DEBUG] Error removing reaction:", error);
+        console.error("[DEBUG] Error code:", error.code);
+        console.error("[DEBUG] Error message:", error.message);
+        console.error("[DEBUG] Error details:", error.details);
         toast({
           title: "Error",
-          description: "Failed to remove reaction",
+          description: `Failed to remove reaction: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log("Reaction removed successfully");
+        console.log("[DEBUG] Reaction removed successfully:", data);
       }
     } catch (error) {
-      console.error("Error removing reaction:", error);
+      console.error("[DEBUG] Exception in handleRemoveReaction:", error);
       toast({
         title: "Error", 
         description: "Failed to remove reaction",

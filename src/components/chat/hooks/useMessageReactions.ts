@@ -36,9 +36,10 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      console.log("Sending updated reactions:", JSON.stringify(updatedReactions));
+      console.log("[DEBUG] Adding reaction - message_id:", message.id);
+      console.log("[DEBUG] Reaction data:", JSON.stringify(updatedReactions));
       
-      const { error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc(
         'update_message_reactions',
         {
           message_id: message.id,
@@ -47,17 +48,20 @@ export function useMessageReactions(message: Message) {
       );
       
       if (error) {
-        console.error("Error adding reaction:", error);
+        console.error("[DEBUG] Error adding reaction:", error);
+        console.error("[DEBUG] Error code:", error.code);
+        console.error("[DEBUG] Error message:", error.message);
+        console.error("[DEBUG] Error details:", error.details);
         toast({
           title: "Error",
-          description: "Failed to add reaction",
+          description: `Failed to add reaction: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log("Reaction updated successfully");
+        console.log("[DEBUG] Reaction updated successfully:", data);
       }
     } catch (error) {
-      console.error("Error adding reaction:", error);
+      console.error("[DEBUG] Exception in handleReaction:", error);
       toast({
         title: "Error",
         description: "Failed to add reaction",
