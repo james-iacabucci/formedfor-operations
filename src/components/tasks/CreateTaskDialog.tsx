@@ -1,17 +1,15 @@
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUsers } from "@/hooks/tasks/queries/useUsers";
 import { useTaskMutations } from "@/hooks/tasks/useTaskMutations";
 import { CreateTaskInput, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useTaskRelatedEntity } from "@/hooks/tasks/useTaskRelatedEntity";
+import { RelatedEntitySection } from "./form-sections/RelatedEntitySection";
+import { TaskDetailsSection } from "./form-sections/TaskDetailsSection";
+import { TaskAssignmentSection } from "./form-sections/TaskAssignmentSection";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -21,11 +19,6 @@ interface CreateTaskDialogProps {
   orderId?: string | null;
   leadId?: string | null;
   relatedType?: TaskRelatedType;
-}
-
-interface SculptureOption {
-  id: string;
-  name: string;
 }
 
 export function CreateTaskDialog({ 
@@ -41,98 +34,41 @@ export function CreateTaskDialog({
   const { createTask } = useTaskMutations();
   const { data: users = [] } = useUsers();
   
-  const [taskData, setTaskData] = useState<CreateTaskInput>({
-    title: "",
-    description: "",
-    assigned_to: null,
-    status: "todo",
-    related_type: relatedType,
-    sculpture_id: sculptureId,
-    client_id: clientId,
-    order_id: orderId,
-    lead_id: leadId
-  });
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType>(relatedType);
+  const [status, setStatus] = useState<TaskStatus>("todo");
+  const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  
+  const {
+    entityId: sculptureEntityId,
+    sculptures,
+    sculpturesLoading,
+    handleEntitySelection
+  } = useTaskRelatedEntity(open, taskRelatedType, sculptureId);
 
-  const { data: sculptures = [], isLoading: sculpturesLoading } = useQuery({
-    queryKey: ["sculptures-minimal"],
-    queryFn: async () => {
-      console.log("Fetching sculptures for dialog");
-      const { data, error } = await supabase
-        .from("sculptures")
-        .select("id, ai_generated_name")
-        .order("created_at", { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching sculptures:", error);
-        throw error;
-      }
-      
-      return (data || []).map(s => ({
-        id: s.id,
-        name: s.ai_generated_name || "Unnamed Sculpture"
-      })) as SculptureOption[];
-    },
-    enabled: open && (taskData.related_type === "sculpture" || taskData.related_type === null), 
-  });
-
+  // Initialize form values when the dialog opens
   useEffect(() => {
     if (open) {
-      console.log("Setting initial task data in dialog");
-      setTaskData(prev => ({ 
-        ...prev, 
-        sculpture_id: sculptureId,
-        client_id: clientId,
-        order_id: orderId,
-        lead_id: leadId,
-        related_type: relatedType
-      }));
+      setTitle("");
+      setDescription("");
+      setTaskRelatedType(relatedType);
+      setStatus("todo");
+      setAssignedTo(null);
     }
-  }, [open, sculptureId, clientId, orderId, leadId, relatedType]);
+  }, [open, relatedType]);
 
   const handleRelatedTypeChange = (type: string) => {
     const newType = type === "none" ? null : type as TaskRelatedType;
-    
-    const newData = {
-      ...taskData,
-      related_type: newType,
-      sculpture_id: null,
-      client_id: null,
-      order_id: null,
-      lead_id: null
-    };
-    
-    if (newType === "sculpture" && sculptureId) {
-      newData.sculpture_id = sculptureId;
-    } else if (newType === "client" && clientId) {
-      newData.client_id = clientId;
-    } else if (newType === "order" && orderId) {
-      newData.order_id = orderId;
-    } else if (newType === "lead" && leadId) {
-      newData.lead_id = leadId;
-    }
-    
-    setTaskData(newData);
+    setTaskRelatedType(newType);
   };
 
-  const handleEntitySelection = (id: string) => {
-    switch (taskData.related_type) {
-      case "sculpture":
-        setTaskData(prev => ({ ...prev, sculpture_id: id }));
-        break;
-      case "client":
-        setTaskData(prev => ({ ...prev, client_id: id }));
-        break;
-      case "order":
-        setTaskData(prev => ({ ...prev, order_id: id }));
-        break;
-      case "lead":
-        setTaskData(prev => ({ ...prev, lead_id: id }));
-        break;
-    }
+  const handleAssigneeChange = (value: string) => {
+    setAssignedTo(value === "unassigned" ? null : value);
   };
 
   const handleCreateTask = async () => {
-    if (!taskData.title.trim()) {
+    if (!title.trim()) {
       toast({
         title: "Error",
         description: "Task title is required",
@@ -142,14 +78,27 @@ export function CreateTaskDialog({
     }
 
     try {
-      console.log("Creating task with data:", taskData);
+      const taskData: CreateTaskInput = {
+        title,
+        description: description || "",
+        assigned_to: assignedTo,
+        status,
+        related_type: taskRelatedType,
+      };
+      
+      // Set the appropriate entity ID based on the related type
+      if (taskRelatedType === "sculpture") {
+        taskData.sculpture_id = sculptureEntityId;
+      } else if (taskRelatedType === "client") {
+        taskData.client_id = clientId;
+      } else if (taskRelatedType === "order") {
+        taskData.order_id = orderId;
+      } else if (taskRelatedType === "lead") {
+        taskData.lead_id = leadId;
+      }
+      
       await createTask.mutateAsync(taskData);
-      toast({
-        title: "Success",
-        description: "Task created successfully",
-      });
       onOpenChange(false);
-      resetForm();
     } catch (error) {
       console.error("Error creating task:", error);
       toast({
@@ -160,20 +109,6 @@ export function CreateTaskDialog({
     }
   };
 
-  const resetForm = () => {
-    setTaskData({
-      title: "",
-      description: "",
-      assigned_to: null,
-      status: "todo",
-      related_type: relatedType,
-      sculpture_id: sculptureId,
-      client_id: clientId,
-      order_id: orderId,
-      lead_id: leadId
-    });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -182,159 +117,34 @@ export function CreateTaskDialog({
         </DialogHeader>
         
         <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="related-type">Task Related To</Label>
-            <Select
-              value={taskData.related_type || "none"}
-              onValueChange={handleRelatedTypeChange}
-            >
-              <SelectTrigger id="related-type">
-                <SelectValue placeholder="Not associated with anything" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Not associated</SelectItem>
-                <SelectItem value="sculpture">Sculpture</SelectItem>
-                <SelectItem value="client">Client</SelectItem>
-                <SelectItem value="order">Order</SelectItem>
-                <SelectItem value="lead">Lead</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <RelatedEntitySection
+            relatedType={taskRelatedType}
+            entityId={sculptureEntityId}
+            onEntitySelection={handleEntitySelection}
+            onRelatedTypeChange={handleRelatedTypeChange}
+            sculptures={sculptures}
+            sculpturesLoading={sculpturesLoading}
+          />
           
-          {taskData.related_type === "sculpture" && (
-            <div className="space-y-2">
-              <Label htmlFor="sculpture">Sculpture</Label>
-              <Select
-                value={taskData.sculpture_id || "none"}
-                onValueChange={handleEntitySelection}
-              >
-                <SelectTrigger id="sculpture">
-                  <SelectValue placeholder="Select a sculpture" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sculpturesLoading ? (
-                    <SelectItem value="loading">Loading sculptures...</SelectItem>
-                  ) : sculptures.length === 0 ? (
-                    <SelectItem value="none">No sculptures available</SelectItem>
-                  ) : (
-                    sculptures.map((sculpture) => (
-                      <SelectItem key={sculpture.id} value={sculpture.id}>
-                        {sculpture.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <TaskDetailsSection
+            title={title}
+            description={description}
+            onTitleChange={setTitle}
+            onDescriptionChange={setDescription}
+          />
           
-          {taskData.related_type === "client" && (
-            <div className="space-y-2">
-              <Label htmlFor="client">Client</Label>
-              <Select disabled value="coming-soon">
-                <SelectTrigger id="client">
-                  <SelectValue placeholder="Client functionality coming soon" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="coming-soon">Client functionality coming soon</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {taskData.related_type === "order" && (
-            <div className="space-y-2">
-              <Label htmlFor="order">Order</Label>
-              <Select disabled value="coming-soon">
-                <SelectTrigger id="order">
-                  <SelectValue placeholder="Order functionality coming soon" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="coming-soon">Order functionality coming soon</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {taskData.related_type === "lead" && (
-            <div className="space-y-2">
-              <Label htmlFor="lead">Lead</Label>
-              <Select disabled value="coming-soon">
-                <SelectTrigger id="lead">
-                  <SelectValue placeholder="Lead functionality coming soon" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="coming-soon">Lead functionality coming soon</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="Task title"
-              value={taskData.title}
-              onChange={(e) => setTaskData((prev) => ({ ...prev, title: e.target.value }))}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Task description"
-              value={taskData.description || ""}
-              onChange={(e) => setTaskData((prev) => ({ ...prev, description: e.target.value }))}
-              className="min-h-[100px]"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="assigned-to">Assigned To</Label>
-            <Select
-              value={taskData.assigned_to || "unassigned"}
-              onValueChange={(value) => setTaskData((prev) => ({ 
-                ...prev, 
-                assigned_to: value === "unassigned" ? null : value 
-              }))}
-            >
-              <SelectTrigger id="assigned-to">
-                <SelectValue placeholder="Select assignee" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.username || user.id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={taskData.status}
-              onValueChange={(value) => setTaskData((prev) => ({ ...prev, status: value as TaskStatus }))}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <TaskAssignmentSection
+            assignedTo={assignedTo}
+            status={status}
+            users={users}
+            onAssigneeChange={handleAssigneeChange}
+            onStatusChange={setStatus}
+          />
         </div>
         
         <div className="flex justify-end gap-3">
           <DialogClose asChild>
-            <Button variant="outline" onClick={resetForm}>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button 
             onClick={handleCreateTask} 
