@@ -4,6 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageReaction } from "../types";
 
+interface UpdateReactionsParams {
+  message_id: string;
+  reaction_data: MessageReaction[];
+}
+
 export function useMessageReactions(message: Message) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -34,11 +39,16 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Explicitly type the parameters to avoid TypeScript errors
-      const { error } = await supabase.rpc('update_message_reactions', {
+      // Use a properly typed parameters object
+      const params: UpdateReactionsParams = {
         message_id: message.id,
         reaction_data: updatedReactions
-      } as any);
+      };
+      
+      const { error } = await supabase.rpc(
+        'update_message_reactions',
+        params
+      );
       
       if (error) {
         console.error("Error adding reaction:", error);
