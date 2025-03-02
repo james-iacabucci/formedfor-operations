@@ -33,7 +33,7 @@ export function MessageListContent({
         </div>
       )}
       
-      <div className="space-y-3">
+      <div className="space-y-1.5">
         {messages.map((message) => (
           <MessageItem 
             key={message.id} 
@@ -45,7 +45,7 @@ export function MessageListContent({
       </div>
       
       {uploadingFiles.length > 0 && (
-        <div className="py-0.5 mt-3">
+        <div className="py-0.5 mt-1.5">
           <div className={`flex items-start gap-3 px-6 max-w-4xl mx-auto rounded-lg p-4 ${
             user ? 'bg-black text-white border border-muted' : 'bg-accent/50'
           }`}>
