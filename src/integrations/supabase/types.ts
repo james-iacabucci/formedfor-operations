@@ -17,6 +17,7 @@ export type Database = {
           edited_at: string | null
           id: string
           mentions: Json[] | null
+          reactions: Json[] | null
           thread_id: string
           user_id: string
         }
@@ -27,6 +28,7 @@ export type Database = {
           edited_at?: string | null
           id?: string
           mentions?: Json[] | null
+          reactions?: Json[] | null
           thread_id: string
           user_id: string
         }
@@ -37,6 +39,7 @@ export type Database = {
           edited_at?: string | null
           id?: string
           mentions?: Json[] | null
+          reactions?: Json[] | null
           thread_id?: string
           user_id?: string
         }
