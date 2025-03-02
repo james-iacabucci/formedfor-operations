@@ -62,6 +62,7 @@ export function MessageItem({
           isOwnMessage={isOwnMessage}
           isDeleted={isDeleted}
           isEditing={isCurrentlyEditing}
+          editedAt={currentMessage.edited_at}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onCopy={handleCopy}

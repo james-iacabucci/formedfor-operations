@@ -9,6 +9,7 @@ interface MessageHeaderProps {
   isOwnMessage: boolean;
   isDeleted: boolean;
   isEditing: boolean;
+  editedAt: string | null;
   onEdit: () => void;
   onDelete: () => void;
   onCopy: () => void;
@@ -22,6 +23,7 @@ export function MessageHeader({
   isOwnMessage,
   isDeleted,
   isEditing,
+  editedAt,
   onEdit,
   onDelete,
   onCopy,
@@ -39,6 +41,7 @@ export function MessageHeader({
         </span>
         <span className="text-xs text-muted-foreground">
           {formattedDate} at {formattedTime}
+          {editedAt && " (modified)"}
         </span>
         {isEditing && (
           <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
