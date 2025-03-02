@@ -214,6 +214,9 @@ export function KanbanBoard() {
     return "border-t-primary";
   };
   
+  // Calculate the grouped tasks once to avoid multiple calls
+  const groupedTasks = getGroupedTasks();
+  
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
