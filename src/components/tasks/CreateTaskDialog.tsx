@@ -38,7 +38,7 @@ export function CreateTaskDialog({
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType>(relatedType);
+  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType);
   const [status, setStatus] = useState<TaskStatus>("todo");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   
@@ -47,7 +47,7 @@ export function CreateTaskDialog({
     sculptures,
     sculpturesLoading,
     handleEntitySelection
-  } = useTaskRelatedEntity(open, taskRelatedType, sculptureId);
+  } = useTaskRelatedEntity(open, taskRelatedType as TaskRelatedType, sculptureId);
 
   // Initialize form values when the dialog opens
   useEffect(() => {
@@ -62,8 +62,11 @@ export function CreateTaskDialog({
   }, [open, relatedType, currentUser]);
 
   const handleRelatedTypeChange = (type: string) => {
-    const newType = type === "none" ? null : type as TaskRelatedType;
-    setTaskRelatedType(newType);
+    if (type === "none") {
+      setTaskRelatedType(null);
+    } else {
+      setTaskRelatedType(type);
+    }
   };
 
   const handleAssigneeChange = (value: string) => {
@@ -81,23 +84,39 @@ export function CreateTaskDialog({
     }
 
     try {
+      let finalRelatedType: TaskRelatedType | null = null;
+      let productLineId: string | null = null;
+      
+      // Parse the related type and determine if it's a product line
+      if (taskRelatedType && typeof taskRelatedType === 'string') {
+        if (taskRelatedType.startsWith('product_line_')) {
+          finalRelatedType = 'product_line';
+          productLineId = taskRelatedType.replace('product_line_', '');
+        } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
+                   taskRelatedType === 'lead' || taskRelatedType === 'order') {
+          finalRelatedType = taskRelatedType as TaskRelatedType;
+        }
+      }
+      
       const taskData: CreateTaskInput = {
         title,
         description: description || "",
         assigned_to: assignedTo,
         status,
-        related_type: taskRelatedType,
+        related_type: finalRelatedType,
       };
       
       // Set the appropriate entity ID based on the related type
-      if (taskRelatedType === "sculpture") {
+      if (finalRelatedType === "sculpture") {
         taskData.sculpture_id = sculptureEntityId;
-      } else if (taskRelatedType === "client") {
+      } else if (finalRelatedType === "client") {
         taskData.client_id = clientId;
-      } else if (taskRelatedType === "order") {
+      } else if (finalRelatedType === "order") {
         taskData.order_id = orderId;
-      } else if (taskRelatedType === "lead") {
+      } else if (finalRelatedType === "lead") {
         taskData.lead_id = leadId;
+      } else if (finalRelatedType === "product_line" && productLineId) {
+        taskData.product_line_id = productLineId;
       }
       
       console.log("Task data before submit:", taskData);
@@ -129,7 +148,7 @@ export function CreateTaskDialog({
           />
           
           <RelatedEntitySection
-            relatedType={taskRelatedType}
+            relatedType={taskRelatedType as TaskRelatedType}
             entityId={sculptureEntityId}
             onEntitySelection={handleEntitySelection}
             onRelatedTypeChange={handleRelatedTypeChange}

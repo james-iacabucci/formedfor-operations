@@ -1,12 +1,12 @@
 
 export type TaskStatus = "todo" | "in_progress" | "done";
 
-export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | null;
+export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | "product_line" | null;
 
 // Update the basic Task interface to match the actual database fields
 export interface Task {
   id: string;
-  sculpture_id: string;
+  sculpture_id: string | null;
   title: string;
   description: string | null;
   assigned_to: string | null;
@@ -19,6 +19,7 @@ export interface Task {
   client_id?: string | null;
   order_id?: string | null;
   lead_id?: string | null;
+  product_line_id?: string | null;
   related_type?: TaskRelatedType;
 }
 
@@ -40,6 +41,7 @@ export interface CreateTaskInput {
   client_id?: string | null;
   order_id?: string | null;
   lead_id?: string | null;
+  product_line_id?: string | null;
   related_type?: TaskRelatedType;
   title: string;
   description?: string | null;
@@ -53,6 +55,7 @@ export interface UpdateTaskInput {
   client_id?: string | null;
   order_id?: string | null;
   lead_id?: string | null;
+  product_line_id?: string | null;
   related_type?: TaskRelatedType;
   title?: string;
   description?: string | null;

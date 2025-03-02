@@ -11,7 +11,7 @@ export interface EntityOption {
 
 export function useTaskRelatedEntity(
   open: boolean,
-  relatedType: TaskRelatedType | null,
+  relatedType: TaskRelatedType | string | null,
   initialEntityId?: string | null
 ) {
   const [entityId, setEntityId] = useState<string | null>(initialEntityId || null);

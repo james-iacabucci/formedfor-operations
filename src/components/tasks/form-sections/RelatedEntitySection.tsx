@@ -1,8 +1,10 @@
-
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskRelatedType } from "@/types/task";
 import { EntityOption } from "@/hooks/tasks/useTaskRelatedEntity";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ProductLine } from "@/types/product-line";
 
 interface RelatedEntitySectionProps {
   relatedType: TaskRelatedType | null;
@@ -21,6 +23,19 @@ export function RelatedEntitySection({
   sculptures,
   sculpturesLoading
 }: RelatedEntitySectionProps) {
+  const { data: productLines = [] } = useQuery({
+    queryKey: ["product_lines"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_lines")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      return data as ProductLine[];
+    },
+  });
+
   return (
     <div className="space-y-2">
       <Label htmlFor="related-type">Relates To</Label>
@@ -33,10 +48,20 @@ export function RelatedEntitySection({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">Not associated</SelectItem>
+          
+          {productLines.map((productLine) => (
+            <SelectItem 
+              key={`product_line_${productLine.id}`} 
+              value={`product_line_${productLine.id}`}
+            >
+              {productLine.name} (Product Line)
+            </SelectItem>
+          ))}
+          
           <SelectItem value="sculpture">Sculpture</SelectItem>
           <SelectItem value="client">Client</SelectItem>
-          <SelectItem value="order">Order</SelectItem>
           <SelectItem value="lead">Lead</SelectItem>
+          <SelectItem value="order">Order</SelectItem>
         </SelectContent>
       </Select>
       
@@ -63,6 +88,22 @@ export function RelatedEntitySection({
                   </SelectItem>
                 ))
               )}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
+      {relatedType?.startsWith("product_line_") && (
+        <div className="space-y-2">
+          <Label htmlFor="product-line">Product Line</Label>
+          <Select defaultValue="selected">
+            <SelectTrigger id="product-line">
+              <SelectValue placeholder="Product Line selected" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="selected">
+                {productLines.find(pl => `product_line_${pl.id}` === relatedType)?.name || "Selected Product Line"}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

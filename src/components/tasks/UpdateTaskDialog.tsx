@@ -26,7 +26,11 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
   const [description, setDescription] = useState(task.description || "");
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "unassigned");
   const [status, setStatus] = useState<TaskStatus>(task.status);
-  const [relatedType, setRelatedType] = useState<TaskRelatedType | null>(task.related_type || null);
+  const [relatedType, setRelatedType] = useState<TaskRelatedType | string | null>(
+    task.related_type === 'product_line' && task.product_line_id 
+      ? `product_line_${task.product_line_id}` 
+      : task.related_type
+  );
   
   const {
     entityId: sculptureEntityId,
@@ -34,12 +38,13 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
     sculptures,
     sculpturesLoading,
     handleEntitySelection
-  } = useTaskRelatedEntity(open, relatedType, task.sculpture_id);
+  } = useTaskRelatedEntity(open, relatedType as TaskRelatedType, task.sculpture_id);
   
-  // Client, order, and lead IDs (to be implemented later)
+  // Client, order, and lead IDs
   const [clientId, setClientId] = useState<string | null>(task.client_id);
   const [orderId, setOrderId] = useState<string | null>(task.order_id);
   const [leadId, setLeadId] = useState<string | null>(task.lead_id);
+  const [productLineId, setProductLineId] = useState<string | null>(task.product_line_id);
   
   // Reset form values when task changes
   useEffect(() => {
@@ -47,23 +52,35 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
     setDescription(task.description || "");
     setAssignedTo(task.assigned_to || "unassigned");
     setStatus(task.status);
-    setRelatedType(task.related_type || null);
+    
+    // Handle special case for product lines
+    if (task.related_type === 'product_line' && task.product_line_id) {
+      setRelatedType(`product_line_${task.product_line_id}`);
+    } else {
+      setRelatedType(task.related_type || null);
+    }
+    
     setSculptureEntityId(task.sculpture_id);
     setClientId(task.client_id);
     setOrderId(task.order_id);
     setLeadId(task.lead_id);
+    setProductLineId(task.product_line_id);
   }, [task]);
   
   // Handle related type change
   const handleRelatedTypeChange = (type: string) => {
-    const newType = type === "none" ? null : type as TaskRelatedType;
-    setRelatedType(newType);
+    if (type === "none") {
+      setRelatedType(null);
+    } else {
+      setRelatedType(type);
+    }
     
     // Reset all entity IDs
     setSculptureEntityId(null);
     setClientId(null);
     setOrderId(null);
     setLeadId(null);
+    setProductLineId(null);
   };
   
   const handleAssigneeChange = (value: string) => {
@@ -74,17 +91,32 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
     e.preventDefault();
     
     try {
+      let finalRelatedType: TaskRelatedType | null = null;
+      let finalProductLineId: string | null = null;
+      
+      // Parse the related type and determine if it's a product line
+      if (relatedType && typeof relatedType === 'string') {
+        if (relatedType.startsWith('product_line_')) {
+          finalRelatedType = 'product_line';
+          finalProductLineId = relatedType.replace('product_line_', '');
+        } else if (relatedType === 'sculpture' || relatedType === 'client' || 
+                  relatedType === 'lead' || relatedType === 'order') {
+          finalRelatedType = relatedType as TaskRelatedType;
+        }
+      }
+      
       await updateTask.mutateAsync({
         id: task.id,
         title,
         description: description || null,
         assigned_to: assignedTo === "unassigned" ? null : assignedTo,
         status,
-        related_type: relatedType,
-        sculpture_id: sculptureEntityId,
-        client_id: clientId,
-        order_id: orderId,
-        lead_id: leadId
+        related_type: finalRelatedType,
+        sculpture_id: finalRelatedType === 'sculpture' ? sculptureEntityId : null,
+        client_id: finalRelatedType === 'client' ? clientId : null,
+        order_id: finalRelatedType === 'order' ? orderId : null,
+        lead_id: finalRelatedType === 'lead' ? leadId : null,
+        product_line_id: finalRelatedType === 'product_line' ? finalProductLineId : null
       });
       
       onOpenChange(false);
@@ -114,7 +146,7 @@ export function UpdateTaskDialog({ open, onOpenChange, task }: UpdateTaskDialogP
           />
           
           <RelatedEntitySection
-            relatedType={relatedType}
+            relatedType={relatedType as TaskRelatedType}
             entityId={sculptureEntityId}
             onEntitySelection={handleEntitySelection}
             onRelatedTypeChange={handleRelatedTypeChange}
