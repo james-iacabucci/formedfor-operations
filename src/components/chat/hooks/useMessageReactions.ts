@@ -39,7 +39,7 @@ export function useMessageReactions(message: Message) {
         .rpc('update_message_reactions', { 
           message_id: message.id,
           reaction_data: updatedReactions
-        } as any);
+        } as unknown as Record<string, unknown>);
       
       if (error) {
         console.error("Error adding reaction:", error);

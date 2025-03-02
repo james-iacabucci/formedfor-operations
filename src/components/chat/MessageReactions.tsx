@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/components/AuthProvider";
 import { MessageReaction } from "./types";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +40,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         .rpc('update_message_reactions', { 
           message_id: messageId,
           reaction_data: updatedReactions
-        } as any);
+        } as unknown as Record<string, unknown>);
       
       if (error) {
         console.error("Error removing reaction:", error);
