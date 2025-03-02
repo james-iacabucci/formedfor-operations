@@ -3,11 +3,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageReaction } from "../types";
-
-interface UpdateReactionsParams {
-  message_id: string;
-  reaction_data: MessageReaction[];
-}
+// Import the custom function types (not necessary to import directly, but makes TS aware of the file)
+import "@/integrations/supabase/function-types";
 
 export function useMessageReactions(message: Message) {
   const { user } = useAuth();
@@ -39,15 +36,12 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Use a properly typed parameters object
-      const params: UpdateReactionsParams = {
-        message_id: message.id,
-        reaction_data: updatedReactions
-      };
-      
       const { error } = await supabase.rpc(
         'update_message_reactions',
-        params
+        {
+          message_id: message.id,
+          reaction_data: updatedReactions
+        }
       );
       
       if (error) {
