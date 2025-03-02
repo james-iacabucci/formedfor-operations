@@ -33,6 +33,7 @@ export function useMessages(threadId: string) {
           mentions,
           edited_at,
           thread_id,
+          reactions,
           profiles (
             username,
             avatar_url
@@ -63,6 +64,9 @@ export function useMessages(threadId: string) {
         if (firstMsg.attachments && Array.isArray(firstMsg.attachments) && firstMsg.attachments.length > 0) {
           console.log('First attachment:', firstMsg.attachments[0]);
         }
+        
+        // Log reactions for debugging
+        console.log('First message reactions:', firstMsg.reactions);
       }
 
       return data || [];

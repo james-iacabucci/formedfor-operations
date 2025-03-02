@@ -50,6 +50,7 @@ export function useRealtimeMessages({
         },
         async (payload) => {
           console.log('Message updated:', payload);
+          console.log('Updated message data:', payload.new);
           await refetch();
         }
       )

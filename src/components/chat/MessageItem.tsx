@@ -7,6 +7,7 @@ import { DeleteMessageDialog } from "./DeleteMessageDialog";
 import { useMessageReactions } from "./hooks/useMessageReactions";
 import { useMessageItem } from "./hooks/useMessageItem";
 import { MessageContainer } from "./MessageContainer";
+import { MessageReactions } from "./MessageReactions";
 
 interface MessageItemProps {
   message: Message;
@@ -76,6 +77,14 @@ export function MessageItem({
           onCancelEdit={handleCancelEdit}
           onSaveEdit={handleSaveEdit}
         />
+
+        {/* Display message reactions */}
+        {currentMessage.reactions && currentMessage.reactions.length > 0 && (
+          <MessageReactions 
+            messageId={currentMessage.id} 
+            reactions={currentMessage.reactions} 
+          />
+        )}
 
         {children}
       </MessageContainer>
