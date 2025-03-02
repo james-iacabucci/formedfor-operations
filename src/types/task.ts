@@ -25,7 +25,7 @@ export interface TaskWithAssignee extends Task {
     id: string;
     username: string | null;
     avatar_url: string | null;
-  };
+  } | null;
   sculpture?: {
     id: string;
     ai_generated_name: string | null;
