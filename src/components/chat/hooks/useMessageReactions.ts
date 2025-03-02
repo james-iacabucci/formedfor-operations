@@ -2,7 +2,6 @@
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 import { Message, MessageReaction } from "../types";
 
 export function useMessageReactions(message: Message) {
@@ -35,12 +34,12 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      // Use RPC or raw SQL to update the reactions field since it's not in the TypeScript definitions
+      // Use RPC to update the reactions field since it's not in the TypeScript definitions
       const { error } = await supabase
         .rpc('update_message_reactions', { 
           message_id: message.id,
           reaction_data: updatedReactions
-        });
+        } as any);
       
       if (error) {
         console.error("Error adding reaction:", error);

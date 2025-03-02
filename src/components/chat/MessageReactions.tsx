@@ -39,7 +39,7 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         .rpc('update_message_reactions', { 
           message_id: messageId,
           reaction_data: updatedReactions
-        });
+        } as any);
       
       if (error) {
         console.error("Error removing reaction:", error);
