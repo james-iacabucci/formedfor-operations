@@ -68,11 +68,17 @@ export function useMessages(threadId: string) {
       
       // Check if we have any messages with reactions
       if (data) {
-        const messagesWithReactions = data.filter(msg => msg.reactions && msg.reactions.length > 0);
+        const messagesWithReactions = data.filter(msg => {
+          // Safely check if reactions is an array and has items
+          return msg.reactions && Array.isArray(msg.reactions) && msg.reactions.length > 0;
+        });
+        
         if (messagesWithReactions.length > 0) {
           console.log(`[DEBUG][useMessages] Found ${messagesWithReactions.length} messages with reactions`);
           messagesWithReactions.forEach(msg => {
-            console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions?.length || 0} reactions in DB response`);
+            if (msg.reactions && Array.isArray(msg.reactions)) {
+              console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions.length} reactions in DB response`);
+            }
           });
         }
       }
