@@ -41,7 +41,7 @@ export function MessageHeader({
         </span>
         <span className="text-xs text-muted-foreground">
           {formattedDate} at {formattedTime}
-          {editedAt && " (modified)"}
+          {editedAt && !isDeleted && " (edited)"}
         </span>
         {isEditing && (
           <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
