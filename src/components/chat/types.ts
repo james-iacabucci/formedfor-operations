@@ -83,15 +83,17 @@ export function convertToMessage(rawMessage: any): Message {
       }));
   }
 
-  // Process reactions if they exist and deduplicate them
+  // Completely rewritten reaction handling for better deduplication
   let reactions: MessageReaction[] = [];
+  
   if (rawMessage.reactions && Array.isArray(rawMessage.reactions)) {
-    // Create a map to track unique reactions by user
+    // Create a map using composite key for deduplication
     const reactionMap = new Map<string, MessageReaction>();
     
-    rawMessage.reactions.forEach(r => {
+    for (const r of rawMessage.reactions) {
       if (typeof r === 'object' && r !== null && 'reaction' in r && 'user_id' in r) {
-        const key = `${r.reaction}-${r.user_id}`;
+        const key = `${r.reaction as string}-${r.user_id as string}`;
+        
         // Only add if this exact user+reaction combo doesn't exist yet
         if (!reactionMap.has(key)) {
           reactionMap.set(key, {
@@ -101,7 +103,7 @@ export function convertToMessage(rawMessage: any): Message {
           });
         }
       }
-    });
+    }
     
     // Convert map back to array
     reactions = Array.from(reactionMap.values());

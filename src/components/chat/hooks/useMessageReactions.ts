@@ -18,24 +18,36 @@ export function useMessageReactions(message: Message) {
       // Get existing reactions or initialize empty array
       const existingReactions = Array.isArray(message.reactions) ? message.reactions : [];
       
-      const existingReaction = existingReactions.find(
-        r => r.reaction === reactionType && r.user_id === user.id
-      );
+      // First deduplicate existing reactions
+      const reactionMap = new Map<string, MessageReaction>();
+      
+      for (const r of existingReactions) {
+        const key = `${r.reaction}-${r.user_id}`;
+        if (!reactionMap.has(key)) {
+          reactionMap.set(key, r);
+        }
+      }
+      
+      // Now check if this specific reaction already exists
+      const reactionKey = `${reactionType}-${user.id}`;
+      const existingReaction = reactionMap.has(reactionKey);
       
       let updatedReactions;
       
       if (existingReaction) {
-        updatedReactions = existingReactions
-          .filter(r => !(r.reaction === reactionType && r.user_id === user.id))
-          .map(r => ({ ...r } as Json));
+        // Remove the reaction if it exists
+        reactionMap.delete(reactionKey);
+        updatedReactions = Array.from(reactionMap.values()).map(r => ({ ...r } as Json));
       } else {
+        // Add the reaction if it doesn't exist
         const newReaction: MessageReaction = {
           reaction: reactionType,
           user_id: user.id,
           username: user.user_metadata?.username || user.email
         };
         
-        updatedReactions = [...existingReactions, newReaction].map(r => ({ ...r } as Json));
+        reactionMap.set(reactionKey, newReaction);
+        updatedReactions = Array.from(reactionMap.values()).map(r => ({ ...r } as Json));
       }
       
       // Use a direct update statement
