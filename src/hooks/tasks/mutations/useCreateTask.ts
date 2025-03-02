@@ -90,7 +90,7 @@ export function useCreateTask() {
         client_id: data.client_id,
         order_id: data.order_id,
         lead_id: data.lead_id,
-        related_type: data.related_type,
+        related_type: data.related_type as TaskRelatedType,
         assignee: data.assignee
       };
       
