@@ -85,22 +85,24 @@ export function useTaskMutations() {
           : 0;
       }
 
+      const taskData = {
+        sculpture_id: input.sculpture_id || null,
+        client_id: input.client_id || null,
+        order_id: input.order_id || null,
+        lead_id: input.lead_id || null,
+        related_type: input.related_type || null,
+        title: input.title,
+        description: input.description || null,
+        assigned_to: input.assigned_to || null,
+        status: input.status || "todo",
+        priority_order: newPriorityOrder,
+        created_by: user.user.id,
+        updated_at: new Date().toISOString(),
+      };
+
       const { data, error } = await supabase
         .from("tasks")
-        .insert({
-          sculpture_id: input.sculpture_id || null,
-          client_id: input.client_id || null,
-          order_id: input.order_id || null,
-          lead_id: input.lead_id || null,
-          related_type: input.related_type || null,
-          title: input.title,
-          description: input.description || null,
-          assigned_to: input.assigned_to || null,
-          status: input.status || "todo",
-          priority_order: newPriorityOrder,
-          created_by: user.user.id,
-          updated_at: new Date().toISOString(),
-        })
+        .insert(taskData)
         .select()
         .single();
 
@@ -113,14 +115,22 @@ export function useTaskMutations() {
         throw error;
       }
 
-      // Ensure correct type
+      // Ensure correct type casting for the returned data
       return {
-        ...data,
-        status: data.status as TaskStatus,
-        related_type: data.related_type as TaskRelatedType,
+        id: data.id,
+        sculpture_id: data.sculpture_id,
         client_id: data.client_id || null,
         order_id: data.order_id || null,
-        lead_id: data.lead_id || null
+        lead_id: data.lead_id || null,
+        related_type: data.related_type as TaskRelatedType,
+        title: data.title,
+        description: data.description,
+        assigned_to: data.assigned_to,
+        status: data.status as TaskStatus,
+        priority_order: data.priority_order,
+        created_at: data.created_at,
+        created_by: data.created_by,
+        updated_at: data.updated_at
       } as Task;
     },
     onSuccess: (data) => {
@@ -208,14 +218,22 @@ export function useTaskMutations() {
         throw error;
       }
 
-      // Ensure correct type
+      // Ensure correct type casting for the returned data
       return {
-        ...data,
-        status: data.status as TaskStatus,
-        related_type: data.related_type as TaskRelatedType,
+        id: data.id,
+        sculpture_id: data.sculpture_id,
         client_id: data.client_id || null,
         order_id: data.order_id || null,
-        lead_id: data.lead_id || null
+        lead_id: data.lead_id || null,
+        related_type: data.related_type as TaskRelatedType,
+        title: data.title,
+        description: data.description,
+        assigned_to: data.assigned_to,
+        status: data.status as TaskStatus,
+        priority_order: data.priority_order,
+        created_at: data.created_at,
+        created_by: data.created_by,
+        updated_at: data.updated_at
       } as Task;
     },
     onSuccess: (data) => {

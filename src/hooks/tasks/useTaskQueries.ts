@@ -28,17 +28,23 @@ export function useSculptureTasks(sculptureId: string) {
         throw error;
       }
 
-      // Ensure the status and related_type are correctly typed
-      const typedData = data?.map(item => ({
-        ...item,
-        status: item.status as TaskStatus,
-        related_type: item.related_type as TaskRelatedType,
-        client_id: item.client_id || null,
-        order_id: item.order_id || null,
-        lead_id: item.lead_id || null
-      })) as TaskWithAssignee[];
+      // Check if data is undefined and return empty array if it is
+      if (!data) return [];
 
-      return typedData || [];
+      // Explicitly cast each task with the correct types
+      const typedData: TaskWithAssignee[] = data.map(item => {
+        return {
+          ...item,
+          status: item.status as TaskStatus,
+          related_type: item.related_type as TaskRelatedType,
+          client_id: item.client_id || null,
+          order_id: item.order_id || null,
+          lead_id: item.lead_id || null,
+          assignee: item.assignee || null
+        };
+      });
+
+      return typedData;
     },
   });
 }
@@ -67,17 +73,24 @@ export function useAllTasks() {
         throw error;
       }
 
-      // Transform and ensure proper typing of the data
-      const typedData = data?.map(item => ({
-        ...item,
-        status: item.status as TaskStatus,
-        related_type: item.related_type as TaskRelatedType,
-        client_id: item.client_id || null,
-        order_id: item.order_id || null,
-        lead_id: item.lead_id || null
-      })) as unknown as TaskWithAssignee[];
+      // Check if data is undefined and return empty array if it is
+      if (!data) return [];
 
-      return typedData || [];
+      // Explicitly cast each task with the correct types
+      const typedData: TaskWithAssignee[] = data.map(item => {
+        return {
+          ...item,
+          status: item.status as TaskStatus,
+          related_type: item.related_type as TaskRelatedType,
+          client_id: item.client_id || null,
+          order_id: item.order_id || null,
+          lead_id: item.lead_id || null,
+          assignee: item.assignee || null,
+          sculpture: item.sculpture || null
+        };
+      });
+
+      return typedData;
     },
   });
 }

@@ -26,6 +26,11 @@ export interface TaskWithAssignee extends Task {
     username: string | null;
     avatar_url: string | null;
   };
+  sculpture?: {
+    id: string;
+    ai_generated_name: string | null;
+    image_url: string | null;
+  } | null;
 }
 
 export interface CreateTaskInput {
