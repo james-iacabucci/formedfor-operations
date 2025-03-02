@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useAllTasks } from "@/hooks/useTasks";
+import { useAllTasks } from "@/hooks/tasks";
 import { TaskItem } from "./TaskItem";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 import { TaskWithAssignee, TaskStatus } from "@/types/task";
