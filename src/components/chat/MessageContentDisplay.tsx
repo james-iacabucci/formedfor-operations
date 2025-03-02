@@ -9,6 +9,13 @@ interface MessageContentDisplayProps {
 }
 
 export function MessageContentDisplay({ message, isDeleted }: MessageContentDisplayProps) {
+  // Log the message data when rendering
+  console.log('[MESSAGE-DISPLAY] Rendering message:', { 
+    id: message.id, 
+    hasReactions: !!message.reactions && message.reactions.length > 0,
+    reactionsCount: message.reactions?.length || 0
+  });
+  
   return (
     <div className="relative w-full">
       {message.content && (
@@ -25,7 +32,8 @@ export function MessageContentDisplay({ message, isDeleted }: MessageContentDisp
         </div>
       )}
       
-      {message.reactions && message.reactions.length > 0 && (
+      {/* Show message reactions if they exist */}
+      {!isDeleted && message.reactions && message.reactions.length > 0 && (
         <MessageReactions 
           messageId={message.id}
           reactions={message.reactions}

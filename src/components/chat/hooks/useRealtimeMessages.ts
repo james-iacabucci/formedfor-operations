@@ -18,6 +18,8 @@ export function useRealtimeMessages({
   setScrollToBottom
 }: UseRealtimeMessagesProps) {
   useEffect(() => {
+    console.log('[REALTIME] Setting up realtime subscriptions for thread:', threadId);
+    
     const channel = supabase
       .channel(`room_${threadId}`)
       .on(
@@ -29,7 +31,7 @@ export function useRealtimeMessages({
           filter: `thread_id=eq.${threadId}`
         },
         async (payload) => {
-          console.log('Received new message:', payload);
+          console.log('[REALTIME] Received new message:', payload);
           const currentLastMessage = lastMessageRef.current;
           await refetch();
           
@@ -49,14 +51,23 @@ export function useRealtimeMessages({
           filter: `thread_id=eq.${threadId}`
         },
         async (payload) => {
-          console.log('Message updated:', payload);
-          console.log('Updated message data:', payload.new);
+          console.log('[REALTIME] Message updated:', payload);
+          console.log('[REALTIME] Updated message data:', payload.new);
+          
+          // Log reaction-specific information if available
+          if (payload.new.reactions) {
+            console.log('[REALTIME] Updated message reactions:', payload.new.reactions);
+          }
+          
           await refetch();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[REALTIME] Subscription status:', status);
+      });
 
     return () => {
+      console.log('[REALTIME] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [threadId, refetch, hasScrolled, lastMessageRef, setScrollToBottom]);

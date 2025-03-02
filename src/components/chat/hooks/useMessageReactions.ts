@@ -11,10 +11,20 @@ export function useMessageReactions(message: Message) {
   const { toast } = useToast();
   
   const handleReaction = async (reactionType: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error("[REACTION] No authenticated user found");
+      return;
+    }
     
     try {
-      const existingReactions = message.reactions || [];
+      console.log("[REACTION] Starting reaction process");
+      console.log("[REACTION] Message ID:", message.id);
+      console.log("[REACTION] User:", user.id);
+      console.log("[REACTION] Reaction type:", reactionType);
+      
+      // Get existing reactions or initialize empty array
+      const existingReactions = Array.isArray(message.reactions) ? message.reactions : [];
+      console.log("[REACTION] Existing reactions:", existingReactions);
       
       const existingReaction = existingReactions.find(
         r => r.reaction === reactionType && r.user_id === user.id
@@ -23,11 +33,13 @@ export function useMessageReactions(message: Message) {
       let updatedReactions;
       
       if (existingReaction) {
+        console.log("[REACTION] Removing existing reaction");
         updatedReactions = existingReactions.filter(
           r => !(r.reaction === reactionType && r.user_id === user.id)
         );
       } else {
-        const newReaction = {
+        console.log("[REACTION] Adding new reaction");
+        const newReaction: MessageReaction = {
           reaction: reactionType,
           user_id: user.id,
           username: user.user_metadata?.username || user.email
@@ -36,9 +48,13 @@ export function useMessageReactions(message: Message) {
         updatedReactions = [...existingReactions, newReaction];
       }
       
-      console.log("[DEBUG] Adding reaction - message_id:", message.id);
-      console.log("[DEBUG] Reaction data:", JSON.stringify(updatedReactions));
+      console.log("[REACTION] Updated reactions array:", updatedReactions);
+      console.log("[REACTION] SQL function call params:", {
+        message_id: message.id,
+        reaction_data: updatedReactions
+      });
       
+      // Call the RPC function
       const { data, error } = await supabase.rpc(
         'update_message_reactions',
         {
@@ -48,23 +64,27 @@ export function useMessageReactions(message: Message) {
       );
       
       if (error) {
-        console.error("[DEBUG] Error adding reaction:", error);
-        console.error("[DEBUG] Error code:", error.code);
-        console.error("[DEBUG] Error message:", error.message);
-        console.error("[DEBUG] Error details:", error.details);
+        console.error("[REACTION] Error response from RPC call:", error);
+        console.error("[REACTION] Error code:", error.code);
+        console.error("[REACTION] Error message:", error.message);
+        console.error("[REACTION] Error details:", error.details);
         toast({
           title: "Error",
-          description: `Failed to add reaction: ${error.message}`,
+          description: `Failed to update reaction: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log("[DEBUG] Reaction updated successfully:", data);
+        console.log("[REACTION] Success response from RPC call:", data);
+        toast({
+          description: existingReaction ? "Reaction removed" : "Reaction added",
+          duration: 2000
+        });
       }
     } catch (error) {
-      console.error("[DEBUG] Exception in handleReaction:", error);
+      console.error("[REACTION] Exception in handleReaction:", error);
       toast({
         title: "Error",
-        description: "Failed to add reaction",
+        description: "Failed to update reaction",
         variant: "destructive"
       });
     }

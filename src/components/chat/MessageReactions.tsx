@@ -16,7 +16,10 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
   const { user } = useAuth();
   const { toast } = useToast();
   
+  console.log('[REACTION-UI] Rendering message reactions:', { messageId, reactionsCount: reactions?.length });
+  
   if (!reactions || reactions.length === 0) {
+    console.log('[REACTION-UI] No reactions to render');
     return null;
   }
   
@@ -28,17 +31,27 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
     return acc;
   }, {});
   
+  console.log('[REACTION-UI] Grouped reactions:', groupedReactions);
+  
   const handleRemoveReaction = async (reactionType: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error('[REACTION-UI] No authenticated user found');
+      return;
+    }
     
     try {
       const hasReaction = reactions.some(r => r.reaction === reactionType && r.user_id === user.id);
-      if (!hasReaction) return;
+      if (!hasReaction) {
+        console.log('[REACTION-UI] User does not have this reaction type');
+        return;
+      }
+      
+      console.log('[REACTION-UI] Removing reaction:', { messageId, reactionType, userId: user.id });
       
       const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
       
-      console.log("[DEBUG] Removing reaction - message_id:", messageId);
-      console.log("[DEBUG] Updated reactions:", JSON.stringify(updatedReactions));
+      console.log("[REACTION-UI] Removing reaction - message_id:", messageId);
+      console.log("[REACTION-UI] Updated reactions:", JSON.stringify(updatedReactions));
       
       const { data, error } = await supabase.rpc(
         'update_message_reactions',
@@ -49,20 +62,24 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
       );
       
       if (error) {
-        console.error("[DEBUG] Error removing reaction:", error);
-        console.error("[DEBUG] Error code:", error.code);
-        console.error("[DEBUG] Error message:", error.message);
-        console.error("[DEBUG] Error details:", error.details);
+        console.error("[REACTION-UI] Error removing reaction:", error);
+        console.error("[REACTION-UI] Error code:", error.code);
+        console.error("[REACTION-UI] Error message:", error.message);
+        console.error("[REACTION-UI] Error details:", error.details);
         toast({
           title: "Error",
           description: `Failed to remove reaction: ${error.message}`,
           variant: "destructive"
         });
       } else {
-        console.log("[DEBUG] Reaction removed successfully:", data);
+        console.log("[REACTION-UI] Reaction removed successfully:", data);
+        toast({
+          description: "Reaction removed",
+          duration: 2000
+        });
       }
     } catch (error) {
-      console.error("[DEBUG] Exception in handleRemoveReaction:", error);
+      console.error("[REACTION-UI] Exception in handleRemoveReaction:", error);
       toast({
         title: "Error", 
         description: "Failed to remove reaction",
