@@ -16,6 +16,7 @@ interface MessageItemProps {
   onEditMessage?: (message: Message) => void;
   editingMessage?: Message | null;
   setEditingMessage?: (message: Message | null) => void;
+  onReplyToMessage?: (message: Message) => void;
 }
 
 export function MessageItem({ 
@@ -23,7 +24,8 @@ export function MessageItem({
   children, 
   onEditMessage,
   editingMessage,
-  setEditingMessage
+  setEditingMessage,
+  onReplyToMessage
 }: MessageItemProps) {
   const { user } = useAuth();
   const { handleReaction } = useMessageReactions(message);
@@ -50,6 +52,13 @@ export function MessageItem({
   
   // Check if this message is currently being edited
   const isCurrentlyEditing = isEditing || (editingMessage && editingMessage.id === currentMessage.id);
+
+  // Handle reply to message
+  const handleReply = () => {
+    if (onReplyToMessage) {
+      onReplyToMessage(currentMessage);
+    }
+  };
 
   // Debug message rendering
   useEffect(() => {
@@ -93,6 +102,7 @@ export function MessageItem({
           onDelete={handleDelete}
           onCopy={handleCopy}
           onReaction={handleReaction}
+          onReply={handleReply}
         />
         
         <MessageContent 

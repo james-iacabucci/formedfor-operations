@@ -17,6 +17,7 @@ interface MessageItemActionsProps {
   handleDelete: () => void;
   handleCopy: () => void;
   handleReaction: (reactionType: string) => void;
+  handleReply?: () => void;
 }
 
 export function MessageItemActions({
@@ -26,7 +27,8 @@ export function MessageItemActions({
   handleEdit,
   handleDelete,
   handleCopy,
-  handleReaction
+  handleReaction,
+  handleReply
 }: MessageItemActionsProps) {
   return (
     <div className={`flex items-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
@@ -71,51 +73,48 @@ export function MessageItemActions({
           </>
         ) : (
           <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-7 w-7 rounded-md"
-                  onClick={() => handleReaction("thumbs-up")}
-                >
-                  <ThumbsUp className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Like</p>
-              </TooltipContent>
-            </Tooltip>
+            {/* Reaction buttons with no tooltips */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 rounded-md"
+              onClick={() => handleReaction("thumbs-up")}
+            >
+              <ThumbsUp className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
             
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-7 w-7 rounded-md"
-                  onClick={() => handleReaction("eyes")}
-                >
-                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Seen</p>
-              </TooltipContent>
-            </Tooltip>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 rounded-md"
+              onClick={() => handleReaction("eyes")}
+            >
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
             
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 rounded-md"
+              onClick={() => handleReaction("check")}
+            >
+              <Check className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+            
+            {/* Reply button with tooltip - MS Teams style */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="h-7 w-7 rounded-md"
-                  onClick={() => handleReaction("check")}
+                  onClick={handleReply}
                 >
-                  <Check className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Reply className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Done</p>
+                <p>Reply</p>
               </TooltipContent>
             </Tooltip>
             

@@ -1,33 +1,33 @@
 
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { UploadingFile, Message } from "./types";
 import { useMessages } from "./hooks/useMessages";
 import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
 import { useMessageScroll } from "./hooks/useMessageScroll";
-import { MessageLoading } from "./components/MessageLoading";
 import { MessageListContent } from "./components/MessageListContent";
-import { useEffect, useState } from "react";
-import { MessageInput } from "./MessageInput";
+import { Message, UploadingFile } from "./types";
 
 interface MessageListProps {
   threadId: string;
-  uploadingFiles?: UploadingFile[];
-  editingMessage?: Message | null;
-  setEditingMessage?: (message: Message | null) => void;
+  uploadingFiles: UploadingFile[];
+  editingMessage: Message | null;
+  setEditingMessage: (message: Message | null) => void;
+  onReplyToMessage?: (message: Message) => void;
 }
 
 export function MessageList({ 
   threadId, 
-  uploadingFiles = [],
-  editingMessage = null,
-  setEditingMessage
+  uploadingFiles,
+  editingMessage,
+  setEditingMessage,
+  onReplyToMessage
 }: MessageListProps) {
   const { user } = useAuth();
-  const [uploadingFilesState, setUploadingFilesState] = useState<UploadingFile[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [initialScroll, setInitialScroll] = useState(false);
   
   const {
-    messages,
+    messages: fetchedMessages,
     isLoading,
     fetchNextPage,
     hasNextPage,
@@ -37,72 +37,53 @@ export function MessageList({
     setIsInitialLoad,
     lastMessageRef
   } = useMessages(threadId);
+  
+  // Apply real-time updates to messages
+  const { messages, newMessages } = useRealtimeMessages(fetchedMessages, threadId);
 
-  const {
-    scrollRef,
-    hasScrolled,
-    setShouldScrollToBottom
-  } = useMessageScroll({
-    isLoading,
-    messages,
-    hasNextPage,
+  // Set up scroll behavior
+  const { handleScroll, scrollToBottom, isNearBottom } = useMessageScroll({
+    scrollContainerRef,
     fetchNextPage,
-    isFetchingNextPage,
-    isInitialLoad,
-    setIsInitialLoad,
-    lastMessageRef
-  });
-
-  // Force scroll to bottom when component mounts
-  useEffect(() => {
-    setIsInitialLoad(true);
-  }, [threadId]);
-
-  // Set up realtime subscriptions
-  useRealtimeMessages({
-    threadId,
-    refetch,
-    lastMessageRef,
-    hasScrolled,
-    setScrollToBottom: setShouldScrollToBottom
-  });
-
-  const handleUploadingFilesChange = (files: UploadingFile[]) => {
-    setUploadingFilesState(files);
-  };
-
-  if (isLoading) {
-    return <MessageLoading />;
-  }
-
-  console.log('Render state:', {
     hasNextPage,
-    isFetchingNextPage,
-    messageCount: messages.length
+    newMessages,
+    isInitialLoad,
+    setIsInitialLoad
   });
-
+  
+  // Scroll to bottom on initial load and when thread changes
+  useEffect(() => {
+    if (messages.length > 0 && !initialScroll) {
+      setTimeout(() => {
+        scrollToBottom();
+        setInitialScroll(true);
+      }, 200);
+    }
+  }, [messages.length, initialScroll, scrollToBottom]);
+  
+  // Auto-scroll to bottom when new messages arrive if already near bottom
+  useEffect(() => {
+    if (isNearBottom && newMessages > 0) {
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [newMessages, isNearBottom, scrollToBottom]);
+  
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea 
-        ref={scrollRef} 
-        className="flex-1"
-      >
-        <MessageListContent
-          messages={messages}
-          isFetchingNextPage={isFetchingNextPage}
-          isLoading={isLoading}
-          uploadingFiles={uploadingFilesState}
-          user={user}
-          threadId={threadId}
-          editingMessage={editingMessage}
-          setEditingMessage={setEditingMessage}
-        />
-      </ScrollArea>
-      
-      <MessageInput 
+    <div
+      ref={scrollContainerRef}
+      className="h-full overflow-y-auto overflow-x-hidden pt-1 px-4"
+      onScroll={handleScroll}
+    >
+      <MessageListContent
+        messages={messages}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isLoading}
+        uploadingFiles={uploadingFiles}
+        user={user}
         threadId={threadId}
-        autoFocus
-        onUploadingFiles={handleUploadingFilesChange}
+        editingMessage={editingMessage}
+        setEditingMessage={setEditingMessage}
+        onReplyToMessage={onReplyToMessage}
       />
     </div>
   );

@@ -13,6 +13,7 @@ interface MessageListContentProps {
   threadId: string;
   editingMessage?: Message | null;
   setEditingMessage?: (message: Message | null) => void;
+  onReplyToMessage?: (message: Message) => void;
 }
 
 export function MessageListContent({
@@ -23,7 +24,8 @@ export function MessageListContent({
   user,
   threadId,
   editingMessage,
-  setEditingMessage
+  setEditingMessage,
+  onReplyToMessage
 }: MessageListContentProps) {
   return (
     <div className="pb-4 pt-2">
@@ -40,6 +42,7 @@ export function MessageListContent({
             message={message}
             editingMessage={editingMessage}
             setEditingMessage={setEditingMessage}
+            onReplyToMessage={onReplyToMessage}
           />
         ))}
       </div>
