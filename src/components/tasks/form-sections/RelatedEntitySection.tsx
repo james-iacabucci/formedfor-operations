@@ -25,33 +25,15 @@ export function RelatedEntitySection({
   sculptures,
   sculpturesLoading
 }: RelatedEntitySectionProps) {
-  const { data: productLines = [] } = useQuery({
-    queryKey: ["product_lines"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("product_lines")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      return data as ProductLine[];
-    },
-  });
-
   // Determine the current tab value based on relatedType
   const getCurrentTabValue = () => {
-    if (!relatedType) return "none";
+    if (!relatedType) return "operations";
     if (relatedType === "sculpture") return "sculpture";
     if (relatedType === "client") return "client";
     if (relatedType === "lead") return "lead";
     if (relatedType === "order") return "order";
     
-    // For product lines, extract the ID
-    if (relatedType.startsWith("product_line_")) {
-      return relatedType;
-    }
-    
-    return "none";
+    return "operations";
   };
 
   return (
@@ -65,21 +47,11 @@ export function RelatedEntitySection({
       >
         <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-full border border-[#333333] w-full flex-wrap">
           <TabsTrigger 
-            value="none" 
+            value="operations" 
             className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
-            None
+            Operations
           </TabsTrigger>
-          
-          {productLines.map((productLine) => (
-            <TabsTrigger 
-              key={`product_line_${productLine.id}`} 
-              value={`product_line_${productLine.id}`}
-              className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-            >
-              {productLine.name}
-            </TabsTrigger>
-          ))}
           
           <TabsTrigger 
             value="sculpture" 
@@ -139,8 +111,6 @@ export function RelatedEntitySection({
           </Select>
         </div>
       )}
-      
-      {/* For product lines - don't show an additional dropdown since the selection is made via tabs */}
       
       {/* Placeholder for client selection */}
       {relatedType === "client" && (

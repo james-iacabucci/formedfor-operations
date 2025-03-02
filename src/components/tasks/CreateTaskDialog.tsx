@@ -38,8 +38,7 @@ export function CreateTaskDialog({
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType);
-  const [status, setStatus] = useState<TaskStatus>("todo");
+  const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType || "operations");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   
   const {
@@ -54,19 +53,14 @@ export function CreateTaskDialog({
     if (open) {
       setTitle("");
       setDescription("");
-      setTaskRelatedType(relatedType);
-      setStatus("todo");
+      setTaskRelatedType(relatedType || "operations");
       // Default to current user when the dialog opens
       setAssignedTo(currentUser?.id || null);
     }
   }, [open, relatedType, currentUser]);
 
   const handleRelatedTypeChange = (type: string) => {
-    if (type === "none") {
-      setTaskRelatedType(null);
-    } else {
-      setTaskRelatedType(type);
-    }
+    setTaskRelatedType(type);
   };
 
   const handleAssigneeChange = (value: string) => {
@@ -85,13 +79,11 @@ export function CreateTaskDialog({
 
     try {
       let finalRelatedType: TaskRelatedType | null = null;
-      let productLineId: string | null = null;
       
-      // Parse the related type and determine if it's a product line
+      // Parse the related type
       if (taskRelatedType && typeof taskRelatedType === 'string') {
-        if (taskRelatedType.startsWith('product_line_')) {
-          finalRelatedType = 'product_line';
-          productLineId = taskRelatedType.replace('product_line_', '');
+        if (taskRelatedType === 'operations') {
+          finalRelatedType = null; // Operations tasks aren't related to anything specific
         } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
                    taskRelatedType === 'lead' || taskRelatedType === 'order') {
           finalRelatedType = taskRelatedType as TaskRelatedType;
@@ -102,7 +94,7 @@ export function CreateTaskDialog({
         title,
         description: description || "",
         assigned_to: assignedTo,
-        status,
+        status: "todo", // Always default to "todo"
         related_type: finalRelatedType,
       };
       
@@ -115,8 +107,6 @@ export function CreateTaskDialog({
         taskData.order_id = orderId;
       } else if (finalRelatedType === "lead") {
         taskData.lead_id = leadId;
-      } else if (finalRelatedType === "product_line" && productLineId) {
-        taskData.product_line_id = productLineId;
       }
       
       console.log("Task data before submit:", taskData);
@@ -158,10 +148,10 @@ export function CreateTaskDialog({
           
           <TaskAssignmentSection
             assignedTo={assignedTo}
-            status={status}
+            status="todo" // Pass fixed status of "todo"
             users={users}
             onAssigneeChange={handleAssigneeChange}
-            onStatusChange={setStatus}
+            onStatusChange={() => {}} // Empty function since we don't need status changes
           />
         </div>
         
