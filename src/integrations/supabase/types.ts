@@ -461,11 +461,15 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
+          client_id: string | null
           created_at: string
           created_by: string
           description: string | null
           id: string
+          lead_id: string | null
+          order_id: string | null
           priority_order: number
+          related_type: string | null
           sculpture_id: string
           status: string
           title: string
@@ -473,11 +477,15 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          client_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
           id?: string
+          lead_id?: string | null
+          order_id?: string | null
           priority_order?: number
+          related_type?: string | null
           sculpture_id: string
           status?: string
           title: string
@@ -485,11 +493,15 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          client_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
           id?: string
+          lead_id?: string | null
+          order_id?: string | null
           priority_order?: number
+          related_type?: string | null
           sculpture_id?: string
           status?: string
           title?: string

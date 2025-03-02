@@ -97,6 +97,7 @@ export function CreateTaskDialog({
         taskData.lead_id = leadId;
       }
       
+      console.log("Task data before submit:", taskData);
       await createTask.mutateAsync(taskData);
       onOpenChange(false);
     } catch (error) {

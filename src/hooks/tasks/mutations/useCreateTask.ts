@@ -12,16 +12,23 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: async (taskData: CreateTaskInput): Promise<TaskWithAssignee> => {
       // Set the related_type based on which ID is provided
-      let relatedType: TaskRelatedType = null;
-      if (taskData.sculpture_id) relatedType = "sculpture";
-      else if (taskData.client_id) relatedType = "client";
-      else if (taskData.order_id) relatedType = "order";
-      else if (taskData.lead_id) relatedType = "lead";
+      let relatedType: TaskRelatedType = taskData.related_type || null;
+      let entityId: string | null = null;
+      
+      if (taskData.sculpture_id) {
+        entityId = taskData.sculpture_id;
+      } else if (taskData.client_id) {
+        entityId = taskData.client_id;
+      } else if (taskData.order_id) {
+        entityId = taskData.order_id;
+      } else if (taskData.lead_id) {
+        entityId = taskData.lead_id;
+      }
 
       // Calculate the next priority order
       const nextPriorityOrder = await calculateNextPriorityOrder(
         relatedType,
-        taskData.sculpture_id || taskData.client_id || taskData.order_id || taskData.lead_id || null
+        entityId
       );
       
       // Get the current user ID for created_by
@@ -43,6 +50,8 @@ export function useCreateTask() {
         created_by: user.id,
       };
       
+      console.log("Creating task with data:", newTask);
+      
       // Insert the task
       const { data, error } = await supabase
         .from("tasks")
@@ -54,6 +63,7 @@ export function useCreateTask() {
         .single();
       
       if (error) {
+        console.error("Error creating task:", error);
         toast({
           title: "Error",
           description: "Failed to create task",
@@ -77,10 +87,10 @@ export function useCreateTask() {
         created_by: data.created_by,
         updated_at: data.updated_at,
         // Add the additional fields we need for our app logic
-        client_id: null,
-        order_id: null,
-        lead_id: null,
-        related_type: relatedType,
+        client_id: data.client_id,
+        order_id: data.order_id,
+        lead_id: data.lead_id,
+        related_type: data.related_type,
         assignee: data.assignee
       };
       
