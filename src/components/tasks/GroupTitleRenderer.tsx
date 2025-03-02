@@ -1,11 +1,11 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Paintbrush } from "lucide-react";
-import { TaskStatus } from "@/types/task";
-import { getStatusDisplayName } from "./utils/taskGrouping";
+import { Paintbrush, Users, ShoppingCart, FileText } from "lucide-react";
+import { TaskStatus, TaskRelatedType } from "@/types/task";
+import { getStatusDisplayName, getRelatedTypeDisplayName } from "./utils/taskGrouping";
 
 interface GroupTitleRendererProps {
-  groupBy: "status" | "assignee" | "sculpture";
+  groupBy: "status" | "assignee" | "sculpture" | "relatedType";
   groupKey: string;
   users: any[];
   sculptures: {
@@ -38,6 +38,10 @@ export function GroupTitleRenderer({ groupBy, groupKey, users, sculptures }: Gro
   }
   
   if (groupBy === "sculpture") {
+    if (groupKey === "unassociated") {
+      return <>Unassociated</>;
+    }
+    
     const sculptureInfo = sculptures.find(s => s.id === groupKey);
     
     return (
@@ -52,6 +56,37 @@ export function GroupTitleRenderer({ groupBy, groupKey, users, sculptures }: Gro
           </div>
         )}
         <span>{sculptureInfo?.ai_generated_name || "Unknown sculpture"}</span>
+      </div>
+    );
+  }
+  
+  if (groupBy === "relatedType") {
+    const relatedType = groupKey as TaskRelatedType;
+    let icon;
+    
+    switch (relatedType) {
+      case "sculpture":
+        icon = <Paintbrush className="h-4 w-4" />;
+        break;
+      case "client":
+        icon = <Users className="h-4 w-4" />;
+        break;
+      case "order":
+        icon = <ShoppingCart className="h-4 w-4" />;
+        break;
+      case "lead":
+        icon = <FileText className="h-4 w-4" />;
+        break;
+      default:
+        icon = null;
+    }
+    
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-6 w-6 bg-muted rounded flex items-center justify-center">
+          {icon}
+        </div>
+        <span>{getRelatedTypeDisplayName(relatedType)}</span>
       </div>
     );
   }

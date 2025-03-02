@@ -1,9 +1,15 @@
 
 export type TaskStatus = "todo" | "in_progress" | "done";
 
+export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | null;
+
 export interface Task {
   id: string;
-  sculpture_id: string;
+  sculpture_id: string | null;
+  client_id: string | null;
+  order_id: string | null;
+  lead_id: string | null;
+  related_type: TaskRelatedType;
   title: string;
   description: string | null;
   assigned_to: string | null;
@@ -23,7 +29,11 @@ export interface TaskWithAssignee extends Task {
 }
 
 export interface CreateTaskInput {
-  sculpture_id: string;
+  sculpture_id?: string | null;
+  client_id?: string | null;
+  order_id?: string | null;
+  lead_id?: string | null;
+  related_type?: TaskRelatedType;
   title: string;
   description?: string | null;
   assigned_to?: string | null;
@@ -32,6 +42,11 @@ export interface CreateTaskInput {
 
 export interface UpdateTaskInput {
   id: string;
+  sculpture_id?: string | null;
+  client_id?: string | null;
+  order_id?: string | null;
+  lead_id?: string | null;
+  related_type?: TaskRelatedType;
   title?: string;
   description?: string | null;
   assigned_to?: string | null;

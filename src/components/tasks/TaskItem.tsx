@@ -18,7 +18,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { MoreVertical, User, Edit, Trash2, CheckCircle, Circle } from "lucide-react";
+import { 
+  MoreVertical, 
+  User, 
+  Edit, 
+  Trash2, 
+  CheckCircle, 
+  Circle, 
+  Paintbrush,
+  Users,
+  ShoppingCart,
+  FileText
+} from "lucide-react";
 import { TaskWithAssignee, TaskStatus } from "@/types/task";
 import { UpdateTaskDialog } from "./UpdateTaskDialog";
 import { useAuth } from "@/components/AuthProvider";
@@ -35,12 +46,22 @@ const statusColors: Record<TaskStatus, string> = {
   done: "green",
 };
 
+const entityIcons = {
+  sculpture: Paintbrush,
+  client: Users,
+  order: ShoppingCart,
+  lead: FileText
+};
+
 export function TaskItem({ task, isDragging }: TaskItemProps) {
   const { user } = useAuth();
   const { deleteTask } = useTaskMutations();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
   const statusColor = statusColors[task.status] || "gray";
+  
+  // Get the appropriate icon for the task's related type
+  const EntityIcon = task.related_type ? entityIcons[task.related_type] : null;
 
   return (
     <Card className={`shadow-sm hover:shadow-md transition-shadow duration-200 ${isDragging ? 'opacity-50' : ''}`}>
@@ -82,7 +103,15 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="text-sm text-muted-foreground py-0">
+      <CardContent className="text-sm text-muted-foreground py-0 space-y-2">
+        {/* Show entity type if present */}
+        {task.related_type && EntityIcon && (
+          <div className="flex items-center gap-2 text-xs">
+            <EntityIcon className="h-3 w-3" />
+            <span className="capitalize">{task.related_type}</span>
+          </div>
+        )}
+        
         {task.assignee && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />

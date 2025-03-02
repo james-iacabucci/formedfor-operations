@@ -3,8 +3,6 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TaskWithAssignee } from "@/types/task";
 import { TaskItem } from "./TaskItem";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Paintbrush } from "lucide-react";
 import { ReactNode } from "react";
 
 interface TaskColumnProps {

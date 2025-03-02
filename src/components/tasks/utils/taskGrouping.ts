@@ -1,5 +1,5 @@
 
-import { TaskWithAssignee, TaskStatus } from "@/types/task";
+import { TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
 
 // Type definition for grouped tasks
 export type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
@@ -38,15 +38,41 @@ export const groupTasksByAssignee = (tasks: TaskWithAssignee[]): GroupedTasksMap
   return result;
 };
 
-// Group tasks by sculpture
-export const groupTasksBySculpture = (tasks: TaskWithAssignee[]): GroupedTasksMap => {
-  const result: GroupedTasksMap = {};
+// Group tasks by related entity type
+export const groupTasksByRelatedType = (tasks: TaskWithAssignee[]): GroupedTasksMap => {
+  const result: GroupedTasksMap = {
+    unassociated: []
+  };
   
   tasks.forEach(task => {
-    if (!result[task.sculpture_id]) {
-      result[task.sculpture_id] = [];
+    if (!task.related_type) {
+      result.unassociated.push(task);
+    } else {
+      if (!result[task.related_type]) {
+        result[task.related_type] = [];
+      }
+      result[task.related_type].push(task);
     }
-    result[task.sculpture_id].push(task);
+  });
+  
+  return result;
+};
+
+// Group tasks by sculpture
+export const groupTasksBySculpture = (tasks: TaskWithAssignee[]): GroupedTasksMap => {
+  const result: GroupedTasksMap = {
+    unassociated: []
+  };
+  
+  tasks.forEach(task => {
+    if (!task.sculpture_id) {
+      result.unassociated.push(task);
+    } else {
+      if (!result[task.sculpture_id]) {
+        result[task.sculpture_id] = [];
+      }
+      result[task.sculpture_id].push(task);
+    }
   });
   
   return result;
@@ -66,6 +92,24 @@ export const getStatusDisplayName = (status: TaskStatus): string => {
   }
 };
 
+// Get related type display name
+export const getRelatedTypeDisplayName = (type: TaskRelatedType): string => {
+  if (!type) return "Unassociated";
+  
+  switch (type) {
+    case "sculpture":
+      return "Sculptures";
+    case "client":
+      return "Clients";
+    case "order":
+      return "Orders";
+    case "lead":
+      return "Leads";
+    default:
+      return "Unknown";
+  }
+};
+
 // Get column styles based on group type and key
 export const getColumnStyles = (groupBy: string, key: string): string => {
   if (groupBy === "status") {
@@ -78,6 +122,23 @@ export const getColumnStyles = (groupBy: string, key: string): string => {
         return "border-t-green-500";
       default:
         return "border-t-gray-500";
+    }
+  }
+  
+  if (groupBy === "relatedType") {
+    switch (key) {
+      case "sculpture":
+        return "border-t-purple-500";
+      case "client":
+        return "border-t-cyan-500";
+      case "order":
+        return "border-t-amber-500";
+      case "lead":
+        return "border-t-emerald-500";
+      case "unassociated":
+        return "border-t-gray-400";
+      default:
+        return "border-t-primary";
     }
   }
   
