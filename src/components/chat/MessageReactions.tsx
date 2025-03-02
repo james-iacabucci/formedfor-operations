@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Check, ThumbsUp, Eye, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -45,7 +46,11 @@ export function MessageReactions({ messageId, reactions }: MessageReactionsProps
         return;
       }
       
-      const updatedReactions = reactions.filter(r => !(r.reaction === reactionType && r.user_id === user.id));
+      // Filter out the reaction we want to remove
+      const updatedReactions = reactions
+        .filter(r => !(r.reaction === reactionType && r.user_id === user.id))
+        // Convert MessageReaction[] to Json[] by casting each object as Json
+        .map(r => ({ ...r } as Json));
       
       const { error } = await supabase
         .from('chat_messages')

@@ -3,6 +3,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageReaction } from "../types";
+import { Json } from "@/integrations/supabase/types";
 
 export function useMessageReactions(message: Message) {
   const { user } = useAuth();
@@ -24,9 +25,9 @@ export function useMessageReactions(message: Message) {
       let updatedReactions;
       
       if (existingReaction) {
-        updatedReactions = existingReactions.filter(
-          r => !(r.reaction === reactionType && r.user_id === user.id)
-        );
+        updatedReactions = existingReactions
+          .filter(r => !(r.reaction === reactionType && r.user_id === user.id))
+          .map(r => ({ ...r } as Json));
       } else {
         const newReaction: MessageReaction = {
           reaction: reactionType,
@@ -34,7 +35,7 @@ export function useMessageReactions(message: Message) {
           username: user.user_metadata?.username || user.email
         };
         
-        updatedReactions = [...existingReactions, newReaction];
+        updatedReactions = [...existingReactions, newReaction].map(r => ({ ...r } as Json));
       }
       
       // Use a direct update statement
