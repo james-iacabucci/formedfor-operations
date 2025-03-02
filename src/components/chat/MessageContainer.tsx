@@ -21,7 +21,7 @@ export function MessageContainer({
 }: MessageContainerProps) {
   return (
     <div 
-      className="group relative py-0.5 px-4" 
+      className="group relative py-0.5 px-3" 
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
