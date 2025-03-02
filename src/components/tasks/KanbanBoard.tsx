@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAllTasks } from "@/hooks/tasks";
 import { TaskItem } from "./TaskItem";
@@ -29,29 +30,42 @@ type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
 export function KanbanBoard() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: tasks = [], isLoading } = useAllTasks();
+  const { data: tasks = [], isLoading: isTasksLoading } = useAllTasks();
   const [groupBy, setGroupBy] = useState<GroupBy>("status");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedSculptureId, setSelectedSculptureId] = useState<string | null>(null);
+  const [selectedSculptureId, setSelectedSculptureId] = useState<string>("");
+  const [sculpturesLoading, setSculpturesLoading] = useState(true);
   const [sculptures, setSculptures] = useState<SculptureMinimal[]>([]);
   
   // Get sculptures for creating new tasks
   useEffect(() => {
     const fetchSculptures = async () => {
-      const { data, error } = await supabase
-        .from("sculptures")
-        .select("id, ai_generated_name, image_url")
-        .order("created_at", { ascending: false })
-        .limit(10);
-      
-      if (data) {
-        setSculptures(data as SculptureMinimal[]);
-      } else if (error) {
+      setSculpturesLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("sculptures")
+          .select("id, ai_generated_name, image_url")
+          .order("created_at", { ascending: false })
+          .limit(10);
+        
+        if (error) throw error;
+        
+        const sculpturesData = data as SculptureMinimal[];
+        setSculptures(sculpturesData);
+        
+        // If we have sculptures, preselect the first one
+        if (sculpturesData.length > 0) {
+          setSelectedSculptureId(sculpturesData[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching sculptures:", error);
         toast({
           title: "Error",
           description: "Failed to load sculptures",
           variant: "destructive",
         });
+      } finally {
+        setSculpturesLoading(false);
       }
     };
     
@@ -72,9 +86,18 @@ export function KanbanBoard() {
   
   // Handle opening the create task dialog
   const handleAddTaskClick = () => {
+    if (sculpturesLoading) {
+      toast({
+        title: "Loading sculptures",
+        description: "Please wait while we load available sculptures",
+      });
+      return;
+    }
+    
     // If there are sculptures available, select the first one
     if (sculptures.length > 0) {
       setSelectedSculptureId(sculptures[0].id);
+      setCreateDialogOpen(true);
     } else {
       // If no sculptures are available, show a toast message
       toast({
@@ -82,9 +105,7 @@ export function KanbanBoard() {
         description: "Please create a sculpture first before adding tasks",
         variant: "destructive"
       });
-      return;
     }
-    setCreateDialogOpen(true);
   };
   
   const getStatusDisplayName = (status: TaskStatus) => {
@@ -230,13 +251,24 @@ export function KanbanBoard() {
             </TabsList>
           </Tabs>
           
-          <Button variant="outline" size="sm" onClick={handleAddTaskClick}>
-            <Plus className="h-4 w-4 mr-1" /> Add Task
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddTaskClick}
+            disabled={sculpturesLoading}
+          >
+            {sculpturesLoading ? (
+              <span className="animate-pulse">Loading...</span>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-1" /> Add Task
+              </>
+            )}
           </Button>
         </div>
       </div>
       
-      {isLoading ? (
+      {isTasksLoading ? (
         <div className="p-8 text-center text-muted-foreground">Loading tasks...</div>
       ) : Object.keys(groupedTasks).length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
@@ -270,12 +302,14 @@ export function KanbanBoard() {
         </div>
       )}
       
-      {/* Render the dialog regardless of whether a sculpture is selected */}
-      <CreateTaskDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        sculptureId={selectedSculptureId || ""}
-      />
+      {/* Only render the dialog when we have a valid sculpture ID */}
+      {selectedSculptureId && (
+        <CreateTaskDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          sculptureId={selectedSculptureId}
+        />
+      )}
     </div>
   );
 }
