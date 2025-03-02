@@ -1,3 +1,4 @@
+
 import { Json } from "@/integrations/supabase/types";
 
 export interface FileAttachment {
@@ -88,6 +89,7 @@ export function convertToMessage(rawMessage: any): Message {
       console.log(`[DEBUG][convertToMessage] Processing message ${rawMessage.id} with ${rawMessage.reactions.length} reactions`);
       console.log(`[DEBUG][convertToMessage] Raw reactions:`, JSON.stringify(rawMessage.reactions));
       
+      // Improved deduplication with Map to ensure one reaction per user+reaction type
       const reactionMap = new Map<string, MessageReaction>();
       
       for (const r of rawMessage.reactions) {

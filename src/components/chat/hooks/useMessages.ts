@@ -53,6 +53,7 @@ export function useMessages(threadId: string) {
         .order("created_at", { ascending: false })
         .limit(PAGE_SIZE);
 
+      // Important: ensure strict pagination boundaries based on created_at timestamp
       if (pageParam) {
         query = query.lt("created_at", pageParam);
       }
@@ -89,6 +90,7 @@ export function useMessages(threadId: string) {
       if (!Array.isArray(lastPage) || lastPage.length < PAGE_SIZE) {
         return undefined;
       }
+      // Get the oldest message timestamp for next page query
       const nextCursor = lastPage[lastPage.length - 1]?.created_at;
       return nextCursor;
     },
@@ -109,7 +111,7 @@ export function useMessages(threadId: string) {
     },
   });
 
-  // Check for duplicate messages across pages
+  // Check for duplicate messages across pages - this is purely for debugging
   useEffect(() => {
     if (data?.pages && data.pages.length > 1) {
       const allMessageIds = data.pages.flatMap(page => page.map(msg => msg.id));
@@ -134,18 +136,37 @@ export function useMessages(threadId: string) {
   }, [data?.pages]);
 
   // Process and convert the raw messages
-  const allMessages = data?.pages?.flatMap(page => {
-    console.log(`[DEBUG][useMessages] Processing page with ${page?.length || 0} messages`);
-    return (Array.isArray(page) ? page : []);
-  }).reverse().map(msg => {
-    // Safely check if reactions exists and log
-    if (msg.reactions && Array.isArray(msg.reactions)) {
-      console.log(`[DEBUG][useMessages] Converting message ${msg.id} with ${msg.reactions.length} reactions`);
-    } else {
-      console.log(`[DEBUG][useMessages] Converting message ${msg.id} with no reactions`);
-    }
-    return convertToMessage(msg);
-  }) ?? [];
+  // NEW: Add deduplication step before processing
+  const allMessages = (() => {
+    // First, flatten all pages
+    const flattenedMessages = data?.pages?.flatMap(page => {
+      console.log(`[DEBUG][useMessages] Processing page with ${page?.length || 0} messages`);
+      return (Array.isArray(page) ? page : []);
+    }) ?? [];
+    
+    // Deduplicate messages by ID - crucial step to prevent duplicates
+    const messageMap = new Map();
+    flattenedMessages.forEach(msg => {
+      if (!messageMap.has(msg.id)) {
+        messageMap.set(msg.id, msg);
+      } else {
+        console.log(`[DEBUG][useMessages] Dropping duplicate message ${msg.id}`);
+      }
+    });
+    
+    // Convert back to array, reverse (for chronological order), and process
+    return Array.from(messageMap.values())
+      .reverse()
+      .map(msg => {
+        // Safely check if reactions exists and log
+        if (msg.reactions && Array.isArray(msg.reactions)) {
+          console.log(`[DEBUG][useMessages] Converting message ${msg.id} with ${msg.reactions.length} reactions`);
+        } else {
+          console.log(`[DEBUG][useMessages] Converting message ${msg.id} with no reactions`);
+        }
+        return convertToMessage(msg);
+      });
+  })();
 
   // Debug the final results
   useEffect(() => {
