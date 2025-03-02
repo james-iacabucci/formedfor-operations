@@ -125,7 +125,7 @@ export function useMessages(threadId: string) {
         }, {});
         
         const duplicates = Object.entries(idCounts)
-          .filter(([_, count]) => count > 1)
+          .filter(([_, count]) => (count as number) > 1)
           .map(([id]) => id);
           
         console.warn(`[DEBUG][useMessages] Duplicate message IDs:`, duplicates);
@@ -138,7 +138,12 @@ export function useMessages(threadId: string) {
     console.log(`[DEBUG][useMessages] Processing page with ${page?.length || 0} messages`);
     return (Array.isArray(page) ? page : []);
   }).reverse().map(msg => {
-    console.log(`[DEBUG][useMessages] Converting message ${msg.id} with ${msg.reactions?.length || 0} reactions`);
+    // Safely check if reactions exists and log
+    if (msg.reactions && Array.isArray(msg.reactions)) {
+      console.log(`[DEBUG][useMessages] Converting message ${msg.id} with ${msg.reactions.length} reactions`);
+    } else {
+      console.log(`[DEBUG][useMessages] Converting message ${msg.id} with no reactions`);
+    }
     return convertToMessage(msg);
   }) ?? [];
 
@@ -148,11 +153,11 @@ export function useMessages(threadId: string) {
       console.log(`[DEBUG][useMessages] Final processed ${allMessages.length} messages, instance: ${instanceId}`);
       
       // Check for messages with reactions
-      const messagesWithReactions = allMessages.filter(msg => msg.reactions && msg.reactions.length > 0);
+      const messagesWithReactions = allMessages.filter(msg => msg.reactions && Array.isArray(msg.reactions) && msg.reactions.length > 0);
       if (messagesWithReactions.length > 0) {
         console.log(`[DEBUG][useMessages] Final result has ${messagesWithReactions.length} messages with reactions`);
         messagesWithReactions.forEach(msg => {
-          console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions?.length} reactions in final result`);
+          console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions?.length || 0} reactions in final result`);
         });
       }
     }
