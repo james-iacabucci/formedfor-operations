@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { TaskWithAssignee, UpdateTaskInput, TaskStatus, TaskRelatedType } from "@/types/task";
+import { TaskWithAssignee, UpdateTaskInput, TaskStatus, TaskRelatedType, TaskAttachment } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
 import { useTaskMutations } from "@/hooks/tasks/useTaskMutations";
 import { useTaskRelatedEntity } from "@/hooks/tasks/useTaskRelatedEntity";
@@ -14,6 +15,7 @@ export function useTaskUpdate(
   
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
+  const [attachments, setAttachments] = useState<TaskAttachment[] | null>(task.attachments || null);
   const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(task.related_type || "general");
   const [assignedTo, setAssignedTo] = useState<string | null>(task.assigned_to);
   const [status, setStatus] = useState<TaskStatus>(task.status);
@@ -45,6 +47,7 @@ export function useTaskUpdate(
     if (open) {
       setTitle(task.title);
       setDescription(task.description || "");
+      setAttachments(task.attachments || null);
       setTaskRelatedType(task.related_type || "general");
       setAssignedTo(task.assigned_to);
       setStatus(task.status);
@@ -98,7 +101,8 @@ export function useTaskUpdate(
         client_id: finalRelatedType === "client" ? (task.client_id || null) : null,
         order_id: finalRelatedType === "order" ? (task.order_id || null) : null,
         lead_id: finalRelatedType === "lead" ? (task.lead_id || null) : null,
-        category_name: finalRelatedType === null && categoryName && categoryName.trim() !== "" ? categoryName : null
+        category_name: finalRelatedType === null && categoryName && categoryName.trim() !== "" ? categoryName : null,
+        attachments: attachments
       };
       
       console.log("Full task update data:", taskData);
@@ -133,6 +137,7 @@ export function useTaskUpdate(
   return {
     title,
     description,
+    attachments,
     taskRelatedType,
     assignedTo,
     status,
@@ -141,6 +146,7 @@ export function useTaskUpdate(
     categories,
     setTitle,
     setDescription,
+    setAttachments,
     setTaskRelatedType,
     setAssignedTo,
     setStatus,

@@ -1,20 +1,28 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "../editor/RichTextEditor";
+import { TaskAttachments } from "../attachments/TaskAttachments";
+import { TaskAttachment } from "@/types/task";
 
 interface TaskDetailsSectionProps {
   title: string;
   description: string;
+  attachments?: TaskAttachment[] | null;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onAttachmentsChange?: (attachments: TaskAttachment[]) => void;
+  disabled?: boolean;
 }
 
 export function TaskDetailsSection({
   title,
   description,
+  attachments = null,
   onTitleChange,
-  onDescriptionChange
+  onDescriptionChange,
+  onAttachmentsChange,
+  disabled = false
 }: TaskDetailsSectionProps) {
   return (
     <>
@@ -27,19 +35,26 @@ export function TaskDetailsSection({
           onChange={(e) => onTitleChange(e.target.value)}
           required
           className="bg-transparent text-base border border-input rounded-md"
+          disabled={disabled}
         />
       </div>
       
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          placeholder="Task description"
+        <RichTextEditor
           value={description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
-          className="min-h-[100px] bg-transparent text-base border border-input rounded-md"
+          onChange={onDescriptionChange}
+          disabled={disabled}
         />
       </div>
+
+      {onAttachmentsChange && (
+        <TaskAttachments
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange}
+          disabled={disabled}
+        />
+      )}
     </>
   );
 }

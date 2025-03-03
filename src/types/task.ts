@@ -22,6 +22,16 @@ export interface Task {
   product_line_id: string | null;
   related_type: TaskRelatedType;
   category_name: string | null;
+  attachments: TaskAttachment[] | null;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  url: string;
+  file_type: string;
+  size: number;
+  created_at: string;
 }
 
 export interface TaskWithAssignee extends Task {
@@ -61,6 +71,7 @@ export interface CreateTaskInput {
   assigned_to?: string | null;
   status?: TaskStatus;
   category_name?: string | null;
+  attachments?: TaskAttachment[] | null;
 }
 
 export interface UpdateTaskInput {
@@ -77,6 +88,7 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
   priority_order?: number;
   category_name?: string | null;
+  attachments?: TaskAttachment[] | null;
 }
 
 export interface ReorderTasksInput {

@@ -6,6 +6,7 @@ import { useTaskUpdate } from "@/hooks/tasks/useTaskUpdate";
 import { DeleteTaskDialog } from "./form-sections/DeleteTaskDialog";
 import { UpdateTaskForm } from "./form-sections/UpdateTaskForm";
 import { useEffect } from "react";
+import { RichTextDisplay } from "./editor/RichTextDisplay";
 
 interface UpdateTaskSheetProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function UpdateTaskSheet({
   const {
     title,
     description,
+    attachments,
     taskRelatedType,
     assignedTo,
     status,
@@ -30,6 +32,7 @@ export function UpdateTaskSheet({
     deleteDialogOpen,
     setTitle,
     setDescription,
+    setAttachments,
     setDeleteDialogOpen,
     handleRelatedTypeChange,
     handleAssigneeChange,
@@ -74,6 +77,7 @@ export function UpdateTaskSheet({
           <UpdateTaskForm
             title={title}
             description={description}
+            attachments={attachments}
             taskRelatedType={taskRelatedType}
             assignedTo={assignedTo}
             status={status}
@@ -91,6 +95,7 @@ export function UpdateTaskSheet({
             ordersLoading={ordersLoading}
             onTitleChange={setTitle}
             onDescriptionChange={setDescription}
+            onAttachmentsChange={setAttachments}
             onRelatedTypeChange={handleRelatedTypeChange}
             onCategoryChange={handleCategoryChange}
             onAssigneeChange={handleAssigneeChange}

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { TaskWithAssignee, TaskStatus, TaskRelatedType } from "@/types/task";
+import { TaskWithAssignee, TaskStatus, TaskRelatedType, TaskAttachment } from "@/types/task";
 import { TaskDetailsSection } from "./TaskDetailsSection";
 import { TaskAssignmentSection } from "./TaskAssignmentSection";
 import { RelatedEntitySection } from "./RelatedEntitySection";
@@ -9,6 +9,7 @@ import { EntityOption } from "@/hooks/tasks/useTaskRelatedEntity";
 interface UpdateTaskFormProps {
   title: string;
   description: string;
+  attachments?: TaskAttachment[] | null;
   taskRelatedType: TaskRelatedType | string | null;
   assignedTo: string | null;
   status: TaskStatus;
@@ -26,6 +27,7 @@ interface UpdateTaskFormProps {
   ordersLoading?: boolean;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onAttachmentsChange?: (attachments: TaskAttachment[]) => void;
   onRelatedTypeChange: (type: string) => void;
   onCategoryChange?: (category: string) => void;
   onAssigneeChange: (value: string) => void;
@@ -40,6 +42,7 @@ interface UpdateTaskFormProps {
 export function UpdateTaskForm({
   title,
   description,
+  attachments = null,
   taskRelatedType,
   assignedTo,
   status,
@@ -57,6 +60,7 @@ export function UpdateTaskForm({
   ordersLoading = false,
   onTitleChange,
   onDescriptionChange,
+  onAttachmentsChange,
   onRelatedTypeChange,
   onCategoryChange,
   onAssigneeChange,
@@ -75,8 +79,10 @@ export function UpdateTaskForm({
       <TaskDetailsSection
         title={title}
         description={description}
+        attachments={attachments}
         onTitleChange={onTitleChange}
         onDescriptionChange={onDescriptionChange}
+        onAttachmentsChange={onAttachmentsChange}
       />
       
       <TaskAssignmentSection

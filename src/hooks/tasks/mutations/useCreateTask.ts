@@ -46,6 +46,7 @@ export function useCreateTask() {
         created_by: user.id,
         related_type: relatedType,
         category_name: taskData.category_name || null,
+        attachments: taskData.attachments || null,
         
         // Explicitly set all entity IDs (some will be null)
         sculpture_id: taskData.sculpture_id || null,
@@ -92,6 +93,7 @@ export function useCreateTask() {
         lead_id: data.lead_id || null,
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
+        attachments: data.attachments || null,
         related_type: data.related_type as TaskRelatedType || null,
         assignee: data.assignee
       };
