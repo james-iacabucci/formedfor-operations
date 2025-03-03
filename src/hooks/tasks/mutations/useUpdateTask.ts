@@ -19,7 +19,7 @@ export function useUpdateTask() {
       
       if (!currentTask) throw new Error("Task not found");
       
-      // Prepare update data
+      // Prepare update data - explicitly include related_type
       const updateData = {
         ...(taskData.title !== undefined && { title: taskData.title }),
         ...(taskData.description !== undefined && { description: taskData.description }),
@@ -27,8 +27,14 @@ export function useUpdateTask() {
         ...(taskData.status !== undefined && { status: taskData.status }),
         ...(taskData.priority_order !== undefined && { priority_order: taskData.priority_order }),
         ...(taskData.sculpture_id !== undefined && { sculpture_id: taskData.sculpture_id }),
+        ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
+        ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
+        ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
+        related_type: taskData.related_type,
         updated_at: new Date().toISOString(),
       };
+      
+      console.log("Sending update data to Supabase:", updateData);
       
       // Update the task
       const { data, error } = await supabase
@@ -42,6 +48,7 @@ export function useUpdateTask() {
         .single();
       
       if (error) {
+        console.error("Supabase update error:", error);
         toast({
           title: "Error",
           description: "Failed to update task",
@@ -51,6 +58,8 @@ export function useUpdateTask() {
       }
       
       if (!data) throw new Error("Failed to retrieve updated task");
+      
+      console.log("Data returned from Supabase:", data);
       
       // Transform to the correct return type with explicit mapping
       const updatedTask: TaskWithAssignee = {
@@ -65,10 +74,10 @@ export function useUpdateTask() {
         created_by: data.created_by,
         updated_at: data.updated_at,
         // Add the additional fields we need for our app logic
-        client_id: taskData.client_id || null,
-        order_id: taskData.order_id || null,
-        lead_id: taskData.lead_id || null,
-        related_type: taskData.related_type || null,
+        client_id: data.client_id || null,
+        order_id: data.order_id || null,
+        lead_id: data.lead_id || null,
+        related_type: data.related_type || null,
         assignee: data.assignee
       };
       

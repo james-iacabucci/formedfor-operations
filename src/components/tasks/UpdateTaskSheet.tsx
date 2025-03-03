@@ -86,16 +86,19 @@ export function UpdateTaskSheet({
     }
 
     try {
+      // Process the related type value correctly
       let finalRelatedType: TaskRelatedType | null = null;
       
       if (taskRelatedType && typeof taskRelatedType === 'string') {
         if (taskRelatedType === 'general') {
           finalRelatedType = null;
-        } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
-                  taskRelatedType === 'lead' || taskRelatedType === 'order') {
+        } else if (['sculpture', 'client', 'lead', 'order'].includes(taskRelatedType)) {
           finalRelatedType = taskRelatedType as TaskRelatedType;
         }
       }
+      
+      // Log the data we're sending for debugging
+      console.log("About to update task with related_type:", finalRelatedType);
       
       const taskData: UpdateTaskInput = {
         id: task.id,
@@ -110,6 +113,8 @@ export function UpdateTaskSheet({
         order_id: finalRelatedType === "order" ? task.order_id : null,
         lead_id: finalRelatedType === "lead" ? task.lead_id : null,
       };
+      
+      console.log("Full task update data:", taskData);
       
       await updateTask.mutateAsync(taskData);
       onOpenChange(false);
