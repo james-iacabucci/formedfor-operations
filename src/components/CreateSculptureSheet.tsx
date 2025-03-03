@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -72,8 +73,14 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
   const processSingleImage = async (image: GeneratedImage) => {
     try {
       console.log("Processing image:", image.id);
-      const response = await fetch(image.url!);
+      if (!image.url) {
+        console.error("No URL for image:", image.id);
+        return { success: false, error: "No URL available" };
+      }
+      
+      const response = await fetch(image.url);
       if (!response.ok) {
+        console.error("Could not fetch image:", response.status, response.statusText);
         throw new Error('Could not access image');
       }
 
@@ -152,6 +159,19 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     
     setIsSaving(true);
     const selectedImages = generatedImages.filter(img => selectedIds.has(img.id));
+    
+    // Validate that all selected images have URLs
+    const invalidImages = selectedImages.filter(img => !img.url);
+    if (invalidImages.length > 0) {
+      toast({
+        title: "Error",
+        description: "Some selected images are not valid. Please select only successfully generated images.",
+        variant: "destructive",
+      });
+      setIsSaving(false);
+      return;
+    }
+    
     const results = await Promise.allSettled(selectedImages.map(processSingleImage));
     
     const successCount = results.filter(

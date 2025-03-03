@@ -15,6 +15,15 @@ export function useSculptureGeneration() {
     setGeneratedImages: (images: GeneratedImage[]) => void,
     clearSelection: () => void
   ) => {
+    if (!prompt.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a prompt before generating.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     console.log("Starting image generation with prompt:", prompt);
     setIsGenerating(true);
     const numImages = 6;
@@ -50,6 +59,11 @@ export function useSculptureGeneration() {
     try {
       const imagesToGenerate = newImages.filter(img => img.isGenerating);
       console.log("Images to generate:", imagesToGenerate.length);
+      
+      if (imagesToGenerate.length === 0) {
+        setIsGenerating(false);
+        return;
+      }
       
       // Create all generation promises at once
       const generationPromises = imagesToGenerate.map(async (image) => {
@@ -89,13 +103,28 @@ export function useSculptureGeneration() {
         }
       });
 
-      // Wait for all generations to complete
-      const results = await Promise.all(generationPromises);
+      // Wait for all generations to complete, with a timeout
+      const timeout = (ms: number) => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Generation timeout')), ms)
+      );
+      
+      const results = await Promise.all(
+        generationPromises.map(promise => 
+          Promise.race([promise, timeout(60000)]).catch(error => {
+            console.error("Promise failed:", error);
+            return { success: false, error: true };
+          })
+        )
+      );
       
       // Update state once with all results
       const finalImages = [...newImages].map(img => {
-        const result = results.find(r => r.id === img.id);
-        if (!result) return img;
+        const result = results.find(r => r && r.id === img.id);
+        if (!result) return {
+          ...img,
+          isGenerating: false,
+          error: true
+        };
         
         return {
           ...img,
@@ -107,12 +136,18 @@ export function useSculptureGeneration() {
 
       setGeneratedImages(finalImages);
 
-      const failedCount = results.filter(r => !r.success).length;
+      const failedCount = results.filter(r => r && !r.success).length;
       if (failedCount > 0) {
         toast({
           title: "Generation Completed",
-          description: `${failedCount} out of ${imagesToGenerate.length} images failed to generate.`,
-          variant: "destructive",
+          description: `${imagesToGenerate.length - failedCount} images generated successfully. ${failedCount} ${failedCount === 1 ? 'image' : 'images'} failed to generate.`,
+          variant: failedCount === imagesToGenerate.length ? "destructive" : "default",
+        });
+      } else if (imagesToGenerate.length > 0) {
+        toast({
+          title: "Generation Completed",
+          description: "All images generated successfully!",
+          variant: "default",
         });
       }
     } catch (error) {
@@ -122,6 +157,20 @@ export function useSculptureGeneration() {
         description: "Could not generate images. Please try again.",
         variant: "destructive",
       });
+      
+      // Update any remaining generating images to error state
+      const finalImages = [...newImages].map(img => {
+        if (img.isGenerating) {
+          return {
+            ...img,
+            isGenerating: false,
+            error: true
+          };
+        }
+        return img;
+      });
+      
+      setGeneratedImages(finalImages);
     } finally {
       setIsGenerating(false);
     }
