@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
 import { RichTextDisplay } from "./editor/RichTextDisplay";
 import { Paperclip, ChevronDown, ChevronUp } from "lucide-react";
@@ -40,10 +39,17 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   const hasLongDescription = task.description && task.description.length > 100;
   const shouldShowToggle = hasLongDescription || hasAttachments;
 
+  // Handle toggle expansion without opening the edit sheet
+  const handleToggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <>
       <Card 
-        className={`mb-2 hover:shadow-sm transition-all ${isDragging ? 'opacity-70 shadow-md' : ''}`}
+        className={`mb-2 hover:shadow-sm transition-all cursor-pointer ${isDragging ? 'opacity-70 shadow-md' : ''}`}
+        onClick={() => setIsOpen(true)}
       >
         <CardHeader className="p-3 pb-0">
           <div className="flex justify-between items-start gap-2">
@@ -106,30 +112,20 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
                 </Badge>
               )}
             </div>
-            <div className="flex items-center space-x-1">
-              {shouldShowToggle && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0"
-                  onClick={() => setIsExpanded(!isExpanded)}
+            {shouldShowToggle && (
+              <div className="flex items-center">
+                <button 
+                  className="h-6 w-6 p-0 rounded hover:bg-muted flex items-center justify-center"
+                  onClick={handleToggleExpand}
                 >
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
                     <ChevronDown className="h-4 w-4" />
                   )}
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-6 text-xs"
-                onClick={() => setIsOpen(true)}
-              >
-                Edit
-              </Button>
-            </div>
+                </button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
