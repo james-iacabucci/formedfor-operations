@@ -44,5 +44,13 @@ export function useDeleteTask() {
         description: "Task deleted successfully",
       });
     },
+    onError: (error) => {
+      console.error("Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 }

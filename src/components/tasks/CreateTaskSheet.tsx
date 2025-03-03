@@ -59,6 +59,18 @@ export function CreateTaskSheet({
     }
   }, [open, relatedType, currentUser]);
 
+  // Add keyboard event listener for ESC key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onOpenChange]);
+
   const handleRelatedTypeChange = (type: string) => {
     setTaskRelatedType(type);
   };

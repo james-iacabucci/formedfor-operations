@@ -10,6 +10,7 @@ import { useTaskRelatedEntity } from "@/hooks/tasks/useTaskRelatedEntity";
 import { RelatedEntitySection } from "./form-sections/RelatedEntitySection";
 import { TaskDetailsSection } from "./form-sections/TaskDetailsSection";
 import { TaskAssignmentSection } from "./form-sections/TaskAssignmentSection";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface UpdateTaskSheetProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function UpdateTaskSheet({
   const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(task.related_type || "general");
   const [assignedTo, setAssignedTo] = useState<string | null>(task.assigned_to);
   const [status, setStatus] = useState<TaskStatus>(task.status);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const {
     entityId: sculptureEntityId,
@@ -48,6 +50,18 @@ export function UpdateTaskSheet({
       setStatus(task.status);
     }
   }, [open, task]);
+
+  // Add keyboard event listener for ESC key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onOpenChange]);
 
   const handleRelatedTypeChange = (type: string) => {
     setTaskRelatedType(type);
@@ -110,74 +124,97 @@ export function UpdateTaskSheet({
   };
 
   const handleDeleteTask = async () => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        await deleteTask.mutate(task.id);
-        onOpenChange(false);
-      } catch (error) {
-        console.error("Error deleting task:", error);
-      }
+    try {
+      await deleteTask.mutate(task.id);
+      onOpenChange(false);
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Update Task</SheetTitle>
-        </SheetHeader>
-        
-        <div className="space-y-4 py-4">
-          <TaskDetailsSection
-            title={title}
-            description={description}
-            onTitleChange={setTitle}
-            onDescriptionChange={setDescription}
-          />
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Update Task</SheetTitle>
+          </SheetHeader>
           
-          <TaskAssignmentSection
-            assignedTo={assignedTo}
-            status={status}
-            users={users}
-            onAssigneeChange={handleAssigneeChange}
-            onStatusChange={handleStatusChange}
-          />
+          <div className="space-y-4 py-4">
+            <TaskDetailsSection
+              title={title}
+              description={description}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+            />
+            
+            <TaskAssignmentSection
+              assignedTo={assignedTo}
+              status={status}
+              users={users}
+              onAssigneeChange={handleAssigneeChange}
+              onStatusChange={handleStatusChange}
+            />
+            
+            <RelatedEntitySection
+              relatedType={taskRelatedType as TaskRelatedType}
+              entityId={sculptureEntityId}
+              onEntitySelection={handleEntitySelection}
+              onRelatedTypeChange={handleRelatedTypeChange}
+              sculptures={sculptures}
+              sculpturesLoading={sculpturesLoading}
+            />
+          </div>
           
-          <RelatedEntitySection
-            relatedType={taskRelatedType as TaskRelatedType}
-            entityId={sculptureEntityId}
-            onEntitySelection={handleEntitySelection}
-            onRelatedTypeChange={handleRelatedTypeChange}
-            sculptures={sculptures}
-            sculpturesLoading={sculpturesLoading}
-          />
-        </div>
-        
-        <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
-          <Button 
-            variant="outline" 
-            onClick={handleDeleteTask}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            Delete
-          </Button>
-          
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
             <Button 
               variant="outline" 
-              onClick={() => onOpenChange(false)}
+              onClick={() => setDeleteDialogOpen(true)}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
-              Cancel
+              Delete
             </Button>
-            <Button 
-              onClick={handleUpdateTask} 
-              disabled={updateTask.isPending}
-            >
-              {updateTask.isPending ? "Updating..." : "Apply"}
-            </Button>
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleUpdateTask} 
+                disabled={updateTask.isPending}
+              >
+                {updateTask.isPending ? "Updating..." : "Apply"}
+              </Button>
+            </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the task.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTask}>
+              {deleteTask.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
