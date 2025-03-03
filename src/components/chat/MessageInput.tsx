@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,23 +15,24 @@ interface MessageInputProps {
   threadId: string;
   autoFocus?: boolean;
   onUploadingFiles: (files: UploadingFile[]) => void;
+  uploadingFiles: UploadingFile[];
+  onUploadComplete: (fileIds: string[]) => void;
+  disabled?: boolean;
 }
 
 export function MessageInput({ 
   threadId, 
   autoFocus = false, 
-  onUploadingFiles
+  onUploadingFiles,
+  uploadingFiles,
+  onUploadComplete,
+  disabled = false
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  useEffect(() => {
-    onUploadingFiles(uploadingFiles);
-  }, [uploadingFiles, onUploadingFiles]);
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
@@ -93,17 +95,17 @@ export function MessageInput({
       
       const validFiles = newFiles.filter((file): file is UploadingFile => file !== null);
       if (validFiles.length > 0) {
-        setUploadingFiles(prev => [...prev, ...validFiles]);
+        onUploadingFiles(validFiles);
       }
     }
   };
 
   const handleFilesSelected = (files: UploadingFile[]) => {
-    setUploadingFiles(prev => [...prev, ...files]);
+    onUploadingFiles(files);
   };
 
   const handleRemovePendingFile = (id: string) => {
-    setUploadingFiles(prev => prev.filter(f => f.id !== id));
+    onUploadingFiles(uploadingFiles.filter(f => f.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +122,7 @@ export function MessageInput({
       if (filesToUpload.length > 0) {
         const files = filesToUpload.map(f => f.file);
         uploadedFiles = await uploadFiles(files, (fileId, progress) => {
-          setUploadingFiles(prev => prev.map(f => {
+          onUploadingFiles(uploadingFiles.map(f => {
             if (f.file.name === fileId) {
               return { ...f, progress };
             }
@@ -157,7 +159,7 @@ export function MessageInput({
         });
       }
 
-      setUploadingFiles([]);
+      onUploadComplete(uploadingFiles.map(f => f.id));
 
       requestAnimationFrame(() => {
         if (textareaRef.current) {
@@ -184,7 +186,7 @@ export function MessageInput({
     else if (e.key === "Escape") {
       e.preventDefault();
       setMessage("");
-      setUploadingFiles([]);
+      onUploadComplete(uploadingFiles.map(f => f.id));
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
         requestAnimationFrame(() => {
@@ -205,18 +207,18 @@ export function MessageInput({
           onPaste={handlePaste}
           placeholder="Type a message..."
           className="min-h-[44px] max-h-[200px] resize-none py-3 pr-24 text-sm overflow-y-auto"
-          disabled={isSending}
+          disabled={isSending || disabled}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <FileUpload 
-            disabled={isSending}
+            disabled={isSending || disabled}
             onFilesSelected={handleFilesSelected}
           />
           <Button
             type="submit"
             size="icon"
             className="h-8 w-8 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-            disabled={isSending || (!message.trim() && !uploadingFiles.length)}
+            disabled={isSending || disabled || (!message.trim() && !uploadingFiles.length)}
           >
             {isSending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

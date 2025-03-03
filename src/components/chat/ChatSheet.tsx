@@ -71,7 +71,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             <div className="p-4 border-t">
               <MessageInput 
                 threadId={currentThreadId}
-                onFilesSelected={handleFilesSelected}
+                onUploadingFiles={handleFilesSelected}
                 uploadingFiles={uploadingFiles}
                 onUploadComplete={handleUploadComplete}
                 disabled={!!editingMessage}
