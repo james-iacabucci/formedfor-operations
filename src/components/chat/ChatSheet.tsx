@@ -6,6 +6,7 @@ import { useThreads } from "./hooks/useThreads";
 import { ChatHeader } from "./components/ChatHeader";
 import { ChatNavigation } from "./components/ChatNavigation";
 import { ChatContent } from "./components/ChatContent";
+import { MessageInput } from "./MessageInput";
 
 interface ChatSheetProps {
   open: boolean;
@@ -33,6 +34,14 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     setResetScroll(prev => prev + 1);
   };
 
+  const handleFilesSelected = (files: UploadingFile[]) => {
+    setUploadingFiles(prev => [...prev, ...files]);
+  };
+
+  const handleUploadComplete = (fileIds: string[]) => {
+    setUploadingFiles(prev => prev.filter(file => !fileIds.includes(file.id)));
+  };
+
   // Find the current thread ID based on the selected topic
   const currentThreadId = threads?.find(thread => thread.topic === currentTopic)?.id;
 
@@ -57,6 +66,18 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             editingMessage={editingMessage}
             setEditingMessage={setEditingMessage}
           />
+          
+          {activeView === "chat" && currentThreadId && (
+            <div className="p-4 border-t">
+              <MessageInput 
+                threadId={currentThreadId}
+                onFilesSelected={handleFilesSelected}
+                uploadingFiles={uploadingFiles}
+                onUploadComplete={handleUploadComplete}
+                disabled={!!editingMessage}
+              />
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

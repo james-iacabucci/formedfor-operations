@@ -36,7 +36,7 @@ export function useMessageScroll({
       setTimeout(() => {
         scrollToBottom(true);
         setIsInitialLoad(false);
-      }, 150); // Slightly increased delay to ensure DOM is ready
+      }, 200); // Slightly increased delay to ensure DOM is ready
     }
   }, [isLoading, messages, isInitialLoad, setIsInitialLoad]);
 
@@ -58,7 +58,7 @@ export function useMessageScroll({
       setHasScrolled(false);
       setIsInitialLoad(true);
     }
-  }, [messages.length === 0]);
+  }, [messages.length, setIsInitialLoad]);
 
   const scrollToBottom = (instant: boolean) => {
     if (!scrollRef.current) {

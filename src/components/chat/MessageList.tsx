@@ -23,9 +23,7 @@ export function MessageList({
   onReplyToMessage
 }: MessageListProps) {
   const { user } = useAuth();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [initialScroll, setInitialScroll] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
   
   const {
     messages: fetchedMessages,
@@ -65,15 +63,21 @@ export function MessageList({
     setScrollToBottom: setShouldScrollToBottom
   });
   
-  // Scroll to bottom on initial load and when thread changes
+  // Force scroll to bottom when component mounts
   useEffect(() => {
-    if (fetchedMessages.length > 0 && !initialScroll) {
+    if (fetchedMessages.length > 0 && scrollRef.current) {
+      console.log("MessageList: Initial mount, forcing scroll to bottom");
       setTimeout(() => {
         scrollToBottom(true);
-        setInitialScroll(true);
-      }, 200);
+      }, 250);
     }
-  }, [fetchedMessages.length, initialScroll, scrollToBottom]);
+  }, []);
+  
+  // Additional scroll to bottom when thread changes
+  useEffect(() => {
+    console.log(`MessageList: Thread changed to ${threadId}, will scroll to bottom`);
+    setIsInitialLoad(true);
+  }, [threadId, setIsInitialLoad]);
   
   return (
     <div
