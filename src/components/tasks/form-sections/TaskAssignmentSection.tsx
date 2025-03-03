@@ -56,8 +56,7 @@ export function TaskAssignmentSection({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todo">To Do</SelectItem>
-            <SelectItem value="this_week">This Week</SelectItem>
-            <SelectItem value="tomorrow">Tomorrow</SelectItem>
+            <SelectItem value="soon">Soon</SelectItem>
             <SelectItem value="today">Today</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="waiting">Waiting</SelectItem>

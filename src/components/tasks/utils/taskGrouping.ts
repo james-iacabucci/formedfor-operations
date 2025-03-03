@@ -8,8 +8,7 @@ export type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
 export const groupTasksByStatus = (tasks: TaskWithAssignee[]): Record<TaskStatus, TaskWithAssignee[]> => {
   const result: Record<TaskStatus, TaskWithAssignee[]> = {
     "todo": [],
-    "this_week": [],
-    "tomorrow": [],
+    "soon": [],
     "today": [],
     "in_progress": [],
     "waiting": [],
@@ -17,7 +16,12 @@ export const groupTasksByStatus = (tasks: TaskWithAssignee[]): Record<TaskStatus
   };
   
   tasks.forEach(task => {
-    if (result[task.status]) {
+    // Handle legacy "tomorrow" and "this_week" statuses during migration
+    if (task.status === "tomorrow" as any) {
+      result["soon"].push({...task, status: "soon"});
+    } else if (task.status === "this_week" as any) {
+      result["soon"].push({...task, status: "soon"});
+    } else if (result[task.status]) {
       result[task.status].push(task);
     } else {
       // For backward compatibility with old status types
@@ -90,10 +94,8 @@ export const getStatusDisplayName = (status: TaskStatus): string => {
   switch (status) {
     case "todo":
       return "To Do";
-    case "this_week":
-      return "This Week";
-    case "tomorrow":
-      return "Tomorrow";
+    case "soon":
+      return "Soon";
     case "today":
       return "Today";
     case "in_progress":
@@ -131,10 +133,8 @@ export const getColumnStyles = (groupBy: string, key: string): string => {
     switch (key) {
       case "todo":
         return "border-t-slate-400";
-      case "this_week":
+      case "soon":
         return "border-t-blue-400";
-      case "tomorrow":
-        return "border-t-indigo-500";
       case "today":
         return "border-t-purple-500";
       case "in_progress":
