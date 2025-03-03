@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
     },
   });
 
-  // Set the first product line as default when data is loaded
   useEffect(() => {
     if (productLines && productLines.length > 0 && !selectedProductLineId) {
       setSelectedProductLineId(productLines[0].id);
@@ -98,7 +96,6 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
         .from('sculptures')
         .getPublicUrl(fileName);
 
-      // Set a timeout for AI content generation
       const timeoutDuration = 30000; // 30 seconds
       const generateWithTimeout = async (type: 'name' | 'description', existingName = '') => {
         const contentPromise = new Promise<string>((resolve) => {
@@ -218,18 +215,37 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             />
             
             <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="low">Low Creativity</TabsTrigger>
-                <TabsTrigger value="medium">Medium Creativity</TabsTrigger>
-                <TabsTrigger value="high">High Creativity</TabsTrigger>
+              <TabsList className="h-8 p-0.5 bg-muted/30">
+                <TabsTrigger 
+                  value="low" 
+                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                >
+                  Low Creativity
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="medium" 
+                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                >
+                  Medium Creativity
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="high" 
+                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                >
+                  High Creativity
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
             {productLines && productLines.length > 0 && (
               <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId}>
-                <TabsList className="grid w-full grid-cols-[repeat(auto-fit,minmax(100px,1fr))]">
+                <TabsList className="h-8 p-0.5 bg-muted/30">
                   {productLines.map((pl) => (
-                    <TabsTrigger key={pl.id} value={pl.id}>
+                    <TabsTrigger 
+                      key={pl.id} 
+                      value={pl.id}
+                      className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                    >
                       {pl.name}
                     </TabsTrigger>
                   ))}
