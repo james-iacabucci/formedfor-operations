@@ -28,7 +28,7 @@ export function MessageContainer({
       <div className={`flex items-start gap-3 max-w-4xl rounded-lg p-4 ${
         isOwnMessage 
           ? 'bg-background text-foreground border border-muted' 
-          : 'bg-accent/50'
+          : 'bg-[#333333] text-white'
       }`}>
         <Avatar className="h-8 w-8 mt-1">
           <AvatarImage src={message.profiles?.avatar_url || undefined} />
