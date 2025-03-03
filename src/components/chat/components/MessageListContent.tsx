@@ -48,7 +48,7 @@ export function MessageListContent({
       </div>
       
       {uploadingFiles.length > 0 && (
-        <div className="py-0.5 px-2 mt-1.5">
+        <div className="py-0.5 px-0 mt-1.5">
           <div className={`flex items-start gap-3 max-w-4xl mx-auto rounded-lg p-4 ${
             user ? 'bg-background text-foreground border border-muted' : 'bg-accent/50'
           }`}>

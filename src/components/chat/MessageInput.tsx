@@ -197,7 +197,7 @@ export function MessageInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t bg-background space-y-2">      
+    <form onSubmit={handleSubmit} className="p-4 bg-background space-y-2">      
       <div className="relative">
         <Textarea
           ref={textareaRef}

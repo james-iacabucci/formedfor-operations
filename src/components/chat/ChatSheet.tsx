@@ -68,7 +68,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           />
           
           {activeView === "chat" && currentThreadId && (
-            <div className="p-4 border-t">
+            <div className="border-t">
               <MessageInput 
                 threadId={currentThreadId}
                 onUploadingFiles={handleFilesSelected}
