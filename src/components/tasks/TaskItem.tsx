@@ -18,7 +18,8 @@ import {
   Users,
   ShoppingCart,
   FileText,
-  Clock
+  Clock,
+  Link
 } from "lucide-react";
 import { TaskWithAssignee } from "@/types/task";
 import { UpdateTaskDialog } from "./UpdateTaskDialog";
@@ -80,6 +81,7 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
     >
       <Card className={`shadow-md hover:shadow-lg transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''} border-t-4 ${getCardBorderColor(task.status)}`}>
         <CardContent className="p-3 space-y-2">
+          {/* Title and actions */}
           <div className="flex items-start justify-between">
             <div className="font-medium text-sm break-words flex-1 mr-2">{task.title}</div>
             <DropdownMenu>
@@ -108,34 +110,46 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
             </DropdownMenu>
           </div>
           
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {/* Assignee info */}
-            {task.assignee ? (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Avatar className="h-5 w-5">
-                  <AvatarImage src={task.assignee?.avatar_url || ""} alt={task.assignee?.username || ""} />
-                  <AvatarFallback className="text-[8px]">{task.assignee?.username?.substring(0, 2) || "??"}</AvatarFallback>
-                </Avatar>
-                <span className="truncate max-w-[80px]">{task.assignee?.username}</span>
+          {/* Related entity section */}
+          {task.related_type && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Link className="h-3 w-3" />
+                <span>Related to:</span>
               </div>
-            ) : (
-              <span className="italic text-xs">Unassigned</span>
-            )}
+              
+              {EntityIcon && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground pl-1">
+                  <EntityIcon className="h-3 w-3" />
+                  <span className="capitalize truncate">{task.related_type}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Assignee and task age */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            {/* Assignee info */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {task.assignee ? (
+                <>
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={task.assignee?.avatar_url || ""} alt={task.assignee?.username || ""} />
+                    <AvatarFallback className="text-[8px]">{task.assignee?.username?.substring(0, 2) || "??"}</AvatarFallback>
+                  </Avatar>
+                  <span className="truncate max-w-[80px]">{task.assignee?.username}</span>
+                </>
+              ) : (
+                <span className="italic">Unassigned</span>
+              )}
+            </div>
             
             {/* Task age */}
-            <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Clock className="h-3 w-3" />
               <span>{taskAge}d</span>
             </div>
           </div>
-          
-          {/* Related entity info */}
-          {task.related_type && EntityIcon && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <EntityIcon className="h-3 w-3" />
-              <span className="capitalize truncate">{task.related_type}</span>
-            </div>
-          )}
         </CardContent>
 
         <UpdateTaskDialog
