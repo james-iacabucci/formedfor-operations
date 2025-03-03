@@ -7,7 +7,6 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { Message } from "./types";
 
 interface MessageItemActionsProps {
   isHovered: boolean;
@@ -71,6 +70,25 @@ export function MessageItemActions({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Delete</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            
+            {/* Add create task button for own messages as well */}
+            {sculptureId && !isDeleted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7 rounded-md"
+                    onClick={handleCreateTask}
+                  >
+                    <ListPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create Task</p>
                 </TooltipContent>
               </Tooltip>
             )}

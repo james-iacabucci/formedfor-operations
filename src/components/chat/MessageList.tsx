@@ -4,7 +4,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageListContent } from "./components/MessageListContent";
 import { Message, ThreadMessageWithProfile, UploadingFile, convertToMessage } from "./types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MessageListProps {
   threadId: string;
@@ -26,6 +27,7 @@ export function MessageList({
   sculptureId
 }: MessageListProps) {
   const { user } = useAuth();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const {
     data,
@@ -90,25 +92,42 @@ export function MessageList({
     }
   }, [isLoading]);
 
+  // Auto-scroll to bottom when component loads
+  useEffect(() => {
+    if (!isLoading && scrollAreaRef.current) {
+      // Use setTimeout to ensure DOM is updated before scrolling
+      setTimeout(() => {
+        if (scrollAreaRef.current) {
+          const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          }
+        }
+      }, 100);
+    }
+  }, [isLoading, data]);
+
   // Transform raw messages to proper Message objects
   const rawMessages = data?.pages?.flatMap((page) => page) || [];
   const messages = rawMessages.map(msg => convertToMessage(msg));
 
-  // Use InfiniteScroll to handle loading more messages
+  // Use ScrollArea component to enable scrolling
   return (
-    <div className="h-full space-y-2">
-      <MessageListContent 
-        messages={messages} 
-        isFetchingNextPage={isFetchingNextPage} 
-        isLoading={isLoading}
-        uploadingFiles={uploadingFiles}
-        user={user}
-        threadId={threadId}
-        editingMessage={editingMessage}
-        setEditingMessage={setEditingMessage}
-        onReplyToMessage={onReplyToMessage}
-        sculptureId={sculptureId}
-      />
-    </div>
+    <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
+      <div className="h-full space-y-2">
+        <MessageListContent 
+          messages={messages} 
+          isFetchingNextPage={isFetchingNextPage} 
+          isLoading={isLoading}
+          uploadingFiles={uploadingFiles}
+          user={user}
+          threadId={threadId}
+          editingMessage={editingMessage}
+          setEditingMessage={setEditingMessage}
+          onReplyToMessage={onReplyToMessage}
+          sculptureId={sculptureId}
+        />
+      </div>
+    </ScrollArea>
   );
 }

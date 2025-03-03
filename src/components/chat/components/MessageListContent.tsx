@@ -30,7 +30,7 @@ export function MessageListContent({
   sculptureId
 }: MessageListContentProps) {
   return (
-    <div className="pb-4 pt-2">
+    <div className="pb-4 pt-2 min-h-full">
       {isFetchingNextPage && (
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
