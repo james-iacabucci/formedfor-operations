@@ -1,39 +1,48 @@
 
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskWithAssignee } from "@/types/task";
 import { TaskItem } from "./TaskItem";
-import { ReactNode } from "react";
+import { useDroppable } from "@dnd-kit/core";
 
 interface TaskColumnProps {
-  title: ReactNode;
+  id: string;
+  title: string;
+  count: number;
   tasks: TaskWithAssignee[];
-  columnKey: string;
-  columnStyleClass: string;
-  onDragEnd?: (result: any) => void;
+  borderClass?: string;
+  activeId: string | null;
 }
 
-export function TaskColumn({ title, tasks, columnKey, columnStyleClass }: TaskColumnProps) {
+export function TaskColumn({ id, title, count, tasks, borderClass = "border-t-primary", activeId }: TaskColumnProps) {
+  const { setNodeRef } = useDroppable({
+    id,
+  });
+
   return (
-    <Card key={columnKey} className={`border-t-4 ${columnStyleClass} h-full flex flex-col`}>
-      <CardHeader className="pb-1 px-2">
+    <Card className={`h-full flex flex-col ${borderClass} border-t-4`}>
+      <CardHeader className="p-2 pb-0">
         <div className="flex justify-between items-center">
           <CardTitle className="text-sm font-medium">
             {title}
+            <span className="ml-2 bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs">
+              {count}
+            </span>
           </CardTitle>
-          <Badge variant="outline">{tasks.length}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="overflow-auto flex-grow px-1 py-1">
-        {tasks.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
-        ) : (
-          <div className="space-y-1">
-            {tasks.map((task) => (
-              <TaskItem key={task.id} task={task} />
-            ))}
-          </div>
-        )}
+      <CardContent className="p-2 pt-2 flex-grow overflow-y-auto">
+        <div
+          ref={setNodeRef}
+          className="h-full min-h-[100px] rounded-md"
+        >
+          {tasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              isDragging={activeId === task.id}
+            />
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

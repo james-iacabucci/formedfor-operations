@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			boxShadow: {
+				'card': '0 1px 2px rgba(0, 0, 0, 0.2)',
+				'card-hover': '0 3px 6px rgba(0, 0, 0, 0.15)'
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

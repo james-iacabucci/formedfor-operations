@@ -76,15 +76,15 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
       style={style} 
       {...attributes} 
       {...listeners}
-      className="touch-manipulation"
+      className="touch-manipulation mb-2"
     >
-      <Card className={`shadow-sm hover:shadow-md transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''}`}>
-        <CardContent className="p-2 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="font-medium text-sm truncate flex-1">{task.title}</div>
+      <Card className={`shadow-md hover:shadow-lg transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''} border-t-4 ${getCardBorderColor(task.status)}`}>
+        <CardContent className="p-3 space-y-2">
+          <div className="flex items-start justify-between">
+            <div className="font-medium text-sm break-words flex-1 mr-2">{task.title}</div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <MoreVertical className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100 flex-shrink-0" />
+                <MoreVertical className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100 flex-shrink-0 mt-0.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" forceMount>
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -112,7 +112,7 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
             {/* Assignee info */}
             {task.assignee ? (
               <div className="flex items-center gap-1 flex-shrink-0">
-                <Avatar className="h-4 w-4">
+                <Avatar className="h-5 w-5">
                   <AvatarImage src={task.assignee?.avatar_url || ""} alt={task.assignee?.username || ""} />
                   <AvatarFallback className="text-[8px]">{task.assignee?.username?.substring(0, 2) || "??"}</AvatarFallback>
                 </Avatar>
@@ -146,4 +146,24 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
       </Card>
     </div>
   );
+}
+
+// Get border color based on task status
+function getCardBorderColor(status: string): string {
+  switch (status) {
+    case "todo":
+      return "border-slate-400";
+    case "soon":
+      return "border-blue-400";
+    case "today":
+      return "border-purple-500";
+    case "in_progress":
+      return "border-yellow-500";
+    case "waiting":
+      return "border-orange-500";
+    case "done":
+      return "border-green-500";
+    default:
+      return "border-gray-300";
+  }
 }
