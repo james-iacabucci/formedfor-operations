@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useState } from "react";
 import { Message, UploadingFile } from "./types";
@@ -59,7 +60,7 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
           <div className="border-b shrink-0 py-3 px-4">
             <Tabs
               value={currentTopic}
-              onValueChange={(value) => onTopicChange(value as "pricing" | "fabrication" | "operations")}
+              onValueChange={handleTopicChange}
               className="rounded-full border border-[#333333] p-1 flex w-full"
             >
               <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
