@@ -42,38 +42,38 @@ export function RelatedEntitySection({
         onValueChange={onRelatedTypeChange}
         className="w-full"
       >
-        <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-full border border-[#333333]">
+        <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
           <TabsTrigger 
             value="general" 
-            className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             General
           </TabsTrigger>
           
           <TabsTrigger 
             value="sculpture" 
-            className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Sculpture
           </TabsTrigger>
           
           <TabsTrigger 
             value="client" 
-            className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Client
           </TabsTrigger>
           
           <TabsTrigger 
             value="lead" 
-            className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Lead
           </TabsTrigger>
           
           <TabsTrigger 
             value="order" 
-            className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Order
           </TabsTrigger>
