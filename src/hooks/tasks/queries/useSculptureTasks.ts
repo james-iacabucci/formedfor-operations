@@ -31,6 +31,9 @@ export function useSculptureTasks(sculptureId: string) {
       // Check if data is undefined and return empty array if it is
       if (!data) return [];
 
+      // Log the raw data to diagnose the issue
+      console.log("Raw task data from Supabase:", data[0]);
+      
       // Explicitly cast each task with the correct types
       const typedData: TaskWithAssignee[] = data.map(item => ({
         id: item.id,
@@ -50,7 +53,8 @@ export function useSculptureTasks(sculptureId: string) {
         product_line_id: item.product_line_id || null,
         category_name: item.category_name || null,
         related_type: item.related_type as TaskRelatedType || null,
-        attachments: item.attachments || null,
+        // Make sure attachments is properly initialized even if it doesn't exist in the database
+        attachments: item.attachments || [],
         assignee: item.assignee
       }));
 

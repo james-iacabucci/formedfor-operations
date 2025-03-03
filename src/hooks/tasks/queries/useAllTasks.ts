@@ -31,6 +31,11 @@ export function useAllTasks() {
       // Check if data is undefined and return empty array if it is
       if (!data) return [];
 
+      // Log the first task to see what fields it contains
+      if (data.length > 0) {
+        console.log("All tasks sample:", data[0]);
+      }
+      
       // Explicitly cast each task with the correct types
       const typedData: TaskWithAssignee[] = data.map(item => ({
         id: item.id,
@@ -50,7 +55,8 @@ export function useAllTasks() {
         product_line_id: item.product_line_id || null,
         category_name: item.category_name || null,
         related_type: item.related_type as TaskRelatedType || null,
-        attachments: item.attachments || null,
+        // Initialize attachments as an empty array if it doesn't exist
+        attachments: item.attachments || [],
         assignee: item.assignee,
         sculpture: item.sculpture
       }));

@@ -46,7 +46,7 @@ export function useCreateTask() {
         created_by: user.id,
         related_type: relatedType,
         category_name: taskData.category_name || null,
-        attachments: taskData.attachments || null,
+        attachments: taskData.attachments || [],
         
         // Explicitly set all entity IDs (some will be null)
         sculpture_id: taskData.sculpture_id || null,
@@ -75,6 +75,8 @@ export function useCreateTask() {
       
       if (!data) throw new Error("Failed to retrieve created task");
       
+      console.log("Raw data returned from task creation:", data);
+      
       // Transform to the correct return type with explicit mapping to avoid type errors
       const createdTask: TaskWithAssignee = {
         id: data.id,
@@ -94,7 +96,7 @@ export function useCreateTask() {
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
         related_type: data.related_type as TaskRelatedType || null,
-        attachments: data.attachments || null,
+        attachments: data.attachments || [], 
         assignee: data.assignee
       };
       

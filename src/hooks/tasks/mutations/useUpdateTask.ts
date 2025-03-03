@@ -86,7 +86,7 @@ export function useUpdateTask() {
         lead_id: data.lead_id || null,
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
-        attachments: data.attachments || null,
+        attachments: data.attachments || [],
         // Fix: Properly cast the related_type to TaskRelatedType or null
         related_type: data.related_type as TaskRelatedType || null,
         assignee: data.assignee,
