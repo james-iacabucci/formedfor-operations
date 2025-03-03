@@ -1,3 +1,4 @@
+
 import { Json } from "@/integrations/supabase/types";
 
 export interface FileAttachment {
@@ -35,6 +36,27 @@ export interface Message {
   edited_at: string | null;
   thread_id: string;
   reactions?: MessageReaction[];
+}
+
+export interface ThreadMessageWithProfile {
+  id: string;
+  created_at: string;
+  content: string;
+  user_id: string;
+  thread_id: string;
+  reactions: Json[];
+  attachments: Json[];
+  profiles: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+  edited_at: string | null;
+}
+
+export interface ThreadWithMessages {
+  id: string;
+  topic: string;
+  messages: Message[];
 }
 
 export interface RawMessage {

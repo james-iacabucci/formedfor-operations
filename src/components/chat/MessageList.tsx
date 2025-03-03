@@ -1,12 +1,14 @@
+
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageListContent } from "./components/MessageListContent";
-import { Message, ThreadMessageWithProfile, UploadingFile } from "./types";
+import { Message, ThreadMessageWithProfile, UploadingFile, convertToMessage } from "./types";
 import { useEffect, useState } from "react";
 
 interface MessageListProps {
   threadId: string;
+  uploadingFiles?: UploadingFile[];
   onLoadMore?: () => void;
   editingMessage?: Message | null;
   setEditingMessage?: (message: Message | null) => void;
@@ -16,6 +18,7 @@ interface MessageListProps {
 
 export function MessageList({ 
   threadId, 
+  uploadingFiles = [],
   onLoadMore, 
   editingMessage, 
   setEditingMessage,
@@ -23,7 +26,6 @@ export function MessageList({
   sculptureId
 }: MessageListProps) {
   const { user } = useAuth();
-  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   
   const {
     data,
@@ -32,9 +34,9 @@ export function MessageList({
     isFetchingNextPage,
     isLoading,
     refetch,
-  } = useInfiniteQuery(
-    ["messages", threadId],
-    async ({ pageParam = null }) => {
+  } = useInfiniteQuery({
+    queryKey: ["messages", threadId],
+    queryFn: async ({ pageParam = null }) => {
       let query = supabase
         .from("chat_messages")
         .select(
@@ -70,18 +72,16 @@ export function MessageList({
       
       return data as ThreadMessageWithProfile[];
     },
-    {
-      getNextPageParam: (lastPage) => {
-        if (lastPage && lastPage.length > 0) {
-          return lastPage[lastPage.length - 1].created_at;
-        }
-        return undefined;
-      },
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    }
-  );
+    getNextPageParam: (lastPage) => {
+      if (lastPage && lastPage.length > 0) {
+        return lastPage[lastPage.length - 1].created_at;
+      }
+      return undefined;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
   useEffect(() => {
     if (onLoadMore) {
@@ -89,14 +89,15 @@ export function MessageList({
     }
   }, [isLoading]);
 
-  const messages = data?.pages?.flatMap((page) => page) || [];
+  // Transform raw messages to proper Message objects
+  const rawMessages = data?.pages?.flatMap((page) => page) || [];
+  const messages = rawMessages.map(msg => convertToMessage(msg));
 
   // Use InfiniteScroll to handle loading more messages
   return (
     <div className="h-full space-y-2">
-      
       <MessageListContent 
-        messages={messages || []} 
+        messages={messages} 
         isFetchingNextPage={isFetchingNextPage} 
         isLoading={isLoading}
         uploadingFiles={uploadingFiles}
