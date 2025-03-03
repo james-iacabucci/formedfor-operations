@@ -3,6 +3,7 @@ import { ChangeEvent, ReactNode } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { toast } from "sonner";
 import { UploadingFile } from "./types";
+import { Paperclip } from "lucide-react";
 
 interface FileUploadProps {
   onFilesSelected: (files: UploadingFile[]) => void;
@@ -85,12 +86,15 @@ export function FileUpload({
       <label htmlFor="file-upload">
         <Button
           type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:bg-muted/30"
           {...buttonProps}
           onClick={(e) => e.preventDefault()}
           disabled={disabled}
           asChild
         >
-          <span>{children}</span>
+          <span>{children || <Paperclip className="h-4 w-4" />}</span>
         </Button>
       </label>
     </div>
