@@ -8,13 +8,20 @@ export type GroupedTasksMap = Record<string, TaskWithAssignee[]>;
 export const groupTasksByStatus = (tasks: TaskWithAssignee[]): Record<TaskStatus, TaskWithAssignee[]> => {
   const result: Record<TaskStatus, TaskWithAssignee[]> = {
     "todo": [],
+    "this_week": [],
+    "tomorrow": [],
+    "today": [],
     "in_progress": [],
+    "waiting": [],
     "done": [],
   };
   
   tasks.forEach(task => {
     if (result[task.status]) {
       result[task.status].push(task);
+    } else {
+      // For backward compatibility with old status types
+      result["todo"].push(task);
     }
   });
   
@@ -83,8 +90,16 @@ export const getStatusDisplayName = (status: TaskStatus): string => {
   switch (status) {
     case "todo":
       return "To Do";
+    case "this_week":
+      return "This Week";
+    case "tomorrow":
+      return "Tomorrow";
+    case "today":
+      return "Today";
     case "in_progress":
       return "In Progress";
+    case "waiting":
+      return "Waiting";
     case "done":
       return "Done";
     default:
@@ -115,9 +130,17 @@ export const getColumnStyles = (groupBy: string, key: string): string => {
   if (groupBy === "status") {
     switch (key) {
       case "todo":
-        return "border-t-blue-500";
+        return "border-t-slate-400";
+      case "this_week":
+        return "border-t-blue-400";
+      case "tomorrow":
+        return "border-t-indigo-500";
+      case "today":
+        return "border-t-purple-500";
       case "in_progress":
         return "border-t-yellow-500";
+      case "waiting":
+        return "border-t-orange-500";
       case "done":
         return "border-t-green-500";
       default:
@@ -143,4 +166,13 @@ export const getColumnStyles = (groupBy: string, key: string): string => {
   }
   
   return "border-t-primary";
+};
+
+// Calculate age of task in days
+export const getTaskAge = (created_at: string): number => {
+  const createdDate = new Date(created_at);
+  const today = new Date();
+  const diffTime = Math.abs(today.getTime() - createdDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
 };

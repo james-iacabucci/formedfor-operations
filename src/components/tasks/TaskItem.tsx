@@ -1,13 +1,6 @@
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,34 +10,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { 
   MoreVertical, 
-  User, 
   Edit, 
   Trash2, 
-  CheckCircle, 
-  Circle, 
   Paintbrush,
   Users,
   ShoppingCart,
-  FileText
+  FileText,
+  Clock
 } from "lucide-react";
-import { TaskWithAssignee, TaskStatus } from "@/types/task";
+import { TaskWithAssignee } from "@/types/task";
 import { UpdateTaskDialog } from "./UpdateTaskDialog";
 import { useAuth } from "@/components/AuthProvider";
 import { useTaskMutations } from "@/hooks/tasks";
+import { getTaskAge } from "./utils/taskGrouping";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskItemProps {
   task: TaskWithAssignee;
   isDragging?: boolean;
 }
-
-const statusColors: Record<TaskStatus, string> = {
-  todo: "blue",
-  in_progress: "yellow",
-  done: "green",
-};
 
 const entityIcons = {
   sculpture: Paintbrush,
@@ -57,81 +44,106 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
   const { user } = useAuth();
   const { deleteTask } = useTaskMutations();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-
-  const statusColor = statusColors[task.status] || "gray";
+  
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      task
+    }
+  });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  };
   
   // Get the appropriate icon for the task's related type
   const EntityIcon = task.related_type ? entityIcons[task.related_type] : null;
+  
+  // Calculate task age in days
+  const taskAge = getTaskAge(task.created_at);
 
   return (
-    <Card className={`shadow-sm hover:shadow-md transition-shadow duration-200 ${isDragging ? 'opacity-50' : ''}`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <MoreVertical className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" forceMount>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setUpdateDialogOpen(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete this task?")) {
-                    deleteTask.mutate(task.id);
-                  }
-                }}
-                className="text-red-500"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <CardDescription className="text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            {task.status === "done" ? (
-              <CheckCircle className={`h-4 w-4 text-${statusColor}-500`} />
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      {...attributes} 
+      {...listeners}
+      className="touch-manipulation"
+    >
+      <Card className={`shadow-sm hover:shadow-md transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''}`}>
+        <CardContent className="p-2 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-sm truncate flex-1">{task.title}</div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <MoreVertical className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100 flex-shrink-0" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" forceMount>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setUpdateDialogOpen(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this task?")) {
+                      deleteTask.mutate(task.id);
+                    }
+                  }}
+                  className="text-red-500"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            {/* Assignee info */}
+            {task.assignee ? (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Avatar className="h-4 w-4">
+                  <AvatarImage src={task.assignee?.avatar_url || ""} alt={task.assignee?.username || ""} />
+                  <AvatarFallback className="text-[8px]">{task.assignee?.username?.substring(0, 2) || "??"}</AvatarFallback>
+                </Avatar>
+                <span className="truncate max-w-[80px]">{task.assignee?.username}</span>
+              </div>
             ) : (
-              <Circle className={`h-4 w-4 text-${statusColor}-500`} />
+              <span className="italic text-xs">Unassigned</span>
             )}
-            {task.description || "No description"}
+            
+            {/* Task age */}
+            <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+              <Clock className="h-3 w-3" />
+              <span>{taskAge}d</span>
+            </div>
           </div>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground py-0 space-y-2">
-        {/* Show entity type if present */}
-        {task.related_type && EntityIcon && (
-          <div className="flex items-center gap-2 text-xs">
-            <EntityIcon className="h-3 w-3" />
-            <span className="capitalize">{task.related_type}</span>
-          </div>
-        )}
-        
-        {task.assignee && (
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={task.assignee?.avatar_url || ""} alt={task.assignee?.username || ""} />
-              <AvatarFallback>{task.assignee?.username?.substring(0, 2) || "??"}</AvatarFallback>
-            </Avatar>
-            <span>{task.assignee?.username || "Unassigned"}</span>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="text-xs text-muted-foreground py-2">
-        Updated {new Date(task.updated_at).toLocaleDateString()}
-      </CardFooter>
+          
+          {/* Related entity info */}
+          {task.related_type && EntityIcon && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <EntityIcon className="h-3 w-3" />
+              <span className="capitalize truncate">{task.related_type}</span>
+            </div>
+          )}
+        </CardContent>
 
-      <UpdateTaskDialog
-        open={updateDialogOpen}
-        onOpenChange={setUpdateDialogOpen}
-        task={task}
-      />
-    </Card>
+        <UpdateTaskDialog
+          open={updateDialogOpen}
+          onOpenChange={setUpdateDialogOpen}
+          task={task}
+        />
+      </Card>
+    </div>
   );
 }

@@ -40,6 +40,7 @@ export function CreateTaskDialog({
   const [description, setDescription] = useState("");
   const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType || "general");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const [status, setStatus] = useState<TaskStatus>("todo");
   
   const {
     entityId: sculptureEntityId,
@@ -54,6 +55,7 @@ export function CreateTaskDialog({
       setDescription("");
       setTaskRelatedType(relatedType || "general");
       setAssignedTo(currentUser?.id || null);
+      setStatus("todo");
     }
   }, [open, relatedType, currentUser]);
 
@@ -63,6 +65,10 @@ export function CreateTaskDialog({
 
   const handleAssigneeChange = (value: string) => {
     setAssignedTo(value === "unassigned" ? null : value);
+  };
+  
+  const handleStatusChange = (value: TaskStatus) => {
+    setStatus(value);
   };
 
   const handleCreateTask = async () => {
@@ -91,7 +97,7 @@ export function CreateTaskDialog({
         title,
         description: description || "",
         assigned_to: assignedTo,
-        status: "todo",
+        status: status,
         related_type: finalRelatedType,
         // Only add entity IDs when the related type matches
         ...(finalRelatedType === "sculpture" && { sculpture_id: sculptureEntityId }),
@@ -130,10 +136,10 @@ export function CreateTaskDialog({
           
           <TaskAssignmentSection
             assignedTo={assignedTo}
-            status="todo"
+            status={status}
             users={users}
             onAssigneeChange={handleAssigneeChange}
-            onStatusChange={() => {}}
+            onStatusChange={handleStatusChange}
           />
           
           <RelatedEntitySection

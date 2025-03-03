@@ -10,12 +10,13 @@ interface TaskColumnProps {
   tasks: TaskWithAssignee[];
   columnKey: string;
   columnStyleClass: string;
+  onDragEnd?: (result: any) => void;
 }
 
 export function TaskColumn({ title, tasks, columnKey, columnStyleClass }: TaskColumnProps) {
   return (
     <Card key={columnKey} className={`border-t-4 ${columnStyleClass} h-full flex flex-col`}>
-      <CardHeader className="pb-1">
+      <CardHeader className="pb-1 px-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-sm font-medium">
             {title}
@@ -23,11 +24,11 @@ export function TaskColumn({ title, tasks, columnKey, columnStyleClass }: TaskCo
           <Badge variant="outline">{tasks.length}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="overflow-auto flex-grow">
+      <CardContent className="overflow-auto flex-grow px-1 py-1">
         {tasks.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {tasks.map((task) => (
               <TaskItem key={task.id} task={task} />
             ))}
