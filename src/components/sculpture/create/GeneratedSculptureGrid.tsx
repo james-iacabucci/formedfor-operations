@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface GeneratedImage {
@@ -68,9 +68,9 @@ export function GeneratedSculptureGrid({
             )}
             
             {isSelected && !image.isGenerating && !image.error && image.url && (
-              <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                <div className="h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center">
-                  ✓
+              <div className="absolute top-2 right-2">
+                <div className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center">
+                  <Lock className="h-4 w-4" />
                 </div>
               </div>
             )}
