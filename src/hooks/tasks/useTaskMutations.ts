@@ -1,8 +1,10 @@
 
-import { useCreateTask } from './mutations/useCreateTask';
-import { useUpdateTask } from './mutations/useUpdateTask';
-import { useDeleteTask } from './mutations/useDeleteTask';
-import { useReorderTasks } from './mutations/useReorderTasks';
+import { 
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  useReorderTasks
+} from './mutations';
 
 /**
  * Hook that provides all task mutation operations
