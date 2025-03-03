@@ -87,12 +87,12 @@ export function useCreateTask() {
         created_by: data.created_by,
         updated_at: data.updated_at,
         // Add the additional fields we need for our app logic
-        client_id: data.client_id,
-        order_id: data.order_id,
-        lead_id: data.lead_id,
+        client_id: data.client_id || null,
+        order_id: data.order_id || null,
+        lead_id: data.lead_id || null,
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
-        related_type: data.related_type as TaskRelatedType,
+        related_type: data.related_type as TaskRelatedType || null,
         assignee: data.assignee
       };
       
