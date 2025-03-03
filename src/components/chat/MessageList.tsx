@@ -28,6 +28,7 @@ export function MessageList({
 }: MessageListProps) {
   const { user } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   
   const {
     data,
@@ -58,11 +59,11 @@ export function MessageList({
         `
         )
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .order("created_at", { ascending: true }) // Changed to ascending order (oldest first)
+        .limit(50); // Increased limit to 50 messages per page
       
       if (pageParam) {
-        query = query.lt("created_at", pageParam);
+        query = query.gt("created_at", pageParam); // Changed to "greater than" for ascending order
       }
       
       const { data, error } = await query;
@@ -92,7 +93,7 @@ export function MessageList({
     }
   }, [isLoading]);
 
-  // Auto-scroll to bottom when component loads
+  // Auto-scroll to bottom when component initially loads or when new messages arrive
   useEffect(() => {
     if (!isLoading && scrollAreaRef.current) {
       // Use setTimeout to ensure DOM is updated before scrolling
@@ -101,6 +102,9 @@ export function MessageList({
           const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
           if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            if (!initialLoadComplete) {
+              setInitialLoadComplete(true);
+            }
           }
         }
       }, 100);
