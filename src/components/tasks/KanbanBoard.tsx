@@ -242,15 +242,12 @@ export function KanbanBoard() {
               <div key={`column-${status}`} id={`column-${status}`} className="h-[calc(100vh-200px)]">
                 <SortableContext items={tasksByStatus[status].map(task => task.id)} strategy={verticalListSortingStrategy}>
                   <TaskColumn
-                    title={<GroupTitleRenderer 
-                      groupBy="status" 
-                      groupKey={status} 
-                      users={users} 
-                      sculptures={[]}
-                    />}
+                    id={`column-${status}`}
+                    title={getStatusDisplayName(status)}
+                    count={tasksByStatus[status].length}
                     tasks={tasksByStatus[status]}
-                    columnKey={status}
-                    columnStyleClass={getColumnStyles("status", status)}
+                    borderClass={getColumnStyles("status", status)}
+                    activeId={activeTask?.id || null}
                   />
                 </SortableContext>
               </div>
