@@ -152,14 +152,22 @@ export function CreateTaskSheet({
           />
         </div>
         
-        <div className="absolute bottom-6 right-6 left-6">
-          <Button 
-            onClick={handleCreateTask} 
-            disabled={createTask.isPending}
-            className="w-full"
-          >
-            {createTask.isPending ? "Creating..." : "Create Task"}
-          </Button>
+        <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
+          <div></div> {/* Empty div to maintain spacing (no delete button in create) */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreateTask} 
+              disabled={createTask.isPending}
+            >
+              {createTask.isPending ? "Creating..." : "Create"}
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

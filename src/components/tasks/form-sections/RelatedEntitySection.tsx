@@ -42,38 +42,38 @@ export function RelatedEntitySection({
         onValueChange={onRelatedTypeChange}
         className="w-full"
       >
-        <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
+        <TabsList className="w-full grid grid-cols-5 bg-transparent rounded-md border border-input p-1">
           <TabsTrigger 
             value="general" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             General
           </TabsTrigger>
           
           <TabsTrigger 
             value="sculpture" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Sculpture
           </TabsTrigger>
           
           <TabsTrigger 
             value="client" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Client
           </TabsTrigger>
           
           <TabsTrigger 
             value="lead" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Lead
           </TabsTrigger>
           
           <TabsTrigger 
             value="order" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Order
           </TabsTrigger>
@@ -88,7 +88,7 @@ export function RelatedEntitySection({
             value={entityId || "none"}
             onValueChange={onEntitySelection}
           >
-            <SelectTrigger id="sculpture">
+            <SelectTrigger id="sculpture" className="bg-transparent text-base border border-input rounded-md">
               <SelectValue placeholder="Select a sculpture" />
             </SelectTrigger>
             <SelectContent>
@@ -114,7 +114,7 @@ export function RelatedEntitySection({
         <div className="mt-4">
           <Label htmlFor="client">Select Client</Label>
           <Select defaultValue="coming-soon">
-            <SelectTrigger id="client">
+            <SelectTrigger id="client" className="bg-transparent text-base border border-input rounded-md">
               <SelectValue placeholder="Client functionality coming soon" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +129,7 @@ export function RelatedEntitySection({
         <div className="mt-4">
           <Label htmlFor="order">Select Order</Label>
           <Select defaultValue="coming-soon">
-            <SelectTrigger id="order">
+            <SelectTrigger id="order" className="bg-transparent text-base border border-input rounded-md">
               <SelectValue placeholder="Order functionality coming soon" />
             </SelectTrigger>
             <SelectContent>
@@ -144,7 +144,7 @@ export function RelatedEntitySection({
         <div className="mt-4">
           <Label htmlFor="lead">Select Lead</Label>
           <Select defaultValue="coming-soon">
-            <SelectTrigger id="lead">
+            <SelectTrigger id="lead" className="bg-transparent text-base border border-input rounded-md">
               <SelectValue placeholder="Lead functionality coming soon" />
             </SelectTrigger>
             <SelectContent>
