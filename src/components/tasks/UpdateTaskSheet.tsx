@@ -153,29 +153,22 @@ export function UpdateTaskSheet({
           />
         </div>
         
-        <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
+        <div className="flex flex-col gap-2 absolute bottom-6 right-6 left-6">
           <Button 
-            variant="outline" 
-            onClick={handleDeleteTask}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleUpdateTask} 
+            disabled={updateTask.isPending}
+            className="w-full"
           >
-            Delete
+            {updateTask.isPending ? "Updating..." : "Update Task"}
           </Button>
           
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleUpdateTask} 
-              disabled={updateTask.isPending}
-            >
-              {updateTask.isPending ? "Updating..." : "Apply"}
-            </Button>
-          </div>
+          <Button 
+            variant="destructive" 
+            onClick={handleDeleteTask}
+            className="w-full"
+          >
+            Delete Task
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
