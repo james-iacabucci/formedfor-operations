@@ -33,6 +33,10 @@ export function RelatedEntitySection({
     return "general";
   };
 
+  // Debug log to verify the value
+  console.log("RelatedEntitySection - current relatedType:", relatedType);
+  console.log("RelatedEntitySection - calculated tab value:", getCurrentTabValue());
+
   return (
     <div className="space-y-2">
       <Label htmlFor="related-type">Relates To</Label>

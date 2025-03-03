@@ -64,6 +64,7 @@ export function UpdateTaskSheet({
   }, [open, onOpenChange]);
 
   const handleRelatedTypeChange = (type: string) => {
+    console.log("Related type changed to:", type);
     setTaskRelatedType(type);
   };
 
@@ -89,16 +90,17 @@ export function UpdateTaskSheet({
       // Process the related type value correctly
       let finalRelatedType: TaskRelatedType | null = null;
       
-      if (taskRelatedType && typeof taskRelatedType === 'string') {
-        if (taskRelatedType === 'general') {
-          finalRelatedType = null;
-        } else if (['sculpture', 'client', 'lead', 'order'].includes(taskRelatedType)) {
-          finalRelatedType = taskRelatedType as TaskRelatedType;
-        }
+      if (taskRelatedType === "general") {
+        // General means no relation
+        finalRelatedType = null;
+      } else if (["sculpture", "client", "lead", "order"].includes(taskRelatedType as string)) {
+        // Valid TaskRelatedType values
+        finalRelatedType = taskRelatedType as TaskRelatedType;
       }
       
       // Log the data we're sending for debugging
-      console.log("About to update task with related_type:", finalRelatedType);
+      console.log("Related type before update:", taskRelatedType);
+      console.log("Final related_type value to be sent:", finalRelatedType);
       
       const taskData: UpdateTaskInput = {
         id: task.id,

@@ -19,7 +19,10 @@ export function useUpdateTask() {
       
       if (!currentTask) throw new Error("Task not found");
       
-      // Prepare update data - explicitly include related_type
+      // Log the incoming task data for debugging
+      console.log("Raw taskData received for update:", taskData);
+      
+      // Prepare update data - explicitly handling related_type
       const updateData = {
         ...(taskData.title !== undefined && { title: taskData.title }),
         ...(taskData.description !== undefined && { description: taskData.description }),
@@ -30,6 +33,7 @@ export function useUpdateTask() {
         ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
         ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
         ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
+        // We need to explicitly set related_type even if it's null
         related_type: taskData.related_type,
         updated_at: new Date().toISOString(),
       };
