@@ -55,14 +55,14 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose }: Chat
             <TabsList className="h-8 p-0.5 bg-muted/30">
               <TabsTrigger 
                 value="chat" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
               >
                 <MessageSquare className="h-3.5 w-3.5 mr-1" />
                 Chat
               </TabsTrigger>
               <TabsTrigger 
                 value="files" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
               >
                 <Files className="h-3.5 w-3.5 mr-1" />
                 Files

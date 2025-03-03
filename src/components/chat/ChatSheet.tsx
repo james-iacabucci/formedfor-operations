@@ -66,19 +66,19 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
               <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
                 <TabsTrigger 
                   value="pricing" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                 >
                   Pricing
                 </TabsTrigger>
                 <TabsTrigger 
                   value="fabrication" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                 >
                   Fabrication
                 </TabsTrigger>
                 <TabsTrigger 
                   value="operations" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                 >
                   Operations
                 </TabsTrigger>

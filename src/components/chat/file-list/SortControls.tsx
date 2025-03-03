@@ -29,19 +29,19 @@ export function SortControls({
         <TabsList className="h-8 p-0.5 bg-muted/30">
           <TabsTrigger 
             value="modified" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Last Modified
           </TabsTrigger>
           <TabsTrigger 
             value="uploaded" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Upload Date
           </TabsTrigger>
           <TabsTrigger 
             value="user" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             Uploaded By
           </TabsTrigger>
@@ -58,13 +58,13 @@ export function SortControls({
         <TabsList className="h-8 p-0.5 bg-muted/30">
           <TabsTrigger 
             value="asc" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             ASC
           </TabsTrigger>
           <TabsTrigger 
             value="desc" 
-            className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
             DESC
           </TabsTrigger>

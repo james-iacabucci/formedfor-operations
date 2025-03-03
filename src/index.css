@@ -47,7 +47,7 @@
     /* New navigation pill styles */
     --nav-pill-bg: 0 0% 0%;
     --nav-pill-active: 0 0% 20%;
-    --nav-pill-text: 0 0% 100%;
+    --nav-pill-text: 0 0% 10%; /* Darker text for light mode */
   }
 
   .dark {
