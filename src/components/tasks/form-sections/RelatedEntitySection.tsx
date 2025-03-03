@@ -3,12 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TaskRelatedType } from "@/types/task";
-import { Sculpture } from "@/types/sculpture";
+import { EntityOption } from "@/hooks/tasks/useTaskRelatedEntity";
 
 interface RelatedEntitySectionProps {
   relatedType: TaskRelatedType | string | null;
   entityId: string | null;
-  sculptures: Sculpture[] | null;
+  sculptures: EntityOption[] | null;
   sculpturesLoading: boolean;
   onRelatedTypeChange: (value: string) => void;
   onEntitySelection: (entityId: string) => void;
@@ -91,7 +91,7 @@ export function RelatedEntitySection({
                   ) : sculptures && sculptures.length > 0 ? (
                     sculptures.map((sculpture) => (
                       <SelectItem key={sculpture.id} value={sculpture.id}>
-                        {sculpture.ai_generated_name || `Sculpture ${sculpture.id.substring(0, 8)}`}
+                        {sculpture.name}
                       </SelectItem>
                     ))
                   ) : (
