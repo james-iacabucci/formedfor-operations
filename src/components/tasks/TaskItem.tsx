@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { cva } from "class-variance-authority";
 import { TaskWithAssignee } from "@/types/task";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials, formatDistanceToNow } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
 import { Paperclip, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { getTaskAge } from "./utils/taskGrouping";
@@ -38,13 +37,11 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   const shouldShowToggle = hasAttachments;
   const daysSinceAdded = getTaskAge(task.created_at);
 
-  // Handle toggle expansion without opening the edit sheet
   const handleToggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
-  // Get related entity name
   const getRelatedEntityName = () => {
     if (!task.related_type || task.related_type === null) return null;
     
