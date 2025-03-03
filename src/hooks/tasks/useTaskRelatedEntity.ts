@@ -88,7 +88,7 @@ export function useTaskRelatedEntity(
       
       // Extract unique category names
       const uniqueCategories = [...new Set(
-        data
+        (data || [])
           .map(task => task.category_name)
           .filter(Boolean) as string[]
       )];

@@ -21,7 +21,7 @@ export interface Task {
   lead_id: string | null;
   product_line_id?: string | null;
   related_type: TaskRelatedType;
-  category_name?: string | null;
+  category_name: string | null;
 }
 
 export interface TaskWithAssignee extends Task {
