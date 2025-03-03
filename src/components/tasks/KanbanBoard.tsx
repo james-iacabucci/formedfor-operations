@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
@@ -6,9 +7,8 @@ import { Plus, Filter } from "lucide-react";
 import { useAllTasks } from "@/hooks/tasks/queries/useAllTasks";
 import { useUsers } from "@/hooks/tasks/queries/useUsers";
 import { TaskColumn } from "./TaskColumn";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import { CreateTaskSheet } from "./CreateTaskSheet";
 import { groupTasksByStatus, getStatusDisplayName, getColumnStyles } from "./utils/taskGrouping";
-import { GroupTitleRenderer } from "./GroupTitleRenderer";
 import { TaskStatus, TaskWithAssignee } from "@/types/task";
 import { KanbanBoardHeader } from "./KanbanBoardHeader";
 import { useAuth } from "@/components/AuthProvider";
@@ -32,7 +32,7 @@ export function KanbanBoard() {
   const { data: users = [] } = useUsers();
   const { updateTask, reorderTasks } = useTaskMutations();
   
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [filteredTasks, setFilteredTasks] = useState<TaskWithAssignee[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [activeTask, setActiveTask] = useState<TaskWithAssignee | null>(null);
@@ -204,7 +204,7 @@ export function KanbanBoard() {
       <KanbanBoardHeader 
         groupBy={groupBy}
         onGroupByChange={handleGroupByChange}
-        onAddTaskClick={() => setCreateDialogOpen(true)}
+        onAddTaskClick={() => setCreateSheetOpen(true)}
         sculpturesLoading={isLoading}
       />
       
@@ -223,7 +223,7 @@ export function KanbanBoard() {
           </Select>
         </div>
         
-        <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+        <Button size="sm" onClick={() => setCreateSheetOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> Add Task
         </Button>
       </div>
@@ -256,9 +256,9 @@ export function KanbanBoard() {
         </div>
       )}
       
-      <CreateTaskDialog 
-        open={createDialogOpen} 
-        onOpenChange={setCreateDialogOpen}
+      <CreateTaskSheet
+        open={createSheetOpen} 
+        onOpenChange={setCreateSheetOpen}
       />
     </div>
   );

@@ -2,27 +2,15 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
   Paintbrush,
   Users,
   ShoppingCart,
   FileText,
   Clock,
-  Link
 } from "lucide-react";
 import { TaskWithAssignee } from "@/types/task";
-import { UpdateTaskDialog } from "./UpdateTaskDialog";
+import { UpdateTaskSheet } from "./UpdateTaskSheet";
 import { useAuth } from "@/components/AuthProvider";
 import { useTaskMutations } from "@/hooks/tasks";
 import { getTaskAge } from "./utils/taskGrouping";
@@ -43,8 +31,7 @@ const entityIcons = {
 
 export function TaskItem({ task, isDragging }: TaskItemProps) {
   const { user } = useAuth();
-  const { deleteTask } = useTaskMutations();
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updateSheetOpen, setUpdateSheetOpen] = useState(false);
   
   const {
     attributes,
@@ -79,36 +66,13 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
       {...listeners}
       className="touch-manipulation mb-2"
     >
-      <Card className={`shadow-md hover:shadow-lg transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''} border-t-4 ${getCardBorderColor(task.status)}`}>
+      <Card 
+        className={`shadow-md hover:shadow-lg transition-shadow duration-200 ${isDragging || isSortableDragging ? 'opacity-50' : ''} border-t-4 ${getCardBorderColor(task.status)} cursor-pointer`}
+        onClick={() => setUpdateSheetOpen(true)}
+      >
         <CardContent className="p-3 space-y-2">
-          {/* Title and actions */}
-          <div className="flex items-start justify-between">
-            <div className="font-medium text-sm break-words flex-1 mr-2">{task.title}</div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <MoreVertical className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100 flex-shrink-0 mt-0.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" forceMount>
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setUpdateDialogOpen(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (window.confirm("Are you sure you want to delete this task?")) {
-                      deleteTask.mutate(task.id);
-                    }
-                  }}
-                  className="text-red-500"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* Title */}
+          <div className="font-medium text-sm break-words">{task.title}</div>
           
           {/* Related entity section - left aligned */}
           {task.related_type && EntityIcon && (
@@ -143,9 +107,9 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
           </div>
         </CardContent>
 
-        <UpdateTaskDialog
-          open={updateDialogOpen}
-          onOpenChange={setUpdateDialogOpen}
+        <UpdateTaskSheet
+          open={updateSheetOpen}
+          onOpenChange={setUpdateSheetOpen}
           task={task}
         />
       </Card>
