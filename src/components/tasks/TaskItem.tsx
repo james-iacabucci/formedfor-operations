@@ -110,20 +110,11 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
             </DropdownMenu>
           </div>
           
-          {/* Related entity section */}
-          {task.related_type && (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Link className="h-3 w-3" />
-                <span>Related to:</span>
-              </div>
-              
-              {EntityIcon && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground pl-1">
-                  <EntityIcon className="h-3 w-3" />
-                  <span className="capitalize truncate">{task.related_type}</span>
-                </div>
-              )}
+          {/* Related entity section - removed "Related to:" text */}
+          {task.related_type && EntityIcon && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground pl-1">
+              <EntityIcon className="h-3 w-3" />
+              <span className="capitalize truncate">{task.related_type}</span>
             </div>
           )}
           
