@@ -26,6 +26,7 @@ export function TaskDetailsSection({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           required
+          className="bg-transparent text-base border border-input rounded-md"
         />
       </div>
       
@@ -36,7 +37,7 @@ export function TaskDetailsSection({
           placeholder="Task description"
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          className="min-h-[100px]"
+          className="min-h-[100px] bg-transparent text-base border border-input rounded-md"
         />
       </div>
     </>

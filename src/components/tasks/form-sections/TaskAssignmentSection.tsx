@@ -28,7 +28,7 @@ export function TaskAssignmentSection({
       <div>
         <Label htmlFor="assignee">Assign To</Label>
         <Select value={assignedTo || "unassigned"} onValueChange={onAssigneeChange}>
-          <SelectTrigger id="assignee">
+          <SelectTrigger id="assignee" className="bg-transparent text-base border border-input rounded-md">
             <SelectValue placeholder="Select user" />
           </SelectTrigger>
           <SelectContent>
@@ -51,7 +51,7 @@ export function TaskAssignmentSection({
       <div>
         <Label htmlFor="status">Status</Label>
         <Select value={status} onValueChange={(value) => onStatusChange(value as TaskStatus)}>
-          <SelectTrigger id="status">
+          <SelectTrigger id="status" className="bg-transparent text-base border border-input rounded-md">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
