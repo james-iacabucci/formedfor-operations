@@ -267,22 +267,47 @@ export function FileList({ threadId }: FileListProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-2 border-b">
-        {/* Sorting controls - combined in a single row */}
+        {/* Updated styling for sorting controls to match Chat/Files tabs */}
         <div className="flex items-center gap-2">
           {/* Sorting field tabs */}
           <Tabs defaultValue="modified" className="flex-1" value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="modified">Last Modified</TabsTrigger>
-              <TabsTrigger value="uploaded">Upload Date</TabsTrigger>
-              <TabsTrigger value="user">Uploaded By</TabsTrigger>
+            <TabsList className="h-8 p-0.5 bg-muted/30">
+              <TabsTrigger 
+                value="modified" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                Last Modified
+              </TabsTrigger>
+              <TabsTrigger 
+                value="uploaded" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                Upload Date
+              </TabsTrigger>
+              <TabsTrigger 
+                value="user" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                Uploaded By
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           
           {/* Sort direction tabs */}
           <Tabs defaultValue="desc" className="w-[120px]" value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="asc" className="text-xs px-2">ASC</TabsTrigger>
-              <TabsTrigger value="desc" className="text-xs px-2">DESC</TabsTrigger>
+            <TabsList className="h-8 p-0.5 bg-muted/30">
+              <TabsTrigger 
+                value="asc" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                ASC
+              </TabsTrigger>
+              <TabsTrigger 
+                value="desc" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                DESC
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
