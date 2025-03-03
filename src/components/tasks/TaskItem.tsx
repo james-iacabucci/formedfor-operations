@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { cva } from "class-variance-authority";
 import { TaskWithAssignee } from "@/types/task";
@@ -6,7 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
-import { Paperclip, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { 
+  Paperclip, 
+  ChevronDown, 
+  ChevronUp, 
+  Clock, 
+  Settings, 
+  Image, 
+  UserCircle, 
+  ShoppingCart, 
+  UserPlus 
+} from "lucide-react";
 import { getTaskAge } from "./utils/taskGrouping";
 
 interface TaskItemProps {
@@ -28,6 +39,23 @@ const taskStatusColors = cva("", {
     status: "todo",
   },
 });
+
+// Helper function to get the appropriate icon based on related_type
+const getRelatedTypeIcon = (relatedType: string | null) => {
+  switch (relatedType) {
+    case "sculpture":
+      return <Image className="h-3.5 w-3.5" />;
+    case "client":
+      return <UserCircle className="h-3.5 w-3.5" />;
+    case "order":
+      return <ShoppingCart className="h-3.5 w-3.5" />;
+    case "lead":
+      return <UserPlus className="h-3.5 w-3.5" />;
+    case null:
+    default:
+      return <Settings className="h-3.5 w-3.5" />;
+  }
+};
 
 export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +88,7 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   };
 
   const relatedEntityName = getRelatedEntityName();
+  const relatedTypeIcon = getRelatedTypeIcon(task.related_type);
 
   return (
     <>
@@ -78,11 +107,22 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
           </div>
         </CardHeader>
         <CardContent className="p-3 pt-1">
-          {relatedEntityName && (
+          {/* Display related entity with icon */}
+          {(task.related_type === null || task.category_name) && (
             <div className="mb-2">
-              <Badge variant="outline" className="text-xs font-normal">
-                {task.related_type}: {relatedEntityName}
-              </Badge>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Settings className="h-3.5 w-3.5" />
+                <span>{task.category_name || "General"}</span>
+              </div>
+            </div>
+          )}
+          
+          {task.related_type !== null && relatedEntityName && (
+            <div className="mb-2">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                {relatedTypeIcon}
+                <span>{relatedEntityName}</span>
+              </div>
             </div>
           )}
           
@@ -122,7 +162,7 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
           
           <div className="flex justify-between items-center mt-2">
             <div>
-              {task.category_name && (
+              {task.category_name && task.related_type !== null && (
                 <Badge variant="outline" className="text-xs font-normal">
                   {task.category_name}
                 </Badge>
