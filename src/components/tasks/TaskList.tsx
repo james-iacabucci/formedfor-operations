@@ -54,7 +54,7 @@ function SortableTaskItem({ task }: { task: TaskWithAssignee }) {
 }
 
 interface TaskListProps {
-  sculptureId: string;
+  sculptureId?: string;  // Make sculptureId optional
 }
 
 export function TaskList({ sculptureId }: TaskListProps) {
@@ -180,6 +180,7 @@ export function TaskList({ sculptureId }: TaskListProps) {
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen}
         sculptureId={sculptureId}
+        relatedType={sculptureId ? "sculpture" : null}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,7 @@ export function CreateTaskDialog({
         if (taskRelatedType === 'general') {
           finalRelatedType = null;
         } else if (taskRelatedType === 'sculpture' || taskRelatedType === 'client' || 
-                   taskRelatedType === 'lead' || taskRelatedType === 'order') {
+                  taskRelatedType === 'lead' || taskRelatedType === 'order') {
           finalRelatedType = taskRelatedType as TaskRelatedType;
         }
       }
@@ -92,17 +93,12 @@ export function CreateTaskDialog({
         assigned_to: assignedTo,
         status: "todo",
         related_type: finalRelatedType,
+        // Only add entity IDs when the related type matches
+        ...(finalRelatedType === "sculpture" && { sculpture_id: sculptureEntityId }),
+        ...(finalRelatedType === "client" && { client_id: clientId }),
+        ...(finalRelatedType === "order" && { order_id: orderId }),
+        ...(finalRelatedType === "lead" && { lead_id: leadId })
       };
-      
-      if (finalRelatedType === "sculpture") {
-        taskData.sculpture_id = sculptureEntityId;
-      } else if (finalRelatedType === "client") {
-        taskData.client_id = clientId;
-      } else if (finalRelatedType === "order") {
-        taskData.order_id = orderId;
-      } else if (finalRelatedType === "lead") {
-        taskData.lead_id = leadId;
-      }
       
       console.log("Task data before submit:", taskData);
       await createTask.mutateAsync(taskData);

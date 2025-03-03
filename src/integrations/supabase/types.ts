@@ -470,7 +470,7 @@ export type Database = {
           order_id: string | null
           priority_order: number
           related_type: string | null
-          sculpture_id: string
+          sculpture_id: string | null
           status: string
           title: string
           updated_at: string
@@ -486,7 +486,7 @@ export type Database = {
           order_id?: string | null
           priority_order?: number
           related_type?: string | null
-          sculpture_id: string
+          sculpture_id?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -502,7 +502,7 @@ export type Database = {
           order_id?: string | null
           priority_order?: number
           related_type?: string | null
-          sculpture_id?: string
+          sculpture_id?: string | null
           status?: string
           title?: string
           updated_at?: string

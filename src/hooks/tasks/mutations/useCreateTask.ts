@@ -11,17 +11,18 @@ export function useCreateTask() {
 
   return useMutation({
     mutationFn: async (taskData: CreateTaskInput): Promise<TaskWithAssignee> => {
-      // Set the related_type based on which ID is provided
+      // Get relatedType and entityId based on which ID is provided
       let relatedType: TaskRelatedType = taskData.related_type || null;
       let entityId: string | null = null;
       
-      if (taskData.sculpture_id) {
+      // Determine which entity ID to use based on the related_type
+      if (relatedType === 'sculpture' && taskData.sculpture_id) {
         entityId = taskData.sculpture_id;
-      } else if (taskData.client_id) {
+      } else if (relatedType === 'client' && taskData.client_id) {
         entityId = taskData.client_id;
-      } else if (taskData.order_id) {
+      } else if (relatedType === 'order' && taskData.order_id) {
         entityId = taskData.order_id;
-      } else if (taskData.lead_id) {
+      } else if (relatedType === 'lead' && taskData.lead_id) {
         entityId = taskData.lead_id;
       }
 
@@ -37,17 +38,19 @@ export function useCreateTask() {
       
       // Prepare the task data
       const newTask = {
-        sculpture_id: taskData.sculpture_id || null,
-        client_id: taskData.client_id || null,
-        order_id: taskData.order_id || null,
-        lead_id: taskData.lead_id || null,
-        related_type: relatedType,
         title: taskData.title,
         description: taskData.description || null,
         assigned_to: taskData.assigned_to || null,
         status: taskData.status || "todo" as TaskStatus,
         priority_order: nextPriorityOrder,
         created_by: user.id,
+        related_type: relatedType,
+        
+        // Explicitly set all entity IDs (some will be null)
+        sculpture_id: taskData.sculpture_id || null,
+        client_id: taskData.client_id || null,
+        order_id: taskData.order_id || null,
+        lead_id: taskData.lead_id || null,
       };
       
       console.log("Creating task with data:", newTask);
@@ -64,11 +67,6 @@ export function useCreateTask() {
       
       if (error) {
         console.error("Error creating task:", error);
-        toast({
-          title: "Error",
-          description: "Failed to create task",
-          variant: "destructive",
-        });
         throw error;
       }
       
@@ -97,14 +95,24 @@ export function useCreateTask() {
       return createdTask;
     },
     onSuccess: (task) => {
+      // Only invalidate sculpture-specific queries if the task has a sculpture_id
       if (task.sculpture_id) {
         queryClient.invalidateQueries({ queryKey: ["tasks", task.sculpture_id] });
       }
+      // Always invalidate the general tasks query
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({
         title: "Success",
         description: "Task created successfully",
       });
     },
+    onError: (error) => {
+      console.error("Task creation error:", error);
+      toast({
+        title: "Error",
+        description: `Failed to create task: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   });
 }

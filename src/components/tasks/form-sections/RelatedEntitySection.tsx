@@ -3,9 +3,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskRelatedType } from "@/types/task";
 import { EntityOption } from "@/hooks/tasks/useTaskRelatedEntity";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ProductLine } from "@/types/product-line";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface RelatedEntitySectionProps {
@@ -83,7 +80,7 @@ export function RelatedEntitySection({
         </TabsList>
       </Tabs>
       
-      {/* Conditional dropdown for sculpture selection */}
+      {/* Only show sculpture selection when on sculpture tab */}
       {relatedType === "sculpture" && (
         <div className="mt-4">
           <Label htmlFor="sculpture">Select Sculpture</Label>
