@@ -89,11 +89,55 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'tooltip-slide-up-fade': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'tooltip-slide-down-fade': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(-8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'tooltip-slide-left-fade': {
+					from: {
+						opacity: '0',
+						transform: 'translateX(8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
+				},
+				'tooltip-slide-right-fade': {
+					from: {
+						opacity: '0',
+						transform: 'translateX(-8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'tooltip-slide-up-fade': 'tooltip-slide-up-fade 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+				'tooltip-slide-down-fade': 'tooltip-slide-down-fade 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+				'tooltip-slide-left-fade': 'tooltip-slide-left-fade 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+				'tooltip-slide-right-fade': 'tooltip-slide-right-fade 200ms cubic-bezier(0.16, 1, 0.3, 1)'
 			}
 		}
 	},
