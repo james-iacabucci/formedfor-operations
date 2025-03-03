@@ -25,11 +25,13 @@ export function TaskAssignmentSection({
 }: TaskAssignmentSectionProps) {
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="assignee">Assign To</Label>
+      <div className="border rounded-md py-0 px-3">
         <Select value={assignedTo || "unassigned"} onValueChange={onAssigneeChange}>
-          <SelectTrigger id="assignee" className="bg-transparent text-base border border-input rounded-md">
-            <SelectValue placeholder="Select user" />
+          <SelectTrigger id="assignee" className="border-0 px-0 h-10 focus:ring-0">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Assign To:</span>
+              <SelectValue placeholder="Select user" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="unassigned">Unassigned</SelectItem>
@@ -48,11 +50,13 @@ export function TaskAssignmentSection({
         </Select>
       </div>
       
-      <div>
-        <Label htmlFor="status">Status</Label>
+      <div className="border rounded-md py-0 px-3">
         <Select value={status} onValueChange={(value) => onStatusChange(value as TaskStatus)}>
-          <SelectTrigger id="status" className="bg-transparent text-base border border-input rounded-md">
-            <SelectValue placeholder="Select status" />
+          <SelectTrigger id="status" className="border-0 px-0 h-10 focus:ring-0">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Status:</span>
+              <SelectValue placeholder="Select status" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todo">To Do</SelectItem>

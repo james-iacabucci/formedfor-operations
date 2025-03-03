@@ -1,158 +1,126 @@
 
-import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TaskRelatedType } from "@/types/task";
-import { EntityOption } from "@/hooks/tasks/useTaskRelatedEntity";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sculpture } from "@/types/sculpture";
 
 interface RelatedEntitySectionProps {
-  relatedType: TaskRelatedType | null;
+  relatedType: TaskRelatedType | string | null;
   entityId: string | null;
-  onEntitySelection: (id: string) => void;
-  onRelatedTypeChange: (type: string) => void;
-  sculptures: EntityOption[];
+  sculptures: Sculpture[] | null;
   sculpturesLoading: boolean;
+  onRelatedTypeChange: (value: string) => void;
+  onEntitySelection: (entityId: string) => void;
 }
 
 export function RelatedEntitySection({
   relatedType,
   entityId,
-  onEntitySelection,
-  onRelatedTypeChange,
   sculptures,
-  sculpturesLoading
+  sculpturesLoading,
+  onRelatedTypeChange,
+  onEntitySelection,
 }: RelatedEntitySectionProps) {
-  // Determine the current tab value based on relatedType
-  const getCurrentTabValue = () => {
-    if (!relatedType) return "general";
-    if (relatedType === "sculpture") return "sculpture";
-    if (relatedType === "client") return "client";
-    if (relatedType === "lead") return "lead";
-    if (relatedType === "order") return "order";
-    
-    return "general";
-  };
-
   return (
-    <div className="space-y-2">
-      <Label htmlFor="related-type">Relates To</Label>
-      
-      <Tabs
-        value={getCurrentTabValue()}
+    <div className="space-y-4">
+      <Tabs 
+        value={relatedType || "general"} 
         onValueChange={onRelatedTypeChange}
         className="w-full"
       >
-        <TabsList className="w-full grid grid-cols-5 bg-transparent rounded-md border border-input p-1">
+        <TabsList className="w-full rounded-md h-auto p-0.5 grid grid-cols-5">
           <TabsTrigger 
             value="general" 
-            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs"
           >
             General
           </TabsTrigger>
-          
           <TabsTrigger 
             value="sculpture" 
-            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs"
           >
             Sculpture
           </TabsTrigger>
-          
           <TabsTrigger 
             value="client" 
-            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs"
           >
             Client
           </TabsTrigger>
-          
           <TabsTrigger 
             value="lead" 
-            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs"
           >
             Lead
           </TabsTrigger>
-          
           <TabsTrigger 
             value="order" 
-            className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-7 px-3 py-1 text-xs"
           >
             Order
           </TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="general" className="pt-4">
+          <div className="text-sm text-muted-foreground">
+            This task is not associated with any specific entity.
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="sculpture" className="pt-4">
+          <div className="space-y-2">
+            <div className="border rounded-md py-0 px-3">
+              <Select 
+                value={entityId || ""} 
+                onValueChange={onEntitySelection}
+              >
+                <SelectTrigger className="border-0 px-0 h-10 focus:ring-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Sculpture:</span>
+                    <SelectValue placeholder="Select a sculpture" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {sculpturesLoading ? (
+                    <div className="p-2">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full mt-2" />
+                      <Skeleton className="h-5 w-full mt-2" />
+                    </div>
+                  ) : sculptures && sculptures.length > 0 ? (
+                    sculptures.map((sculpture) => (
+                      <SelectItem key={sculpture.id} value={sculpture.id}>
+                        {sculpture.ai_generated_name || `Sculpture ${sculpture.id.substring(0, 8)}`}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-muted-foreground text-sm">No sculptures found</div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="client" className="pt-4">
+          <div className="text-sm text-muted-foreground">
+            Client selection will be implemented soon.
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="lead" className="pt-4">
+          <div className="text-sm text-muted-foreground">
+            Lead selection will be implemented soon.
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="order" className="pt-4">
+          <div className="text-sm text-muted-foreground">
+            Order selection will be implemented soon.
+          </div>
+        </TabsContent>
       </Tabs>
-      
-      {/* Only show sculpture selection when on sculpture tab */}
-      {relatedType === "sculpture" && (
-        <div className="mt-4">
-          <Label htmlFor="sculpture">Select Sculpture</Label>
-          <Select
-            value={entityId || "none"}
-            onValueChange={onEntitySelection}
-          >
-            <SelectTrigger id="sculpture" className="bg-transparent text-base border border-input rounded-md">
-              <SelectValue placeholder="Select a sculpture" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None</SelectItem>
-              {sculpturesLoading ? (
-                <SelectItem value="loading-sculptures">Loading sculptures...</SelectItem>
-              ) : sculptures.length === 0 ? (
-                <SelectItem value="no-sculptures-available">No sculptures available</SelectItem>
-              ) : (
-                sculptures.map((sculpture) => (
-                  <SelectItem key={sculpture.id} value={sculpture.id}>
-                    {sculpture.name}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      
-      {/* Placeholder for client selection */}
-      {relatedType === "client" && (
-        <div className="mt-4">
-          <Label htmlFor="client">Select Client</Label>
-          <Select defaultValue="coming-soon">
-            <SelectTrigger id="client" className="bg-transparent text-base border border-input rounded-md">
-              <SelectValue placeholder="Client functionality coming soon" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="coming-soon">Client functionality coming soon</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      
-      {/* Placeholder for order selection */}
-      {relatedType === "order" && (
-        <div className="mt-4">
-          <Label htmlFor="order">Select Order</Label>
-          <Select defaultValue="coming-soon">
-            <SelectTrigger id="order" className="bg-transparent text-base border border-input rounded-md">
-              <SelectValue placeholder="Order functionality coming soon" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="coming-soon">Order functionality coming soon</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      
-      {/* Placeholder for lead selection */}
-      {relatedType === "lead" && (
-        <div className="mt-4">
-          <Label htmlFor="lead">Select Lead</Label>
-          <Select defaultValue="coming-soon">
-            <SelectTrigger id="lead" className="bg-transparent text-base border border-input rounded-md">
-              <SelectValue placeholder="Lead functionality coming soon" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="coming-soon">Lead functionality coming soon</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
     </div>
   );
 }

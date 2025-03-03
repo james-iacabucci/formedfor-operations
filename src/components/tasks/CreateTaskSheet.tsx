@@ -126,47 +126,57 @@ export function CreateTaskSheet({
           <SheetTitle>Create New Task</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-4 py-4">
-          <TaskDetailsSection
-            title={title}
-            description={description}
-            onTitleChange={setTitle}
-            onDescriptionChange={setDescription}
-          />
+        <div className="space-y-4 py-4 flex flex-col h-[calc(100%-120px)]">
+          <div className="space-y-6 flex-grow overflow-y-auto pr-1">
+            <TaskDetailsSection
+              title={title}
+              description={description}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+            />
+            
+            <TaskAssignmentSection
+              assignedTo={assignedTo}
+              status={status}
+              users={users}
+              onAssigneeChange={handleAssigneeChange}
+              onStatusChange={handleStatusChange}
+            />
+            
+            <RelatedEntitySection
+              relatedType={taskRelatedType as TaskRelatedType}
+              entityId={sculptureEntityId}
+              onEntitySelection={handleEntitySelection}
+              onRelatedTypeChange={handleRelatedTypeChange}
+              sculptures={sculptures}
+              sculpturesLoading={sculpturesLoading}
+            />
+          </div>
           
-          <TaskAssignmentSection
-            assignedTo={assignedTo}
-            status={status}
-            users={users}
-            onAssigneeChange={handleAssigneeChange}
-            onStatusChange={handleStatusChange}
-          />
-          
-          <RelatedEntitySection
-            relatedType={taskRelatedType as TaskRelatedType}
-            entityId={sculptureEntityId}
-            onEntitySelection={handleEntitySelection}
-            onRelatedTypeChange={handleRelatedTypeChange}
-            sculptures={sculptures}
-            sculpturesLoading={sculpturesLoading}
-          />
-        </div>
-        
-        <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
-          <div></div> {/* Empty div to maintain spacing (no delete button in create) */}
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCreateTask} 
-              disabled={createTask.isPending}
-            >
-              {createTask.isPending ? "Creating..." : "Create"}
-            </Button>
+          <div className="flex items-center justify-between pt-4 border-t mt-auto">
+            <div>
+              <Button 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="text-destructive hover:text-destructive"
+              >
+                Delete
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleCreateTask} 
+                disabled={createTask.isPending}
+              >
+                {createTask.isPending ? "Creating..." : "Create"}
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>
