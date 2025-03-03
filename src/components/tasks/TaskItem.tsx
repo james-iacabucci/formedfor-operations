@@ -19,6 +19,8 @@ import {
   UserPlus 
 } from "lucide-react";
 import { getTaskAge } from "./utils/taskGrouping";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskItemProps {
   task: TaskWithAssignee;
@@ -65,6 +67,28 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   const shouldShowToggle = hasAttachments;
   const daysSinceAdded = getTaskAge(task.created_at);
 
+  // Initialize sortable functionality
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isDraggingNow,
+  } = useSortable({
+    id: task.id,
+    data: task,
+  });
+
+  // Combine the dragging states
+  const isCurrentlyDragging = isDragging || isDraggingNow;
+
+  // Apply transform styles from dnd-kit
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   const handleToggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
@@ -93,7 +117,11 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   return (
     <>
       <Card 
-        className={`mb-2 hover:shadow-sm transition-all cursor-pointer ${isDragging ? 'opacity-70 shadow-md' : ''}`}
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        style={style}
+        className={`mb-2 hover:shadow-sm transition-all cursor-pointer ${isCurrentlyDragging ? 'opacity-70 shadow-md' : ''}`}
         onClick={() => setIsOpen(true)}
       >
         <CardHeader className="p-3 pb-1">
