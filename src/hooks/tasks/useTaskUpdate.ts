@@ -22,10 +22,25 @@ export function useTaskUpdate(
   
   const {
     entityId: sculptureEntityId,
+    categoryName,
+    categories,
     sculptures,
     sculpturesLoading,
-    handleEntitySelection
-  } = useTaskRelatedEntity(open, taskRelatedType as TaskRelatedType, task.sculpture_id);
+    clients,
+    clientsLoading,
+    leads,
+    leadsLoading,
+    orders,
+    ordersLoading,
+    handleEntitySelection,
+    handleCategoryChange,
+    addCategory
+  } = useTaskRelatedEntity(
+    open, 
+    taskRelatedType as TaskRelatedType, 
+    task.sculpture_id,
+    task.category_name
+  );
 
   // Reset form when task changes or sheet opens
   useEffect(() => {
@@ -66,7 +81,7 @@ export function useTaskUpdate(
       let finalRelatedType: TaskRelatedType | null = null;
       
       if (taskRelatedType === "general") {
-        // General means no relation
+        // General means no specific relation type
         finalRelatedType = null;
       } else if (["sculpture", "client", "lead", "order"].includes(taskRelatedType as string)) {
         // Valid TaskRelatedType values
@@ -76,6 +91,7 @@ export function useTaskUpdate(
       // Log the data we're sending for debugging
       console.log("Related type before update:", taskRelatedType);
       console.log("Final related_type value to be sent:", finalRelatedType);
+      console.log("Category name:", categoryName);
       
       const taskData: UpdateTaskInput = {
         id: task.id,
@@ -86,9 +102,11 @@ export function useTaskUpdate(
         related_type: finalRelatedType,
         // Only add entity IDs when the related type matches
         sculpture_id: finalRelatedType === "sculpture" ? sculptureEntityId : null,
-        client_id: finalRelatedType === "client" ? task.client_id : null,
-        order_id: finalRelatedType === "order" ? task.order_id : null,
-        lead_id: finalRelatedType === "lead" ? task.lead_id : null,
+        client_id: finalRelatedType === "client" ? (task.client_id || null) : null,
+        order_id: finalRelatedType === "order" ? (task.order_id || null) : null,
+        lead_id: finalRelatedType === "lead" ? (task.lead_id || null) : null,
+        // Add category name if general type
+        category_name: finalRelatedType === null ? categoryName : null
       };
       
       console.log("Full task update data:", taskData);
@@ -127,6 +145,8 @@ export function useTaskUpdate(
     assignedTo,
     status,
     deleteDialogOpen,
+    categoryName,
+    categories,
     setTitle,
     setDescription,
     setTaskRelatedType,
@@ -136,6 +156,8 @@ export function useTaskUpdate(
     handleRelatedTypeChange,
     handleAssigneeChange,
     handleStatusChange,
+    handleCategoryChange,
+    addCategory,
     handleUpdateTask,
     handleDeleteTask,
     updateTask,
@@ -143,6 +165,12 @@ export function useTaskUpdate(
     sculptureEntityId,
     sculptures,
     sculpturesLoading,
+    clients,
+    clientsLoading,
+    leads,
+    leadsLoading,
+    orders,
+    ordersLoading,
     handleEntitySelection,
   };
 }

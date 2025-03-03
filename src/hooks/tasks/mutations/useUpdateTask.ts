@@ -33,6 +33,7 @@ export function useUpdateTask() {
         ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
         ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
         ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
+        ...(taskData.category_name !== undefined && { category_name: taskData.category_name }),
         // We need to explicitly set related_type even if it's null
         related_type: taskData.related_type,
         updated_at: new Date().toISOString(),
@@ -47,7 +48,8 @@ export function useUpdateTask() {
         .eq("id", taskData.id)
         .select(`
           *,
-          assignee:assigned_to(id, username, avatar_url)
+          assignee:assigned_to(id, username, avatar_url),
+          sculpture:sculpture_id(id, ai_generated_name, image_url)
         `)
         .single();
       
@@ -77,13 +79,14 @@ export function useUpdateTask() {
         created_at: data.created_at,
         created_by: data.created_by,
         updated_at: data.updated_at,
-        // Add the additional fields we need for our app logic
         client_id: data.client_id || null,
         order_id: data.order_id || null,
         lead_id: data.lead_id || null,
+        category_name: data.category_name || null,
         // Fix: Properly cast the related_type to TaskRelatedType or null
-        related_type: data.related_type as TaskRelatedType | null,
-        assignee: data.assignee
+        related_type: data.related_type as TaskRelatedType || null,
+        assignee: data.assignee,
+        sculpture: data.sculpture
       };
       
       return updatedTask;

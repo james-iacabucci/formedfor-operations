@@ -12,13 +12,22 @@ interface UpdateTaskFormProps {
   taskRelatedType: TaskRelatedType | string | null;
   assignedTo: string | null;
   status: TaskStatus;
+  categoryName?: string | null;
+  categories?: string[];
   users: { id: string; username: string; avatar_url: string | null; }[];
   sculptureEntityId: string | null;
   sculptures: EntityOption[];
   sculpturesLoading: boolean;
+  clients?: EntityOption[];
+  clientsLoading?: boolean;
+  leads?: EntityOption[];
+  leadsLoading?: boolean;
+  orders?: EntityOption[];
+  ordersLoading?: boolean;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onRelatedTypeChange: (type: string) => void;
+  onCategoryChange?: (category: string) => void;
   onAssigneeChange: (value: string) => void;
   onStatusChange: (value: TaskStatus) => void;
   onEntitySelection: (id: string) => void;
@@ -34,13 +43,22 @@ export function UpdateTaskForm({
   taskRelatedType,
   assignedTo,
   status,
+  categoryName,
+  categories = [],
   users,
   sculptureEntityId,
   sculptures,
   sculpturesLoading,
+  clients = [],
+  clientsLoading = false,
+  leads = [],
+  leadsLoading = false,
+  orders = [],
+  ordersLoading = false,
   onTitleChange,
   onDescriptionChange,
   onRelatedTypeChange,
+  onCategoryChange,
   onAssigneeChange,
   onStatusChange,
   onEntitySelection,
@@ -69,10 +87,19 @@ export function UpdateTaskForm({
       <RelatedEntitySection
         relatedType={taskRelatedType as TaskRelatedType}
         entityId={sculptureEntityId}
+        categoryName={categoryName}
         onEntitySelection={onEntitySelection}
         onRelatedTypeChange={onRelatedTypeChange}
+        onCategoryChange={onCategoryChange}
         sculptures={sculptures}
         sculpturesLoading={sculpturesLoading}
+        clients={clients}
+        clientsLoading={clientsLoading}
+        leads={leads}
+        leadsLoading={leadsLoading}
+        orders={orders}
+        ordersLoading={ordersLoading}
+        categories={categories}
       />
       
       <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">

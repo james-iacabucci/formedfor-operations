@@ -25,6 +25,8 @@ export function UpdateTaskSheet({
     taskRelatedType,
     assignedTo,
     status,
+    categoryName,
+    categories,
     deleteDialogOpen,
     setTitle,
     setDescription,
@@ -32,6 +34,7 @@ export function UpdateTaskSheet({
     handleRelatedTypeChange,
     handleAssigneeChange,
     handleStatusChange,
+    handleCategoryChange,
     handleUpdateTask,
     handleDeleteTask,
     updateTask,
@@ -39,6 +42,12 @@ export function UpdateTaskSheet({
     sculptureEntityId,
     sculptures,
     sculpturesLoading,
+    clients,
+    clientsLoading,
+    leads,
+    leadsLoading,
+    orders,
+    ordersLoading,
     handleEntitySelection,
   } = useTaskUpdate(task, open, onOpenChange);
 
@@ -68,13 +77,22 @@ export function UpdateTaskSheet({
             taskRelatedType={taskRelatedType}
             assignedTo={assignedTo}
             status={status}
+            categoryName={categoryName}
+            categories={categories}
             users={users}
             sculptureEntityId={sculptureEntityId}
             sculptures={sculptures}
             sculpturesLoading={sculpturesLoading}
+            clients={clients}
+            clientsLoading={clientsLoading}
+            leads={leads}
+            leadsLoading={leadsLoading}
+            orders={orders}
+            ordersLoading={ordersLoading}
             onTitleChange={setTitle}
             onDescriptionChange={setDescription}
             onRelatedTypeChange={handleRelatedTypeChange}
+            onCategoryChange={handleCategoryChange}
             onAssigneeChange={handleAssigneeChange}
             onStatusChange={handleStatusChange}
             onEntitySelection={handleEntitySelection}

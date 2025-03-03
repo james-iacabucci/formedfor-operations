@@ -1,3 +1,4 @@
+
 export type TaskStatus = "todo" | "soon" | "today" | "in_progress" | "waiting" | "done";
 
 export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | "product_line" | null;
@@ -15,11 +16,12 @@ export interface Task {
   created_by: string;
   updated_at: string;
   // Add the missing fields that need to be included in queries/mutations
-  client_id?: string | null;
-  order_id?: string | null;
-  lead_id?: string | null;
+  client_id: string | null;
+  order_id: string | null;
+  lead_id: string | null;
   product_line_id?: string | null;
-  related_type?: TaskRelatedType;
+  related_type: TaskRelatedType;
+  category_name?: string | null;
 }
 
 export interface TaskWithAssignee extends Task {
@@ -32,6 +34,18 @@ export interface TaskWithAssignee extends Task {
     id: string;
     ai_generated_name: string | null;
     image_url: string | null;
+  } | null;
+  client?: {
+    id: string;
+    name: string | null;
+  } | null;
+  lead?: {
+    id: string;
+    name: string | null;
+  } | null;
+  order?: {
+    id: string;
+    name: string | null;
   } | null;
 }
 
@@ -46,6 +60,7 @@ export interface CreateTaskInput {
   description?: string | null;
   assigned_to?: string | null;
   status?: TaskStatus;
+  category_name?: string | null;
 }
 
 export interface UpdateTaskInput {
@@ -61,6 +76,7 @@ export interface UpdateTaskInput {
   assigned_to?: string | null;
   status?: TaskStatus;
   priority_order?: number;
+  category_name?: string | null;
 }
 
 export interface ReorderTasksInput {

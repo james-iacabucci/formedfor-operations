@@ -9,6 +9,7 @@ import {
   FileText,
   Clock,
   Settings,
+  Tag,
 } from "lucide-react";
 import { TaskWithAssignee } from "@/types/task";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
@@ -28,7 +29,8 @@ const entityIcons = {
   client: Users,
   order: ShoppingCart,
   lead: FileText,
-  general: Settings
+  general: Tag,
+  undefined: Settings
 };
 
 export function TaskItem({ task, isDragging }: TaskItemProps) {
@@ -54,12 +56,37 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
     transition
   };
   
-  // Get the appropriate icon for the task's related type, use "general" (gear icon) as default
+  // Get the appropriate icon for the task's related type
   const relatedType = task.related_type || "general";
-  const EntityIcon = entityIcons[relatedType];
+  const EntityIcon = entityIcons[relatedType] || Settings;
   
   // Calculate task age in days
   const taskAge = getTaskAge(task.created_at);
+
+  // Get related entity name based on type
+  const getRelatedEntityName = () => {
+    if (!relatedType || relatedType === "general") {
+      return task.category_name || "General";
+    }
+    
+    if (relatedType === "sculpture" && task.sculpture) {
+      return task.sculpture.ai_generated_name || "Unnamed Sculpture";
+    }
+    
+    if (relatedType === "client" && task.client) {
+      return task.client.name || "Unnamed Client";
+    }
+    
+    if (relatedType === "lead" && task.lead) {
+      return task.lead.name || "Unnamed Lead";
+    }
+    
+    if (relatedType === "order" && task.order) {
+      return task.order.name || "Unnamed Order";
+    }
+    
+    return relatedType;
+  };
 
   return (
     <div 
@@ -79,10 +106,8 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
           
           {/* Related entity section */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <EntityIcon className="h-3 w-3" />
-            {relatedType !== "general" && (
-              <span className="capitalize truncate">{relatedType}</span>
-            )}
+            <EntityIcon className="h-3 w-3 flex-shrink-0" />
+            <span className="capitalize truncate">{getRelatedEntityName()}</span>
           </div>
           
           {/* Assignee and task age */}
