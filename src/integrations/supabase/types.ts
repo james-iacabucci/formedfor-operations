@@ -461,6 +461,7 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
+          category_name: string | null
           client_id: string | null
           created_at: string
           created_by: string
@@ -469,6 +470,7 @@ export type Database = {
           lead_id: string | null
           order_id: string | null
           priority_order: number
+          product_line_id: string | null
           related_type: string | null
           sculpture_id: string | null
           status: string
@@ -477,6 +479,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          category_name?: string | null
           client_id?: string | null
           created_at?: string
           created_by: string
@@ -485,6 +488,7 @@ export type Database = {
           lead_id?: string | null
           order_id?: string | null
           priority_order?: number
+          product_line_id?: string | null
           related_type?: string | null
           sculpture_id?: string | null
           status?: string
@@ -493,6 +497,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          category_name?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string
@@ -501,6 +506,7 @@ export type Database = {
           lead_id?: string | null
           order_id?: string | null
           priority_order?: number
+          product_line_id?: string | null
           related_type?: string | null
           sculpture_id?: string | null
           status?: string
@@ -513,6 +519,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_product_line_id_fkey"
+            columns: ["product_line_id"]
+            isOneToOne: false
+            referencedRelation: "product_lines"
             referencedColumns: ["id"]
           },
           {
