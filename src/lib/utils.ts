@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -16,4 +17,20 @@ export function formatFileSize(bytes: number): string {
   }
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
+
+/**
+ * Gets the initials from a name string
+ * @param name The full name to extract initials from
+ * @returns The first letters of each word in the name (max 2)
+ */
+export function getInitials(name: string): string {
+  if (!name) return "";
+  
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].charAt(0).toUpperCase();
+  }
+  
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }

@@ -50,6 +50,7 @@ export function useAllTasks() {
         product_line_id: item.product_line_id || null,
         category_name: item.category_name || null,
         related_type: item.related_type as TaskRelatedType || null,
+        attachments: item.attachments || null,
         assignee: item.assignee,
         sculpture: item.sculpture
       }));
