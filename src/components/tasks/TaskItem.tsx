@@ -45,6 +45,26 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
     setIsExpanded(!isExpanded);
   };
 
+  // Get related entity name
+  const getRelatedEntityName = () => {
+    if (!task.related_type || task.related_type === "general") return null;
+    
+    switch (task.related_type) {
+      case "sculpture":
+        return task.sculpture?.ai_generated_name || "Unnamed Sculpture";
+      case "client":
+        return task.client?.name || "Unnamed Client";
+      case "order":
+        return task.order?.name || "Unnamed Order";
+      case "lead":
+        return task.lead?.name || "Unnamed Lead";
+      default:
+        return null;
+    }
+  };
+
+  const relatedEntityName = getRelatedEntityName();
+
   return (
     <>
       <Card 
@@ -53,20 +73,12 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
       >
         <CardHeader className="p-3 pb-0">
           <div className="flex justify-between items-start gap-2">
-            <CardTitle className="text-sm font-medium">{task.title}</CardTitle>
-            <div className="flex gap-1">
-              {hasAttachments && (
-                <div className="text-muted-foreground">
-                  <Paperclip className="h-3 w-3" />
-                </div>
-              )}
-              <Badge 
-                variant="secondary" 
-                className={taskStatusColors({ status: task.status })}
-              >
-                {task.status.replace('_', ' ')}
-              </Badge>
-            </div>
+            <CardTitle className="text-sm font-medium w-full">{task.title}</CardTitle>
+            {hasAttachments && (
+              <div className="text-muted-foreground flex-shrink-0">
+                <Paperclip className="h-3 w-3" />
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-3 pt-1">
@@ -79,6 +91,14 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-muted-foreground">{task.assignee.username}</span>
+            </div>
+          )}
+          
+          {relatedEntityName && (
+            <div className="mb-2">
+              <Badge variant="outline" className="text-xs font-normal">
+                {task.related_type}: {relatedEntityName}
+              </Badge>
             </div>
           )}
           
