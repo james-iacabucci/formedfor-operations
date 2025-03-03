@@ -1,12 +1,11 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useState } from "react";
 import { Message, UploadingFile } from "./types";
 import { useThreads } from "./hooks/useThreads";
 import { ChatHeader } from "./components/ChatHeader";
-import { ChatNavigation } from "./components/ChatNavigation";
 import { ChatContent } from "./components/ChatContent";
 import { MessageInput } from "./MessageInput";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatSheetProps {
   open: boolean;
@@ -49,14 +48,42 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
         <div className="flex flex-col h-full">
-          <ChatHeader threadId={threadId} />
-          
-          <ChatNavigation 
+          <ChatHeader 
+            threadId={threadId} 
             activeView={activeView}
             onViewChange={handleViewChange}
-            currentTopic={currentTopic}
-            onTopicChange={handleTopicChange}
+            onClose={() => onOpenChange(false)}
           />
+          
+          {/* Topics navigation - keep this separate from the Chat/Files tabs */}
+          <div className="border-b shrink-0 py-3 px-4">
+            <Tabs
+              value={currentTopic}
+              onValueChange={(value) => onTopicChange(value as "pricing" | "fabrication" | "operations")}
+              className="rounded-full border border-[#333333] p-1 flex w-full"
+            >
+              <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
+                <TabsTrigger 
+                  value="pricing" 
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                >
+                  Pricing
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="fabrication" 
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                >
+                  Fabrication
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="operations" 
+                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                >
+                  Operations
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
           <ChatContent 
             activeView={activeView}
