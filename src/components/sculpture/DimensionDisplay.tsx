@@ -1,4 +1,3 @@
-
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -48,14 +47,14 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
         <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
           <TabsTrigger 
             value="inches" 
-            className="h-4 px-2 text-xs rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-4 px-2 text-xs rounded-full text-black dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
             onClick={handleTabTriggerClick}
           >
             in
           </TabsTrigger>
           <TabsTrigger 
             value="centimeters" 
-            className="h-4 px-2 text-xs rounded-full text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            className="h-4 px-2 text-xs rounded-full text-black dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
             onClick={handleTabTriggerClick}
           >
             cm
