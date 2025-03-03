@@ -73,7 +73,7 @@ export function useSculptureGeneration() {
         return;
       }
       
-      // Create all generation promises at once
+      // Create generation promises
       const generationPromises = imagesToGenerate.map(async (image) => {
         try {
           console.log("Starting generation for image ID:", image.id);
@@ -111,21 +111,70 @@ export function useSculptureGeneration() {
         }
       });
 
+      // Process images in batches to show updates as they come in
+      let completedResults: GenerationResult[] = [];
+      const updateInterval = setInterval(() => {
+        if (completedResults.length > 0) {
+          const currentResults = [...completedResults];
+          completedResults = [];
+          
+          // Update state with completed results
+          setGeneratedImages(prev => {
+            return prev.map(img => {
+              const result = currentResults.find(r => r.id === img.id);
+              if (result) {
+                return {
+                  ...img,
+                  url: result.success ? result.url : null,
+                  isGenerating: false,
+                  error: !result.success
+                };
+              }
+              return img;
+            });
+          });
+        }
+      }, 500);
+
       // Wait for all generations to complete, with a timeout
       const timeout = (ms: number) => new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Generation timeout')), ms)
       );
       
+      // Process each promise and collect results
+      for (const promise of generationPromises) {
+        try {
+          const result = await Promise.race([promise, timeout(120000)]) as GenerationResult;
+          if (result) completedResults.push(result);
+        } catch (error) {
+          console.error("Promise failed:", error);
+          // For timeout errors, we still need to create a result object
+          if (error instanceof Error && error.message === 'Generation timeout') {
+            const timeoutImageId = imagesToGenerate[generationPromises.indexOf(promise)]?.id;
+            if (timeoutImageId) {
+              completedResults.push({
+                id: timeoutImageId,
+                success: false,
+                error: true
+              });
+            }
+          }
+        }
+      }
+      
+      clearInterval(updateInterval);
+      
+      // Final update to ensure all results are processed
       const results = await Promise.all(
         generationPromises.map(promise => 
-          Promise.race([promise, timeout(60000)]).catch(error => {
-            console.error("Promise failed:", error);
+          promise.catch(error => {
+            console.error("Final promise collection failed:", error);
             return { success: false, error: true } as GenerationResult;
           })
         )
       );
       
-      // Update state once with all results
+      // Update state once with all final results
       const finalImages = [...newImages].map(img => {
         const result = results.find(r => r && r.id === img.id) as GenerationResult | undefined;
         if (!result) return {
