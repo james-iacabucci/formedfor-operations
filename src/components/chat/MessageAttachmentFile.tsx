@@ -29,17 +29,17 @@ export function MessageAttachmentFile({
 }: MessageAttachmentFileProps) {
   return (
     <div 
-      className="flex items-center gap-3 p-2 rounded-lg border bg-muted/40 hover:bg-muted/60 transition-colors max-w-[280px] cursor-pointer group"
+      className="flex items-center gap-3 p-3 rounded-lg border bg-muted/40 hover:bg-muted/60 transition-colors max-w-md cursor-pointer group"
       onClick={onPreview}
     >
-      <div className="h-8 w-8 rounded-lg bg-background flex items-center justify-center">
-        <FileText className="h-4 w-4 text-muted-foreground" />
+      <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
+        <FileText className="h-5 w-5 text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-        <span className="font-medium text-xs truncate">
+        <span className="font-medium text-sm truncate">
           {attachment.name}
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatFileSize(attachment.size)}
           </span>
@@ -48,26 +48,26 @@ export function MessageAttachmentFile({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
                 onDownload(e);
               }}
             >
-              <Download className="h-3 w-3" />
+              <Download className="h-4 w-4" />
             </Button>
             
             {canDelete && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-8 w-8"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete?.();
                 }}
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
 
@@ -76,10 +76,10 @@ export function MessageAttachmentFile({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="h-8 w-8"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Save className="h-3 w-3" />
+                  <Save className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>

@@ -21,7 +21,7 @@ export function MessageAttachmentImage({
   onPreview
 }: MessageAttachmentImageProps) {
   return (
-    <div className="relative inline-block max-w-[200px]">
+    <div className="relative inline-block max-w-xs">
       <div 
         className="group relative rounded-lg overflow-hidden border border-border cursor-pointer"
         onClick={onPreview}
@@ -29,7 +29,7 @@ export function MessageAttachmentImage({
         <img 
           src={attachment.url} 
           alt={attachment.name}
-          className="max-h-[180px] object-cover w-full"
+          className="max-h-[250px] object-cover w-full"
         />
         <MessageAttachmentActions
           onDownload={onDownload}
