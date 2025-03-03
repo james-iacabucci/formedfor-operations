@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Sculpture, FileUpload } from "@/types/sculpture";
@@ -108,10 +109,38 @@ export function useSculpturesData(
     gcTime: 15 * 60 * 1000, // 15 minutes
   });
 
+  // Filter sculptures by selected tags if needed
+  const filteredSculptures = sculptures && sculptureTagRelations
+    ? filterSculpturesByTags(sculptures, sculptureTagRelations, viewSettings.selectedTagIds)
+    : sculptures;
+
   return {
-    sculptures,
+    sculptures: filteredSculptures,
     isLoading,
     sculptureTagRelations,
     tags,
   };
+}
+
+// Helper function to filter sculptures by tags
+function filterSculpturesByTags(
+  sculptures: Sculpture[],
+  sculptureTagRelations: Array<{ sculpture_id: string; tag_id: string }>,
+  selectedTagIds: string[]
+): Sculpture[] {
+  // If "all" is selected or no tags are selected, return all sculptures
+  if (selectedTagIds.includes('all') || selectedTagIds.length === 0) {
+    return sculptures;
+  }
+
+  // Find sculptures that have at least one of the selected tags
+  return sculptures.filter(sculpture => {
+    // Get all tag IDs for this sculpture
+    const sculptureTags = sculptureTagRelations
+      .filter(relation => relation.sculpture_id === sculpture.id)
+      .map(relation => relation.tag_id);
+    
+    // Check if any of the sculpture's tags match the selected tags
+    return selectedTagIds.some(tagId => sculptureTags.includes(tagId));
+  });
 }
