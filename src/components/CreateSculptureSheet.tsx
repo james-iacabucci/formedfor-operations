@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -215,15 +214,15 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               isPromptUpdated={isPromptUpdated}
             />
             
-            <div className="flex flex-row gap-2 items-start">
+            <div className="flex w-full">
               {productLines && productLines.length > 0 && (
-                <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId} className="flex-1">
-                  <TabsList className="h-8 p-0.5 bg-muted/30">
+                <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId} className="w-1/2">
+                  <TabsList className="h-8 p-0.5 bg-muted/30 w-full">
                     {productLines.map((pl) => (
                       <TabsTrigger 
                         key={pl.id} 
                         value={pl.id}
-                        className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                        className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                       >
                         {pl.name}
                       </TabsTrigger>
@@ -232,23 +231,23 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
                 </Tabs>
               )}
               
-              <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)} className="flex-1">
-                <TabsList className="h-8 p-0.5 bg-muted/30">
+              <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)} className="w-1/2">
+                <TabsList className="h-8 p-0.5 bg-muted/30 w-full">
                   <TabsTrigger 
                     value="low" 
-                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                   >
                     Low Creativity
                   </TabsTrigger>
                   <TabsTrigger 
                     value="medium" 
-                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                   >
                     Medium Creativity
                   </TabsTrigger>
                   <TabsTrigger 
                     value="high" 
-                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
                   >
                     High Creativity
                   </TabsTrigger>
