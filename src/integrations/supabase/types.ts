@@ -461,6 +461,7 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
+          attachments: Json | null
           category_name: string | null
           client_id: string | null
           created_at: string
@@ -479,6 +480,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          attachments?: Json | null
           category_name?: string | null
           client_id?: string | null
           created_at?: string
@@ -497,6 +499,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          attachments?: Json | null
           category_name?: string | null
           client_id?: string | null
           created_at?: string
