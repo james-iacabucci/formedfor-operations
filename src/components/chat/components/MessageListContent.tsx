@@ -30,14 +30,14 @@ export function MessageListContent({
   sculptureId
 }: MessageListContentProps) {
   return (
-    <div className="pb-4 pt-2 min-h-full">
+    <div className="pb-4 pt-2 px-4 min-h-full">
       {isFetchingNextPage && (
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       )}
       
-      <div className="space-y-1.5">
+      <div className="space-y-4">
         {messages.map((message) => (
           <MessageItem 
             key={message.id} 
@@ -51,8 +51,8 @@ export function MessageListContent({
       </div>
       
       {uploadingFiles.length > 0 && (
-        <div className="py-0.5 px-0 mt-1.5">
-          <div className={`flex items-start gap-3 max-w-4xl mx-auto rounded-lg p-4 ${
+        <div className="py-0.5 mt-4">
+          <div className={`flex items-start gap-3 rounded-lg p-4 ${
             user ? 'bg-background text-foreground border border-muted' : 'bg-accent/50'
           }`}>
             <div className="h-8 w-8"></div>

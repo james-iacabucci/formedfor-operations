@@ -117,8 +117,8 @@ export function MessageList({
 
   // Use ScrollArea component to enable scrolling
   return (
-    <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
-      <div className="h-full space-y-2">
+    <ScrollArea className="h-full" ref={scrollAreaRef}>
+      <div className="h-full">
         <MessageListContent 
           messages={messages} 
           isFetchingNextPage={isFetchingNextPage} 

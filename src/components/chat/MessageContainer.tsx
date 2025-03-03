@@ -21,11 +21,11 @@ export function MessageContainer({
 }: MessageContainerProps) {
   return (
     <div 
-      className="group relative py-0.5 px-0" 
+      className="group relative py-0" 
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={`flex items-start gap-3 max-w-4xl mx-auto rounded-lg p-4 ${
+      <div className={`flex items-start gap-3 max-w-4xl rounded-lg p-4 ${
         isOwnMessage 
           ? 'bg-background text-foreground border border-muted' 
           : 'bg-accent/50'
