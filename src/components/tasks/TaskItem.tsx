@@ -47,7 +47,7 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
 
   // Get related entity name
   const getRelatedEntityName = () => {
-    if (!task.related_type || task.related_type === "general") return null;
+    if (!task.related_type || task.related_type === null) return null;
     
     switch (task.related_type) {
       case "sculpture":
