@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { GeneratedImage } from "@/components/sculpture/create/GeneratedSculptureGrid";
 
+// Define types for our image generation results
+interface GenerationResult {
+  id: string;
+  success: boolean;
+  url?: string;
+  error?: boolean;
+}
+
 export function useSculptureGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -92,19 +100,19 @@ export function useSculptureGeneration() {
             id: image.id,
             success: true,
             url: data.imageUrl
-          };
+          } as GenerationResult;
         } catch (error) {
           console.error("Error generating individual image:", error);
           return {
             id: image.id,
             success: false,
             error: true
-          };
+          } as GenerationResult;
         }
       });
 
       // Wait for all generations to complete, with a timeout
-      const timeout = (ms: number) => new Promise((_, reject) => 
+      const timeout = (ms: number) => new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Generation timeout')), ms)
       );
       
@@ -112,14 +120,14 @@ export function useSculptureGeneration() {
         generationPromises.map(promise => 
           Promise.race([promise, timeout(60000)]).catch(error => {
             console.error("Promise failed:", error);
-            return { success: false, error: true };
+            return { success: false, error: true } as GenerationResult;
           })
         )
       );
       
       // Update state once with all results
       const finalImages = [...newImages].map(img => {
-        const result = results.find(r => r && r.id === img.id);
+        const result = results.find(r => r && r.id === img.id) as GenerationResult | undefined;
         if (!result) return {
           ...img,
           isGenerating: false,
