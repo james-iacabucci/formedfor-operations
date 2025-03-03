@@ -36,7 +36,7 @@ export function MessageList({
     refetch,
   } = useInfiniteQuery({
     queryKey: ["messages", threadId],
-    queryFn: async ({ pageParam = null }) => {
+    queryFn: async ({ pageParam }) => {
       let query = supabase
         .from("chat_messages")
         .select(
@@ -72,7 +72,8 @@ export function MessageList({
       
       return data as ThreadMessageWithProfile[];
     },
-    getNextPageParam: (lastPage) => {
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage: ThreadMessageWithProfile[]) => {
       if (lastPage && lastPage.length > 0) {
         return lastPage[lastPage.length - 1].created_at;
       }
