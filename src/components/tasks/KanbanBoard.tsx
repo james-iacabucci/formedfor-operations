@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
@@ -37,6 +36,7 @@ export function KanbanBoard() {
   const [filteredTasks, setFilteredTasks] = useState<TaskWithAssignee[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [activeTask, setActiveTask] = useState<TaskWithAssignee | null>(null);
+  const [groupBy, setGroupBy] = useState<"status" | "assignee" | "sculpture" | "relatedType">("status");
   const [tasksByStatus, setTasksByStatus] = useState<Record<TaskStatus, TaskWithAssignee[]>>({
     todo: [],
     this_week: [],
@@ -196,9 +196,18 @@ export function KanbanBoard() {
     setActiveTask(null);
   };
 
+  const handleGroupByChange = (value: "status" | "assignee" | "sculpture" | "relatedType") => {
+    setGroupBy(value);
+  };
+
   return (
     <div className="container">
-      <KanbanBoardHeader />
+      <KanbanBoardHeader 
+        groupBy={groupBy}
+        onGroupByChange={handleGroupByChange}
+        onAddTaskClick={() => setCreateDialogOpen(true)}
+        sculpturesLoading={isLoading}
+      />
       
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
