@@ -33,6 +33,7 @@ export function useUpdateTask() {
         ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
         ...(taskData.order_id !== undefined && { order_id: taskData.order_id }),
         ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
+        ...(taskData.product_line_id !== undefined && { product_line_id: taskData.product_line_id }),
         ...(taskData.category_name !== undefined && { category_name: taskData.category_name }),
         // We need to explicitly set related_type even if it's null
         related_type: taskData.related_type,

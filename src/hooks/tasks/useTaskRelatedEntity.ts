@@ -75,25 +75,30 @@ export function useTaskRelatedEntity(
   const { data: fetchedCategories = [] } = useQuery({
     queryKey: ["task-categories"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("category_name")
-        .not("category_name", "is", null)
-        .order("category_name", { ascending: true });
-      
-      if (error) {
-        console.error("Error fetching task categories:", error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("category_name")
+          .not("category_name", "is", null)
+          .order("category_name", { ascending: true });
+        
+        if (error) {
+          console.error("Error fetching task categories:", error);
+          throw error;
+        }
+        
+        // Extract unique category names
+        const uniqueCategories = [...new Set(
+          (data || [])
+            .map(task => task.category_name)
+            .filter(Boolean) as string[]
+        )];
+        
+        return uniqueCategories;
+      } catch (error) {
+        console.error("Error in task categories query:", error);
+        return [];
       }
-      
-      // Extract unique category names
-      const uniqueCategories = [...new Set(
-        (data || [])
-          .map(task => task.category_name)
-          .filter(Boolean) as string[]
-      )];
-      
-      return uniqueCategories;
     },
     enabled: open && relatedType === "general",
   });

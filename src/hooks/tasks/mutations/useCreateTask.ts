@@ -45,12 +45,14 @@ export function useCreateTask() {
         priority_order: nextPriorityOrder,
         created_by: user.id,
         related_type: relatedType,
+        category_name: taskData.category_name || null,
         
         // Explicitly set all entity IDs (some will be null)
         sculpture_id: taskData.sculpture_id || null,
         client_id: taskData.client_id || null,
         order_id: taskData.order_id || null,
         lead_id: taskData.lead_id || null,
+        product_line_id: taskData.product_line_id || null,
       };
       
       console.log("Creating task with data:", newTask);
@@ -88,6 +90,8 @@ export function useCreateTask() {
         client_id: data.client_id,
         order_id: data.order_id,
         lead_id: data.lead_id,
+        product_line_id: data.product_line_id || null,
+        category_name: data.category_name || null,
         related_type: data.related_type as TaskRelatedType,
         assignee: data.assignee
       };

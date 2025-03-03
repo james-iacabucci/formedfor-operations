@@ -19,7 +19,7 @@ export interface Task {
   client_id: string | null;
   order_id: string | null;
   lead_id: string | null;
-  product_line_id?: string | null;
+  product_line_id: string | null;
   related_type: TaskRelatedType;
   category_name: string | null;
 }

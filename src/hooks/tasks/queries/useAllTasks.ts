@@ -44,10 +44,12 @@ export function useAllTasks() {
         created_by: item.created_by,
         updated_at: item.updated_at,
         // Add the fields our app expects but aren't in the database
-        client_id: null,
-        order_id: null,
-        lead_id: null,
-        related_type: "sculpture" as TaskRelatedType,
+        client_id: item.client_id || null,
+        order_id: item.order_id || null,
+        lead_id: item.lead_id || null,
+        product_line_id: item.product_line_id || null,
+        category_name: item.category_name || null,
+        related_type: item.related_type as TaskRelatedType || null,
         assignee: item.assignee,
         sculpture: item.sculpture
       }));
