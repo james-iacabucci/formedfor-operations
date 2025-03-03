@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface CreateTaskSheetProps {
   orderId?: string | null;
   leadId?: string | null;
   relatedType?: TaskRelatedType;
+  initialDescription?: string;
 }
 
 export function CreateTaskSheet({ 
@@ -28,7 +30,8 @@ export function CreateTaskSheet({
   clientId = null,
   orderId = null,
   leadId = null,
-  relatedType = null
+  relatedType = null,
+  initialDescription = ""
 }: CreateTaskSheetProps) {
   const { toast } = useToast();
   const { createTask } = useTaskMutations();
@@ -36,7 +39,7 @@ export function CreateTaskSheet({
   const { user: currentUser } = useAuth();
   
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(initialDescription);
   const [taskRelatedType, setTaskRelatedType] = useState<TaskRelatedType | string | null>(relatedType || "general");
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [status, setStatus] = useState<TaskStatus>("todo");
@@ -51,12 +54,12 @@ export function CreateTaskSheet({
   useEffect(() => {
     if (open) {
       setTitle("");
-      setDescription("");
+      setDescription(initialDescription);
       setTaskRelatedType(relatedType || "general");
       setAssignedTo(currentUser?.id || null);
       setStatus("todo");
     }
-  }, [open, relatedType, currentUser]);
+  }, [open, relatedType, currentUser, initialDescription]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

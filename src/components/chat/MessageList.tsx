@@ -1,92 +1,103 @@
-
-import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAuth } from "@/components/AuthProvider";
-import { useMessages } from "./hooks/useMessages";
-import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
-import { useMessageScroll } from "./hooks/useMessageScroll";
+import { supabase } from "@/integrations/supabase/client";
 import { MessageListContent } from "./components/MessageListContent";
-import { Message, UploadingFile } from "./types";
+import { Message, ThreadMessageWithProfile, UploadingFile } from "./types";
+import { useEffect, useState } from "react";
 
 interface MessageListProps {
   threadId: string;
-  uploadingFiles: UploadingFile[];
-  editingMessage: Message | null;
-  setEditingMessage: (message: Message | null) => void;
+  onLoadMore?: () => void;
+  editingMessage?: Message | null;
+  setEditingMessage?: (message: Message | null) => void;
   onReplyToMessage?: (message: Message) => void;
+  sculptureId?: string;
 }
 
 export function MessageList({ 
   threadId, 
-  uploadingFiles,
-  editingMessage,
+  onLoadMore, 
+  editingMessage, 
   setEditingMessage,
-  onReplyToMessage
+  onReplyToMessage,
+  sculptureId
 }: MessageListProps) {
   const { user } = useAuth();
-  const [initialScroll, setInitialScroll] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   
   const {
-    messages: fetchedMessages,
-    isLoading,
+    data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
-    isInitialLoad,
-    setIsInitialLoad,
-    lastMessageRef
-  } = useMessages(threadId);
-  
-  // Setup scroll behavior first
-  const { 
-    scrollRef,
-    hasScrolled: scrollStateHasScrolled,
-    setShouldScrollToBottom,
-    scrollToBottom
-  } = useMessageScroll({
     isLoading,
-    messages: fetchedMessages,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    isInitialLoad,
-    setIsInitialLoad,
-    lastMessageRef
-  });
-  
-  // Apply real-time updates to messages
-  useRealtimeMessages({
-    threadId,
     refetch,
-    lastMessageRef,
-    hasScrolled: scrollStateHasScrolled,
-    setScrollToBottom: setShouldScrollToBottom
-  });
-  
-  // Force scroll to bottom when component mounts
-  useEffect(() => {
-    if (fetchedMessages.length > 0 && scrollRef.current) {
-      console.log("MessageList: Initial mount, forcing scroll to bottom");
-      setTimeout(() => {
-        scrollToBottom(true);
-      }, 250);
+  } = useInfiniteQuery(
+    ["messages", threadId],
+    async ({ pageParam = null }) => {
+      let query = supabase
+        .from("chat_messages")
+        .select(
+          `
+          id,
+          created_at,
+          content,
+          user_id,
+          thread_id,
+          reactions,
+          attachments,
+          profiles (
+            username,
+            avatar_url
+          ),
+          edited_at
+        `
+        )
+        .eq("thread_id", threadId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      
+      if (pageParam) {
+        query = query.lt("created_at", pageParam);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error fetching messages:", error);
+        throw error;
+      }
+      
+      return data as ThreadMessageWithProfile[];
+    },
+    {
+      getNextPageParam: (lastPage) => {
+        if (lastPage && lastPage.length > 0) {
+          return lastPage[lastPage.length - 1].created_at;
+        }
+        return undefined;
+      },
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     }
-  }, []);
-  
-  // Additional scroll to bottom when thread changes
+  );
+
   useEffect(() => {
-    console.log(`MessageList: Thread changed to ${threadId}, will scroll to bottom`);
-    setIsInitialLoad(true);
-  }, [threadId, setIsInitialLoad]);
-  
+    if (onLoadMore) {
+      onLoadMore();
+    }
+  }, [isLoading]);
+
+  const messages = data?.pages?.flatMap((page) => page) || [];
+
+  // Use InfiniteScroll to handle loading more messages
   return (
-    <div
-      ref={scrollRef}
-      className="h-full overflow-y-auto overflow-x-hidden pt-1 px-4"
-    >
-      <MessageListContent
-        messages={fetchedMessages}
-        isFetchingNextPage={isFetchingNextPage}
+    <div className="h-full space-y-2">
+      
+      <MessageListContent 
+        messages={messages || []} 
+        isFetchingNextPage={isFetchingNextPage} 
         isLoading={isLoading}
         uploadingFiles={uploadingFiles}
         user={user}
@@ -94,6 +105,7 @@ export function MessageList({
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
         onReplyToMessage={onReplyToMessage}
+        sculptureId={sculptureId}
       />
     </div>
   );

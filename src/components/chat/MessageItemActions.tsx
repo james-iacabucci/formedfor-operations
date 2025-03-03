@@ -1,5 +1,5 @@
 
-import { Edit, Reply, Trash2, Copy, ThumbsUp, Eye, Check } from "lucide-react";
+import { Edit, Reply, Trash2, Copy, ThumbsUp, Eye, Check, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Tooltip,
@@ -18,6 +18,8 @@ interface MessageItemActionsProps {
   handleCopy: () => void;
   handleReaction: (reactionType: string) => void;
   handleReply?: () => void;
+  handleCreateTask?: () => void;
+  sculptureId?: string;
 }
 
 export function MessageItemActions({
@@ -28,7 +30,9 @@ export function MessageItemActions({
   handleDelete,
   handleCopy,
   handleReaction,
-  handleReply
+  handleReply,
+  handleCreateTask,
+  sculptureId
 }: MessageItemActionsProps) {
   return (
     <div className={`flex items-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
@@ -117,6 +121,25 @@ export function MessageItemActions({
                 <p>Reply</p>
               </TooltipContent>
             </Tooltip>
+            
+            {/* Create Task button - only show if we have a sculptureId */}
+            {sculptureId && !isDeleted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7 rounded-md"
+                    onClick={handleCreateTask}
+                  >
+                    <ListPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create Task</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             
             <Tooltip>
               <TooltipTrigger asChild>

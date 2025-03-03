@@ -2,6 +2,9 @@ import { Message, UploadingFile } from "../types";
 import { FileList } from "../file-list/FileList";
 import { MessageList } from "../MessageList";
 import { Dispatch, SetStateAction } from "react";
+import { ThreadWithMessages } from "../types";
+import { useAuth } from "../auth/AuthContext";
+import { useState } from "react";
 
 interface ChatContentProps {
   activeView: "chat" | "files";

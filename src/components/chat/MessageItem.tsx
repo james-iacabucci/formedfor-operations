@@ -8,7 +8,8 @@ import { useMessageReactions } from "./hooks/useMessageReactions";
 import { useMessageItem } from "./hooks/useMessageItem";
 import { MessageContainer } from "./MessageContainer";
 import { MessageReactions } from "./MessageReactions";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { CreateTaskSheet } from "../tasks/CreateTaskSheet";
 
 interface MessageItemProps {
   message: Message;
@@ -17,6 +18,7 @@ interface MessageItemProps {
   editingMessage?: Message | null;
   setEditingMessage?: (message: Message | null) => void;
   onReplyToMessage?: (message: Message) => void;
+  sculptureId?: string;
 }
 
 export function MessageItem({ 
@@ -25,12 +27,14 @@ export function MessageItem({
   onEditMessage,
   editingMessage,
   setEditingMessage,
-  onReplyToMessage
+  onReplyToMessage,
+  sculptureId
 }: MessageItemProps) {
   const { user } = useAuth();
   const { handleReaction } = useMessageReactions(message);
   const instanceId = useRef(`message-item-${Math.random().toString(36).substring(2, 9)}`).current;
   const renderCount = useRef(0);
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   
   const {
     isHovered,
@@ -57,6 +61,13 @@ export function MessageItem({
   const handleReply = () => {
     if (onReplyToMessage) {
       onReplyToMessage(currentMessage);
+    }
+  };
+
+  // Handle create task from message
+  const handleCreateTask = () => {
+    if (!isDeleted && sculptureId) {
+      setIsCreateTaskOpen(true);
     }
   };
 
@@ -103,6 +114,8 @@ export function MessageItem({
           onCopy={handleCopy}
           onReaction={handleReaction}
           onReply={handleReply}
+          onCreateTask={handleCreateTask}
+          sculptureId={sculptureId}
         />
         
         <MessageContent 
@@ -129,6 +142,17 @@ export function MessageItem({
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={confirmDelete}
       />
+
+      {/* Create Task Sheet */}
+      {sculptureId && (
+        <CreateTaskSheet
+          open={isCreateTaskOpen}
+          onOpenChange={setIsCreateTaskOpen}
+          sculptureId={sculptureId}
+          relatedType="sculpture"
+          initialDescription={!isDeleted ? currentMessage.content : ""}
+        />
+      )}
     </>
   );
 }
