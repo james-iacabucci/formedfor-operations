@@ -36,7 +36,7 @@ export function useCreateTask() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User is not authenticated");
       
-      // Prepare the task data
+      // Prepare the task data, ensuring attachments is correctly typed for Supabase
       const newTask = {
         title: taskData.title,
         description: taskData.description || null,
@@ -46,7 +46,8 @@ export function useCreateTask() {
         created_by: user.id,
         related_type: relatedType,
         category_name: taskData.category_name || null,
-        attachments: taskData.attachments || [],
+        // Convert TaskAttachment[] to Json for Supabase
+        attachments: taskData.attachments as any || [],
         
         // Explicitly set all entity IDs (some will be null)
         sculpture_id: taskData.sculpture_id || null,
@@ -96,7 +97,8 @@ export function useCreateTask() {
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
         related_type: data.related_type as TaskRelatedType || null,
-        attachments: data.attachments || [], 
+        // Cast the attachments back to our expected type
+        attachments: (data.attachments || []) as any, 
         assignee: data.assignee
       };
       

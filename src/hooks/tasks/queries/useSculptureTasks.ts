@@ -53,8 +53,8 @@ export function useSculptureTasks(sculptureId: string) {
         product_line_id: item.product_line_id || null,
         category_name: item.category_name || null,
         related_type: item.related_type as TaskRelatedType || null,
-        // Now attachments is a real column in the database
-        attachments: item.attachments || [],
+        // Properly handle attachments by ensuring it's cast to the correct type
+        attachments: (item.attachments || []) as any,
         assignee: item.assignee
       }));
 

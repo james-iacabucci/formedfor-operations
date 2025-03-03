@@ -35,7 +35,8 @@ export function useUpdateTask() {
         ...(taskData.lead_id !== undefined && { lead_id: taskData.lead_id }),
         ...(taskData.product_line_id !== undefined && { product_line_id: taskData.product_line_id }),
         ...(taskData.category_name !== undefined && { category_name: taskData.category_name }),
-        ...(taskData.attachments !== undefined && { attachments: taskData.attachments }),
+        // Convert TaskAttachment[] to Json for Supabase
+        ...(taskData.attachments !== undefined && { attachments: taskData.attachments as any }),
         // We need to explicitly set related_type even if it's null
         related_type: taskData.related_type,
         updated_at: new Date().toISOString(),
@@ -86,7 +87,8 @@ export function useUpdateTask() {
         lead_id: data.lead_id || null,
         product_line_id: data.product_line_id || null,
         category_name: data.category_name || null,
-        attachments: data.attachments || [],
+        // Cast attachments back to our expected type
+        attachments: (data.attachments || []) as any,
         // Fix: Properly cast the related_type to TaskRelatedType or null
         related_type: data.related_type as TaskRelatedType || null,
         assignee: data.assignee,
