@@ -5,10 +5,10 @@ import { TaskWithAssignee } from "@/types/task";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
+import { getInitials, formatDistanceToNow } from "@/lib/utils";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
-import { RichTextDisplay } from "./editor/RichTextDisplay";
-import { Paperclip, ChevronDown, ChevronUp } from "lucide-react";
+import { Paperclip, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { getTaskAge } from "./utils/taskGrouping";
 
 interface TaskItemProps {
   task: TaskWithAssignee;
@@ -19,7 +19,6 @@ const taskStatusColors = cva("", {
   variants: {
     status: {
       todo: "bg-secondary text-secondary-foreground",
-      soon: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       today: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
       in_progress: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
       waiting: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
@@ -36,8 +35,8 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
   const hasAttachments = task.attachments && task.attachments.length > 0;
-  const hasLongDescription = task.description && task.description.length > 100;
-  const shouldShowToggle = hasLongDescription || hasAttachments;
+  const shouldShowToggle = hasAttachments;
+  const daysSinceAdded = getTaskAge(task.created_at);
 
   // Handle toggle expansion without opening the edit sheet
   const handleToggleExpand = (e: React.MouseEvent) => {
@@ -71,7 +70,7 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
         className={`mb-2 hover:shadow-sm transition-all cursor-pointer ${isDragging ? 'opacity-70 shadow-md' : ''}`}
         onClick={() => setIsOpen(true)}
       >
-        <CardHeader className="p-3 pb-0">
+        <CardHeader className="p-3 pb-1">
           <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-sm font-medium w-full">{task.title}</CardTitle>
             {hasAttachments && (
@@ -82,32 +81,11 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
           </div>
         </CardHeader>
         <CardContent className="p-3 pt-1">
-          {task.assignee && (
-            <div className="flex items-center mt-1 mb-2">
-              <Avatar className="h-5 w-5 mr-1">
-                <AvatarImage src={task.assignee.avatar_url || undefined} />
-                <AvatarFallback className="text-[10px]">
-                  {getInitials(task.assignee.username || "User")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground">{task.assignee.username}</span>
-            </div>
-          )}
-          
           {relatedEntityName && (
             <div className="mb-2">
               <Badge variant="outline" className="text-xs font-normal">
                 {task.related_type}: {relatedEntityName}
               </Badge>
-            </div>
-          )}
-          
-          {task.description && (
-            <div className={`task-description overflow-hidden ${!isExpanded ? 'max-h-20' : ''}`}>
-              <RichTextDisplay 
-                content={task.description} 
-                className="text-sm" 
-              />
             </div>
           )}
           
@@ -123,6 +101,27 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
               </ul>
             </div>
           )}
+          
+          <div className="flex justify-between items-center mt-3">
+            <div className="flex items-center">
+              {task.assignee && (
+                <div className="flex items-center">
+                  <Avatar className="h-5 w-5 mr-1">
+                    <AvatarImage src={task.assignee.avatar_url || undefined} />
+                    <AvatarFallback className="text-[10px]">
+                      {getInitials(task.assignee.username || "User")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs text-muted-foreground">{task.assignee.username}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>{daysSinceAdded} {daysSinceAdded === 1 ? 'day' : 'days'} ago</span>
+            </div>
+          </div>
           
           <div className="flex justify-between items-center mt-2">
             <div>

@@ -19,15 +19,18 @@ export function useUpdateTask() {
       
       if (!currentTask) throw new Error("Task not found");
       
-      // Log the incoming task data for debugging
-      console.log("Raw taskData received for update:", taskData);
+      // Migrate "soon" status to "todo" if needed
+      let adjustedStatus = taskData.status;
+      if (adjustedStatus === "soon" as any) {
+        adjustedStatus = "todo" as TaskStatus;
+      }
       
       // Prepare update data - explicitly handling related_type
       const updateData = {
         ...(taskData.title !== undefined && { title: taskData.title }),
         ...(taskData.description !== undefined && { description: taskData.description }),
         ...(taskData.assigned_to !== undefined && { assigned_to: taskData.assigned_to }),
-        ...(taskData.status !== undefined && { status: taskData.status }),
+        ...(adjustedStatus !== undefined && { status: adjustedStatus }),
         ...(taskData.priority_order !== undefined && { priority_order: taskData.priority_order }),
         ...(taskData.sculpture_id !== undefined && { sculpture_id: taskData.sculpture_id }),
         ...(taskData.client_id !== undefined && { client_id: taskData.client_id }),
@@ -41,8 +44,6 @@ export function useUpdateTask() {
         related_type: taskData.related_type,
         updated_at: new Date().toISOString(),
       };
-      
-      console.log("Sending update data to Supabase:", updateData);
       
       // Update the task
       const { data, error } = await supabase
@@ -68,7 +69,11 @@ export function useUpdateTask() {
       
       if (!data) throw new Error("Failed to retrieve updated task");
       
-      console.log("Data returned from Supabase:", data);
+      // Handle status migration in the returned data
+      let status = data.status;
+      if (status === "soon" || status === "tomorrow" || status === "this_week") {
+        status = "todo";
+      }
       
       // Transform to the correct return type with explicit mapping
       const updatedTask: TaskWithAssignee = {
@@ -77,7 +82,7 @@ export function useUpdateTask() {
         title: data.title,
         description: data.description,
         assigned_to: data.assigned_to,
-        status: data.status as TaskStatus,
+        status: status as TaskStatus,
         priority_order: data.priority_order,
         created_at: data.created_at,
         created_by: data.created_by,

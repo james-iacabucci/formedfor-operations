@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
@@ -39,14 +38,13 @@ export function KanbanBoard() {
   const [groupBy, setGroupBy] = useState<"status" | "assignee" | "sculpture" | "relatedType">("status");
   const [tasksByStatus, setTasksByStatus] = useState<Record<TaskStatus, TaskWithAssignee[]>>({
     todo: [],
-    soon: [],
     today: [],
     in_progress: [],
     waiting: [],
     done: [],
   });
 
-  const statusOrder: TaskStatus[] = ["todo", "soon", "today", "in_progress", "waiting", "done"];
+  const statusOrder: TaskStatus[] = ["todo", "today", "in_progress", "waiting", "done"];
   
   // For drag and drop
   const sensors = useSensors(
@@ -231,7 +229,7 @@ export function KanbanBoard() {
       {isLoading ? (
         <Card className="p-8 text-center text-muted-foreground">Loading tasks...</Card>
       ) : (
-        <div className="grid grid-cols-6 gap-2 mt-4">
+        <div className="grid grid-cols-5 gap-2 mt-4">
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}

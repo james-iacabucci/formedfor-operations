@@ -1,5 +1,4 @@
-
-export type TaskStatus = "todo" | "soon" | "today" | "in_progress" | "waiting" | "done";
+export type TaskStatus = "todo" | "today" | "in_progress" | "waiting" | "done";
 
 export type TaskRelatedType = "sculpture" | "client" | "order" | "lead" | "product_line" | null;
 
