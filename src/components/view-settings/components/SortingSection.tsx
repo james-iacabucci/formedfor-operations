@@ -39,9 +39,19 @@ export function SortingSection({
           onValueChange={onSortOrderChange}
           className="w-[120px]"
         >
-          <TabsList className="w-full h-9">
-            <TabsTrigger value="asc" className="flex-1 text-xs px-2">ASC</TabsTrigger>
-            <TabsTrigger value="desc" className="flex-1 text-xs px-2">DESC</TabsTrigger>
+          <TabsList className="h-8 p-0.5 bg-muted/30">
+            <TabsTrigger 
+              value="asc" 
+              className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            >
+              ASC
+            </TabsTrigger>
+            <TabsTrigger 
+              value="desc" 
+              className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+            >
+              DESC
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

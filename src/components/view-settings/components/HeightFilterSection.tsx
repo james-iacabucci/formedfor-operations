@@ -67,9 +67,19 @@ export function HeightFilterSection({
             onValueChange={onHeightUnitChange}
             className="w-[120px]"
           >
-            <TabsList className="w-full h-9">
-              <TabsTrigger value="in" className="flex-1 text-xs px-2">IN</TabsTrigger>
-              <TabsTrigger value="cm" className="flex-1 text-xs px-2">CM</TabsTrigger>
+            <TabsList className="h-8 p-0.5 bg-muted/30">
+              <TabsTrigger 
+                value="in" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                IN
+              </TabsTrigger>
+              <TabsTrigger 
+                value="cm" 
+                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              >
+                CM
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
