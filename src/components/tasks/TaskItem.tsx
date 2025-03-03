@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   FileText,
   Clock,
+  Settings,
 } from "lucide-react";
 import { TaskWithAssignee } from "@/types/task";
 import { UpdateTaskSheet } from "./UpdateTaskSheet";
@@ -26,7 +27,8 @@ const entityIcons = {
   sculpture: Paintbrush,
   client: Users,
   order: ShoppingCart,
-  lead: FileText
+  lead: FileText,
+  general: Settings
 };
 
 export function TaskItem({ task, isDragging }: TaskItemProps) {
@@ -52,8 +54,9 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
     transition
   };
   
-  // Get the appropriate icon for the task's related type
-  const EntityIcon = task.related_type ? entityIcons[task.related_type] : null;
+  // Get the appropriate icon for the task's related type, use "general" (gear icon) as default
+  const relatedType = task.related_type || "general";
+  const EntityIcon = entityIcons[relatedType];
   
   // Calculate task age in days
   const taskAge = getTaskAge(task.created_at);
@@ -74,15 +77,15 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
           {/* Title */}
           <div className="font-medium text-sm break-words">{task.title}</div>
           
-          {/* Related entity section - left aligned */}
-          {task.related_type && EntityIcon && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <EntityIcon className="h-3 w-3" />
-              <span className="capitalize truncate">{task.related_type}</span>
-            </div>
-          )}
+          {/* Related entity section */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <EntityIcon className="h-3 w-3" />
+            {relatedType !== "general" && (
+              <span className="capitalize truncate">{relatedType}</span>
+            )}
+          </div>
           
-          {/* Assignee and task age - left aligned */}
+          {/* Assignee and task age */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             {/* Assignee info */}
             <div className="flex items-center gap-1 flex-shrink-0">
