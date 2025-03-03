@@ -1,6 +1,5 @@
-
 import { Message, UploadingFile } from "../types";
-import { FileList } from "../FileList";
+import { FileList } from "../file-list/FileList";
 import { MessageList } from "../MessageList";
 import { Dispatch, SetStateAction } from "react";
 
