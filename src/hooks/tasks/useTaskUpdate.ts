@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { TaskWithAssignee, UpdateTaskInput, TaskStatus, TaskRelatedType } from "@/types/task";
 import { useToast } from "@/hooks/use-toast";
@@ -42,7 +41,6 @@ export function useTaskUpdate(
     task.category_name
   );
 
-  // Reset form when task changes or sheet opens
   useEffect(() => {
     if (open) {
       setTitle(task.title);
@@ -55,7 +53,7 @@ export function useTaskUpdate(
 
   const handleRelatedTypeChange = (type: string) => {
     console.log("Related type changed to:", type);
-    setTaskRelatedType(type);
+    setTaskRelatedType(type || "general");
   };
 
   const handleAssigneeChange = (value: string) => {
@@ -77,18 +75,14 @@ export function useTaskUpdate(
     }
 
     try {
-      // Process the related type value correctly
       let finalRelatedType: TaskRelatedType | null = null;
       
-      if (taskRelatedType === "general") {
-        // General means no specific relation type
+      if (!taskRelatedType || taskRelatedType === "general") {
         finalRelatedType = null;
       } else if (["sculpture", "client", "lead", "order"].includes(taskRelatedType as string)) {
-        // Valid TaskRelatedType values
         finalRelatedType = taskRelatedType as TaskRelatedType;
       }
       
-      // Log the data we're sending for debugging
       console.log("Related type before update:", taskRelatedType);
       console.log("Final related_type value to be sent:", finalRelatedType);
       console.log("Category name:", categoryName);
@@ -100,13 +94,11 @@ export function useTaskUpdate(
         assigned_to: assignedTo,
         status: status,
         related_type: finalRelatedType,
-        // Only add entity IDs when the related type matches
         sculpture_id: finalRelatedType === "sculpture" ? sculptureEntityId : null,
         client_id: finalRelatedType === "client" ? (task.client_id || null) : null,
         order_id: finalRelatedType === "order" ? (task.order_id || null) : null,
         lead_id: finalRelatedType === "lead" ? (task.lead_id || null) : null,
-        // Add category name if general type
-        category_name: finalRelatedType === null ? categoryName : null
+        category_name: finalRelatedType === null && categoryName && categoryName.trim() !== "" ? categoryName : null
       };
       
       console.log("Full task update data:", taskData);

@@ -145,7 +145,7 @@ export function RelatedEntitySection({
           ) : (
             <div className="flex gap-2 mt-1">
               <Select
-                value={categoryName || ""}
+                value={categoryName || undefined}
                 onValueChange={onCategoryChange}
               >
                 <SelectTrigger id="category" className="bg-transparent text-base border border-input rounded-md flex-1">
@@ -153,11 +153,11 @@ export function RelatedEntitySection({
                 </SelectTrigger>
                 <SelectContent>
                   {categories.length === 0 ? (
-                    <SelectItem value="">No categories available</SelectItem>
+                    <SelectItem value="no-categories">No categories available</SelectItem>
                   ) : (
                     categories.map((category, index) => (
-                      <SelectItem key={index} value={category}>
-                        {category}
+                      <SelectItem key={index} value={category || "untitled-category"}>
+                        {category || "Untitled Category"}
                       </SelectItem>
                     ))
                   )}
@@ -195,8 +195,8 @@ export function RelatedEntitySection({
                 <SelectItem value="no-sculptures-available">No sculptures available</SelectItem>
               ) : (
                 sculptures.map((sculpture) => (
-                  <SelectItem key={sculpture.id} value={sculpture.id}>
-                    {sculpture.name}
+                  <SelectItem key={sculpture.id} value={sculpture.id || "unknown-id"}>
+                    {sculpture.name || "Unnamed Sculpture"}
                   </SelectItem>
                 ))
               )}
@@ -224,8 +224,8 @@ export function RelatedEntitySection({
                 <SelectItem value="no-clients-available">No clients available</SelectItem>
               ) : (
                 clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
+                  <SelectItem key={client.id} value={client.id || "unknown-id"}>
+                    {client.name || "Unnamed Client"}
                   </SelectItem>
                 ))
               )}
@@ -253,8 +253,8 @@ export function RelatedEntitySection({
                 <SelectItem value="no-orders-available">No orders available</SelectItem>
               ) : (
                 orders.map((order) => (
-                  <SelectItem key={order.id} value={order.id}>
-                    {order.name}
+                  <SelectItem key={order.id} value={order.id || "unknown-id"}>
+                    {order.name || "Unnamed Order"}
                   </SelectItem>
                 ))
               )}
@@ -282,8 +282,8 @@ export function RelatedEntitySection({
                 <SelectItem value="no-leads-available">No leads available</SelectItem>
               ) : (
                 leads.map((lead) => (
-                  <SelectItem key={lead.id} value={lead.id}>
-                    {lead.name}
+                  <SelectItem key={lead.id} value={lead.id || "unknown-id"}>
+                    {lead.name || "Unnamed Lead"}
                   </SelectItem>
                 ))
               )}

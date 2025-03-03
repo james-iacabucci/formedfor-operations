@@ -34,7 +34,7 @@ export function useTaskRelatedEntity(
       }
       
       return (data || []).map(s => ({
-        id: s.id,
+        id: s.id || "unknown-id",
         name: s.ai_generated_name || "Unnamed Sculpture"
       })) as EntityOption[];
     },
@@ -87,11 +87,11 @@ export function useTaskRelatedEntity(
           throw error;
         }
         
-        // Extract unique category names
+        // Extract unique category names and ensure no empty strings
         const uniqueCategories = [...new Set(
           (data || [])
             .map(task => task.category_name)
-            .filter(Boolean) as string[]
+            .filter(category => category && category.trim() !== "") as string[]
         )];
         
         return uniqueCategories;
@@ -130,11 +130,12 @@ export function useTaskRelatedEntity(
   };
 
   const handleCategoryChange = (category: string) => {
-    setCategoryName(category || null);
+    // Ensure category is not an empty string
+    setCategoryName(category && category.trim() !== "" ? category : null);
   };
 
   const addCategory = (newCategory: string) => {
-    if (newCategory && !categories.includes(newCategory)) {
+    if (newCategory && newCategory.trim() !== "" && !categories.includes(newCategory)) {
       setCategories(prev => [...prev, newCategory]);
       setCategoryName(newCategory);
     }

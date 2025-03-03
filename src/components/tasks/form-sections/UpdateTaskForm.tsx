@@ -67,6 +67,9 @@ export function UpdateTaskForm({
   onSubmit,
   isPending
 }: UpdateTaskFormProps) {
+  // Ensure we have a valid related type
+  const safeRelatedType = taskRelatedType || "general";
+  
   return (
     <div className="space-y-4 py-4">
       <TaskDetailsSection
@@ -85,7 +88,7 @@ export function UpdateTaskForm({
       />
       
       <RelatedEntitySection
-        relatedType={taskRelatedType as TaskRelatedType}
+        relatedType={safeRelatedType as TaskRelatedType}
         entityId={sculptureEntityId}
         categoryName={categoryName}
         onEntitySelection={onEntitySelection}

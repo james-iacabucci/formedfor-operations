@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,6 @@ export function CreateTaskSheet({
     }
   }, [open, relatedType, currentUser]);
 
-  // Add keyboard event listener for ESC key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && open) {
@@ -72,7 +70,7 @@ export function CreateTaskSheet({
   }, [open, onOpenChange]);
 
   const handleRelatedTypeChange = (type: string) => {
-    setTaskRelatedType(type);
+    setTaskRelatedType(type || "general");
   };
 
   const handleAssigneeChange = (value: string) => {
@@ -111,7 +109,6 @@ export function CreateTaskSheet({
         assigned_to: assignedTo,
         status: status,
         related_type: finalRelatedType,
-        // Only add entity IDs when the related type matches
         ...(finalRelatedType === "sculpture" && { sculpture_id: sculptureEntityId }),
         ...(finalRelatedType === "client" && { client_id: clientId }),
         ...(finalRelatedType === "order" && { order_id: orderId }),
@@ -165,7 +162,7 @@ export function CreateTaskSheet({
         </div>
         
         <div className="flex items-center justify-between absolute bottom-6 right-6 left-6">
-          <div></div> {/* Empty div to maintain spacing (no delete button in create) */}
+          <div></div>
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
