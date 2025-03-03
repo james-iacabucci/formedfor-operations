@@ -20,7 +20,7 @@ export function useSculptureGeneration() {
     creativity: string,
     generatedImages: GeneratedImage[],
     selectedIds: Set<string>,
-    setGeneratedImages: (images: GeneratedImage[]) => void,
+    setGeneratedImages: React.Dispatch<React.SetStateAction<GeneratedImage[]>>,
     clearSelection: () => void
   ) => {
     if (!prompt.trim()) {
@@ -118,8 +118,8 @@ export function useSculptureGeneration() {
           const currentResults = [...completedResults];
           completedResults = [];
           
-          // Update state with completed results
-          setGeneratedImages(prev => {
+          // Update state with completed results - fixed TypeScript error here
+          setGeneratedImages((prev: GeneratedImage[]) => {
             return prev.map(img => {
               const result = currentResults.find(r => r.id === img.id);
               if (result) {
