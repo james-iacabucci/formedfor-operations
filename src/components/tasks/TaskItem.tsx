@@ -110,15 +110,15 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
             </DropdownMenu>
           </div>
           
-          {/* Related entity section - removed "Related to:" text */}
+          {/* Related entity section - left aligned */}
           {task.related_type && EntityIcon && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground pl-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <EntityIcon className="h-3 w-3" />
               <span className="capitalize truncate">{task.related_type}</span>
             </div>
           )}
           
-          {/* Assignee and task age */}
+          {/* Assignee and task age - left aligned */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             {/* Assignee info */}
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -136,7 +136,7 @@ export function TaskItem({ task, isDragging }: TaskItemProps) {
             </div>
             
             {/* Task age */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
               <Clock className="h-3 w-3" />
               <span>{taskAge}d</span>
             </div>
