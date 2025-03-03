@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ExtendedFileAttachment, Json } from "../../types";
+import { ExtendedFileAttachment } from "../../types";
+import { Json } from "@/integrations/supabase/types";
 
 export function useFileListData(threadId: string) {
   const [files, setFiles] = useState<ExtendedFileAttachment[]>([]);
