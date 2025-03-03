@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -214,44 +215,46 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
               isPromptUpdated={isPromptUpdated}
             />
             
-            <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)}>
-              <TabsList className="h-8 p-0.5 bg-muted/30">
-                <TabsTrigger 
-                  value="low" 
-                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Low Creativity
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="medium" 
-                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  Medium Creativity
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="high" 
-                  className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                >
-                  High Creativity
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {productLines && productLines.length > 0 && (
-              <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId}>
+            <div className="flex flex-row gap-2 items-start">
+              {productLines && productLines.length > 0 && (
+                <Tabs value={selectedProductLineId} onValueChange={setSelectedProductLineId} className="flex-1">
+                  <TabsList className="h-8 p-0.5 bg-muted/30">
+                    {productLines.map((pl) => (
+                      <TabsTrigger 
+                        key={pl.id} 
+                        value={pl.id}
+                        className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                      >
+                        {pl.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              )}
+              
+              <Tabs value={creativity} onValueChange={(v) => setCreativity(v as typeof creativity)} className="flex-1">
                 <TabsList className="h-8 p-0.5 bg-muted/30">
-                  {productLines.map((pl) => (
-                    <TabsTrigger 
-                      key={pl.id} 
-                      value={pl.id}
-                      className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-                    >
-                      {pl.name}
-                    </TabsTrigger>
-                  ))}
+                  <TabsTrigger 
+                    value="low" 
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                  >
+                    Low Creativity
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="medium" 
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                  >
+                    Medium Creativity
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="high" 
+                    className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+                  >
+                    High Creativity
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
-            )}
+            </div>
           </div>
           
           {generatedImages.length > 0 && (
