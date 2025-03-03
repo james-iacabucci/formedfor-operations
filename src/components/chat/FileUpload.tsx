@@ -1,61 +1,98 @@
 
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { PaperclipIcon } from "lucide-react";
+import { ChangeEvent, ReactNode } from "react";
+import { Button, ButtonProps } from "@/components/ui/button";
+import { toast } from "sonner";
 import { UploadingFile } from "./types";
 
 interface FileUploadProps {
-  disabled: boolean;
   onFilesSelected: (files: UploadingFile[]) => void;
-  children?: React.ReactNode;
-  buttonProps?: {
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "primary";
-    size?: "default" | "sm" | "lg" | "icon";
-    className?: string;
-  };
+  multiple?: boolean;
+  accept?: string;
+  maxSize?: number; // in bytes
+  maxFiles?: number;
+  buttonProps?: ButtonProps;
+  children?: ReactNode;
+  disabled?: boolean;
 }
 
-export function FileUpload({ 
-  disabled, 
-  onFilesSelected, 
-  children, 
-  buttonProps 
+export function FileUpload({
+  onFilesSelected,
+  multiple = true,
+  accept = "*/*",
+  maxSize = 20 * 1024 * 1024, // 20MB default
+  maxFiles = 10,
+  buttonProps,
+  children,
+  disabled = false
 }: FileUploadProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files.length) return;
-    const newFiles = Array.from(e.target.files).map(file => ({
-      id: crypto.randomUUID(),
-      file,
-      progress: 0
-    }));
-    onFilesSelected(newFiles);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    // Convert FileList to array for easier processing
+    const filesArray = Array.from(fileList);
+    
+    // Check if too many files were selected
+    if (filesArray.length > maxFiles) {
+      toast.error(`You can only upload ${maxFiles} files at once`);
+      e.target.value = '';
+      return;
+    }
+
+    // Process each file
+    const validFiles = filesArray.filter(file => {
+      // Check file size
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large (max ${maxSize / (1024 * 1024)}MB)`);
+        return false;
+      }
+      return true;
+    });
+
+    // Create UploadingFile objects for valid files
+    const uploadingFiles = validFiles.map(file => {
+      // Create preview URL for images
+      let preview = undefined;
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+      }
+
+      return {
+        id: crypto.randomUUID(),
+        file,
+        progress: 0,
+        preview
+      };
+    });
+
+    if (uploadingFiles.length > 0) {
+      onFilesSelected(uploadingFiles);
+      e.target.value = '';
     }
   };
 
   return (
-    <>
+    <div>
       <input
-        ref={fileInputRef}
         type="file"
-        multiple
-        className="hidden"
-        onChange={handleFileSelect}
+        id="file-upload"
+        multiple={multiple}
+        accept={accept}
+        onChange={handleFileChange}
+        className="sr-only"
         disabled={disabled}
       />
-      <Button
-        type="button"
-        size={buttonProps?.size || "icon"}
-        variant={buttonProps?.variant || "ghost"}
-        className={buttonProps?.className || "h-8 w-8 shrink-0 rounded-full"}
-        onClick={() => fileInputRef.current?.click()}
-        disabled={disabled}
-      >
-        {children || <PaperclipIcon className="h-4 w-4 text-muted-foreground" />}
-      </Button>
-    </>
+      <label htmlFor="file-upload">
+        <Button
+          type="button"
+          {...buttonProps}
+          onClick={(e) => e.preventDefault()}
+          disabled={disabled}
+          asChild
+        >
+          <span>{children}</span>
+        </Button>
+      </label>
+    </div>
   );
 }

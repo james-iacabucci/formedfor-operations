@@ -1,9 +1,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FileCard } from "./FileCard";
 import { UploadingFile } from "./types";
-import { Progress } from "@/components/ui/progress";
 
 interface PendingFilesProps {
   files: UploadingFile[];
@@ -15,41 +13,44 @@ export function PendingFiles({ files, isSending, onRemove }: PendingFilesProps) 
   if (files.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-wrap gap-2 mt-2">
       {files.map((file) => (
-        <div key={file.id} className="relative">
-          <FileCard file={file.file} />
-          {file.existingUrl ? (
-            <div className="mt-1">
-              <Progress value={100} className="h-1" indicatorClassName="bg-green-500" />
-              <p className="text-xs text-right mt-0.5 text-muted-foreground">
-                File already uploaded
-              </p>
+        <div 
+          key={file.id} 
+          className="relative rounded border overflow-hidden group flex items-center space-x-2 bg-background p-2"
+        >
+          {/* Show preview image for images */}
+          {file.file.type.startsWith('image/') && (file.preview || file.existingUrl) && (
+            <div className="h-8 w-8 rounded overflow-hidden bg-muted">
+              <img 
+                src={file.preview || file.existingUrl} 
+                alt={file.file.name}
+                className="h-full w-full object-cover"
+              />
             </div>
-          ) : (
-            file.progress > 0 && (
-              <div className="mt-1">
-                <Progress 
-                  value={file.progress} 
-                  className="h-1" 
-                  indicatorClassName={file.progress === 100 ? "bg-green-500" : ""}
-                />
-                <p className="text-xs text-right mt-0.5 text-muted-foreground">
-                  {file.progress === 100 ? 'Upload complete' : `Uploading... ${file.progress}%`}
-                </p>
-              </div>
-            )
           )}
-          {!isSending && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-1 right-1 h-6 w-6 bg-background/80 hover:bg-background/90"
-              onClick={() => onRemove(file.id)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+          
+          <span className="text-xs truncate max-w-[120px]">{file.file.name}</span>
+          
+          {file.progress < 100 && (
+            <div className="h-1 bg-muted overflow-hidden rounded-full w-16">
+              <div 
+                className="h-full bg-primary" 
+                style={{ width: `${file.progress}%` }}
+              />
+            </div>
           )}
+          
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 p-0 opacity-70 hover:opacity-100"
+            onClick={() => onRemove(file.id)}
+            disabled={isSending}
+          >
+            <X className="h-3 w-3" />
+          </Button>
         </div>
       ))}
     </div>

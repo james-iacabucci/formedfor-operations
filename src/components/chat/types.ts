@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 
 export interface FileAttachment {
@@ -13,6 +12,7 @@ export interface UploadingFile {
   file: File;
   progress: number;
   existingUrl?: string;
+  preview?: string; // Add preview URL for file previews
 }
 
 export interface MessageReaction {

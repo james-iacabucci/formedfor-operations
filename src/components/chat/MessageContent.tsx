@@ -23,9 +23,10 @@ export function MessageContent({
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>(() => 
     message.attachments.map(attachment => ({
       id: crypto.randomUUID(),
-      file: new File([], attachment.name, { type: attachment.type }),
+      file: new File([new Uint8Array(0)], attachment.name, { type: attachment.type }),
       progress: 100,
-      existingUrl: attachment.url
+      existingUrl: attachment.url,
+      preview: attachment.url // Add preview URL for existing attachments
     }))
   );
 
@@ -33,9 +34,10 @@ export function MessageContent({
   useEffect(() => {
     setUploadingFiles(message.attachments.map(attachment => ({
       id: crypto.randomUUID(),
-      file: new File([], attachment.name, { type: attachment.type }),
+      file: new File([new Uint8Array(0)], attachment.name, { type: attachment.type }),
       progress: 100,
-      existingUrl: attachment.url
+      existingUrl: attachment.url,
+      preview: attachment.url // Add preview URL for existing attachments
     })));
   }, [message.attachments]);
 

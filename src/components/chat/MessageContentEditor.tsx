@@ -37,7 +37,14 @@ export function MessageContentEditor({
   };
 
   const handleRemovePendingFile = (id: string) => {
-    setUploadingFiles(prev => prev.filter(f => f.id !== id));
+    setUploadingFiles(prev => {
+      const fileToRemove = prev.find(f => f.id === id);
+      if (fileToRemove?.preview) {
+        // Revoke object URL to prevent memory leaks
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
+      return prev.filter(f => f.id !== id);
+    });
   };
 
   const handleSaveEdit = async () => {
@@ -70,6 +77,13 @@ export function MessageContentEditor({
       
       const allAttachments = [...existingFiles, ...uploadedFiles];
       await onSave(editContent, allAttachments);
+      
+      // Clean up any object URLs to prevent memory leaks
+      uploadingFiles.forEach(file => {
+        if (file.preview && !file.existingUrl) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
     } catch (error) {
       console.error("Error saving edit:", error);
       toast({
@@ -94,6 +108,14 @@ export function MessageContentEditor({
     // Escape to cancel
     else if (e.key === 'Escape') {
       e.preventDefault();
+      
+      // Clean up any object URLs to prevent memory leaks
+      uploadingFiles.forEach(file => {
+        if (file.preview && !file.existingUrl) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
+      
       onCancel();
     }
     // Shift+Enter allows line break (default behavior, no need to handle)
