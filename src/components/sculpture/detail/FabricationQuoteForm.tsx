@@ -13,14 +13,15 @@ import { SculptureWeight } from "./SculptureWeight";
 interface FabricationQuoteFormProps {
   newQuote: NewQuote;
   onQuoteChange: (quote: NewQuote) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
   fabricators: any[];
   editingQuoteId: string | null;
   calculateTotal: (quote: NewQuote) => number;
   calculateTradePrice: (quote: NewQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
   formatNumber: (num: number) => string;
+  isInSheet?: boolean;
 }
 
 export function FabricationQuoteForm({
@@ -33,7 +34,8 @@ export function FabricationQuoteForm({
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
-  formatNumber
+  formatNumber,
+  isInSheet = false
 }: FabricationQuoteFormProps) {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -53,7 +55,7 @@ export function FabricationQuoteForm({
   };
 
   return (
-    <div className="border rounded-lg p-4 space-y-6">
+    <div className={isInSheet ? "" : "border rounded-lg p-4"} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Fabricator</label>
@@ -254,14 +256,17 @@ export function FabricationQuoteForm({
         />
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={onSave}>
-          {editingQuoteId ? "Save Changes" : "Save Quote"}
-        </Button>
-      </div>
+      {/* Only show buttons if not in sheet mode */}
+      {!isInSheet && onSave && onCancel && (
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={onSave}>
+            {editingQuoteId ? "Save Changes" : "Save Quote"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

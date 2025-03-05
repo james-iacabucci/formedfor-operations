@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +7,8 @@ import { FabricationQuote } from "@/types/fabrication-quote";
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { FabricationQuoteForm } from "./FabricationQuoteForm";
 import { FabricationQuoteCard } from "./FabricationQuoteCard";
+import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import {
   calculateTotal,
   calculateTradePrice,
@@ -21,34 +22,10 @@ interface SculptureFabricationQuotesProps {
 }
 
 export function SculptureFabricationQuotes({ sculptureId, sculpture }: SculptureFabricationQuotesProps) {
-  const [isAddingQuote, setIsAddingQuote] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+  const [initialQuote, setInitialQuote] = useState<NewQuote | undefined>(undefined);
   const { toast } = useToast();
-  const [newQuote, setNewQuote] = useState<NewQuote>({
-    sculpture_id: sculptureId,
-    fabrication_cost: 500,
-    shipping_cost: 0,
-    customs_cost: 0,
-    other_cost: 0,
-    markup: 4,
-    notes: "",
-    quote_date: new Date().toISOString(),
-    // Add new fields from sculpture
-    material_id: null,
-    method_id: null,
-    height_in: null,
-    width_in: null,
-    depth_in: null,
-    weight_kg: null,
-    weight_lbs: null,
-    base_material_id: null,
-    base_method_id: null,
-    base_height_in: null,
-    base_width_in: null,
-    base_depth_in: null,
-    base_weight_kg: null,
-    base_weight_lbs: null,
-  });
 
   const { data: fabricators } = useQuery({
     queryKey: ["value_lists", "fabricator"],
@@ -89,7 +66,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   const handleStartEdit = (quote: FabricationQuote) => {
     setEditingQuoteId(quote.id);
-    setNewQuote({
+    setInitialQuote({
       sculpture_id: quote.sculpture_id,
       fabricator_id: quote.fabricator_id,
       fabrication_cost: quote.fabrication_cost,
@@ -115,92 +92,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_weight_kg: quote.base_weight_kg,
       base_weight_lbs: quote.base_weight_lbs,
     });
-    setIsAddingQuote(false);
+    setIsSheetOpen(true);
   };
 
-  const handleSaveEdit = async () => {
-    if (!editingQuoteId || !newQuote.fabricator_id) return;
-
-    const { error } = await supabase
-      .from("fabrication_quotes")
-      .update({
-        fabricator_id: newQuote.fabricator_id,
-        fabrication_cost: newQuote.fabrication_cost,
-        shipping_cost: newQuote.shipping_cost,
-        customs_cost: newQuote.customs_cost,
-        other_cost: newQuote.other_cost,
-        markup: newQuote.markup,
-        notes: newQuote.notes,
-        quote_date: newQuote.quote_date,
-        // Include physical attributes
-        material_id: newQuote.material_id,
-        method_id: newQuote.method_id,
-        height_in: newQuote.height_in,
-        width_in: newQuote.width_in,
-        depth_in: newQuote.depth_in,
-        weight_kg: newQuote.weight_kg,
-        weight_lbs: newQuote.weight_lbs,
-        base_material_id: newQuote.base_material_id,
-        base_method_id: newQuote.base_method_id,
-        base_height_in: newQuote.base_height_in,
-        base_width_in: newQuote.base_width_in,
-        base_depth_in: newQuote.base_depth_in,
-        base_weight_kg: newQuote.base_weight_kg,
-        base_weight_lbs: newQuote.base_weight_lbs,
-      })
-      .eq("id", editingQuoteId);
-
-    if (error) {
-      console.error("Error updating quote:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update quote: " + error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await refetchQuotes();
+  const handleAddQuote = () => {
     setEditingQuoteId(null);
-    resetNewQuote();
-    
-    toast({
-      title: "Success",
-      description: "Quote updated successfully",
-    });
-  };
-
-  const handleAddQuote = async () => {
-    if (!newQuote.fabricator_id) return;
-
-    const quoteToInsert = {
-      ...newQuote,
-      fabricator_id: newQuote.fabricator_id,
-      sculpture_id: sculptureId,
-    };
-
-    const { error } = await supabase
-      .from("fabrication_quotes")
-      .insert(quoteToInsert);
-
-    if (error) {
-      console.error("Error adding quote:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add quote: " + error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await refetchQuotes();
-    setIsAddingQuote(false);
-    resetNewQuote();
-    
-    toast({
-      title: "Success",
-      description: "Quote added successfully",
-    });
+    setInitialQuote(undefined);
+    setIsSheetOpen(true);
   };
 
   const handleDeleteQuote = async (quoteId: string) => {
@@ -250,66 +148,17 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     });
   };
 
-  const resetNewQuote = () => {
-    setNewQuote({
-      sculpture_id: sculptureId,
-      fabrication_cost: 500,
-      shipping_cost: 0,
-      customs_cost: 0,
-      other_cost: 0,
-      markup: 4,
-      notes: "",
-      quote_date: new Date().toISOString(),
-      // Reset physical attributes
-      material_id: null,
-      method_id: null,
-      height_in: null,
-      width_in: null,
-      depth_in: null,
-      weight_kg: null,
-      weight_lbs: null,
-      base_material_id: null,
-      base_method_id: null,
-      base_height_in: null,
-      base_width_in: null,
-      base_depth_in: null,
-      base_weight_kg: null,
-      base_weight_lbs: null,
-    });
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
-        {!isAddingQuote && !editingQuoteId && (
-          <Button onClick={() => setIsAddingQuote(true)} size="sm">
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Quote
-          </Button>
-        )}
+        <Button onClick={handleAddQuote} size="sm">
+          <PlusIcon className="h-4 w-4 mr-2" />
+          Add Quote
+        </Button>
       </div>
 
       <div className="space-y-6">
-        {(isAddingQuote || editingQuoteId) && (
-          <FabricationQuoteForm
-            newQuote={newQuote}
-            onQuoteChange={setNewQuote}
-            onSave={editingQuoteId ? handleSaveEdit : handleAddQuote}
-            onCancel={() => {
-              setIsAddingQuote(false);
-              setEditingQuoteId(null);
-              resetNewQuote();
-            }}
-            fabricators={fabricators || []}
-            editingQuoteId={editingQuoteId}
-            calculateTotal={calculateTotal}
-            calculateTradePrice={calculateTradePrice}
-            calculateRetailPrice={calculateRetailPrice}
-            formatNumber={formatNumber}
-          />
-        )}
-
         {quotes && sortQuotes(quotes).map((quote) => (
           <FabricationQuoteCard
             key={quote.id}
@@ -322,10 +171,20 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
             calculateTradePrice={calculateTradePrice}
             calculateRetailPrice={calculateRetailPrice}
             formatNumber={formatNumber}
-            isEditing={editingQuoteId === quote.id}
+            isEditing={false}
           />
         ))}
       </div>
+
+      <EditFabricationQuoteSheet 
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+        sculptureId={sculptureId}
+        editingQuoteId={editingQuoteId}
+        fabricators={fabricators || []}
+        onQuoteSaved={refetchQuotes}
+        initialQuote={initialQuote}
+      />
     </div>
   );
 }
