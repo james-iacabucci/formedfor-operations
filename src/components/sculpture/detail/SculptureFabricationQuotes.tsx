@@ -148,6 +148,11 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     });
   };
 
+  // Fix for the type mismatch error - create a wrapper function that returns void
+  const handleQuoteSaved = async () => {
+    await refetchQuotes();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -182,7 +187,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         sculptureId={sculptureId}
         editingQuoteId={editingQuoteId}
         fabricators={fabricators || []}
-        onQuoteSaved={refetchQuotes}
+        onQuoteSaved={handleQuoteSaved}
         initialQuote={initialQuote}
       />
     </div>

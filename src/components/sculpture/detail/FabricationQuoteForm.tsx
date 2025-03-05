@@ -55,7 +55,7 @@ export function FabricationQuoteForm({
   };
 
   return (
-    <div className={isInSheet ? "" : "border rounded-lg p-4"} className="space-y-6">
+    <div className={`space-y-6 ${isInSheet ? "" : "border rounded-lg p-4"}`}>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Fabricator</label>
