@@ -126,51 +126,139 @@ export type Database = {
       }
       fabrication_quotes: {
         Row: {
+          base_depth_cm: number | null
+          base_depth_in: number | null
+          base_height_cm: number | null
+          base_height_in: number | null
+          base_material_id: string | null
+          base_method_id: string | null
+          base_weight_kg: number | null
+          base_weight_lbs: number | null
+          base_width_cm: number | null
+          base_width_in: number | null
           created_at: string
           customs_cost: number
+          depth_cm: number | null
+          depth_in: number | null
           fabrication_cost: number
           fabricator_id: string
+          height_cm: number | null
+          height_in: number | null
           id: string
           is_selected: boolean | null
           markup: number
+          material_id: string | null
+          method_id: string | null
           notes: string | null
           other_cost: number
           quote_date: string
           sculpture_id: string
           shipping_cost: number
+          weight_kg: number | null
+          weight_lbs: number | null
+          width_cm: number | null
+          width_in: number | null
         }
         Insert: {
+          base_depth_cm?: number | null
+          base_depth_in?: number | null
+          base_height_cm?: number | null
+          base_height_in?: number | null
+          base_material_id?: string | null
+          base_method_id?: string | null
+          base_weight_kg?: number | null
+          base_weight_lbs?: number | null
+          base_width_cm?: number | null
+          base_width_in?: number | null
           created_at?: string
           customs_cost?: number
+          depth_cm?: number | null
+          depth_in?: number | null
           fabrication_cost?: number
           fabricator_id: string
+          height_cm?: number | null
+          height_in?: number | null
           id?: string
           is_selected?: boolean | null
           markup?: number
+          material_id?: string | null
+          method_id?: string | null
           notes?: string | null
           other_cost?: number
           quote_date?: string
           sculpture_id: string
           shipping_cost?: number
+          weight_kg?: number | null
+          weight_lbs?: number | null
+          width_cm?: number | null
+          width_in?: number | null
         }
         Update: {
+          base_depth_cm?: number | null
+          base_depth_in?: number | null
+          base_height_cm?: number | null
+          base_height_in?: number | null
+          base_material_id?: string | null
+          base_method_id?: string | null
+          base_weight_kg?: number | null
+          base_weight_lbs?: number | null
+          base_width_cm?: number | null
+          base_width_in?: number | null
           created_at?: string
           customs_cost?: number
+          depth_cm?: number | null
+          depth_in?: number | null
           fabrication_cost?: number
           fabricator_id?: string
+          height_cm?: number | null
+          height_in?: number | null
           id?: string
           is_selected?: boolean | null
           markup?: number
+          material_id?: string | null
+          method_id?: string | null
           notes?: string | null
           other_cost?: number
           quote_date?: string
           sculpture_id?: string
           shipping_cost?: number
+          weight_kg?: number | null
+          weight_lbs?: number | null
+          width_cm?: number | null
+          width_in?: number | null
         }
         Relationships: [
           {
+            foreignKeyName: "fabrication_quotes_base_material_id_fkey"
+            columns: ["base_material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fabrication_quotes_base_method_id_fkey"
+            columns: ["base_method_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fabrication_quotes_fabricator_id_fkey"
             columns: ["fabricator_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fabrication_quotes_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fabrication_quotes_method_id_fkey"
+            columns: ["method_id"]
             isOneToOne: false
             referencedRelation: "value_lists"
             referencedColumns: ["id"]

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SculptureStatus } from "./detail/SculptureStatus";
 import { Badge } from "@/components/ui/badge";
 import { calculateTradePrice, calculateRetailPrice, formatNumber } from "@/utils/fabrication-quote-calculations";
+import { FabricationQuote } from "@/types/fabrication-quote";
 
 interface SculptureInfoProps {
   sculpture: Sculpture;
@@ -36,7 +37,7 @@ export function SculptureInfo({
         .maybeSingle();
       
       if (error) throw error;
-      return data;
+      return data as FabricationQuote;
     },
     staleTime: 30000,
     gcTime: 300000,
