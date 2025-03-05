@@ -2,10 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PencilIcon, Trash2Icon, CheckCircle2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon, CheckCircle2Icon, ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent
+} from "@/components/ui/collapsible";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
@@ -32,7 +37,9 @@ export function FabricationQuoteCard({
   formatNumber,
   isEditing
 }: FabricationQuoteCardProps) {
-  const [showDetails, setShowDetails] = useState(false);
+  const [sculptureDetailsOpen, setSculptureDetailsOpen] = useState(true);
+  const [baseDetailsOpen, setBaseDetailsOpen] = useState(true);
+  const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
 
   // Fetch material and method names
   const { data: materials } = useQuery({
@@ -153,116 +160,131 @@ export function FabricationQuoteCard({
         </div>
       </div>
 
-      <Button 
-        variant="ghost" 
-        className="w-full justify-start p-0 text-sm font-medium" 
-        onClick={() => setShowDetails(!showDetails)}
-      >
-        {showDetails ? "Hide Details" : "Show Details"}
-      </Button>
-
-      {showDetails && (
-        <>
-          {/* Sculpture Details Section */}
-          <div className="space-y-3 pt-2">
-            <h4 className="text-sm font-semibold">Sculpture Details</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-medium text-muted-foreground">Material</p>
-                <p>{getMaterialName(quote.material_id)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Method</p>
-                <p>{getMethodName(quote.method_id)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
-                <p>{formatDimensionString(quote.height_in, quote.width_in, quote.depth_in)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Weight</p>
-                <p>{formatWeightString(quote.weight_kg, quote.weight_lbs)}</p>
-              </div>
+      {/* Sculpture Details Section - Collapsible */}
+      <Collapsible open={sculptureDetailsOpen} onOpenChange={setSculptureDetailsOpen} className="border-b pb-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">Sculpture Details</h4>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
+              {sculptureDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent className="pt-2">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="font-medium text-muted-foreground">Material</p>
+              <p>{getMaterialName(quote.material_id)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Method</p>
+              <p>{getMethodName(quote.method_id)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
+              <p>{formatDimensionString(quote.height_in, quote.width_in, quote.depth_in)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Weight</p>
+              <p>{formatWeightString(quote.weight_kg, quote.weight_lbs)}</p>
             </div>
           </div>
-          
-          {/* Base Details Section */}
-          <div className="space-y-3 pt-2">
-            <h4 className="text-sm font-semibold">Base Details</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-medium text-muted-foreground">Material</p>
-                <p>{getMaterialName(quote.base_material_id)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Method</p>
-                <p>{getMethodName(quote.base_method_id)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
-                <p>{formatDimensionString(quote.base_height_in, quote.base_width_in, quote.base_depth_in)}</p>
-              </div>
-              <div>
-                <p className="font-medium text-muted-foreground">Weight</p>
-                <p>{formatWeightString(quote.base_weight_kg, quote.base_weight_lbs)}</p>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        </CollapsibleContent>
+      </Collapsible>
       
-      {/* Pricing Details Section */}
-      <div className="space-y-3 pt-2">
-        <h4 className="text-sm font-semibold">Pricing Details</h4>
-        <div className="grid grid-cols-5 gap-4 text-sm">
-          <div>
-            <p className="font-medium text-muted-foreground">Fabrication</p>
-            <p>${formatNumber(quote.fabrication_cost)}</p>
-          </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Shipping</p>
-            <p>${formatNumber(quote.shipping_cost)}</p>
-          </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Customs</p>
-            <p>${formatNumber(quote.customs_cost)}</p>
-          </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Other</p>
-            <p>${formatNumber(quote.other_cost)}</p>
-          </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Total Cost</p>
-            <p>${formatNumber(calculateTotal(quote))}</p>
-          </div>
+      {/* Base Details Section - Collapsible */}
+      <Collapsible open={baseDetailsOpen} onOpenChange={setBaseDetailsOpen} className="border-b pb-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">Base Details</h4>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
+              {baseDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
         </div>
+        <CollapsibleContent className="pt-2">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="font-medium text-muted-foreground">Material</p>
+              <p>{getMaterialName(quote.base_material_id)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Method</p>
+              <p>{getMethodName(quote.base_method_id)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
+              <p>{formatDimensionString(quote.base_height_in, quote.base_width_in, quote.base_depth_in)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Weight</p>
+              <p>{formatWeightString(quote.base_weight_kg, quote.base_weight_lbs)}</p>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+      
+      {/* Pricing Details Section - Collapsible */}
+      <Collapsible open={pricingDetailsOpen} onOpenChange={setPricingDetailsOpen} className="pt-0">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">Pricing Details</h4>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
+              {pricingDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent className="pt-2">
+          <div className="grid grid-cols-5 gap-4 text-sm">
+            <div>
+              <p className="font-medium text-muted-foreground">Fabrication</p>
+              <p>${formatNumber(quote.fabrication_cost)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Shipping</p>
+              <p>${formatNumber(quote.shipping_cost)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Customs</p>
+              <p>${formatNumber(quote.customs_cost)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Other</p>
+              <p>${formatNumber(quote.other_cost)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Total Cost</p>
+              <p>${formatNumber(calculateTotal(quote))}</p>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-5 gap-4 text-sm">
-          <div>
-            <p className="font-medium text-muted-foreground">Markup</p>
-            <p>{quote.markup}x</p>
+          <div className="grid grid-cols-5 gap-4 text-sm mt-4">
+            <div>
+              <p className="font-medium text-muted-foreground">Markup</p>
+              <p>{quote.markup}x</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Trade Price</p>
+              <p>${formatNumber(calculateTradePrice(quote))}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Retail Price</p>
+              <p>${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</p>
+            </div>
+            <div className="col-span-2" />
           </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Trade Price</p>
-            <p>${formatNumber(calculateTradePrice(quote))}</p>
-          </div>
-          <div>
-            <p className="font-medium text-muted-foreground">Retail Price</p>
-            <p>${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</p>
-          </div>
-          <div className="col-span-2" />
-        </div>
-      </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {quote.notes && (
-        <div className="text-sm">
+        <div className="text-sm pt-2">
           <p className="font-medium text-muted-foreground">Notes</p>
           <p className="whitespace-pre-line">{quote.notes}</p>
         </div>
       )}
 
       {quote.is_selected && (
-        <div className="flex items-center gap-2 text-sm text-primary">
+        <div className="flex items-center gap-2 text-sm text-primary pt-2">
           <CheckCircle2Icon className="h-4 w-4" />
           <span>Selected Quote</span>
         </div>
