@@ -13,9 +13,18 @@ interface SculptureWeightProps {
   weightKg: number | null;
   weightLbs: number | null;
   isBase?: boolean;
+  isQuoteForm?: boolean;
+  onWeightChange?: (field: string, value: number | null) => void;
 }
 
-export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = false }: SculptureWeightProps) {
+export function SculptureWeight({ 
+  sculptureId, 
+  weightKg, 
+  weightLbs, 
+  isBase = false,
+  isQuoteForm = false,
+  onWeightChange
+}: SculptureWeightProps) {
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [weight, setWeight] = useState({
     kg: weightKg?.toString() || "",
@@ -57,6 +66,15 @@ export function SculptureWeight({ sculptureId, weightKg, weightLbs, isBase = fal
       [`${prefix}weight_lbs`]: weight.lbs ? parseFloat(weight.lbs) : null,
     };
 
+    if (isQuoteForm && onWeightChange) {
+      // In quote form mode, update the parent form state
+      if (weight.kg) onWeightChange(`${prefix}weight_kg`, parseFloat(weight.kg));
+      if (weight.lbs) onWeightChange(`${prefix}weight_lbs`, parseFloat(weight.lbs));
+      setIsEditingWeight(false);
+      return;
+    }
+
+    // In direct edit mode, update the database
     const { error } = await supabase
       .from('sculptures')
       .update(updatedWeight)

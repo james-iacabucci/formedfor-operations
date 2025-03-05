@@ -5,12 +5,7 @@ import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
 import { SculpturePrompt } from "./SculpturePrompt";
-import { SculptureDimensions } from "./SculptureDimensions";
 import { SculptureFiles } from "./SculptureFiles";
-import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
-import { SculptureMethod } from "./SculptureMethod";
-import { SculptureWeight } from "./SculptureWeight";
-import { SculpturePDF } from "./SculpturePDF";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,72 +35,12 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
   return (
     <div className="space-y-6">
       <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Sculpture Details</h2>
-          <div className="space-y-6">
-            <div>
-              <SculptureMaterialFinish
-                sculptureId={sculpture.id}
-                materialId={sculpture.material_id}
-              />
-            </div>
-
-            <SculptureMethod
-              sculptureId={sculpture.id}
-              methodId={sculpture.method_id}
-            />
-
-            <SculptureDimensions
-              sculptureId={sculpture.id}
-              height={sculpture.height_in}
-              width={sculpture.width_in}
-              depth={sculpture.depth_in}
-            />
-
-            <SculptureWeight
-              sculptureId={sculpture.id}
-              weightKg={sculpture.weight_kg}
-              weightLbs={sculpture.weight_lbs}
-            />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Base Details</h2>
-          <div className="space-y-6">
-            <div>
-              <SculptureMaterialFinish
-                sculptureId={sculpture.id}
-                materialId={sculpture.base_material_id}
-                isBase={true}
-              />
-            </div>
-
-            <SculptureMethod
-              sculptureId={sculpture.id}
-              methodId={sculpture.base_method_id}
-              isBase={true}
-            />
-
-            <SculptureDimensions
-              sculptureId={sculpture.id}
-              height={sculpture.base_height_in}
-              width={sculpture.base_width_in}
-              depth={sculpture.base_depth_in}
-              isBase={true}
-            />
-
-            <SculptureWeight
-              sculptureId={sculpture.id}
-              weightKg={sculpture.base_weight_kg}
-              weightLbs={sculpture.base_weight_lbs}
-              isBase={true}
-            />
-          </div>
-        </div>
-
-        <SculptureFabricationQuotes sculptureId={sculpture.id} />
-
+        {/* Fabrication Quotes section now includes sculpture and base details */}
+        <SculptureFabricationQuotes 
+          sculptureId={sculpture.id} 
+          sculpture={sculpture} 
+        />
+        
         <div>
           <h2 className="text-lg font-semibold mb-2">AI Settings</h2>
           <SculpturePrompt prompt={sculpture.prompt} />

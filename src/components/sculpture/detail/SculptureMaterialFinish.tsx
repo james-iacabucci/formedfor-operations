@@ -9,18 +9,29 @@ interface SculptureMaterialFinishProps {
   sculptureId: string;
   materialId: string | null;
   isBase?: boolean;
+  isQuoteForm?: boolean;
+  onMaterialChange?: (materialId: string) => void;
 }
 
 export function SculptureMaterialFinish({ 
   sculptureId, 
   materialId,
-  isBase = false
+  isBase = false,
+  isQuoteForm = false,
+  onMaterialChange
 }: SculptureMaterialFinishProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { materials } = useMaterialFinishData(materialId);
 
   const handleMaterialChange = async (newMaterialId: string) => {
+    if (isQuoteForm && onMaterialChange) {
+      // In quote form mode, just update the form state
+      onMaterialChange(newMaterialId);
+      return;
+    }
+
+    // In direct edit mode, update the database
     const fieldName = isBase ? 'base_material_id' : 'material_id';
     const { error } = await supabase
       .from("sculptures")

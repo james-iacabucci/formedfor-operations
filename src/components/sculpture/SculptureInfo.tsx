@@ -24,7 +24,25 @@ export function SculptureInfo({
   showAIContent,
   showTags = false
 }: SculptureInfoProps) {
-  const { materials } = useMaterialFinishData(sculpture.material_id);
+  // Query for the selected fabrication quote
+  const { data: selectedQuote } = useQuery({
+    queryKey: ["selected_fabrication_quote", sculpture.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fabrication_quotes")
+        .select("*")
+        .eq("sculpture_id", sculpture.id)
+        .eq("is_selected", true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 300000,
+  });
+  
+  const { materials } = useMaterialFinishData(selectedQuote?.material_id);
 
   const { data: productLines } = useQuery({
     queryKey: ["product_lines"],
@@ -60,31 +78,13 @@ export function SculptureInfo({
     gcTime: 300000,
   });
 
-  // Query for the selected fabrication quote
-  const { data: selectedQuote } = useQuery({
-    queryKey: ["selected_fabrication_quote", sculpture.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("fabrication_quotes")
-        .select("*")
-        .eq("sculpture_id", sculpture.id)
-        .eq("is_selected", true)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 30000,
-    gcTime: 300000,
-  });
-
   const getMaterialName = () => {
-    if (!sculpture.material_id || !materials) return "Not specified";
-    const material = materials.find(m => m.id === sculpture.material_id);
+    if (!selectedQuote?.material_id || !materials) return "Not specified";
+    const material = materials.find(m => m.id === selectedQuote.material_id);
     return material ? material.name : "Not specified";
   };
 
-  // Format the price display
+  // Format the price display based on the selected quote
   const getPriceDisplay = () => {
     if (!selectedQuote) return "Inquire";
     
@@ -133,12 +133,14 @@ export function SculptureInfo({
           {getMaterialName()}
         </div>
         
-        {/* Dimensions */}
-        <DimensionDisplay
-          height={sculpture.height_in}
-          width={sculpture.width_in}
-          depth={sculpture.depth_in}
-        />
+        {/* Dimensions - use dimensions from selected quote if available */}
+        {selectedQuote && (
+          <DimensionDisplay
+            height={selectedQuote.height_in}
+            width={selectedQuote.width_in}
+            depth={selectedQuote.depth_in}
+          />
+        )}
       </div>
 
       {/* Only show tags if the showTags prop is true */}

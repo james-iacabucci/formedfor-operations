@@ -14,9 +14,19 @@ interface SculptureDimensionsProps {
   width: number | null;
   depth: number | null;
   isBase?: boolean;
+  isQuoteForm?: boolean;
+  onDimensionsChange?: (field: string, value: number | null) => void;
 }
 
-export function SculptureDimensions({ sculptureId, height, width, depth, isBase = false }: SculptureDimensionsProps) {
+export function SculptureDimensions({ 
+  sculptureId, 
+  height, 
+  width, 
+  depth, 
+  isBase = false,
+  isQuoteForm = false,
+  onDimensionsChange
+}: SculptureDimensionsProps) {
   const [isEditingDimensions, setIsEditingDimensions] = useState(false);
   const [dimensions, setDimensions] = useState({
     height: height?.toString() || "",
@@ -59,9 +69,16 @@ export function SculptureDimensions({ sculptureId, height, width, depth, isBase 
       [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
     };
     
-    // Don't include cm values in the update, they are calculated by a database trigger or function
-    console.log("Updating dimensions:", updatedDimensions);
-
+    if (isQuoteForm && onDimensionsChange) {
+      // In quote form mode, update the parent form state
+      if (dimensions.height) onDimensionsChange(`${prefix}height_in`, parseFloat(dimensions.height));
+      if (dimensions.width) onDimensionsChange(`${prefix}width_in`, parseFloat(dimensions.width));
+      if (dimensions.depth) onDimensionsChange(`${prefix}depth_in`, parseFloat(dimensions.depth));
+      setIsEditingDimensions(false);
+      return;
+    }
+    
+    // In direct edit mode, update the database
     const { error } = await supabase
       .from('sculptures')
       .update(updatedDimensions)

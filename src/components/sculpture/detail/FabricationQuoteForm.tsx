@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { NewQuote } from "@/types/fabrication-quote-form";
+import { SculptureMaterialFinish } from "./SculptureMaterialFinish";
+import { SculptureMethod } from "./SculptureMethod";
+import { SculptureDimensions } from "./SculptureDimensions";
+import { SculptureWeight } from "./SculptureWeight";
 
 interface FabricationQuoteFormProps {
   newQuote: NewQuote;
@@ -44,8 +48,12 @@ export function FabricationQuoteForm({
     }
   };
 
+  const handleDimensionsChange = (field: string, value: number | null) => {
+    onQuoteChange({ ...newQuote, [field]: value });
+  };
+
   return (
-    <div className="border rounded-lg p-4 space-y-4">
+    <div className="border rounded-lg p-4 space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Fabricator</label>
@@ -75,7 +83,87 @@ export function FabricationQuoteForm({
         </div>
       </div>
 
+      {/* Sculpture Details Section */}
       <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Sculpture Details</h3>
+        <div className="space-y-4">
+          <SculptureMaterialFinish
+            sculptureId={newQuote.sculpture_id}
+            materialId={newQuote.material_id}
+            onMaterialChange={(materialId) => onQuoteChange({ ...newQuote, material_id: materialId })}
+            isQuoteForm={true}
+          />
+          
+          <SculptureMethod
+            sculptureId={newQuote.sculpture_id}
+            methodId={newQuote.method_id}
+            onMethodChange={(methodId) => onQuoteChange({ ...newQuote, method_id: methodId })}
+            isQuoteForm={true}
+          />
+          
+          <SculptureDimensions
+            sculptureId={newQuote.sculpture_id}
+            height={newQuote.height_in}
+            width={newQuote.width_in}
+            depth={newQuote.depth_in}
+            onDimensionsChange={(field, value) => handleDimensionsChange(field, value)}
+            isQuoteForm={true}
+          />
+          
+          <SculptureWeight
+            sculptureId={newQuote.sculpture_id}
+            weightKg={newQuote.weight_kg}
+            weightLbs={newQuote.weight_lbs}
+            onWeightChange={(field, value) => handleDimensionsChange(field, value)}
+            isQuoteForm={true}
+          />
+        </div>
+      </div>
+
+      {/* Base Details Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Base Details</h3>
+        <div className="space-y-4">
+          <SculptureMaterialFinish
+            sculptureId={newQuote.sculpture_id}
+            materialId={newQuote.base_material_id}
+            onMaterialChange={(materialId) => onQuoteChange({ ...newQuote, base_material_id: materialId })}
+            isBase={true}
+            isQuoteForm={true}
+          />
+          
+          <SculptureMethod
+            sculptureId={newQuote.sculpture_id}
+            methodId={newQuote.base_method_id}
+            onMethodChange={(methodId) => onQuoteChange({ ...newQuote, base_method_id: methodId })}
+            isBase={true}
+            isQuoteForm={true}
+          />
+          
+          <SculptureDimensions
+            sculptureId={newQuote.sculpture_id}
+            height={newQuote.base_height_in}
+            width={newQuote.base_width_in}
+            depth={newQuote.base_depth_in}
+            onDimensionsChange={(field, value) => handleDimensionsChange(field, value)}
+            isBase={true}
+            isQuoteForm={true}
+          />
+          
+          <SculptureWeight
+            sculptureId={newQuote.sculpture_id}
+            weightKg={newQuote.base_weight_kg}
+            weightLbs={newQuote.base_weight_lbs}
+            onWeightChange={(field, value) => handleDimensionsChange(field, value)}
+            isBase={true}
+            isQuoteForm={true}
+          />
+        </div>
+      </div>
+
+      {/* Pricing Details Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Pricing Details</h3>
         <div className="grid grid-cols-5 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Fabrication</label>

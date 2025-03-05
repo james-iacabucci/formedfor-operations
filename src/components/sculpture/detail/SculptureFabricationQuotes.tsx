@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,9 +18,10 @@ import {
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
+  sculpture: any; // For accessing initial values if needed
 }
 
-export function SculptureFabricationQuotes({ sculptureId }: SculptureFabricationQuotesProps) {
+export function SculptureFabricationQuotes({ sculptureId, sculpture }: SculptureFabricationQuotesProps) {
   const [isAddingQuote, setIsAddingQuote] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -32,6 +34,21 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
     markup: 4,
     notes: "",
     quote_date: new Date().toISOString(),
+    // Add new fields from sculpture
+    material_id: null,
+    method_id: null,
+    height_in: null,
+    width_in: null,
+    depth_in: null,
+    weight_kg: null,
+    weight_lbs: null,
+    base_material_id: null,
+    base_method_id: null,
+    base_height_in: null,
+    base_width_in: null,
+    base_depth_in: null,
+    base_weight_kg: null,
+    base_weight_lbs: null,
   });
 
   const { data: fabricators } = useQuery({
@@ -83,6 +100,21 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       markup: quote.markup,
       notes: quote.notes,
       quote_date: quote.quote_date,
+      // Add physical attributes from quote
+      material_id: quote.material_id,
+      method_id: quote.method_id,
+      height_in: quote.height_in,
+      width_in: quote.width_in,
+      depth_in: quote.depth_in,
+      weight_kg: quote.weight_kg,
+      weight_lbs: quote.weight_lbs,
+      base_material_id: quote.base_material_id,
+      base_method_id: quote.base_method_id,
+      base_height_in: quote.base_height_in,
+      base_width_in: quote.base_width_in,
+      base_depth_in: quote.base_depth_in,
+      base_weight_kg: quote.base_weight_kg,
+      base_weight_lbs: quote.base_weight_lbs,
     });
     setIsAddingQuote(false);
   };
@@ -101,17 +133,42 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
         markup: newQuote.markup,
         notes: newQuote.notes,
         quote_date: newQuote.quote_date,
+        // Include physical attributes
+        material_id: newQuote.material_id,
+        method_id: newQuote.method_id,
+        height_in: newQuote.height_in,
+        width_in: newQuote.width_in,
+        depth_in: newQuote.depth_in,
+        weight_kg: newQuote.weight_kg,
+        weight_lbs: newQuote.weight_lbs,
+        base_material_id: newQuote.base_material_id,
+        base_method_id: newQuote.base_method_id,
+        base_height_in: newQuote.base_height_in,
+        base_width_in: newQuote.base_width_in,
+        base_depth_in: newQuote.base_depth_in,
+        base_weight_kg: newQuote.base_weight_kg,
+        base_weight_lbs: newQuote.base_weight_lbs,
       })
       .eq("id", editingQuoteId);
 
     if (error) {
       console.error("Error updating quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update quote: " + error.message,
+        variant: "destructive",
+      });
       return;
     }
 
     await refetchQuotes();
     setEditingQuoteId(null);
     resetNewQuote();
+    
+    toast({
+      title: "Success",
+      description: "Quote updated successfully",
+    });
   };
 
   const handleAddQuote = async () => {
@@ -129,12 +186,22 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
 
     if (error) {
       console.error("Error adding quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add quote: " + error.message,
+        variant: "destructive",
+      });
       return;
     }
 
     await refetchQuotes();
     setIsAddingQuote(false);
     resetNewQuote();
+    
+    toast({
+      title: "Success",
+      description: "Quote added successfully",
+    });
   };
 
   const handleDeleteQuote = async (quoteId: string) => {
@@ -145,10 +212,20 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
 
     if (error) {
       console.error("Error deleting quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete quote: " + error.message,
+        variant: "destructive",
+      });
       return;
     }
 
     await refetchQuotes();
+    
+    toast({
+      title: "Success",
+      description: "Quote deleted successfully",
+    });
   };
 
   const handleSelectQuote = async (quoteId: string) => {
@@ -184,6 +261,21 @@ export function SculptureFabricationQuotes({ sculptureId }: SculptureFabrication
       markup: 4,
       notes: "",
       quote_date: new Date().toISOString(),
+      // Reset physical attributes
+      material_id: null,
+      method_id: null,
+      height_in: null,
+      width_in: null,
+      depth_in: null,
+      weight_kg: null,
+      weight_lbs: null,
+      base_material_id: null,
+      base_method_id: null,
+      base_height_in: null,
+      base_width_in: null,
+      base_depth_in: null,
+      base_weight_kg: null,
+      base_weight_lbs: null,
     });
   };
 

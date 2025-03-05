@@ -8,12 +8,16 @@ interface SculptureMethodProps {
   sculptureId: string;
   methodId: string | null;
   isBase?: boolean;
+  isQuoteForm?: boolean;
+  onMethodChange?: (methodId: string) => void;
 }
 
 export function SculptureMethod({ 
   sculptureId, 
   methodId,
-  isBase = false
+  isBase = false,
+  isQuoteForm = false,
+  onMethodChange
 }: SculptureMethodProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -33,6 +37,13 @@ export function SculptureMethod({
   });
 
   const handleMethodChange = async (newMethodId: string) => {
+    if (isQuoteForm && onMethodChange) {
+      // In quote form mode, just update the form state
+      onMethodChange(newMethodId);
+      return;
+    }
+
+    // In direct edit mode, update the database
     const fieldName = isBase ? 'base_method_id' : 'method_id';
     const { error } = await supabase
       .from("sculptures")
