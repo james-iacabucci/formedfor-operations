@@ -60,7 +60,7 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
             quoteMode={quoteMode}
           />
           
-          {/* Topics navigation - only show if not in quote mode */}
+          {/* Topics navigation - only show for sculpture chat (not in quote mode) */}
           {!quoteMode && (
             <div className="border-b shrink-0 py-3 px-4">
               <Tabs
