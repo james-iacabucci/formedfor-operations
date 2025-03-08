@@ -23,29 +23,49 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteM
       
       if (quoteMode) {
         // For quote chat, get fabricator name + quote details
-        const { data, error } = await supabase
-          .from("chat_threads")
-          .select(`
-            fabrication_quote_id,
-            fabrication_quotes:fabrication_quote_id(
+        try {
+          // First, get the fabrication_quote_id from the thread
+          const { data: threadData, error: threadError } = await supabase
+            .from("chat_threads")
+            .select("fabrication_quote_id")
+            .eq("id", threadId)
+            .single();
+          
+          if (threadError) {
+            console.error("Error fetching thread:", threadError);
+            setTitle("Fabrication Quote");
+            return;
+          }
+          
+          if (!threadData?.fabrication_quote_id) {
+            setTitle("Fabrication Quote");
+            return;
+          }
+          
+          // Then get the fabricator details using the quote_id
+          const { data: quoteData, error: quoteError } = await supabase
+            .from("fabrication_quotes")
+            .select(`
               fabricator_id,
-              fabricator:fabricator_id(id, name)
-            )
-          `)
-          .eq("id", threadId)
-          .limit(1)
-          .single();
-        
-        if (error) {
-          console.error("Error fetching quote info:", error);
-          setTitle("Fabrication Quote");
-          return;
-        }
-        
-        const fabricatorName = data?.fabrication_quotes?.fabricator?.name;
-        if (fabricatorName) {
-          setTitle(`${fabricatorName} Quote`);
-        } else {
+              fabricator:value_lists!fabricator_id(name)
+            `)
+            .eq("id", threadData.fabrication_quote_id)
+            .single();
+          
+          if (quoteError) {
+            console.error("Error fetching quote:", quoteError);
+            setTitle("Fabrication Quote");
+            return;
+          }
+          
+          const fabricatorName = quoteData?.fabricator?.name;
+          if (fabricatorName) {
+            setTitle(`${fabricatorName} Quote`);
+          } else {
+            setTitle("Fabrication Quote");
+          }
+        } catch (error) {
+          console.error("Error in fetching quote data:", error);
           setTitle("Fabrication Quote");
         }
       } else {
