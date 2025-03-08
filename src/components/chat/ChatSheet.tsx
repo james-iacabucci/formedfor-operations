@@ -6,7 +6,6 @@ import { useThreads } from "./hooks/useThreads";
 import { ChatHeader } from "./components/ChatHeader";
 import { ChatContent } from "./components/ChatContent";
 import { MessageInput } from "./MessageInput";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatSheetProps {
   open: boolean;
@@ -18,7 +17,6 @@ interface ChatSheetProps {
 export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
-  const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations" | "general">(quoteMode ? "general" : "pricing");
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
 
@@ -29,12 +27,6 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
     setActiveView(value);
   };
 
-  const handleTopicChange = (value: "pricing" | "fabrication" | "operations" | "general") => {
-    setCurrentTopic(value);
-    // Trigger scroll reset when changing topics
-    setResetScroll(prev => prev + 1);
-  };
-
   const handleFilesSelected = (files: UploadingFile[]) => {
     setUploadingFiles(prev => [...prev, ...files]);
   };
@@ -43,10 +35,10 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
     setUploadingFiles(prev => prev.filter(file => !fileIds.includes(file.id)));
   };
 
-  // Find the current thread ID based on the selected topic
-  const currentThreadId = threads?.find(thread => 
-    quoteMode ? thread.id === threadId : thread.topic === currentTopic
-  )?.id;
+  // Find the current thread ID
+  const currentThreadId = quoteMode 
+    ? threads?.find(thread => thread.id === threadId)?.id
+    : threads?.[0]?.id; // For general chat, just use the first thread
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -60,38 +52,6 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
             quoteMode={quoteMode}
           />
           
-          {/* Topics navigation - only show for sculpture chat (not in quote mode) */}
-          {!quoteMode && (
-            <div className="border-b shrink-0 py-3 px-4">
-              <Tabs
-                value={currentTopic}
-                onValueChange={handleTopicChange}
-                className="rounded-full border border-[#333333] p-1 flex w-full"
-              >
-                <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
-                  <TabsTrigger 
-                    value="pricing" 
-                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                  >
-                    Pricing
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="fabrication" 
-                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                  >
-                    Fabrication
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="operations" 
-                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                  >
-                    Operations
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          )}
-
           <ChatContent 
             activeView={activeView}
             currentThreadId={currentThreadId}

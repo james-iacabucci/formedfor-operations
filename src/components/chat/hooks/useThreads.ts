@@ -25,56 +25,48 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
         console.log('Fetched thread:', data);
         return data || [];
       } else {
-        console.log('Fetching threads for sculpture:', threadId);
+        console.log('Fetching thread for sculpture:', threadId);
         const { data, error } = await supabase
           .from("chat_threads")
           .select("*")
           .eq("sculpture_id", threadId)
-          .is("fabrication_quote_id", null);
+          .is("fabrication_quote_id", null)
+          .limit(1); // We now only need a single thread for sculpture chat
 
         if (error) {
-          console.error("Error fetching threads:", error);
+          console.error("Error fetching thread:", error);
           return [];
         }
 
-        console.log('Fetched threads:', data);
+        console.log('Fetched thread:', data);
         return data || [];
       }
     },
   });
 
-  // Create default threads if needed (only for sculpture threads, not quote threads)
+  // Create default thread if needed (for sculpture)
   useEffect(() => {
-    const createDefaultThreads = async () => {
-      if (!threads || !user || quoteMode) return;
+    const createDefaultThread = async () => {
+      if (quoteMode || !user || (threads && threads.length > 0)) return;
 
-      const topics: ("pricing" | "fabrication" | "operations")[] = ["pricing", "fabrication", "operations"];
-      const missingTopics = topics.filter(topic => 
-        !threads.some(thread => thread.topic === topic)
-      );
+      console.log('Creating default thread for sculpture:', threadId);
+      
+      const { error } = await supabase
+        .from("chat_threads")
+        .insert({
+          sculpture_id: threadId,
+          topic: "general", // Single general thread for all sculpture chat
+          user_id: user.id
+        });
 
-      if (missingTopics.length > 0) {
-        console.log('Creating default threads for topics:', missingTopics);
-        
-        for (const topic of missingTopics) {
-          const { error } = await supabase
-            .from("chat_threads")
-            .insert({
-              sculpture_id: threadId,
-              topic: topic,
-              user_id: user.id
-            });
-
-          if (error) {
-            console.error(`Error creating thread for ${topic}:`, error);
-          }
-        }
-
+      if (error) {
+        console.error("Error creating thread:", error);
+      } else {
         refetch();
       }
     };
 
-    createDefaultThreads();
+    createDefaultThread();
   }, [threads, threadId, user, refetch, quoteMode]);
 
   return { threads, refetch };

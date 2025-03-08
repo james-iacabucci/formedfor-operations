@@ -27,7 +27,7 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteM
           .from("chat_threads")
           .select(`
             fabrication_quote_id,
-            fabrication_quotes(
+            fabrication_quotes:fabrication_quote_id(
               fabricator_id,
               fabricator:fabricator_id(name)
             )
