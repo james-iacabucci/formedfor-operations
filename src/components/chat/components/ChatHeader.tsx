@@ -29,7 +29,7 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteM
             fabrication_quote_id,
             fabrication_quotes:fabrication_quote_id(
               fabricator_id,
-              fabricator:fabricator_id(value_lists(name))
+              fabricator:fabricator_id(id, name)
             )
           `)
           .eq("id", threadId)
@@ -42,7 +42,7 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteM
           return;
         }
         
-        const fabricatorName = data?.fabrication_quotes?.fabricator?.value_lists?.name;
+        const fabricatorName = data?.fabrication_quotes?.fabricator?.name;
         if (fabricatorName) {
           setTitle(`${fabricatorName} Quote`);
         } else {
