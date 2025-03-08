@@ -11,40 +11,73 @@ interface ChatHeaderProps {
   activeView: "chat" | "files";
   onViewChange: (value: "chat" | "files") => void;
   onClose?: () => void;
+  quoteMode?: boolean;
 }
 
-export function ChatHeader({ threadId, activeView, onViewChange, onClose }: ChatHeaderProps) {
-  const [sculptureName, setSculptureName] = useState<string>("");
+export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteMode = false }: ChatHeaderProps) {
+  const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
-    const fetchSculptureName = async () => {
+    const fetchTitle = async () => {
       if (!threadId) return;
       
-      const { data, error } = await supabase
-        .from("chat_threads")
-        .select("sculptures(ai_generated_name, manual_name)")
-        .eq("sculpture_id", threadId)
-        .limit(1)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching sculpture name:", error);
-        return;
-      }
-      
-      if (data?.sculptures) {
-        const name = data.sculptures.manual_name || data.sculptures.ai_generated_name || "Untitled Sculpture";
-        setSculptureName(name);
+      if (quoteMode) {
+        // For quote chat, get fabricator name + quote details
+        const { data, error } = await supabase
+          .from("chat_threads")
+          .select(`
+            fabrication_quote_id,
+            fabrication_quotes(
+              fabricator_id,
+              value_lists(name)
+            )
+          `)
+          .eq("id", threadId)
+          .limit(1)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching quote info:", error);
+          setTitle("Fabrication Quote");
+          return;
+        }
+        
+        if (data?.fabrication_quotes?.value_lists) {
+          setTitle(`${data.fabrication_quotes.value_lists.name} Quote`);
+        } else {
+          setTitle("Fabrication Quote");
+        }
+      } else {
+        // For sculpture chat, get sculpture name
+        const { data, error } = await supabase
+          .from("chat_threads")
+          .select("sculptures(ai_generated_name, manual_name)")
+          .eq("id", threadId)
+          .limit(1)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching sculpture name:", error);
+          setTitle("Chat");
+          return;
+        }
+        
+        if (data?.sculptures) {
+          const name = data.sculptures.manual_name || data.sculptures.ai_generated_name || "Untitled Sculpture";
+          setTitle(name);
+        } else {
+          setTitle("Chat");
+        }
       }
     };
     
-    fetchSculptureName();
-  }, [threadId]);
+    fetchTitle();
+  }, [threadId, quoteMode]);
 
   return (
     <div className="border-b shrink-0 py-3 px-4">
       <div className="flex items-center justify-between">
-        <div className="font-medium truncate">{sculptureName}</div>
+        <div className="font-medium truncate">{title}</div>
         
         <div className="flex items-center space-x-2">
           <Tabs

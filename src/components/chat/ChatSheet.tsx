@@ -12,23 +12,24 @@ interface ChatSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   threadId: string;
+  quoteMode?: boolean;
 }
 
-export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
+export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
-  const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations">("pricing");
+  const [currentTopic, setCurrentTopic] = useState<"pricing" | "fabrication" | "operations" | "general">(quoteMode ? "general" : "pricing");
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
 
   // Get threads data using custom hook
-  const { threads } = useThreads(threadId);
+  const { threads } = useThreads(threadId, quoteMode);
 
   const handleViewChange = (value: "chat" | "files") => {
     setActiveView(value);
   };
 
-  const handleTopicChange = (value: "pricing" | "fabrication" | "operations") => {
+  const handleTopicChange = (value: "pricing" | "fabrication" | "operations" | "general") => {
     setCurrentTopic(value);
     // Trigger scroll reset when changing topics
     setResetScroll(prev => prev + 1);
@@ -43,7 +44,9 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
   };
 
   // Find the current thread ID based on the selected topic
-  const currentThreadId = threads?.find(thread => thread.topic === currentTopic)?.id;
+  const currentThreadId = threads?.find(thread => 
+    quoteMode ? thread.id === threadId : thread.topic === currentTopic
+  )?.id;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -54,37 +57,40 @@ export function ChatSheet({ open, onOpenChange, threadId }: ChatSheetProps) {
             activeView={activeView}
             onViewChange={handleViewChange}
             onClose={() => onOpenChange(false)}
+            quoteMode={quoteMode}
           />
           
-          {/* Topics navigation - keep this separate from the Chat/Files tabs */}
-          <div className="border-b shrink-0 py-3 px-4">
-            <Tabs
-              value={currentTopic}
-              onValueChange={handleTopicChange}
-              className="rounded-full border border-[#333333] p-1 flex w-full"
-            >
-              <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
-                <TabsTrigger 
-                  value="pricing" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                >
-                  Pricing
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="fabrication" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                >
-                  Fabrication
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="operations" 
-                  className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
-                >
-                  Operations
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          {/* Topics navigation - only show if not in quote mode */}
+          {!quoteMode && (
+            <div className="border-b shrink-0 py-3 px-4">
+              <Tabs
+                value={currentTopic}
+                onValueChange={handleTopicChange}
+                className="rounded-full border border-[#333333] p-1 flex w-full"
+              >
+                <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
+                  <TabsTrigger 
+                    value="pricing" 
+                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  >
+                    Pricing
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="fabrication" 
+                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  >
+                    Fabrication
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="operations" 
+                    className="h-9 px-5 py-2 text-sm font-medium rounded-full text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200 flex-1"
+                  >
+                    Operations
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
 
           <ChatContent 
             activeView={activeView}

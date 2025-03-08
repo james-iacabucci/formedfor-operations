@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PencilIcon, Trash2Icon, CheckCircle2Icon, ChevronUpIcon, ChevronDownIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon, CheckCircle2Icon, ChevronUpIcon, ChevronDownIcon, MessageSquareIcon } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ interface FabricationQuoteCardProps {
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onChat: () => void;
   calculateTotal: (quote: FabricationQuote) => number;
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
@@ -31,6 +32,7 @@ export function FabricationQuoteCard({
   onSelect,
   onEdit,
   onDelete,
+  onChat,
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
@@ -128,6 +130,14 @@ export function FabricationQuoteCard({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onChat}
+            title="Chat about this quote"
+          >
+            <MessageSquareIcon className="h-4 w-4" />
+          </Button>
           {!quote.is_selected && (
             <Button
               variant="outline"

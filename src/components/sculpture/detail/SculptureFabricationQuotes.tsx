@@ -5,10 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { NewQuote } from "@/types/fabrication-quote-form";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, MessageSquareIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FabricationQuoteCard } from "./FabricationQuoteCard";
 import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
+import { ChatSheet } from "@/components/chat/ChatSheet";
 import {
   calculateTotal,
   calculateTradePrice,
@@ -25,6 +26,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [initialQuote, setInitialQuote] = useState<NewQuote | undefined>(undefined);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeChatQuoteId, setActiveChatQuoteId] = useState<string | null>(null);
+  const [chatThreadId, setChatThreadId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: fabricators } = useQuery({
@@ -153,6 +157,64 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     await refetchQuotes();
   };
 
+  const handleOpenChat = async (quoteId: string) => {
+    try {
+      // Check if there's already a thread for this quote
+      const { data: existingThreads, error: fetchError } = await supabase
+        .from("chat_threads")
+        .select("id")
+        .eq("fabrication_quote_id", quoteId)
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+
+      let threadId;
+
+      if (existingThreads && existingThreads.length > 0) {
+        // Use existing thread
+        threadId = existingThreads[0].id;
+      } else {
+        // Create a new thread for this quote
+        const { data: newThread, error: createError } = await supabase
+          .from("chat_threads")
+          .insert({
+            fabrication_quote_id: quoteId,
+            sculpture_id: sculptureId,
+            topic: 'general'
+          })
+          .select('id')
+          .single();
+
+        if (createError) throw createError;
+        threadId = newThread.id;
+
+        // Auto-add the user as a participant
+        const { error: participantError } = await supabase
+          .from("chat_thread_participants")
+          .insert({
+            thread_id: threadId,
+            user_id: (await supabase.auth.getUser()).data.user?.id || '',
+          });
+
+        if (participantError) {
+          console.error("Error adding participant:", participantError);
+          // Continue anyway, not critical
+        }
+      }
+
+      setChatThreadId(threadId);
+      setActiveChatQuoteId(quoteId);
+      setIsChatOpen(true);
+    } catch (error) {
+      console.error("Error preparing chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open chat. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -172,6 +234,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
             onSelect={() => handleSelectQuote(quote.id)}
             onEdit={() => handleStartEdit(quote)}
             onDelete={() => handleDeleteQuote(quote.id)}
+            onChat={() => handleOpenChat(quote.id)}
             calculateTotal={calculateTotal}
             calculateTradePrice={calculateTradePrice}
             calculateRetailPrice={calculateRetailPrice}
@@ -190,6 +253,15 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         onQuoteSaved={handleQuoteSaved}
         initialQuote={initialQuote}
       />
+
+      {chatThreadId && (
+        <ChatSheet 
+          open={isChatOpen}
+          onOpenChange={setIsChatOpen}
+          threadId={chatThreadId}
+          quoteMode={true}
+        />
+      )}
     </div>
   );
 }

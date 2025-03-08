@@ -95,26 +95,36 @@ export type Database = {
       chat_threads: {
         Row: {
           created_at: string
+          fabrication_quote_id: string | null
           id: string
           sculpture_id: string
-          topic: Database["public"]["Enums"]["chat_topic"]
+          topic: Database["public"]["Enums"]["chat_topic"] | null
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          fabrication_quote_id?: string | null
           id?: string
           sculpture_id: string
-          topic: Database["public"]["Enums"]["chat_topic"]
+          topic?: Database["public"]["Enums"]["chat_topic"] | null
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          fabrication_quote_id?: string | null
           id?: string
           sculpture_id?: string
-          topic?: Database["public"]["Enums"]["chat_topic"]
+          topic?: Database["public"]["Enums"]["chat_topic"] | null
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_threads_fabrication_quote_id_fkey"
+            columns: ["fabrication_quote_id"]
+            isOneToOne: false
+            referencedRelation: "fabrication_quotes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_threads_sculpture_id_fkey"
             columns: ["sculpture_id"]
@@ -706,7 +716,7 @@ export type Database = {
       }
     }
     Enums: {
-      chat_topic: "pricing" | "fabrication" | "operations"
+      chat_topic: "pricing" | "fabrication" | "operations" | "general"
       value_list_type:
         | "finish"
         | "material"
