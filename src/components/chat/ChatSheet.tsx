@@ -37,15 +37,15 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
 
   // Find the current thread ID
   const currentThreadId = quoteMode 
-    ? threads?.find(thread => thread.id === threadId)?.id
-    : threads?.[0]?.id; // For general chat, just use the first thread
+    ? threadId 
+    : threads?.[0]?.id; // For sculpture chat, use the first thread
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-lg h-[100dvh]">
         <div className="flex flex-col h-full">
           <ChatHeader 
-            threadId={threadId} 
+            threadId={currentThreadId || threadId} 
             activeView={activeView}
             onViewChange={handleViewChange}
             onClose={() => onOpenChange(false)}

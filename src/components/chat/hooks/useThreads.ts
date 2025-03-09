@@ -28,7 +28,7 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
         console.log('Fetching thread for sculpture:', threadId);
         const { data, error } = await supabase
           .from("chat_threads")
-          .select("*")
+          .select("*, sculptures(*)")
           .eq("sculpture_id", threadId)
           .is("fabrication_quote_id", null)
           .limit(1); // We now only need a single thread for sculpture chat
