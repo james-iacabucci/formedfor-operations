@@ -9,6 +9,8 @@ interface SculptureMethodProps {
   methodId: string | null;
   isBase?: boolean;
   isQuoteForm?: boolean;
+  isVariantForm?: boolean;
+  variantId?: string;
   onMethodChange?: (methodId: string) => void;
 }
 
@@ -17,6 +19,8 @@ export function SculptureMethod({
   methodId,
   isBase = false,
   isQuoteForm = false,
+  isVariantForm = false,
+  variantId,
   onMethodChange
 }: SculptureMethodProps) {
   const { toast } = useToast();
@@ -37,8 +41,8 @@ export function SculptureMethod({
   });
 
   const handleMethodChange = async (newMethodId: string) => {
-    if (isQuoteForm && onMethodChange) {
-      // In quote form mode, just update the form state
+    if ((isQuoteForm || isVariantForm) && onMethodChange) {
+      // In form mode, just update the form state
       onMethodChange(newMethodId);
       return;
     }

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { FabricationQuoteCard } from "./FabricationQuoteCard";
 import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
+import { SculptureVariant } from "./SculptureVariant";
+import { useSculptureVariants } from "@/hooks/useSculptureVariants";
 import {
   calculateTotal,
   calculateTradePrice,
@@ -29,8 +31,33 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeChatQuoteId, setActiveChatQuoteId] = useState<string | null>(null);
   const [chatThreadId, setChatThreadId] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [variantQuotes, setVariantQuotes] = useState<FabricationQuote[]>([]);
   const { toast } = useToast();
 
+  // Get variants for this sculpture
+  const { variants, isLoading: isLoadingVariants, getQuotesForVariant } = useSculptureVariants(sculptureId);
+
+  // Set initial selected variant when variants load
+  useEffect(() => {
+    if (variants && variants.length > 0 && !selectedVariantId) {
+      setSelectedVariantId(variants[0].id);
+    }
+  }, [variants, selectedVariantId]);
+
+  // When selected variant changes, fetch its quotes
+  useEffect(() => {
+    const loadQuotes = async () => {
+      if (selectedVariantId) {
+        const quotes = await getQuotesForVariant(selectedVariantId);
+        setVariantQuotes(quotes);
+      }
+    };
+    
+    loadQuotes();
+  }, [selectedVariantId, getQuotesForVariant]);
+
+  // Get fabricators for dropdowns
   const { data: fabricators } = useQuery({
     queryKey: ["value_lists", "fabricator"],
     queryFn: async () => {
@@ -44,18 +71,11 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     },
   });
 
-  const { data: quotes, refetch: refetchQuotes } = useQuery({
-    queryKey: ["fabrication_quotes", sculptureId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("fabrication_quotes")
-        .select("*")
-        .eq("sculpture_id", sculptureId);
-
-      if (error) throw error;
-      return data as FabricationQuote[];
-    },
-  });
+  const handleVariantChange = async (variantId: string) => {
+    setSelectedVariantId(variantId);
+    const quotes = await getQuotesForVariant(variantId);
+    setVariantQuotes(quotes);
+  };
 
   const sortQuotes = (quotes: FabricationQuote[]) => {
     return [...quotes].sort((a, b) => {
@@ -80,7 +100,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       markup: quote.markup,
       notes: quote.notes,
       quote_date: quote.quote_date,
-      // Add physical attributes from quote
+      // Add physical attributes from quote - these will be pre-filled from the variant
       material_id: quote.material_id,
       method_id: quote.method_id,
       height_in: quote.height_in,
@@ -100,8 +120,40 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   };
 
   const handleAddQuote = () => {
+    if (!selectedVariantId || !variants) return;
+    
+    // Find the selected variant
+    const selectedVariant = variants.find(v => v.id === selectedVariantId);
+    if (!selectedVariant) return;
+    
+    // Pre-fill the form with variant details
     setEditingQuoteId(null);
-    setInitialQuote(undefined);
+    setInitialQuote({
+      sculpture_id: sculptureId,
+      fabricator_id: undefined, // User must select this
+      fabrication_cost: 500,
+      shipping_cost: 0,
+      customs_cost: 0,
+      other_cost: 0,
+      markup: 4,
+      notes: "",
+      quote_date: new Date().toISOString(),
+      // Pre-fill physical attributes from the selected variant
+      material_id: selectedVariant.materialId,
+      method_id: selectedVariant.methodId,
+      height_in: selectedVariant.heightIn,
+      width_in: selectedVariant.widthIn,
+      depth_in: selectedVariant.depthIn,
+      weight_kg: selectedVariant.weightKg,
+      weight_lbs: selectedVariant.weightLbs,
+      base_material_id: selectedVariant.baseMaterialId,
+      base_method_id: selectedVariant.baseMethodId,
+      base_height_in: selectedVariant.baseHeightIn,
+      base_width_in: selectedVariant.baseWidthIn,
+      base_depth_in: selectedVariant.baseDepthIn,
+      base_weight_kg: selectedVariant.baseWeightKg,
+      base_weight_lbs: selectedVariant.baseWeightLbs,
+    });
     setIsSheetOpen(true);
   };
 
@@ -121,7 +173,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    await refetchQuotes();
+    // Refresh quotes for the current variant
+    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
+    setVariantQuotes(updatedQuotes);
     
     toast({
       title: "Success",
@@ -145,16 +199,20 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    await refetchQuotes();
+    // Refresh quotes for the current variant
+    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
+    setVariantQuotes(updatedQuotes);
+    
     toast({
       title: "Quote Selected",
       description: "The fabrication quote has been selected.",
     });
   };
 
-  // Fix for the type mismatch error - create a wrapper function that returns void
   const handleQuoteSaved = async () => {
-    await refetchQuotes();
+    // Refresh quotes for the current variant
+    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
+    setVariantQuotes(updatedQuotes);
   };
 
   const handleOpenChat = async (quoteId: string) => {
@@ -215,33 +273,55 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   };
 
+  if (isLoadingVariants) {
+    return <div className="py-4">Loading variants...</div>;
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
-        <Button onClick={handleAddQuote} size="sm">
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Quote
-        </Button>
-      </div>
+      {/* Variants Section */}
+      {variants && variants.length > 0 && (
+        <SculptureVariant 
+          variants={variants}
+          onVariantChange={handleVariantChange}
+          selectedVariantId={selectedVariantId}
+        />
+      )}
 
+      {/* Fabrication Quotes for Selected Variant */}
       <div className="space-y-6">
-        {quotes && sortQuotes(quotes).map((quote) => (
-          <FabricationQuoteCard
-            key={quote.id}
-            quote={quote}
-            fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
-            onSelect={() => handleSelectQuote(quote.id)}
-            onEdit={() => handleStartEdit(quote)}
-            onDelete={() => handleDeleteQuote(quote.id)}
-            onChat={() => handleOpenChat(quote.id)}
-            calculateTotal={calculateTotal}
-            calculateTradePrice={calculateTradePrice}
-            calculateRetailPrice={calculateRetailPrice}
-            formatNumber={formatNumber}
-            isEditing={false}
-          />
-        ))}
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
+          <Button onClick={handleAddQuote} size="sm" disabled={!selectedVariantId}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Quote
+          </Button>
+        </div>
+
+        {selectedVariantId && variantQuotes.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No quotes available for this variant. Click "Add Quote" to create one.
+          </div>
+        )}
+
+        <div className="space-y-6">
+          {variantQuotes && sortQuotes(variantQuotes).map((quote) => (
+            <FabricationQuoteCard
+              key={quote.id}
+              quote={quote}
+              fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
+              onSelect={() => handleSelectQuote(quote.id)}
+              onEdit={() => handleStartEdit(quote)}
+              onDelete={() => handleDeleteQuote(quote.id)}
+              onChat={() => handleOpenChat(quote.id)}
+              calculateTotal={calculateTotal}
+              calculateTradePrice={calculateTradePrice}
+              calculateRetailPrice={calculateRetailPrice}
+              formatNumber={formatNumber}
+              isEditing={false}
+            />
+          ))}
+        </div>
       </div>
 
       <EditFabricationQuoteSheet 

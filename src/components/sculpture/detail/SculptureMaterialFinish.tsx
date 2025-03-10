@@ -10,6 +10,8 @@ interface SculptureMaterialFinishProps {
   materialId: string | null;
   isBase?: boolean;
   isQuoteForm?: boolean;
+  isVariantForm?: boolean;
+  variantId?: string;
   onMaterialChange?: (materialId: string) => void;
 }
 
@@ -18,6 +20,8 @@ export function SculptureMaterialFinish({
   materialId,
   isBase = false,
   isQuoteForm = false,
+  isVariantForm = false,
+  variantId,
   onMaterialChange
 }: SculptureMaterialFinishProps) {
   const { toast } = useToast();
@@ -25,8 +29,8 @@ export function SculptureMaterialFinish({
   const { materials } = useMaterialFinishData(materialId);
 
   const handleMaterialChange = async (newMaterialId: string) => {
-    if (isQuoteForm && onMaterialChange) {
-      // In quote form mode, just update the form state
+    if ((isQuoteForm || isVariantForm) && onMaterialChange) {
+      // In form mode, just update the form state
       onMaterialChange(newMaterialId);
       return;
     }

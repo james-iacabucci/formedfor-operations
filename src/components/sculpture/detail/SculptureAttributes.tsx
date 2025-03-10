@@ -5,7 +5,6 @@ import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
 import { SculpturePrompt } from "./SculpturePrompt";
-import { SculptureFiles } from "./SculptureFiles";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +34,7 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
   return (
     <div className="space-y-6">
       <div className="space-y-6">
-        {/* Fabrication Quotes section now includes sculpture and base details */}
+        {/* Sculpture Variants and Fabrication Quotes */}
         <SculptureFabricationQuotes 
           sculptureId={sculpture.id} 
           sculpture={sculpture} 

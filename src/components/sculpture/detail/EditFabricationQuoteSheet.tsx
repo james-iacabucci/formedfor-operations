@@ -128,6 +128,7 @@ export function EditFabricationQuoteSheet({
             markup: newQuote.markup,
             notes: newQuote.notes,
             quote_date: newQuote.quote_date,
+            // Include all physical attributes from the variant
             material_id: newQuote.material_id,
             method_id: newQuote.method_id,
             height_in: newQuote.height_in,
@@ -208,6 +209,7 @@ export function EditFabricationQuoteSheet({
             calculateRetailPrice={calculateRetailPrice}
             formatNumber={formatNumber}
             isInSheet={true}
+            isVariantMode={true}
           />
         </div>
         

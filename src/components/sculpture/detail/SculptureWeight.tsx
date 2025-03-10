@@ -14,6 +14,8 @@ interface SculptureWeightProps {
   weightLbs: number | null;
   isBase?: boolean;
   isQuoteForm?: boolean;
+  isVariantForm?: boolean;
+  variantId?: string;
   onWeightChange?: (field: string, value: number | null) => void;
 }
 
@@ -23,6 +25,8 @@ export function SculptureWeight({
   weightLbs, 
   isBase = false,
   isQuoteForm = false,
+  isVariantForm = false,
+  variantId,
   onWeightChange
 }: SculptureWeightProps) {
   const [isEditingWeight, setIsEditingWeight] = useState(false);
@@ -66,8 +70,8 @@ export function SculptureWeight({
       [`${prefix}weight_lbs`]: weight.lbs ? parseFloat(weight.lbs) : null,
     };
 
-    if (isQuoteForm && onWeightChange) {
-      // In quote form mode, update the parent form state
+    if ((isQuoteForm || isVariantForm) && onWeightChange) {
+      // In form mode, update the parent form state
       if (weight.kg) onWeightChange(`${prefix}weight_kg`, parseFloat(weight.kg));
       if (weight.lbs) onWeightChange(`${prefix}weight_lbs`, parseFloat(weight.lbs));
       setIsEditingWeight(false);

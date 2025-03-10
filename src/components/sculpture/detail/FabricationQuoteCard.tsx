@@ -4,8 +4,6 @@ import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
 import { PencilIcon, Trash2Icon, CheckCircle2Icon, ChevronUpIcon, ChevronDownIcon, MessageSquareIcon } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   Collapsible,
   CollapsibleTrigger,
@@ -39,80 +37,7 @@ export function FabricationQuoteCard({
   formatNumber,
   isEditing
 }: FabricationQuoteCardProps) {
-  const [sculptureDetailsOpen, setSculptureDetailsOpen] = useState(true);
-  const [baseDetailsOpen, setBaseDetailsOpen] = useState(true);
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
-
-  // Fetch material and method names
-  const { data: materials } = useQuery({
-    queryKey: ['value-lists', 'material'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('value_lists')
-        .select('*')
-        .eq('type', 'material')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const { data: methods } = useQuery({
-    queryKey: ['value-lists', 'method'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('value_lists')
-        .select('*')
-        .eq('type', 'method')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const getMaterialName = (materialId: string | null) => {
-    if (!materialId || !materials) return "Not specified";
-    const material = materials.find(m => m.id === materialId);
-    return material ? material.name : "Not specified";
-  };
-
-  const getMethodName = (methodId: string | null) => {
-    if (!methodId || !methods) return "Not specified";
-    const method = methods.find(m => m.id === methodId);
-    return method ? method.name : "Not specified";
-  };
-
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
-    if (!h && !w && !d) return "Not specified";
-    
-    const formatValue = (val: number | null) => {
-      if (val === null) return '-';
-      return val;
-    };
-    
-    const formatValueCm = (val: number | null) => {
-      if (val === null) return '-';
-      return (val * 2.54).toFixed(1);
-    };
-    
-    const imperial = `${formatValue(h)} x ${formatValue(w)} x ${formatValue(d)} (in)`;
-    const metric = `${formatValueCm(h)} x ${formatValueCm(w)} x ${formatValueCm(d)} (cm)`;
-    
-    return `${imperial} | ${metric}`;
-  };
-
-  const formatWeightString = (kg: number | null, lbs: number | null) => {
-    if (!kg && !lbs) return "Not specified";
-    
-    const formatValue = (val: number | null) => {
-      if (val === null) return '-';
-      return val.toFixed(2);
-    };
-    
-    return `${formatValue(lbs)} (lbs) | ${formatValue(kg)} (kg)`;
-  };
 
   return (
     <div 
@@ -169,73 +94,9 @@ export function FabricationQuoteCard({
           )}
         </div>
       </div>
-
-      {/* Sculpture Details Section - Collapsible */}
-      <Collapsible open={sculptureDetailsOpen} onOpenChange={setSculptureDetailsOpen} className="border-b pb-2">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Sculpture Details</h4>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
-              {sculptureDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-        <CollapsibleContent className="pt-2">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="font-medium text-muted-foreground">Material</p>
-              <p>{getMaterialName(quote.material_id)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Method</p>
-              <p>{getMethodName(quote.method_id)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
-              <p>{formatDimensionString(quote.height_in, quote.width_in, quote.depth_in)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Weight</p>
-              <p>{formatWeightString(quote.weight_kg, quote.weight_lbs)}</p>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {/* Base Details Section - Collapsible */}
-      <Collapsible open={baseDetailsOpen} onOpenChange={setBaseDetailsOpen} className="border-b pb-2">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Base Details</h4>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
-              {baseDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-        <CollapsibleContent className="pt-2">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="font-medium text-muted-foreground">Material</p>
-              <p>{getMaterialName(quote.base_material_id)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Method</p>
-              <p>{getMethodName(quote.base_method_id)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Dimensions (HWD)</p>
-              <p>{formatDimensionString(quote.base_height_in, quote.base_width_in, quote.base_depth_in)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Weight</p>
-              <p>{formatWeightString(quote.base_weight_kg, quote.base_weight_lbs)}</p>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
       
       {/* Pricing Details Section - Collapsible */}
-      <Collapsible open={pricingDetailsOpen} onOpenChange={setPricingDetailsOpen} className="pt-0">
+      <Collapsible open={pricingDetailsOpen} onOpenChange={setPricingDetailsOpen}>
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Pricing Details</h4>
           <CollapsibleTrigger asChild>

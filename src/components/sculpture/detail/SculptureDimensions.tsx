@@ -15,6 +15,8 @@ interface SculptureDimensionsProps {
   depth: number | null;
   isBase?: boolean;
   isQuoteForm?: boolean;
+  isVariantForm?: boolean;
+  variantId?: string;
   onDimensionsChange?: (field: string, value: number | null) => void;
 }
 
@@ -25,6 +27,8 @@ export function SculptureDimensions({
   depth, 
   isBase = false,
   isQuoteForm = false,
+  isVariantForm = false,
+  variantId,
   onDimensionsChange
 }: SculptureDimensionsProps) {
   const [isEditingDimensions, setIsEditingDimensions] = useState(false);
@@ -69,8 +73,8 @@ export function SculptureDimensions({
       [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
     };
     
-    if (isQuoteForm && onDimensionsChange) {
-      // In quote form mode, update the parent form state
+    if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
+      // In form mode, update the parent form state
       if (dimensions.height) onDimensionsChange(`${prefix}height_in`, parseFloat(dimensions.height));
       if (dimensions.width) onDimensionsChange(`${prefix}width_in`, parseFloat(dimensions.width));
       if (dimensions.depth) onDimensionsChange(`${prefix}depth_in`, parseFloat(dimensions.depth));
