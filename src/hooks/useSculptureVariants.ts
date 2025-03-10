@@ -30,16 +30,16 @@ export function useSculptureVariants(sculptureId: string) {
       quotes.forEach(quote => {
         // Create a key based on physical attributes
         const variantKey = [
-          quote.material_id,
-          quote.method_id,
-          quote.height_in,
-          quote.width_in,
-          quote.depth_in,
-          quote.base_material_id,
-          quote.base_method_id,
-          quote.base_height_in,
-          quote.base_width_in,
-          quote.base_depth_in
+          quote.material_id || 'null',
+          quote.method_id || 'null',
+          quote.height_in || 0,
+          quote.width_in || 0,
+          quote.depth_in || 0,
+          quote.base_material_id || 'null',
+          quote.base_method_id || 'null',
+          quote.base_height_in || 0,
+          quote.base_width_in || 0,
+          quote.base_depth_in || 0
         ].join('-');
 
         // Only add if we don't have this variant yet
@@ -121,20 +121,63 @@ export function useSculptureVariants(sculptureId: string) {
       return [];
     }
 
-    const { data: quotes, error } = await supabase
+    // Build query filters based on variant attributes, handling null values properly
+    let query = supabase
       .from("fabrication_quotes")
       .select("*")
-      .eq("sculpture_id", sculptureId)
-      .filter('material_id', 'eq', variant.materialId)
-      .filter('method_id', 'eq', variant.methodId)
-      .filter('height_in', 'eq', variant.heightIn)
-      .filter('width_in', 'eq', variant.widthIn)
-      .filter('depth_in', 'eq', variant.depthIn)
-      .filter('base_material_id', 'eq', variant.baseMaterialId)
-      .filter('base_method_id', 'eq', variant.baseMethodId)
-      .filter('base_height_in', 'eq', variant.baseHeightIn)
-      .filter('base_width_in', 'eq', variant.baseWidthIn)
-      .filter('base_depth_in', 'eq', variant.baseDepthIn);
+      .eq("sculpture_id", sculptureId);
+    
+    // Add filters, handling null values carefully
+    if (variant.materialId) {
+      query = query.eq('material_id', variant.materialId);
+    } else {
+      query = query.is('material_id', null);
+    }
+    
+    if (variant.methodId) {
+      query = query.eq('method_id', variant.methodId);
+    } else {
+      query = query.is('method_id', null);
+    }
+    
+    // Always filter on dimensions even if they're zero
+    query = query.eq('height_in', variant.heightIn || 0);
+    query = query.eq('width_in', variant.widthIn || 0);
+    query = query.eq('depth_in', variant.depthIn || 0);
+    
+    // Handle base attributes null values properly
+    if (variant.baseMaterialId) {
+      query = query.eq('base_material_id', variant.baseMaterialId);
+    } else {
+      query = query.is('base_material_id', null);
+    }
+    
+    if (variant.baseMethodId) {
+      query = query.eq('base_method_id', variant.baseMethodId);
+    } else {
+      query = query.is('base_method_id', null);
+    }
+    
+    // Base dimensions
+    if (variant.baseHeightIn !== null && variant.baseHeightIn !== undefined) {
+      query = query.eq('base_height_in', variant.baseHeightIn);
+    } else {
+      query = query.is('base_height_in', null);
+    }
+    
+    if (variant.baseWidthIn !== null && variant.baseWidthIn !== undefined) {
+      query = query.eq('base_width_in', variant.baseWidthIn);
+    } else {
+      query = query.is('base_width_in', null);
+    }
+    
+    if (variant.baseDepthIn !== null && variant.baseDepthIn !== undefined) {
+      query = query.eq('base_depth_in', variant.baseDepthIn);
+    } else {
+      query = query.is('base_depth_in', null);
+    }
+
+    const { data: quotes, error } = await query;
 
     if (error) {
       toast({

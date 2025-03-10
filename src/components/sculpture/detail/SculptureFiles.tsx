@@ -11,24 +11,28 @@ interface SculptureFilesProps {
   dimensions: FileUpload[];
 }
 
-export function SculptureFiles({ sculptureId, models, renderings, dimensions }: SculptureFilesProps) {
+export function SculptureFiles({ sculptureId, models = [], renderings = [], dimensions = [] }: SculptureFilesProps) {
   console.log('SculptureFiles - Component props:', {
     sculptureId,
-    models: models?.length,
-    renderings: renderings?.length,
-    dimensions: dimensions?.length
+    models: models?.length || 0,
+    renderings: renderings?.length || 0,
+    dimensions: dimensions?.length || 0
   });
 
   const handleFilesChange = async (files: FileUpload[], type: string) => {
     console.log('handleFilesChange called with type:', type);
-    const { error } = await supabase
-      .from('sculptures')
-      .update({ [type]: files })
-      .eq('id', sculptureId);
-    
-    if (error) {
-      console.error(`Error updating ${type}:`, error);
-      return;
+    try {
+      const { error } = await supabase
+        .from('sculptures')
+        .update({ [type]: files })
+        .eq('id', sculptureId);
+      
+      if (error) {
+        console.error(`Error updating ${type}:`, error);
+        return;
+      }
+    } catch (err) {
+      console.error(`Exception updating ${type}:`, err);
     }
   };
 
@@ -38,7 +42,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
       <div className="space-y-4">
         <FileUploadField
           label="Renderings"
-          files={renderings}
+          files={renderings || []}
           icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
           acceptTypes="image/*"
           sculptureId={sculptureId}
@@ -47,7 +51,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
 
         <FileUploadField
           label="Models"
-          files={models}
+          files={models || []}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
           onFilesChange={(files) => handleFilesChange(files, 'models')}
@@ -55,7 +59,7 @@ export function SculptureFiles({ sculptureId, models, renderings, dimensions }: 
 
         <FileUploadField
           label="Dimensions"
-          files={dimensions}
+          files={dimensions || []}
           icon={<FileIcon className="h-4 w-4 text-muted-foreground" />}
           sculptureId={sculptureId}
           onFilesChange={(files) => handleFilesChange(files, 'dimensions')}

@@ -49,13 +49,23 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   useEffect(() => {
     const loadQuotes = async () => {
       if (selectedVariantId) {
-        const quotes = await getQuotesForVariant(selectedVariantId);
-        setVariantQuotes(quotes);
+        try {
+          const quotes = await getQuotesForVariant(selectedVariantId);
+          setVariantQuotes(quotes || []);
+        } catch (error) {
+          console.error("Error loading quotes for variant:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load quotes for this variant",
+            variant: "destructive",
+          });
+          setVariantQuotes([]);
+        }
       }
     };
     
     loadQuotes();
-  }, [selectedVariantId, getQuotesForVariant]);
+  }, [selectedVariantId, getQuotesForVariant, toast]);
 
   // Get fabricators for dropdowns
   const { data: fabricators } = useQuery({
@@ -73,8 +83,18 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   const handleVariantChange = async (variantId: string) => {
     setSelectedVariantId(variantId);
-    const quotes = await getQuotesForVariant(variantId);
-    setVariantQuotes(quotes);
+    try {
+      const quotes = await getQuotesForVariant(variantId);
+      setVariantQuotes(quotes || []);
+    } catch (error) {
+      console.error("Error changing variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load quotes for this variant",
+        variant: "destructive",
+      });
+      setVariantQuotes([]);
+    }
   };
 
   const sortQuotes = (quotes: FabricationQuote[]) => {
