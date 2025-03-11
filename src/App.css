@@ -71,12 +71,12 @@ a, button, [role="button"] {
 /* Apply smooth transitions to all transforms and movements */
 [data-state="open"],
 [data-state="closed"] {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Ensure all radix components have smooth transitions */
 [data-radix-popper-content-wrapper] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Make panel transitions smoother */

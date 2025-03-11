@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -122,48 +121,22 @@ a, button, [role="button"] {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Tooltip animations */
-@keyframes tooltip-slide-up-fade {
+/* Modified tooltip animations - removed slide effects */
+@keyframes tooltip-fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-@keyframes tooltip-slide-down-fade {
+@keyframes tooltip-fade-out {
   from {
-    opacity: 0;
-    transform: translateY(-8px);
+    opacity: 1;
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes tooltip-slide-left-fade {
-  from {
     opacity: 0;
-    transform: translateX(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes tooltip-slide-right-fade {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
 
@@ -198,7 +171,7 @@ a, button, [role="button"] {
 
 /* Ensure all radix components have smooth transitions */
 [data-radix-popper-content-wrapper] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Make panel transitions smoother */
