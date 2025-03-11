@@ -12,8 +12,13 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
     data: quotes = [],
     isLoading: isLoadingQuotes,
     isError: isQuotesError,
-    refetch: refetchQuotes
+    refetch: refetchQuotesQuery
   } = useVariantQuotesQuery(selectedVariantId);
+
+  // Create a wrapper function to ensure correct Promise<void> return type
+  const refetchQuotes = useCallback(async () => {
+    await refetchQuotesQuery();
+  }, [refetchQuotesQuery]);
 
   // Use smaller hooks for specific functionalities
   const { handleSelectQuote } = useQuoteSelection(refetchQuotes);
