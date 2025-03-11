@@ -4,13 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckIcon, XIcon } from "lucide-react";
 
+interface Dimensions {
+  height: string;
+  width: string;
+  depth: string;
+}
+
 interface DimensionsEditFormProps {
-  dimensions: {
-    height: string;
-    width: string;
-    depth: string;
-  };
-  onDimensionChange: (field: keyof typeof dimensions, value: string) => void;
+  dimensions: Dimensions;
+  onDimensionChange: (field: keyof Dimensions, value: string) => void;
   onSave: () => void;
   onCancel: () => void;
 }
