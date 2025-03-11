@@ -11,7 +11,7 @@ import { FabricationQuoteCard } from "./FabricationQuoteCard";
 import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { SculptureVariant } from "./SculptureVariant";
-import { useSculptureVariants } from "@/hooks/useSculptureVariants";
+import { useSculptureVariants } from "@/hooks/sculpture-variants";
 import {
   calculateTotal,
   calculateTradePrice,
