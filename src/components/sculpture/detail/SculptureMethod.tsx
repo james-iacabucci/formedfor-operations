@@ -1,7 +1,9 @@
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 
 interface SculptureMethodProps {
   sculptureId: string;
@@ -24,6 +26,7 @@ export function SculptureMethod({
 }: SculptureMethodProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   
   const { data: methods } = useQuery({
     queryKey: ['value-lists', 'method'],
@@ -94,13 +97,22 @@ export function SculptureMethod({
         variant: "destructive",
       });
     }
+    
+    // Blur the trigger element to remove focus after selection
+    if (triggerRef.current) {
+      triggerRef.current.blur();
+    }
   };
 
   const selectedMethod = methods?.find(m => m.id === methodId)?.name || '';
 
   return (
-    <Select value={methodId || ''} onValueChange={handleMethodChange}>
-      <SelectTrigger className="group">
+    <Select value={methodId || ''} onValueChange={handleMethodChange} onOpenChange={(open) => {
+      if (!open && triggerRef.current) {
+        triggerRef.current.blur();
+      }
+    }}>
+      <SelectTrigger className="group" ref={triggerRef}>
         <div className="flex gap-1 items-center">
           <span className="text-muted-foreground">Method:</span>
           <SelectValue placeholder="Select method">

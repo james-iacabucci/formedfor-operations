@@ -1,8 +1,10 @@
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMaterialFinishData } from "./useMaterialFinishData";
+import { useRef } from "react";
 
 interface SculptureMaterialFinishProps {
   sculptureId: string;
@@ -26,6 +28,7 @@ export function SculptureMaterialFinish({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { materials } = useMaterialFinishData(materialId);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const handleMaterialChange = async (newMaterialId: string) => {
     try {
@@ -82,13 +85,22 @@ export function SculptureMaterialFinish({
         variant: "destructive",
       });
     }
+    
+    // Blur the trigger element to remove focus after selection
+    if (triggerRef.current) {
+      triggerRef.current.blur();
+    }
   };
 
   const selectedMaterial = materials?.find(m => m.id === materialId)?.name || '';
 
   return (
-    <Select value={materialId || ''} onValueChange={handleMaterialChange}>
-      <SelectTrigger className="group">
+    <Select value={materialId || ''} onValueChange={handleMaterialChange} onOpenChange={(open) => {
+      if (!open && triggerRef.current) {
+        triggerRef.current.blur();
+      }
+    }}>
+      <SelectTrigger className="group" ref={triggerRef}>
         <div className="flex gap-1 items-center">
           <span className="text-muted-foreground">Material:</span>
           <SelectValue placeholder="Select material">
