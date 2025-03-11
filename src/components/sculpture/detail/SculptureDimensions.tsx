@@ -89,6 +89,7 @@ export function SculptureDimensions({
           
           // Invalidate relevant queries
           await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+          setIsEditingDimensions(false);
         } catch (err) {
           console.error('Error updating variant dimensions:', err);
           toast({
@@ -96,10 +97,12 @@ export function SculptureDimensions({
             description: "Failed to update dimensions in database",
             variant: "destructive",
           });
+          return; // Don't close form on error
         }
+      } else {
+        setIsEditingDimensions(false);
       }
       
-      setIsEditingDimensions(false);
       return;
     }
 
@@ -133,16 +136,20 @@ export function SculptureDimensions({
           description: "Failed to update dimensions: " + error.message,
           variant: "destructive",
         });
-        return;
+        return; // Don't close form on error
       }
 
       // Invalidate sculpture query to refresh data
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       
       toast({
         title: "Success",
         description: "Dimensions updated successfully",
       });
+      
+      // Close the editing form
+      setIsEditingDimensions(false);
     } catch (err) {
       console.error('Exception updating dimensions:', err);
       toast({
@@ -150,8 +157,7 @@ export function SculptureDimensions({
         description: "An unexpected error occurred while updating dimensions",
         variant: "destructive",
       });
-    } finally {
-      setIsEditingDimensions(false);
+      // Don't close form on error
     }
   };
 
@@ -219,14 +225,14 @@ export function SculptureDimensions({
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between border rounded-md py-0 px-3">
+        <div className="flex items-center justify-between border rounded-md py-0 px-3 group">
           <div className="flex gap-1 items-center flex-1">
             <span className="text-muted-foreground text-sm">Dimensions:</span>
             <Input
               readOnly
               value={formatDimensionsString(height, width, depth)}
               placeholder="Enter dimensions"
-              className={`border-0 focus-visible:ring-0 px-0 ${!height && !width && !depth ? 'placeholder:text-white' : ''}`}
+              className={`border-0 focus-visible:ring-0 px-0 ${!height && !width && !depth ? 'placeholder:text-muted-foreground' : ''}`}
               onClick={() => setIsEditingDimensions(true)}
             />
           </div>

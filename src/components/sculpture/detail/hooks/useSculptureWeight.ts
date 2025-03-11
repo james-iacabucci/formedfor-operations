@@ -98,6 +98,9 @@ export function useSculptureWeight({
           
           // Invalidate relevant queries
           await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+          
+          // Make sure we set editing mode to false
+          setIsEditingWeight(false);
         } catch (err) {
           console.error('Error updating variant weight:', err);
           toast({
@@ -105,10 +108,13 @@ export function useSculptureWeight({
             description: "Failed to update weight in database",
             variant: "destructive",
           });
+          return; // Don't close the form on error
         }
+      } else {
+        // Close the form for non-database updates
+        setIsEditingWeight(false);
       }
       
-      setIsEditingWeight(false);
       return;
     }
 
@@ -142,7 +148,7 @@ export function useSculptureWeight({
           description: "Failed to update weight: " + error.message,
           variant: "destructive",
         });
-        return;
+        return; // Don't close the form on error
       }
 
       // Invalidate sculpture query to refresh data
@@ -152,6 +158,9 @@ export function useSculptureWeight({
         title: "Success",
         description: "Weight updated successfully",
       });
+      
+      // Make sure to close the form after successful update
+      setIsEditingWeight(false);
     } catch (err) {
       console.error('Exception updating weight:', err);
       toast({
@@ -159,8 +168,7 @@ export function useSculptureWeight({
         description: "An unexpected error occurred while updating weight",
         variant: "destructive",
       });
-    } finally {
-      setIsEditingWeight(false);
+      // Don't close form on error
     }
   };
 
