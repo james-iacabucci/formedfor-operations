@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { FabricationQuote } from "@/types/fabrication-quote";
@@ -145,6 +144,7 @@ export function EditFabricationQuoteSheet({
             base_depth_in: newQuote.base_depth_in,
             base_weight_kg: newQuote.base_weight_kg,
             base_weight_lbs: newQuote.base_weight_lbs,
+            variant_id: newQuote.variant_id
           })
           .eq("id", editingQuoteId);
 

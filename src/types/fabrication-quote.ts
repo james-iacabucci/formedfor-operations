@@ -38,5 +38,5 @@ export interface FabricationQuote {
   base_weight_lbs: number | null;
   
   // Variant association
-  variant_id?: string;
+  variant_id: string | null;
 }
