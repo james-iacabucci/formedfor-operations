@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +5,7 @@ import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { SculptureVariant } from "./SculptureVariant";
 import { useSculptureVariants } from "@/hooks/sculpture-variants";
-import { useFabricationQuotes } from "./hooks/useFabricationQuotes";
+import { useFabricationQuotes } from "./hooks/quotes/useFabricationQuotes";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   calculateTotal,
@@ -36,7 +35,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     refetch: refetchVariants
   } = useSculptureVariants(sculptureId);
 
-  // Use our extracted hook for fabrication quotes
   const {
     quotes,
     isLoadingQuotes,
@@ -56,7 +54,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     handleQuoteSaved,
   } = useFabricationQuotes(sculptureId, selectedVariantId);
 
-  // Set selected variant when variants load - only once
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
       console.log("Setting initial selected variant:", variants[0].id);
@@ -88,7 +85,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     try {
       const newVariantId = await createVariant(currentVariantId);
       
-      // Force a refresh of the variants list
       await refetchVariants();
       
       return newVariantId;
@@ -98,13 +94,11 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   }, [createVariant, refetchVariants]);
 
-  // Find current variant for adding quotes
   const currentVariant = useMemo(() => {
     if (!variants || !selectedVariantId) return null;
     return variants.find(v => v.id === selectedVariantId) || null;
   }, [variants, selectedVariantId]);
 
-  // Loading state for variants
   if (isLoadingVariants) {
     return (
       <div className="space-y-6">
@@ -118,7 +112,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   return (
     <div className="space-y-6">
-      {/* Variant selection and management */}
       {variants && variants.length > 0 && (
         <SculptureVariant 
           variants={variants}
@@ -132,7 +125,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       )}
 
-      {/* Fabrication quotes section */}
       <div className="space-y-6">
         <FabricationQuotesHeader
           onAddQuote={() => currentVariant && handleAddQuote(currentVariant)}
@@ -156,7 +148,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       </div>
 
-      {/* Edit quote sheet */}
       <EditFabricationQuoteSheet 
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
@@ -167,7 +158,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         initialQuote={initialQuote}
       />
 
-      {/* Chat sheet */}
       {chatThreadId && (
         <ChatSheet 
           open={isChatOpen}
