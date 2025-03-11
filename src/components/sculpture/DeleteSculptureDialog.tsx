@@ -14,6 +14,7 @@ import { Sculpture } from "@/types/sculpture";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ArchiveIcon, TrashIcon } from "lucide-react";
 
 interface DeleteSculptureDialogProps {
   sculpture: Sculpture | null;
@@ -185,28 +186,37 @@ export function DeleteSculptureDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black text-white border-none">
         <AlertDialogHeader>
-          <AlertDialogTitle>Manage Sculpture</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-2xl font-semibold">Manage Sculpture</AlertDialogTitle>
+          <AlertDialogDescription className="text-white/80 text-base">
             You can either archive this sculpture or permanently delete it and all its variations.
             Archived sculptures can be restored later.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            variant="secondary"
-            onClick={() => archiveMutation.mutate()}
+        <AlertDialogFooter className="flex justify-center space-x-4 mt-6">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white min-w-[120px]"
           >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => archiveMutation.mutate()}
+            className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
+          >
+            <ArchiveIcon className="h-4 w-4 mr-2" />
             Archive
           </Button>
-          <AlertDialogAction
+          <Button
             onClick={() => deleteMutation.mutate()}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-red-800 hover:bg-red-700 text-white border-none min-w-[160px]"
           >
+            <TrashIcon className="h-4 w-4 mr-2" />
             Delete Forever
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

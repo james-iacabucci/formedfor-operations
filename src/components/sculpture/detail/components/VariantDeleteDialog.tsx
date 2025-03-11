@@ -1,6 +1,7 @@
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ArchiveIcon, TrashIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface VariantDeleteDialogProps {
   showDialog: boolean;
@@ -17,29 +18,37 @@ export function VariantDeleteDialog({
 }: VariantDeleteDialogProps) {
   return (
     <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black text-white border-none">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Variant</AlertDialogTitle>
-          <AlertDialogDescription>
-            How would you like to remove this variant?
+          <AlertDialogTitle className="text-2xl font-semibold">Manage Sculpture</AlertDialogTitle>
+          <AlertDialogDescription className="text-white/80 text-base">
+            You can either archive this sculpture or permanently delete it and all its variations.
+            Archived sculptures can be restored later.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
+        <AlertDialogFooter className="flex justify-center space-x-4 mt-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowDialog(false)}
+            className="border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white min-w-[120px]"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
             onClick={onArchive}
-            className="bg-amber-600 hover:bg-amber-700"
+            className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
           >
             <ArchiveIcon className="h-4 w-4 mr-2" />
-            Archive Variant
-          </AlertDialogAction>
-          <AlertDialogAction 
+            Archive
+          </Button>
+          <Button
             onClick={onDelete}
-            className="bg-destructive hover:bg-destructive/90"
+            className="bg-red-800 hover:bg-red-700 text-white border-none min-w-[160px]"
           >
             <TrashIcon className="h-4 w-4 mr-2" />
-            Delete Permanently
-          </AlertDialogAction>
+            Delete Forever
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
