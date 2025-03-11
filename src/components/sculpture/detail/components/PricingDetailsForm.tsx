@@ -1,5 +1,6 @@
 
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { NewQuote } from "@/types/fabrication-quote-form";
 
 interface PricingDetailsFormProps {
@@ -33,7 +34,7 @@ export function PricingDetailsForm({
       <h3 className="text-lg font-semibold">Pricing Details</h3>
       <div className="grid grid-cols-5 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Fabrication</label>
+          <Label className="text-sm font-medium text-muted-foreground">Fabrication</Label>
           <Input
             type="number"
             value={newQuote.fabrication_cost}
@@ -42,7 +43,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Shipping</label>
+          <Label className="text-sm font-medium text-muted-foreground">Shipping</Label>
           <Input
             type="number"
             value={newQuote.shipping_cost}
@@ -51,7 +52,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Customs</label>
+          <Label className="text-sm font-medium text-muted-foreground">Customs</Label>
           <Input
             type="number"
             value={newQuote.customs_cost}
@@ -60,7 +61,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Other</label>
+          <Label className="text-sm font-medium text-muted-foreground">Other</Label>
           <Input
             type="number"
             value={newQuote.other_cost}
@@ -69,7 +70,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Total Cost</label>
+          <Label className="text-sm font-medium text-muted-foreground">Total Cost</Label>
           <Input
             type="text"
             value={`$${formatNumber(calculateTotal(newQuote))}`}
@@ -81,7 +82,7 @@ export function PricingDetailsForm({
 
       <div className="grid grid-cols-5 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Markup</label>
+          <Label className="text-sm font-medium text-muted-foreground">Markup</Label>
           <Input
             type="number"
             step="any"
@@ -91,7 +92,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Trade Price</label>
+          <Label className="text-sm font-medium text-muted-foreground">Trade Price</Label>
           <Input
             type="text"
             value={`$${formatNumber(calculateTradePrice(newQuote))}`}
@@ -100,7 +101,7 @@ export function PricingDetailsForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Retail Price</label>
+          <Label className="text-sm font-medium text-muted-foreground">Retail Price</Label>
           <Input
             type="text"
             value={`$${formatNumber(calculateRetailPrice(calculateTradePrice(newQuote)))}`}

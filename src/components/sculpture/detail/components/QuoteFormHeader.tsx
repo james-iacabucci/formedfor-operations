@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { NewQuote } from "@/types/fabrication-quote-form";
+import { Label } from "@/components/ui/label";
 
 interface QuoteFormHeaderProps {
   newQuote: NewQuote;
@@ -18,7 +19,7 @@ export function QuoteFormHeader({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">Fabricator</label>
+        <Label className="text-sm font-medium text-muted-foreground">Fabricator</Label>
         <Select
           value={newQuote.fabricator_id}
           onValueChange={(value) => onQuoteChange({ ...newQuote, fabricator_id: value })}
@@ -36,7 +37,7 @@ export function QuoteFormHeader({
         </Select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">Quote Date</label>
+        <Label className="text-sm font-medium text-muted-foreground">Quote Date</Label>
         <Input
           type="date"
           value={format(new Date(newQuote.quote_date), "yyyy-MM-dd")}
