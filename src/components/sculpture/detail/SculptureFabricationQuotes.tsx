@@ -158,6 +158,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
             onClick={() => currentVariant && handleAddQuote(currentVariant)} 
             size="sm" 
             disabled={!selectedVariantId}
+            variant="outline"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Quote

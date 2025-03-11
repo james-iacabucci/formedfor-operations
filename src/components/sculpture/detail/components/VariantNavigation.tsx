@@ -81,7 +81,7 @@ export function VariantNavigation({
             disableDelete || 
             (!onDeleteVariant && !onArchiveVariant)
           }
-          className="h-9 w-9 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="h-9 w-9"
           title="Remove Variant"
         >
           <Trash2Icon className="h-4 w-4" />
