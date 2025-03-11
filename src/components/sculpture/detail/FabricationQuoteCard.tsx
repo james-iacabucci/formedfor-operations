@@ -1,14 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PencilIcon, Trash2Icon, CheckCircle2Icon, ChevronUpIcon, ChevronDownIcon, MessageSquareIcon } from "lucide-react";
-import { useState } from "react";
+import { PencilIcon, Trash2Icon, CheckCircle2Icon, MessageSquareIcon } from "lucide-react";
 import { 
   Collapsible,
-  CollapsibleTrigger,
   CollapsibleContent
 } from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
@@ -37,6 +35,7 @@ export function FabricationQuoteCard({
   formatNumber,
   isEditing
 }: FabricationQuoteCardProps) {
+  // We'll keep the state but make it always expanded by default
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
 
   return (
@@ -95,16 +94,8 @@ export function FabricationQuoteCard({
         </div>
       </div>
       
-      {/* Pricing Details Section - Collapsible */}
+      {/* Pricing Details Section - Always visible now */}
       <Collapsible open={pricingDetailsOpen} onOpenChange={setPricingDetailsOpen}>
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Pricing Details</h4>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="p-0 h-7 w-7">
-              {pricingDetailsOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
         <CollapsibleContent className="pt-2">
           <div className="grid grid-cols-5 gap-4 text-sm">
             <div>
