@@ -24,7 +24,7 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
     const w_val = formatValue(w);
     const d_val = formatValue(d);
     
-    return `HWD ${h_val} × ${w_val} × ${d_val}`;
+    return `${h_val} × ${w_val} × ${d_val}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
@@ -38,6 +38,7 @@ export function DimensionDisplay({ height, width, depth }: DimensionDisplayProps
   return (
     <div className="flex items-center gap-2" onClick={handleTabClick}>
       <span className="flex items-center">
+        <span className="text-muted-foreground mr-1">HWD</span>
         {formatDimensionString(height, width, depth, unit)}
       </span>
       <Tabs
