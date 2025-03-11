@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, XIcon, Loader2 } from "lucide-react";
 
 interface Dimensions {
   height: string;
@@ -15,6 +15,7 @@ interface DimensionsEditFormProps {
   onDimensionChange: (field: keyof Dimensions, value: string) => void;
   onSave: () => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
 export function DimensionsEditForm({
@@ -22,6 +23,7 @@ export function DimensionsEditForm({
   onDimensionChange,
   onSave,
   onCancel,
+  isSaving = false,
 }: DimensionsEditFormProps) {
   return (
     <div className="space-y-4">
@@ -35,6 +37,7 @@ export function DimensionsEditForm({
             onChange={(e) => onDimensionChange("height", e.target.value)}
             placeholder="Height"
             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            disabled={isSaving}
           />
         </div>
         <div className="space-y-2">
@@ -46,6 +49,7 @@ export function DimensionsEditForm({
             onChange={(e) => onDimensionChange("width", e.target.value)}
             placeholder="Width"
             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            disabled={isSaving}
           />
         </div>
         <div className="space-y-2">
@@ -57,6 +61,7 @@ export function DimensionsEditForm({
             onChange={(e) => onDimensionChange("depth", e.target.value)}
             placeholder="Depth"
             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            disabled={isSaving}
           />
         </div>
       </div>
@@ -65,6 +70,7 @@ export function DimensionsEditForm({
           variant="ghost"
           size="sm"
           onClick={onCancel}
+          disabled={isSaving}
         >
           <XIcon className="h-4 w-4 mr-1" /> Cancel
         </Button>
@@ -72,8 +78,17 @@ export function DimensionsEditForm({
           onClick={onSave}
           size="sm"
           variant="default"
+          disabled={isSaving}
         >
-          <CheckIcon className="h-4 w-4 mr-1" /> Save
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Saving
+            </>
+          ) : (
+            <>
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
+            </>
+          )}
         </Button>
       </div>
     </div>

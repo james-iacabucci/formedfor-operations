@@ -34,6 +34,7 @@ export function SculptureDimensions({
     setDimensions,
     handleCancel,
     setIsEditingDimensions,
+    isSaving,
   } = useSculptureDimensions({
     sculptureId,
     height,
@@ -58,6 +59,7 @@ export function SculptureDimensions({
           onDimensionChange={handleDimensionChange}
           onSave={handleDimensionsUpdate}
           onCancel={handleCancel}
+          isSaving={isSaving}
         />
       ) : (
         <DimensionsDisplay

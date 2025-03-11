@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, XIcon, Loader2 } from "lucide-react";
 
 interface WeightEditFormProps {
   weight: {
@@ -13,6 +13,7 @@ interface WeightEditFormProps {
   onKgChange: (value: string) => void;
   onSave: () => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
 export function WeightEditForm({
@@ -21,6 +22,7 @@ export function WeightEditForm({
   onKgChange,
   onSave,
   onCancel,
+  isSaving = false,
 }: WeightEditFormProps) {
   return (
     <div className="space-y-4">
@@ -34,6 +36,7 @@ export function WeightEditForm({
             onChange={(e) => onLbsChange(e.target.value)}
             placeholder="Weight (lbs)"
             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            disabled={isSaving}
           />
         </div>
         <div className="space-y-2">
@@ -45,6 +48,7 @@ export function WeightEditForm({
             onChange={(e) => onKgChange(e.target.value)}
             placeholder="Weight (kg)"
             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            disabled={isSaving}
           />
         </div>
       </div>
@@ -53,6 +57,7 @@ export function WeightEditForm({
           variant="ghost"
           size="sm"
           onClick={onCancel}
+          disabled={isSaving}
         >
           <XIcon className="h-4 w-4 mr-1" /> Cancel
         </Button>
@@ -60,8 +65,17 @@ export function WeightEditForm({
           onClick={onSave}
           size="sm"
           variant="default"
+          disabled={isSaving}
         >
-          <CheckIcon className="h-4 w-4 mr-1" /> Save
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Saving
+            </>
+          ) : (
+            <>
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
+            </>
+          )}
         </Button>
       </div>
     </div>

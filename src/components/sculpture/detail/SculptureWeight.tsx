@@ -34,6 +34,7 @@ export function SculptureWeight({
     handleKgChange,
     handleCancel,
     setIsEditingWeight,
+    isSaving,
   } = useSculptureWeight({
     sculptureId,
     weightKg,
@@ -54,6 +55,7 @@ export function SculptureWeight({
           onKgChange={handleKgChange}
           onSave={handleWeightUpdate}
           onCancel={handleCancel}
+          isSaving={isSaving}
         />
       ) : (
         <WeightDisplay

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ export function useSculptureDimensions({
   onDimensionsChange,
 }: UseSculptureDimensionsProps) {
   const [isEditingDimensions, setIsEditingDimensions] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [dimensions, setDimensions] = useState<DimensionsState>({
     height: height?.toString() || "",
     width: width?.toString() || "",
@@ -41,17 +42,27 @@ export function useSculptureDimensions({
   });
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const isMounted = useRef(true);
 
-  // Update local state when props change
+  // Set up the mounted ref for cleanup
   useEffect(() => {
-    if (!isEditingDimensions) {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Update local state when props change, but only when not in edit mode
+  // or if the form isn't currently saving data
+  useEffect(() => {
+    if (!isEditingDimensions && !isSaving) {
       setDimensions({
         height: height?.toString() || "",
         width: width?.toString() || "",
         depth: depth?.toString() || ""
       });
     }
-  }, [height, width, depth, isEditingDimensions]);
+  }, [height, width, depth, isEditingDimensions, isSaving]);
 
   const formatDimensionsString = (h: number | null, w: number | null, d: number | null) => {
     if (!h && !w && !d) return "";
@@ -65,6 +76,9 @@ export function useSculptureDimensions({
   };
 
   const handleDimensionsUpdate = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
     try {
       const prefix = isBase ? 'base_' : '';
       
@@ -92,6 +106,9 @@ export function useSculptureDimensions({
           
         if (error) throw error;
         
+        // First set editing to false before triggering a refetch
+        setIsEditingDimensions(false);
+        
         // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture-variants", sculptureId] });
@@ -104,27 +121,39 @@ export function useSculptureDimensions({
           
         if (error) throw error;
 
+        // First set editing to false before triggering a refetch
+        setIsEditingDimensions(false);
+
         // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
+      } else {
+        // For quote form, just exit edit mode
+        setIsEditingDimensions(false);
       }
       
-      // Success notification
-      toast({
-        title: "Success",
-        description: "Dimensions updated successfully",
-      });
-      
-      // Ensure we exit edit mode after successful save
-      setIsEditingDimensions(false);
+      // Success notification only if component is still mounted
+      if (isMounted.current) {
+        toast({
+          title: "Success",
+          description: "Dimensions updated successfully",
+        });
+      }
     } catch (err) {
       console.error('Error updating dimensions:', err);
-      toast({
-        title: "Error",
-        description: "Failed to update dimensions",
-        variant: "destructive",
-      });
+      if (isMounted.current) {
+        toast({
+          title: "Error",
+          description: "Failed to update dimensions",
+          variant: "destructive",
+        });
+      }
       // Don't close form on error
+    } finally {
+      // Reset saving state if component is still mounted
+      if (isMounted.current) {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -145,5 +174,6 @@ export function useSculptureDimensions({
     setDimensions,
     handleCancel,
     setIsEditingDimensions,
+    isSaving,
   };
 }

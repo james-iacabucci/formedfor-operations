@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -31,22 +31,33 @@ export function useSculptureWeight({
   onWeightChange,
 }: UseSculptureWeightProps) {
   const [isEditingWeight, setIsEditingWeight] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [weight, setWeight] = useState<WeightState>({
     kg: weightKg?.toString() || "",
     lbs: weightLbs?.toString() || "",
   });
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const isMounted = useRef(true);
 
-  // Update local state when props change
+  // Set up the mounted ref for cleanup
   useEffect(() => {
-    if (!isEditingWeight) {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Update local state when props change, but only when not in edit mode
+  // or if the form isn't currently saving data
+  useEffect(() => {
+    if (!isEditingWeight && !isSaving) {
       setWeight({
         kg: weightKg?.toString() || "",
         lbs: weightLbs?.toString() || "",
       });
     }
-  }, [weightKg, weightLbs, isEditingWeight]);
+  }, [weightKg, weightLbs, isEditingWeight, isSaving]);
 
   const calculateKg = (lbs: number): number => {
     return lbs / 2.20462;
@@ -75,6 +86,9 @@ export function useSculptureWeight({
   };
 
   const handleWeightUpdate = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
     try {
       const prefix = isBase ? 'base_' : '';
       const updatedWeight = {
@@ -99,6 +113,9 @@ export function useSculptureWeight({
           
         if (error) throw error;
         
+        // First set editing to false before triggering a refetch
+        setIsEditingWeight(false);
+        
         // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture-variants", sculptureId] });
@@ -111,27 +128,39 @@ export function useSculptureWeight({
           
         if (error) throw error;
 
+        // First set editing to false before triggering a refetch
+        setIsEditingWeight(false);
+
         // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
+      } else {
+        // For quote form, just exit edit mode
+        setIsEditingWeight(false);
       }
       
-      // Success notification
-      toast({
-        title: "Success",
-        description: "Weight updated successfully",
-      });
-      
-      // Ensure we exit edit mode after successful save
-      setIsEditingWeight(false);
+      // Success notification only if component is still mounted
+      if (isMounted.current) {
+        toast({
+          title: "Success",
+          description: "Weight updated successfully",
+        });
+      }
     } catch (err) {
       console.error('Error updating weight:', err);
-      toast({
-        title: "Error",
-        description: "Failed to update weight",
-        variant: "destructive",
-      });
+      if (isMounted.current) {
+        toast({
+          title: "Error",
+          description: "Failed to update weight",
+          variant: "destructive",
+        });
+      }
       // Don't close form on error
+    } finally {
+      // Reset saving state if component is still mounted
+      if (isMounted.current) {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -167,5 +196,6 @@ export function useSculptureWeight({
     handleKgChange,
     handleCancel,
     setIsEditingWeight,
+    isSaving,
   };
 }
