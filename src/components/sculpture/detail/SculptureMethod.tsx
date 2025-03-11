@@ -41,13 +41,14 @@ export function SculptureMethod({
   });
 
   const handleMethodChange = async (newMethodId: string) => {
-    if ((isQuoteForm || isVariantForm) && onMethodChange) {
-      // In form mode, just update the form state
-      onMethodChange(newMethodId);
-      return;
-    }
-
     try {
+      if ((isQuoteForm || isVariantForm) && onMethodChange) {
+        // In form mode, just update the form state
+        onMethodChange(newMethodId);
+        
+        if (!isVariantForm) return;
+      }
+
       let error;
       const fieldName = isBase ? 'base_method_id' : 'method_id';
       

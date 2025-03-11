@@ -37,6 +37,21 @@ export function SculptureWeight({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Update local state when props change
+  if (weightKg?.toString() !== weight.kg && !isEditingWeight) {
+    setWeight(prev => ({
+      ...prev,
+      kg: weightKg?.toString() || ""
+    }));
+  }
+
+  if (weightLbs?.toString() !== weight.lbs && !isEditingWeight) {
+    setWeight(prev => ({
+      ...prev,
+      lbs: weightLbs?.toString() || ""
+    }));
+  }
+
   const calculateKg = (lbs: number): number => {
     return lbs / 2.20462;
   };
@@ -71,9 +86,32 @@ export function SculptureWeight({
     };
 
     if ((isQuoteForm || isVariantForm) && onWeightChange) {
-      // In form mode, update the parent form state
+      // In form mode, update the parent form state and immediately update the UI
       if (weight.kg) onWeightChange(`${prefix}weightKg`, parseFloat(weight.kg));
       if (weight.lbs) onWeightChange(`${prefix}weightLbs`, parseFloat(weight.lbs));
+      
+      // For variant form, still save to the database
+      if (isVariantForm && variantId) {
+        try {
+          const { error } = await supabase
+            .from('sculpture_variants')
+            .update(updatedWeight)
+            .eq('id', variantId);
+            
+          if (error) throw error;
+          
+          // Invalidate relevant queries
+          await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+        } catch (err) {
+          console.error('Error updating variant weight:', err);
+          toast({
+            title: "Error",
+            description: "Failed to update weight in database",
+            variant: "destructive",
+          });
+        }
+      }
+      
       setIsEditingWeight(false);
       return;
     }

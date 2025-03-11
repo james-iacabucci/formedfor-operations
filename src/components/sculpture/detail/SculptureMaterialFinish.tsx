@@ -29,13 +29,14 @@ export function SculptureMaterialFinish({
   const { materials } = useMaterialFinishData(materialId);
 
   const handleMaterialChange = async (newMaterialId: string) => {
-    if ((isQuoteForm || isVariantForm) && onMaterialChange) {
-      // In form mode, just update the form state
-      onMaterialChange(newMaterialId);
-      return;
-    }
-
     try {
+      if ((isQuoteForm || isVariantForm) && onMaterialChange) {
+        // In form mode, just update the form state
+        onMaterialChange(newMaterialId);
+        
+        if (!isVariantForm) return;
+      }
+
       let error;
       const fieldName = isBase ? 'base_material_id' : 'material_id';
       

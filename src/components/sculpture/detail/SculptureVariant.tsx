@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, TrashIcon, ArchiveIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,53 +58,47 @@ export function SculptureVariant({
   const [deleteAction, setDeleteAction] = useState<"archive" | "delete" | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [localVariant, setLocalVariant] = useState<SculptureVariantDetails | null>(null);
+  
+  const [localVariants, setLocalVariants] = useState<SculptureVariantDetails[]>([]);
 
-  // Update currentIndex whenever selectedVariantId or variants change
   useEffect(() => {
-    if (variants && selectedVariantId) {
-      const newIndex = variants.findIndex(v => v.id === selectedVariantId);
+    if (variants.length > 0) {
+      setLocalVariants(variants);
+    }
+  }, [variants]);
+
+  const currentVariant = localVariants.length > 0 && currentIndex < localVariants.length 
+    ? localVariants[currentIndex] 
+    : null;
+
+  useEffect(() => {
+    if (localVariants.length && selectedVariantId) {
+      const newIndex = localVariants.findIndex(v => v.id === selectedVariantId);
       if (newIndex >= 0) {
         setCurrentIndex(newIndex);
-        setLocalVariant(variants[newIndex]);
-      } else if (variants.length > 0) {
-        // If the selected variant isn't found but we have variants, select the first one
+      } else if (localVariants.length > 0) {
         setCurrentIndex(0);
-        setLocalVariant(variants[0]);
-        onVariantChange(variants[0].id);
+        onVariantChange(localVariants[0].id);
       }
-    } else if (variants && variants.length > 0 && !selectedVariantId) {
-      // If no variant is selected but we have variants, select the first one
+    } else if (localVariants.length > 0 && !selectedVariantId) {
       setCurrentIndex(0);
-      setLocalVariant(variants[0]);
-      onVariantChange(variants[0].id);
+      onVariantChange(localVariants[0].id);
     }
-  }, [variants, selectedVariantId, onVariantChange]);
-
-  // Make sure to update localVariant when variants change (like after a DB update)
-  useEffect(() => {
-    if (variants && variants.length > currentIndex) {
-      setLocalVariant(variants[currentIndex]);
-    }
-  }, [variants, currentIndex]);
-
-  const currentVariant = localVariant || (variants && variants[currentIndex]);
+  }, [localVariants, selectedVariantId, onVariantChange]);
   
   const handlePrevious = () => {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
-      setLocalVariant(variants[newIndex]);
-      onVariantChange(variants[newIndex].id);
+      onVariantChange(localVariants[newIndex].id);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex < variants.length - 1) {
+    if (currentIndex < localVariants.length - 1) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
-      setLocalVariant(variants[newIndex]);
-      onVariantChange(variants[newIndex].id);
+      onVariantChange(localVariants[newIndex].id);
     }
   };
 
@@ -121,27 +114,11 @@ export function SculptureVariant({
       const newVariantId = await onCreateVariant(currentVariant.id);
       console.log("New variant created with ID:", newVariantId);
       
-      // Now wait a moment for the variants to refresh
+      queryClient.invalidateQueries({ queryKey: ["sculpture-variants", currentVariant.sculptureId] });
+      
       setTimeout(() => {
-        // Find the new variant in the updated variants list
-        const newVariantIndex = variants.findIndex(v => v.id === newVariantId);
-        
-        if (newVariantIndex >= 0) {
-          // If found, update the current index and notify parent
-          setCurrentIndex(newVariantIndex);
-          setLocalVariant(variants[newVariantIndex]);
-          onVariantChange(newVariantId);
-        } else {
-          // If not found yet (may still be loading), use the variant ID directly
-          onVariantChange(newVariantId);
-          
-          // This is a backup in case the variant wasn't in the list yet
-          toast({
-            title: "Variant Created",
-            description: "The new variant has been created. It may take a moment to load.",
-          });
-        }
-      }, 500);  // Small delay to allow for query invalidation
+        onVariantChange(newVariantId);
+      }, 500);
     } catch (error) {
       console.error("Failed to create variant:", error);
       toast({
@@ -153,7 +130,7 @@ export function SculptureVariant({
   };
 
   const handleDeleteClick = () => {
-    if (variants.length <= 1) {
+    if (localVariants.length <= 1) {
       toast({
         title: "Cannot Delete",
         description: "You must have at least one variant. Create another variant before deleting this one.",
@@ -175,18 +152,22 @@ export function SculptureVariant({
         await onDeleteVariant(currentVariant.id);
       }
       
-      // Move to previous variant if available, otherwise next
+      const updatedVariants = localVariants.filter(v => v.id !== currentVariant.id);
+      setLocalVariants(updatedVariants);
+      
       const newIndex = currentIndex > 0 ? currentIndex - 1 : 0;
       
-      // Ensure the variant exists (in case we deleted the last one)
-      if (variants.length > 1) {
+      if (updatedVariants.length > 0) {
         setCurrentIndex(newIndex);
-        setLocalVariant(variants[newIndex]);
-        onVariantChange(variants[newIndex].id);
+        onVariantChange(updatedVariants[newIndex].id);
       }
       
       setShowDeleteDialog(false);
       setDeleteAction(null);
+      
+      queryClient.invalidateQueries({ 
+        queryKey: ["sculpture-variants", currentVariant.sculptureId] 
+      });
     } catch (error) {
       console.error("Failed to delete variant:", error);
       toast({
@@ -197,67 +178,25 @@ export function SculptureVariant({
     }
   };
 
-  // New function to handle attribute changes and save to database
-  const handleAttributeChange = async (field: string, value: any) => {
+  const handleAttributeChange = useCallback((field: string, value: any) => {
     if (!currentVariant) return;
     
-    try {
-      console.log(`Updating variant ${currentVariant.id} field ${field} to:`, value);
+    setLocalVariants(prevVariants => {
+      const updatedVariants = [...prevVariants];
+      const variantIndex = updatedVariants.findIndex(v => v.id === currentVariant.id);
       
-      // Convert camelCase field name to snake_case for database
-      const dbFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase();
-      
-      // Update local state immediately for a responsive UI
-      setLocalVariant(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
+      if (variantIndex >= 0) {
+        updatedVariants[variantIndex] = {
+          ...updatedVariants[variantIndex],
           [field]: value
         };
-      });
-      
-      const { error } = await supabase
-        .from('sculpture_variants')
-        .update({ [dbFieldName]: value })
-        .eq('id', currentVariant.id);
-        
-      if (error) {
-        console.error(`Error updating variant ${field}:`, error);
-        toast({
-          title: "Error",
-          description: `Failed to update variant: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
       }
       
-      // Invalidate the sculpture-variants query to refresh the data
-      await queryClient.invalidateQueries({ 
-        queryKey: ["sculpture-variants", currentVariant.sculptureId] 
-      });
-      
-      // Also invalidate the main sculpture query to ensure consistency
-      await queryClient.invalidateQueries({
-        queryKey: ["sculpture", currentVariant.sculptureId]
-      });
-      
-      console.log(`Successfully updated variant ${field}`);
-      
-      toast({
-        title: "Success",
-        description: `Updated ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} successfully`,
-      });
-    } catch (error) {
-      console.error(`Error in handleAttributeChange for ${field}:`, error);
-      toast({
-        title: "Error",
-        description: "Failed to update variant",
-        variant: "destructive",
-      });
-    }
-  };
+      return updatedVariants;
+    });
+  }, [currentVariant]);
 
-  if (!currentVariant || variants.length === 0) {
+  if (!currentVariant || localVariants.length === 0) {
     return (
       <Card className="mb-6">
         <CardContent className="pt-6 px-4 pb-4">
@@ -274,7 +213,7 @@ export function SculptureVariant({
       <Card className="mb-6">
         <CardContent className="pt-6 px-4 pb-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Variant {currentIndex + 1} of {variants.length}</h2>
+            <h2 className="text-lg font-semibold">Variant {currentIndex + 1} of {localVariants.length}</h2>
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
@@ -289,7 +228,7 @@ export function SculptureVariant({
                 variant="outline"
                 size="icon"
                 onClick={handleNext}
-                disabled={currentIndex === variants.length - 1}
+                disabled={currentIndex === localVariants.length - 1}
               >
                 <ChevronRightIcon className="h-4 w-4" />
               </Button>
@@ -308,7 +247,7 @@ export function SculptureVariant({
                 variant="outline"
                 size="icon"
                 onClick={handleDeleteClick}
-                disabled={isDeletingVariant || variants.length <= 1 || (!onArchiveVariant && !onDeleteVariant)}
+                disabled={isDeletingVariant || localVariants.length <= 1 || (!onArchiveVariant && !onDeleteVariant)}
                 title="Delete this variant"
               >
                 <TrashIcon className="h-4 w-4" />

@@ -1,12 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PenIcon, CheckIcon, XIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
 
 interface SculptureDimensionsProps {
   sculptureId: string;
@@ -40,48 +40,69 @@ export function SculptureDimensions({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const calculateCm = (inches: number): number => {
-    return inches * 2.54;
-  };
+  // Update local state when props change
+  useEffect(() => {
+    if (!isEditingDimensions) {
+      setDimensions({
+        height: height?.toString() || "",
+        width: width?.toString() || "",
+        depth: depth?.toString() || ""
+      });
+    }
+  }, [height, width, depth, isEditingDimensions]);
 
-  const formatDimensionString = (h: number | null, w: number | null, d: number | null) => {
+  const formatDimensionsString = (h: number | null, w: number | null, d: number | null) => {
     if (!h && !w && !d) return "";
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
-      return val;
+      return val.toString();
     };
     
-    const formatValueCm = (val: number | null) => {
-      if (val === null) return '-';
-      return (val * 2.54).toFixed(1);
-    };
-    
-    const imperial = `${formatValue(h)} x ${formatValue(w)} x ${formatValue(d)} (in)`;
-    const metric = `${formatValueCm(h)} x ${formatValueCm(w)} x ${formatValueCm(d)} (cm)`;
-    
-    return `${imperial} | ${metric}`;
+    return `${formatValue(h)} × ${formatValue(w)} × ${formatValue(d)} in`;
   };
 
   const handleDimensionsUpdate = async () => {
     const prefix = isBase ? 'base_' : '';
     
-    // Prepare the update object with direct values, not calculations
-    const updatedDimensions: Record<string, number | null> = {
+    const updatedDimensions = {
       [`${prefix}height_in`]: dimensions.height ? parseFloat(dimensions.height) : null,
       [`${prefix}width_in`]: dimensions.width ? parseFloat(dimensions.width) : null,
       [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
     };
-    
+
     if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
       // In form mode, update the parent form state
       if (dimensions.height) onDimensionsChange(`${prefix}heightIn`, parseFloat(dimensions.height));
       if (dimensions.width) onDimensionsChange(`${prefix}widthIn`, parseFloat(dimensions.width));
       if (dimensions.depth) onDimensionsChange(`${prefix}depthIn`, parseFloat(dimensions.depth));
+      
+      // For variant form, also save to the database
+      if (isVariantForm && variantId) {
+        try {
+          const { error } = await supabase
+            .from('sculpture_variants')
+            .update(updatedDimensions)
+            .eq('id', variantId);
+            
+          if (error) throw error;
+          
+          // Invalidate relevant queries
+          await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+        } catch (err) {
+          console.error('Error updating variant dimensions:', err);
+          toast({
+            title: "Error",
+            description: "Failed to update dimensions in database",
+            variant: "destructive",
+          });
+        }
+      }
+      
       setIsEditingDimensions(false);
       return;
     }
-    
+
     try {
       let error;
       
@@ -140,35 +161,35 @@ export function SculptureDimensions({
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-2">
-              <Label htmlFor="height-input">Height</Label>
+              <Label htmlFor="height-input">Height (in)</Label>
               <Input
                 id="height-input"
                 type="number"
-                placeholder="Height"
                 value={dimensions.height}
                 onChange={(e) => setDimensions(prev => ({ ...prev, height: e.target.value }))}
+                placeholder="Height"
                 className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="width-input">Width</Label>
+              <Label htmlFor="width-input">Width (in)</Label>
               <Input
                 id="width-input"
                 type="number"
-                placeholder="Width"
                 value={dimensions.width}
                 onChange={(e) => setDimensions(prev => ({ ...prev, width: e.target.value }))}
+                placeholder="Width"
                 className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="depth-input">Depth</Label>
+              <Label htmlFor="depth-input">Depth (in)</Label>
               <Input
                 id="depth-input"
                 type="number"
-                placeholder="Depth"
                 value={dimensions.depth}
                 onChange={(e) => setDimensions(prev => ({ ...prev, depth: e.target.value }))}
+                placeholder="Depth"
                 className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
@@ -200,10 +221,10 @@ export function SculptureDimensions({
       ) : (
         <div className="flex items-center justify-between border rounded-md py-0 px-3">
           <div className="flex gap-1 items-center flex-1">
-            <span className="text-muted-foreground text-sm">HWD:</span>
+            <span className="text-muted-foreground text-sm">Dimensions:</span>
             <Input
               readOnly
-              value={formatDimensionString(height, width, depth)}
+              value={formatDimensionsString(height, width, depth)}
               placeholder="Enter dimensions"
               className={`border-0 focus-visible:ring-0 px-0 ${!height && !width && !depth ? 'placeholder:text-white' : ''}`}
               onClick={() => setIsEditingDimensions(true)}
