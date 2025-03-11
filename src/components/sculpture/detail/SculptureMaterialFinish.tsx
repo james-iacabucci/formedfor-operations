@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -96,11 +95,6 @@ export function SculptureMaterialFinish({
             {selectedMaterial}
           </SelectValue>
         </div>
-        <span className="absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 opacity-50">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </span>
       </SelectTrigger>
       <SelectContent>
         {materials?.map((material) => (
