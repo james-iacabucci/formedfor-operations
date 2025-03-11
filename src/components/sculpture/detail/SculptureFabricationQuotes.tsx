@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [chatThreadId, setChatThreadId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [variantQuotes, setVariantQuotes] = useState<FabricationQuote[]>([]);
+  const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
   const { toast } = useToast();
 
   const { 
@@ -42,30 +44,42 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     archiveVariant,
     deleteVariant,
     isCreatingVariant,
-    isDeletingVariant
+    isDeletingVariant,
+    refetch: refetchVariants
   } = useSculptureVariants(sculptureId);
 
+  // Set selected variant when variants load
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
+      console.log("Setting initial selected variant:", variants[0].id);
       setSelectedVariantId(variants[0].id);
     }
   }, [variants, selectedVariantId]);
 
+  // Load quotes whenever the selected variant changes
   useEffect(() => {
     const loadQuotes = async () => {
-      if (selectedVariantId) {
-        try {
-          const quotes = await getQuotesForVariant(selectedVariantId);
-          setVariantQuotes(quotes || []);
-        } catch (error) {
-          console.error("Error loading quotes for variant:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load quotes for this variant",
-            variant: "destructive",
-          });
-          setVariantQuotes([]);
-        }
+      if (!selectedVariantId) {
+        console.log("No variant selected, not loading quotes");
+        return;
+      }
+      
+      try {
+        setIsLoadingQuotes(true);
+        console.log("Loading quotes for variant:", selectedVariantId);
+        const quotes = await getQuotesForVariant(selectedVariantId);
+        console.log("Loaded quotes:", quotes?.length || 0);
+        setVariantQuotes(quotes || []);
+      } catch (error) {
+        console.error("Error loading quotes for variant:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load quotes for this variant",
+          variant: "destructive",
+        });
+        setVariantQuotes([]);
+      } finally {
+        setIsLoadingQuotes(false);
       }
     };
     
@@ -86,9 +100,12 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   });
 
   const handleVariantChange = async (variantId: string) => {
+    console.log("Variant changed to:", variantId);
     setSelectedVariantId(variantId);
     try {
+      setIsLoadingQuotes(true);
       const quotes = await getQuotesForVariant(variantId);
+      console.log("Loaded quotes for new variant:", quotes?.length || 0);
       setVariantQuotes(quotes || []);
     } catch (error) {
       console.error("Error changing variant:", error);
@@ -98,12 +115,20 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         variant: "destructive",
       });
       setVariantQuotes([]);
+    } finally {
+      setIsLoadingQuotes(false);
     }
   };
 
   const handleCreateVariant = async (currentVariantId: string) => {
+    console.log("Creating new variant based on:", currentVariantId);
     try {
       const newVariantId = await createVariant(currentVariantId);
+      console.log("New variant created, returning ID:", newVariantId);
+      
+      // Force a refresh of the variants list
+      await refetchVariants();
+      
       return newVariantId;
     } catch (error) {
       console.error("Error creating variant:", error);
@@ -179,17 +204,24 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_depth_in: quote.base_depth_in,
       base_weight_kg: quote.base_weight_kg,
       base_weight_lbs: quote.base_weight_lbs,
-      variant_id: quote.variant_id as string | undefined
+      variant_id: quote.variant_id
     });
     setIsSheetOpen(true);
   };
 
   const handleAddQuote = () => {
-    if (!selectedVariantId || !variants) return;
+    if (!selectedVariantId || !variants) {
+      console.error("Cannot add quote: No variant selected");
+      return;
+    }
     
     const selectedVariant = variants.find(v => v.id === selectedVariantId);
-    if (!selectedVariant) return;
+    if (!selectedVariant) {
+      console.error("Cannot add quote: Selected variant not found");
+      return;
+    }
     
+    console.log("Adding new quote for variant:", selectedVariant.id);
     setEditingQuoteId(null);
     setInitialQuote({
       sculpture_id: sculptureId,
@@ -236,8 +268,14 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
-    setVariantQuotes(updatedQuotes);
+    // Remove from local state immediately for a faster UI update
+    setVariantQuotes(current => current.filter(q => q.id !== quoteId));
+    
+    // Then refresh from the server
+    if (selectedVariantId) {
+      const updatedQuotes = await getQuotesForVariant(selectedVariantId);
+      setVariantQuotes(updatedQuotes);
+    }
     
     toast({
       title: "Success",
@@ -261,8 +299,19 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
-    setVariantQuotes(updatedQuotes);
+    // Update the local state immediately for faster UI feedback
+    setVariantQuotes(current => 
+      current.map(q => ({
+        ...q,
+        is_selected: q.id === quoteId
+      }))
+    );
+    
+    // Then refresh from the server
+    if (selectedVariantId) {
+      const updatedQuotes = await getQuotesForVariant(selectedVariantId);
+      setVariantQuotes(updatedQuotes);
+    }
     
     toast({
       title: "Quote Selected",
@@ -271,8 +320,17 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   };
 
   const handleQuoteSaved = async () => {
-    const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
-    setVariantQuotes(updatedQuotes);
+    if (selectedVariantId) {
+      setIsLoadingQuotes(true);
+      try {
+        const updatedQuotes = await getQuotesForVariant(selectedVariantId);
+        setVariantQuotes(updatedQuotes);
+      } catch (error) {
+        console.error("Error refreshing quotes:", error);
+      } finally {
+        setIsLoadingQuotes(false);
+      }
+    }
   };
 
   const handleOpenChat = async (quoteId: string) => {
@@ -334,6 +392,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   return (
     <div className="space-y-6">
+      {/* Variant selection and management */}
       {variants && variants.length > 0 && (
         <SculptureVariant 
           variants={variants}
@@ -347,6 +406,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       )}
 
+      {/* Fabrication quotes for the selected variant */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
@@ -356,32 +416,44 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           </Button>
         </div>
 
-        {selectedVariantId && variantQuotes.length === 0 && (
+        {/* Loading state */}
+        {isLoadingQuotes && (
+          <div className="text-center py-8 text-muted-foreground">
+            Loading quotes...
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!isLoadingQuotes && selectedVariantId && variantQuotes.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
             No quotes available for this variant. Click "Add Quote" to create one.
           </div>
         )}
 
-        <div className="space-y-6">
-          {variantQuotes && sortQuotes(variantQuotes).map((quote) => (
-            <FabricationQuoteCard
-              key={quote.id}
-              quote={quote}
-              fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
-              onSelect={() => handleSelectQuote(quote.id)}
-              onEdit={() => handleStartEdit(quote)}
-              onDelete={() => handleDeleteQuote(quote.id)}
-              onChat={() => handleOpenChat(quote.id)}
-              calculateTotal={calculateTotal}
-              calculateTradePrice={calculateTradePrice}
-              calculateRetailPrice={calculateRetailPrice}
-              formatNumber={formatNumber}
-              isEditing={false}
-            />
-          ))}
-        </div>
+        {/* Quotes list */}
+        {!isLoadingQuotes && variantQuotes.length > 0 && (
+          <div className="space-y-6">
+            {sortQuotes(variantQuotes).map((quote) => (
+              <FabricationQuoteCard
+                key={quote.id}
+                quote={quote}
+                fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
+                onSelect={() => handleSelectQuote(quote.id)}
+                onEdit={() => handleStartEdit(quote)}
+                onDelete={() => handleDeleteQuote(quote.id)}
+                onChat={() => handleOpenChat(quote.id)}
+                calculateTotal={calculateTotal}
+                calculateTradePrice={calculateTradePrice}
+                calculateRetailPrice={calculateRetailPrice}
+                formatNumber={formatNumber}
+                isEditing={false}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Edit quote sheet */}
       <EditFabricationQuoteSheet 
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
@@ -392,6 +464,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         initialQuote={initialQuote}
       />
 
+      {/* Chat sheet */}
       {chatThreadId && (
         <ChatSheet 
           open={isChatOpen}

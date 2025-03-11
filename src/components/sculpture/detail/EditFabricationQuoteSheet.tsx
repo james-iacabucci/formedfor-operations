@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { FabricationQuote } from "@/types/fabrication-quote";
@@ -70,9 +71,11 @@ export function EditFabricationQuoteSheet({
   // When the sheet opens, initialize with the provided quote data if editing
   useEffect(() => {
     if (open && initialQuote) {
+      console.log("Initializing quote form with:", initialQuote);
       setNewQuote(initialQuote);
     } else if (open && !initialQuote) {
       // Reset to default values when adding a new quote
+      console.log("Resetting quote form to defaults");
       setNewQuote({
         sculpture_id: sculptureId,
         fabricator_id: undefined, // Initialize with undefined
@@ -118,6 +121,8 @@ export function EditFabricationQuoteSheet({
 
     setIsSaving(true);
     try {
+      console.log("Saving quote:", newQuote);
+      
       if (editingQuoteId) {
         // Update existing quote
         const { error } = await supabase
@@ -151,6 +156,7 @@ export function EditFabricationQuoteSheet({
           .eq("id", editingQuoteId);
 
         if (error) {
+          console.error("Error updating quote:", error);
           throw error;
         }
 
@@ -166,11 +172,13 @@ export function EditFabricationQuoteSheet({
           sculpture_id: sculptureId,
         };
 
+        console.log("Inserting new quote:", quoteToInsert);
         const { error } = await supabase
           .from("fabrication_quotes")
           .insert(quoteToInsert);
 
         if (error) {
+          console.error("Error inserting quote:", error);
           throw error;
         }
 

@@ -33,7 +33,7 @@ export function useSculptureVariants(sculptureId: string) {
   const queryClient = useQueryClient();
 
   // Fetch variants
-  const { data: variants, isLoading } = useQuery({
+  const { data: variants, isLoading, refetch } = useQuery({
     queryKey: ["sculpture-variants", sculptureId],
     queryFn: async () => {
       try {
@@ -46,8 +46,11 @@ export function useSculptureVariants(sculptureId: string) {
           .order('order_index', { ascending: true });
           
         if (error) {
+          console.error("Error fetching variants:", error);
           throw error;
         }
+
+        console.log("Fetched variants:", variantsData);
 
         // If no variants found, try to fetch from quotes as fallback (temporary)
         if (!variantsData || variantsData.length === 0) {
@@ -59,6 +62,7 @@ export function useSculptureVariants(sculptureId: string) {
             .order("created_at", { ascending: true });
 
           if (quotesError) {
+            console.error("Error fetching quotes:", quotesError);
             throw quotesError;
           }
 
@@ -116,6 +120,7 @@ export function useSculptureVariants(sculptureId: string) {
               .single();
 
             if (sculptureError) {
+              console.error("Error fetching sculpture:", sculptureError);
               throw sculptureError;
             }
 
@@ -146,11 +151,12 @@ export function useSculptureVariants(sculptureId: string) {
             variant.orderIndex = index;
           });
 
+          console.log("Generated variants from fallback:", uniqueVariants);
           return uniqueVariants as SculptureVariantDetails[];
         }
 
         // Map the database variants to our component structure
-        return variantsData.map(variant => ({
+        const mappedVariants = variantsData.map(variant => ({
           id: variant.id,
           sculptureId: variant.sculpture_id,
           materialId: variant.material_id,
@@ -170,6 +176,9 @@ export function useSculptureVariants(sculptureId: string) {
           orderIndex: variant.order_index,
           isArchived: variant.is_archived
         })) as SculptureVariantDetails[];
+        
+        console.log("Mapped variants:", mappedVariants);
+        return mappedVariants;
       } catch (error) {
         console.error("Error fetching variants:", error);
         return [] as SculptureVariantDetails[];
@@ -183,6 +192,7 @@ export function useSculptureVariants(sculptureId: string) {
       // Find the current variant
       const currentVariant = variants?.find(v => v.id === currentVariantId);
       if (!currentVariant) {
+        console.error("Current variant not found:", currentVariantId);
         throw new Error("Current variant not found");
       }
 
@@ -190,6 +200,8 @@ export function useSculptureVariants(sculptureId: string) {
       const maxOrderIndex = Math.max(...(variants?.map(v => v.orderIndex) || [0]));
 
       try {
+        console.log("Creating new variant based on:", currentVariant);
+        
         // Create a new variant based on the current one
         const { data, error } = await supabase
           .from('sculpture_variants')
@@ -216,21 +228,28 @@ export function useSculptureVariants(sculptureId: string) {
           .single();
 
         if (error) {
+          console.error("Error in createVariant insert:", error);
           throw error;
         }
 
+        console.log("New variant created with ID:", data?.id);
         return data?.id;
       } catch (error) {
         console.error("Error in createVariant:", error);
         throw error;
       }
     },
-    onSuccess: (newVariantId) => {
-      queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+    onSuccess: async (newVariantId) => {
+      console.log("Variant created successfully, updating queries and quotes");
+      
+      // Refresh the variants list to include the new variant
+      await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      
       toast({
         title: "Success",
         description: "New variant created successfully",
       });
+      
       return newVariantId;
     },
     onError: (error) => {
@@ -247,12 +266,14 @@ export function useSculptureVariants(sculptureId: string) {
   const archiveVariant = useMutation({
     mutationFn: async (variantId: string) => {
       try {
+        console.log("Archiving variant:", variantId);
         const { error } = await supabase
           .from('sculpture_variants')
           .update({ is_archived: true })
           .eq('id', variantId);
 
         if (error) {
+          console.error("Error in archiveVariant update:", error);
           throw error;
         }
 
@@ -283,6 +304,7 @@ export function useSculptureVariants(sculptureId: string) {
   const deleteVariant = useMutation({
     mutationFn: async (variantId: string) => {
       try {
+        console.log("Deleting variant and associated quotes:", variantId);
         // First, delete any quotes associated with this variant
         const { error: quotesError } = await supabase
           .from("fabrication_quotes")
@@ -301,6 +323,7 @@ export function useSculptureVariants(sculptureId: string) {
           .eq('id', variantId);
 
         if (error) {
+          console.error("Error in deleteVariant:", error);
           throw error;
         }
 
@@ -330,6 +353,7 @@ export function useSculptureVariants(sculptureId: string) {
   // Function to get quotes for a specific variant
   const getQuotesForVariant = async (variantId: string) => {
     try {
+      console.log("Getting quotes for variant:", variantId);
       // First try to get quotes by variant_id
       const { data: quotesWithVariantId, error: variantIdError } = await supabase
         .from("fabrication_quotes")
@@ -342,15 +366,19 @@ export function useSculptureVariants(sculptureId: string) {
 
       // If we found quotes by variant_id, return them
       if (quotesWithVariantId && quotesWithVariantId.length > 0) {
+        console.log("Found quotes by variant_id:", quotesWithVariantId.length);
         return quotesWithVariantId as FabricationQuote[];
       }
 
       // Fallback to the old way if no quotes found by variant_id
       const variant = variants?.find(v => v.id === variantId);
       if (!variant) {
+        console.log("Variant not found for quotes lookup:", variantId);
         return [] as FabricationQuote[];
       }
 
+      console.log("Falling back to attribute-based quote lookup for variant:", variant);
+      
       // Build query filters based on variant attributes, handling null values properly
       let query = supabase
         .from("fabrication_quotes")
@@ -410,12 +438,28 @@ export function useSculptureVariants(sculptureId: string) {
       const { data: quotes, error } = await query;
 
       if (error) {
+        console.error("Error in attribute-based quote lookup:", error);
         toast({
           title: "Error",
           description: "Failed to load quotes for this variant: " + error.message,
           variant: "destructive",
         });
         return [] as FabricationQuote[];
+      }
+
+      console.log("Found quotes via attribute-based lookup:", quotes?.length || 0);
+      
+      // Update these quotes to have the variant_id for future lookups
+      if (quotes && quotes.length > 0) {
+        console.log("Updating quotes with variant_id:", variantId);
+        const { error: updateError } = await supabase
+          .from("fabrication_quotes")
+          .update({ variant_id: variantId })
+          .in("id", quotes.map(q => q.id));
+          
+        if (updateError) {
+          console.error("Error updating quotes with variant_id:", updateError);
+        }
       }
 
       return quotes as FabricationQuote[];
@@ -428,6 +472,7 @@ export function useSculptureVariants(sculptureId: string) {
   return {
     variants,
     isLoading,
+    refetch,
     getQuotesForVariant,
     createVariant: createVariant.mutateAsync,
     archiveVariant: archiveVariant.mutateAsync,

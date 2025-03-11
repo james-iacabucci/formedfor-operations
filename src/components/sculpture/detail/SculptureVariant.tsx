@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, TrashIcon, ArchiveIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,13 +52,28 @@ export function SculptureVariant({
   isCreatingVariant = false,
   isDeletingVariant = false
 }: SculptureVariantProps) {
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    const selectedIndex = variants.findIndex(v => v.id === selectedVariantId);
-    return selectedIndex >= 0 ? selectedIndex : 0;
-  });
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteAction, setDeleteAction] = useState<"archive" | "delete" | null>(null);
   const { toast } = useToast();
+
+  // Update currentIndex whenever selectedVariantId or variants change
+  useEffect(() => {
+    if (variants && selectedVariantId) {
+      const newIndex = variants.findIndex(v => v.id === selectedVariantId);
+      if (newIndex >= 0) {
+        setCurrentIndex(newIndex);
+      } else if (variants.length > 0) {
+        // If the selected variant isn't found but we have variants, select the first one
+        setCurrentIndex(0);
+        onVariantChange(variants[0].id);
+      }
+    } else if (variants && variants.length > 0 && !selectedVariantId) {
+      // If no variant is selected but we have variants, select the first one
+      setCurrentIndex(0);
+      onVariantChange(variants[0].id);
+    }
+  }, [variants, selectedVariantId, onVariantChange]);
 
   const currentVariant = variants[currentIndex];
   
@@ -82,14 +97,34 @@ export function SculptureVariant({
     if (!onCreateVariant || !currentVariant) return;
     
     try {
+      toast({
+        title: "Creating Variant",
+        description: "Please wait while we create a new variant.",
+      });
+      
       const newVariantId = await onCreateVariant(currentVariant.id);
+      console.log("New variant created with ID:", newVariantId);
       
-      // Find the index of the new variant
-      const newVariantIndex = variants.length; // It will be at the end
-      
-      // Update the current index to show the new variant
-      setCurrentIndex(newVariantIndex);
-      onVariantChange(newVariantId);
+      // Now wait a moment for the variants to refresh
+      setTimeout(() => {
+        // Find the new variant in the updated variants list
+        const newVariantIndex = variants.findIndex(v => v.id === newVariantId);
+        
+        if (newVariantIndex >= 0) {
+          // If found, update the current index and notify parent
+          setCurrentIndex(newVariantIndex);
+          onVariantChange(newVariantId);
+        } else {
+          // If not found yet (may still be loading), use the variant ID directly
+          onVariantChange(newVariantId);
+          
+          // This is a backup in case the variant wasn't in the list yet
+          toast({
+            title: "Variant Created",
+            description: "The new variant has been created. It may take a moment to load.",
+          });
+        }
+      }, 500);  // Small delay to allow for query invalidation
     } catch (error) {
       console.error("Failed to create variant:", error);
       toast({
@@ -125,10 +160,10 @@ export function SculptureVariant({
       
       // Move to previous variant if available, otherwise next
       const newIndex = currentIndex > 0 ? currentIndex - 1 : 0;
-      setCurrentIndex(newIndex);
       
       // Ensure the variant exists (in case we deleted the last one)
       if (variants.length > 1) {
+        setCurrentIndex(newIndex);
         onVariantChange(variants[newIndex].id);
       }
       
@@ -144,8 +179,16 @@ export function SculptureVariant({
     }
   };
 
-  if (!currentVariant) {
-    return null;
+  if (!currentVariant || variants.length === 0) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="pt-6 px-4 pb-4">
+          <div className="text-center py-8 text-muted-foreground">
+            No variant information available.
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
