@@ -47,7 +47,7 @@ export function SculptureWeight({
   });
 
   return (
-    <div>
+    <div className="relative">
       {isEditingWeight ? (
         <WeightEditForm
           weight={weight}
@@ -62,6 +62,7 @@ export function SculptureWeight({
           displayValue={formatWeightString(weightKg, weightLbs)}
           metricValue={formatMetricString(weightKg)}
           onEditClick={() => setIsEditingWeight(true)}
+          isLoading={isSaving}
         />
       )}
     </div>

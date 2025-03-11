@@ -52,7 +52,7 @@ export function SculptureDimensions({
   };
 
   return (
-    <div>
+    <div className="relative">
       {isEditingDimensions ? (
         <DimensionsEditForm
           dimensions={dimensions}
@@ -65,6 +65,7 @@ export function SculptureDimensions({
         <DimensionsDisplay
           displayValue={formatDimensionsString(height, width, depth)}
           onEditClick={() => setIsEditingDimensions(true)}
+          isLoading={isSaving}
         />
       )}
     </div>

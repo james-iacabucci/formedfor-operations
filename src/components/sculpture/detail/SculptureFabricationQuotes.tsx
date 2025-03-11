@@ -1,23 +1,25 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { NewQuote } from "@/types/fabrication-quote-form";
-import { PlusIcon, MessageSquareIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FabricationQuoteCard } from "./FabricationQuoteCard";
 import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { SculptureVariant } from "./SculptureVariant";
 import { useSculptureVariants } from "@/hooks/sculpture-variants";
+import { useVariantQuotesQuery } from "@/hooks/sculpture-variants/useVariantQuotesQuery";
 import {
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
   formatNumber
 } from "@/utils/fabrication-quote-calculations";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -32,8 +34,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [activeChatQuoteId, setActiveChatQuoteId] = useState<string | null>(null);
   const [chatThreadId, setChatThreadId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-  const [variantQuotes, setVariantQuotes] = useState<FabricationQuote[]>([]);
-  const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
   const { toast } = useToast();
 
   const { 
@@ -48,6 +48,14 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     refetch: refetchVariants
   } = useSculptureVariants(sculptureId);
 
+  // Use the new query hook for variant quotes
+  const {
+    data: variantQuotes = [],
+    isLoading: isLoadingQuotes,
+    isError: isQuotesError,
+    refetch: refetchQuotes
+  } = useVariantQuotesQuery(selectedVariantId);
+
   // Set selected variant when variants load - only once
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
@@ -56,40 +64,21 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   }, [variants, selectedVariantId]);
 
-  // Memoize the loadQuotes function to prevent recreating it on every render
-  const loadQuotes = useCallback(async (variantId: string) => {
-    if (!variantId) {
-      console.log("No variant selected, not loading quotes");
-      return;
-    }
-    
-    try {
-      setIsLoadingQuotes(true);
-      console.log("Loading quotes for variant:", variantId);
-      const quotes = await getQuotesForVariant(variantId);
-      console.log("Loaded quotes:", quotes?.length || 0);
-      setVariantQuotes(quotes || []);
-    } catch (error) {
-      console.error("Error loading quotes for variant:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load quotes for this variant",
-        variant: "destructive",
-      });
-      setVariantQuotes([]);
-    } finally {
-      setIsLoadingQuotes(false);
-    }
-  }, [getQuotesForVariant, toast]);
-
-  // Load quotes whenever the selected variant changes - with the memoized function
+  // Prefetch quotes for next variant to improve UX
   useEffect(() => {
-    if (selectedVariantId) {
-      // Clear current quotes first to prevent flickering of old quotes
-      setVariantQuotes([]);
-      loadQuotes(selectedVariantId);
+    if (variants && variants.length > 1 && selectedVariantId) {
+      const currentIndex = variants.findIndex(v => v.id === selectedVariantId);
+      const nextIndex = (currentIndex + 1) % variants.length;
+      const nextVariantId = variants[nextIndex].id;
+      
+      // Prefetch next variant's quotes
+      if (nextVariantId !== selectedVariantId) {
+        getQuotesForVariant(nextVariantId).catch(err => {
+          console.error("Error prefetching quotes:", err);
+        });
+      }
     }
-  }, [selectedVariantId, loadQuotes]);
+  }, [variants, selectedVariantId, getQuotesForVariant]);
 
   const { data: fabricators } = useQuery({
     queryKey: ["value_lists", "fabricator"],
@@ -104,14 +93,14 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     },
   });
 
-  const handleVariantChange = (variantId: string) => {
+  const handleVariantChange = useCallback((variantId: string) => {
     console.log("Variant changed to:", variantId);
     if (variantId !== selectedVariantId) {
       setSelectedVariantId(variantId);
     }
-  };
+  }, [selectedVariantId]);
 
-  const handleCreateVariant = async (currentVariantId: string) => {
+  const handleCreateVariant = useCallback(async (currentVariantId: string) => {
     console.log("Creating new variant based on:", currentVariantId);
     try {
       const newVariantId = await createVariant(currentVariantId);
@@ -130,9 +119,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       });
       throw error;
     }
-  };
+  }, [createVariant, refetchVariants, toast]);
 
-  const handleArchiveVariant = async (variantId: string) => {
+  const handleArchiveVariant = useCallback(async (variantId: string) => {
     try {
       await archiveVariant(variantId);
     } catch (error) {
@@ -144,9 +133,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       });
       throw error;
     }
-  };
+  }, [archiveVariant, toast]);
 
-  const handleDeleteVariant = async (variantId: string) => {
+  const handleDeleteVariant = useCallback(async (variantId: string) => {
     try {
       await deleteVariant(variantId);
     } catch (error) {
@@ -158,18 +147,21 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       });
       throw error;
     }
-  };
+  }, [deleteVariant, toast]);
 
-  const sortQuotes = (quotes: FabricationQuote[]) => {
-    return [...quotes].sort((a, b) => {
+  // Memoize sorting operation to avoid unnecessary re-renders
+  const sortedQuotes = useMemo(() => {
+    if (!variantQuotes) return [];
+    
+    return [...variantQuotes].sort((a, b) => {
       if (a.is_selected) return -1;
       if (b.is_selected) return 1;
       
       return new Date(b.quote_date).getTime() - new Date(a.quote_date).getTime();
     });
-  };
+  }, [variantQuotes]);
 
-  const handleStartEdit = (quote: FabricationQuote) => {
+  const handleStartEdit = useCallback((quote: FabricationQuote) => {
     setEditingQuoteId(quote.id);
     setInitialQuote({
       sculpture_id: quote.sculpture_id,
@@ -198,9 +190,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       variant_id: quote.variant_id
     });
     setIsSheetOpen(true);
-  };
+  }, []);
 
-  const handleAddQuote = () => {
+  const handleAddQuote = useCallback(() => {
     if (!selectedVariantId || !variants) {
       console.error("Cannot add quote: No variant selected");
       return;
@@ -241,9 +233,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       variant_id: selectedVariant.id
     });
     setIsSheetOpen(true);
-  };
+  }, [sculptureId, selectedVariantId, variants]);
 
-  const handleDeleteQuote = async (quoteId: string) => {
+  const handleDeleteQuote = useCallback(async (quoteId: string) => {
     const { error } = await supabase
       .from("fabrication_quotes")
       .delete()
@@ -259,16 +251,16 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    // Remove from local state immediately for a faster UI update
-    setVariantQuotes(current => current.filter(q => q.id !== quoteId));
+    // Refetch quotes after deletion
+    refetchQuotes();
     
     toast({
       title: "Success",
       description: "Quote deleted successfully",
     });
-  };
+  }, [refetchQuotes, toast]);
 
-  const handleSelectQuote = async (quoteId: string) => {
+  const handleSelectQuote = useCallback(async (quoteId: string) => {
     const { error } = await supabase
       .from("fabrication_quotes")
       .update({ is_selected: true })
@@ -284,27 +276,22 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    // Update the local state immediately for faster UI feedback
-    setVariantQuotes(current => 
-      current.map(q => ({
-        ...q,
-        is_selected: q.id === quoteId
-      }))
-    );
+    // Refresh quotes after selection
+    refetchQuotes();
     
     toast({
       title: "Quote Selected",
       description: "The fabrication quote has been selected.",
     });
-  };
+  }, [refetchQuotes, toast]);
 
-  const handleQuoteSaved = async () => {
+  const handleQuoteSaved = useCallback(async () => {
     if (selectedVariantId) {
-      loadQuotes(selectedVariantId);
+      await refetchQuotes();
     }
-  };
+  }, [selectedVariantId, refetchQuotes]);
 
-  const handleOpenChat = async (quoteId: string) => {
+  const handleOpenChat = useCallback(async (quoteId: string) => {
     try {
       const { data: existingThreads, error: fetchError } = await supabase
         .from("chat_threads")
@@ -355,10 +342,17 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         variant: "destructive",
       });
     }
-  };
+  }, [sculptureId, toast]);
 
   if (isLoadingVariants) {
-    return <div className="py-4">Loading variants...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="py-4 space-y-2">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -390,24 +384,48 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         {/* Only show content below if a variant is selected */}
         {selectedVariantId && (
           <>
-            {/* Loading state */}
+            {/* Loading state - with improved skeleton UI */}
             {isLoadingQuotes && (
-              <div className="text-center py-8 text-muted-foreground">
-                Loading quotes...
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between">
+                      <div>
+                        <Skeleton className="h-5 w-32 mb-2" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                      </div>
+                    </div>
+                    <div className="pt-3">
+                      <Skeleton className="h-4 w-full mb-3" />
+                      <div className="grid grid-cols-5 gap-4">
+                        {[1, 2, 3, 4, 5].map((j) => (
+                          <div key={j}>
+                            <Skeleton className="h-3 w-16 mb-1" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
             {/* Empty state - only shown when not loading and no quotes */}
-            {!isLoadingQuotes && variantQuotes.length === 0 && (
+            {!isLoadingQuotes && sortedQuotes.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No quotes available for this variant. Click "Add Quote" to create one.
               </div>
             )}
 
             {/* Quotes list - only shown when not loading and has quotes */}
-            {!isLoadingQuotes && variantQuotes.length > 0 && (
+            {!isLoadingQuotes && sortedQuotes.length > 0 && (
               <div className="space-y-6">
-                {sortQuotes(variantQuotes).map((quote) => (
+                {sortedQuotes.map((quote) => (
                   <FabricationQuoteCard
                     key={quote.id}
                     quote={quote}
@@ -423,6 +441,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
                     isEditing={false}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Error state */}
+            {isQuotesError && (
+              <div className="text-center py-8 text-destructive">
+                Error loading quotes. Please try again.
               </div>
             )}
           </>
