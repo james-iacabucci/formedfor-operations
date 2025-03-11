@@ -66,6 +66,9 @@ export function SculptureDimensions({
           displayValue={formatDimensionsString(height, width, depth)}
           onEditClick={() => setIsEditingDimensions(true)}
           isLoading={isSaving}
+          height={height}
+          width={width}
+          depth={depth}
         />
       )}
     </div>
