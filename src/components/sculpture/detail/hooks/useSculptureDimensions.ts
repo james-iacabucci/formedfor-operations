@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,7 +43,6 @@ export function useSculptureDimensions({
   const { toast } = useToast();
   const isMounted = useRef(true);
 
-  // Set up the mounted ref for cleanup
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -52,8 +50,6 @@ export function useSculptureDimensions({
     };
   }, []);
 
-  // Update local state when props change, but only when not in edit mode
-  // or if the form isn't currently saving data
   useEffect(() => {
     if (!isEditingDimensions && !isSaving) {
       setDimensions({
@@ -88,17 +84,13 @@ export function useSculptureDimensions({
         [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
       };
 
-      // Handle form updates (parent state updates)
       if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
-        // Update parent form state
         if (dimensions.height) onDimensionsChange(`${prefix}heightIn`, parseFloat(dimensions.height));
         if (dimensions.width) onDimensionsChange(`${prefix}widthIn`, parseFloat(dimensions.width));
         if (dimensions.depth) onDimensionsChange(`${prefix}depthIn`, parseFloat(dimensions.depth));
       }
       
-      // Database updates for sculpture or variant
       if (isVariantForm && variantId) {
-        // Update the variant record in database
         const { error } = await supabase
           .from('sculpture_variants')
           .update(updatedDimensions)
@@ -106,14 +98,11 @@ export function useSculptureDimensions({
           
         if (error) throw error;
         
-        // First set editing to false before triggering a refetch
         setIsEditingDimensions(false);
         
-        // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture-variants", sculptureId] });
       } else if (!isQuoteForm) {
-        // For direct sculpture updates
         const { error } = await supabase
           .from('sculptures')
           .update(updatedDimensions)
@@ -121,18 +110,14 @@ export function useSculptureDimensions({
           
         if (error) throw error;
 
-        // First set editing to false before triggering a refetch
         setIsEditingDimensions(false);
 
-        // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
         await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       } else {
-        // For quote form, just exit edit mode
         setIsEditingDimensions(false);
       }
       
-      // Success notification only if component is still mounted
       if (isMounted.current) {
         toast({
           title: "Success",
@@ -148,9 +133,7 @@ export function useSculptureDimensions({
           variant: "destructive",
         });
       }
-      // Don't close form on error
     } finally {
-      // Reset saving state if component is still mounted
       if (isMounted.current) {
         setIsSaving(false);
       }

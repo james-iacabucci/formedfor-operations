@@ -35,7 +35,7 @@ export function DimensionsDisplay({
     const w_val = formatValue(w);
     const d_val = formatValue(d);
     
-    return `${h_val} × ${w_val} × ${d_val} ${unit === 'inches' ? 'in' : 'cm'}`;
+    return `HWD ${h_val} × ${w_val} × ${d_val} ${unit === 'inches' ? 'in' : 'cm'}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
@@ -46,7 +46,9 @@ export function DimensionsDisplay({
     <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
       <div className="flex items-center gap-2">
         <span className="text-sm">
-          {unit === "inches" ? displayValue : formatDimensionString(height, width, depth, "centimeters")}
+          {unit === "inches" ? 
+            `HWD ${displayValue.replace(" in", "")} in` : 
+            formatDimensionString(height, width, depth, "centimeters")}
         </span>
         <Tabs
           value={unit}
