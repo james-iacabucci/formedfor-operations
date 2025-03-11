@@ -24,7 +24,7 @@ export function WeightDisplay({
   const [unit, setUnit] = useState<"lbs" | "kg">("lbs");
   
   const formatWeightString = (kg: number | null, lbs: number | null, unit: 'lbs' | 'kg') => {
-    if (!kg && !lbs) return "No weight set";
+    if (!kg && !lbs) return "";
     
     const formatValue = (val: number | null) => {
       if (val === null) return '-';
