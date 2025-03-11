@@ -65,105 +65,63 @@ export function useSculptureDimensions({
   };
 
   const handleDimensionsUpdate = async () => {
-    const prefix = isBase ? 'base_' : '';
-    
-    const updatedDimensions = {
-      [`${prefix}height_in`]: dimensions.height ? parseFloat(dimensions.height) : null,
-      [`${prefix}width_in`]: dimensions.width ? parseFloat(dimensions.width) : null,
-      [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
-    };
-
-    if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
-      // In form mode, update the parent form state
-      if (dimensions.height) onDimensionsChange(`${prefix}heightIn`, parseFloat(dimensions.height));
-      if (dimensions.width) onDimensionsChange(`${prefix}widthIn`, parseFloat(dimensions.width));
-      if (dimensions.depth) onDimensionsChange(`${prefix}depthIn`, parseFloat(dimensions.depth));
+    try {
+      const prefix = isBase ? 'base_' : '';
       
-      // For variant form, also save to the database
-      if (isVariantForm && variantId) {
-        try {
-          const { error } = await supabase
-            .from('sculpture_variants')
-            .update(updatedDimensions)
-            .eq('id', variantId);
-            
-          if (error) throw error;
-          
-          // Invalidate relevant queries
-          await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
-          
-          toast({
-            title: "Success",
-            description: "Dimensions updated successfully",
-          });
-          
-          setIsEditingDimensions(false);
-        } catch (err) {
-          console.error('Error updating variant dimensions:', err);
-          toast({
-            title: "Error",
-            description: "Failed to update dimensions in database",
-            variant: "destructive",
-          });
-          return; // Don't close form on error
-        }
-      } else {
-        setIsEditingDimensions(false);
+      const updatedDimensions = {
+        [`${prefix}height_in`]: dimensions.height ? parseFloat(dimensions.height) : null,
+        [`${prefix}width_in`]: dimensions.width ? parseFloat(dimensions.width) : null,
+        [`${prefix}depth_in`]: dimensions.depth ? parseFloat(dimensions.depth) : null,
+      };
+
+      // Handle form updates (parent state updates)
+      if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
+        // Update parent form state
+        if (dimensions.height) onDimensionsChange(`${prefix}heightIn`, parseFloat(dimensions.height));
+        if (dimensions.width) onDimensionsChange(`${prefix}widthIn`, parseFloat(dimensions.width));
+        if (dimensions.depth) onDimensionsChange(`${prefix}depthIn`, parseFloat(dimensions.depth));
       }
       
-      return;
-    }
-
-    try {
-      let error;
-      
-      // In direct edit mode, update the database
+      // Database updates for sculpture or variant
       if (isVariantForm && variantId) {
-        // Update the sculpture_variants table for variants
-        const { error: variantError } = await supabase
+        // Update the variant record in database
+        const { error } = await supabase
           .from('sculpture_variants')
           .update(updatedDimensions)
           .eq('id', variantId);
-        error = variantError;
+          
+        if (error) throw error;
         
-        // Invalidate variant queries
+        // Invalidate and immediately refetch all related queries
         await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
-      } else {
-        // Update the sculptures table
-        const { error: sculptureError } = await supabase
+        await queryClient.refetchQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      } else if (!isQuoteForm) {
+        // For direct sculpture updates
+        const { error } = await supabase
           .from('sculptures')
           .update(updatedDimensions)
           .eq('id', sculptureId);
-        error = sculptureError;
-      }
+          
+        if (error) throw error;
 
-      if (error) {
-        console.error('Error updating dimensions:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update dimensions: " + error.message,
-          variant: "destructive",
-        });
-        return; // Don't close form on error
+        // Invalidate and immediately refetch all related queries
+        await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+        await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       }
-
-      // Invalidate sculpture query to refresh data
-      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-      // Force an immediate refetch to update the UI
-      await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       
+      // Success notification
       toast({
         title: "Success",
         description: "Dimensions updated successfully",
       });
       
-      // Close the editing form
+      // Always close the form after successful update
       setIsEditingDimensions(false);
     } catch (err) {
-      console.error('Exception updating dimensions:', err);
+      console.error('Error updating dimensions:', err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while updating dimensions",
+        description: "Failed to update dimensions",
         variant: "destructive",
       });
       // Don't close form on error
