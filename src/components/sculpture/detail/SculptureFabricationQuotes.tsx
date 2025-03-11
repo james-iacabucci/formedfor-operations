@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +34,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [variantQuotes, setVariantQuotes] = useState<FabricationQuote[]>([]);
   const { toast } = useToast();
 
-  // Get variants for this sculpture with the enhanced hook functions
   const { 
     variants, 
     isLoading: isLoadingVariants, 
@@ -47,14 +45,12 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     isDeletingVariant
   } = useSculptureVariants(sculptureId);
 
-  // Set initial selected variant when variants load
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
       setSelectedVariantId(variants[0].id);
     }
   }, [variants, selectedVariantId]);
 
-  // When selected variant changes, fetch its quotes
   useEffect(() => {
     const loadQuotes = async () => {
       if (selectedVariantId) {
@@ -76,7 +72,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     loadQuotes();
   }, [selectedVariantId, getQuotesForVariant, toast]);
 
-  // Get fabricators for dropdowns
   const { data: fabricators } = useQuery({
     queryKey: ["value_lists", "fabricator"],
     queryFn: async () => {
@@ -117,14 +112,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         description: "Failed to create new variant",
         variant: "destructive",
       });
-      throw error; // Re-throw to be caught by the caller
+      throw error;
     }
   };
 
   const handleArchiveVariant = async (variantId: string) => {
     try {
       await archiveVariant(variantId);
-      // The queryClient.invalidateQueries in the hook will refresh the variants
     } catch (error) {
       console.error("Error archiving variant:", error);
       toast({
@@ -139,7 +133,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const handleDeleteVariant = async (variantId: string) => {
     try {
       await deleteVariant(variantId);
-      // The queryClient.invalidateQueries in the hook will refresh the variants
     } catch (error) {
       console.error("Error deleting variant:", error);
       toast({
@@ -153,11 +146,9 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   const sortQuotes = (quotes: FabricationQuote[]) => {
     return [...quotes].sort((a, b) => {
-      // Selected quote comes first
       if (a.is_selected) return -1;
       if (b.is_selected) return 1;
       
-      // Then sort by date descending
       return new Date(b.quote_date).getTime() - new Date(a.quote_date).getTime();
     });
   };
@@ -174,7 +165,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       markup: quote.markup,
       notes: quote.notes,
       quote_date: quote.quote_date,
-      // Add physical attributes from quote - these will be pre-filled from the variant
       material_id: quote.material_id,
       method_id: quote.method_id,
       height_in: quote.height_in,
@@ -189,7 +179,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_depth_in: quote.base_depth_in,
       base_weight_kg: quote.base_weight_kg,
       base_weight_lbs: quote.base_weight_lbs,
-      variant_id: quote.variant_id
+      variant_id: quote.variant_id as string | undefined
     });
     setIsSheetOpen(true);
   };
@@ -197,15 +187,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const handleAddQuote = () => {
     if (!selectedVariantId || !variants) return;
     
-    // Find the selected variant
     const selectedVariant = variants.find(v => v.id === selectedVariantId);
     if (!selectedVariant) return;
     
-    // Pre-fill the form with variant details
     setEditingQuoteId(null);
     setInitialQuote({
       sculpture_id: sculptureId,
-      fabricator_id: undefined, // User must select this
+      fabricator_id: undefined,
       fabrication_cost: 500,
       shipping_cost: 0,
       customs_cost: 0,
@@ -213,7 +201,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       markup: 4,
       notes: "",
       quote_date: new Date().toISOString(),
-      // Pre-fill physical attributes from the selected variant
       material_id: selectedVariant.materialId,
       method_id: selectedVariant.methodId,
       height_in: selectedVariant.heightIn,
@@ -228,7 +215,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_depth_in: selectedVariant.baseDepthIn,
       base_weight_kg: selectedVariant.baseWeightKg,
       base_weight_lbs: selectedVariant.baseWeightLbs,
-      variant_id: selectedVariant.id // Set the variant_id field
+      variant_id: selectedVariant.id
     });
     setIsSheetOpen(true);
   };
@@ -249,7 +236,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    // Refresh quotes for the current variant
     const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
     setVariantQuotes(updatedQuotes);
     
@@ -275,7 +261,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       return;
     }
 
-    // Refresh quotes for the current variant
     const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
     setVariantQuotes(updatedQuotes);
     
@@ -286,14 +271,12 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   };
 
   const handleQuoteSaved = async () => {
-    // Refresh quotes for the current variant
     const updatedQuotes = await getQuotesForVariant(selectedVariantId!);
     setVariantQuotes(updatedQuotes);
   };
 
   const handleOpenChat = async (quoteId: string) => {
     try {
-      // Check if there's already a thread for this quote
       const { data: existingThreads, error: fetchError } = await supabase
         .from("chat_threads")
         .select("id")
@@ -305,10 +288,8 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       let threadId;
 
       if (existingThreads && existingThreads.length > 0) {
-        // Use existing thread
         threadId = existingThreads[0].id;
       } else {
-        // Create a new thread for this quote
         const { data: newThread, error: createError } = await supabase
           .from("chat_threads")
           .insert({
@@ -322,7 +303,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         if (createError) throw createError;
         threadId = newThread.id;
 
-        // Auto-add the user as a participant
         const { error: participantError } = await supabase
           .from("chat_thread_participants")
           .insert({
@@ -332,7 +312,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
         if (participantError) {
           console.error("Error adding participant:", participantError);
-          // Continue anyway, not critical
         }
       }
 
@@ -355,7 +334,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   return (
     <div className="space-y-6">
-      {/* Variants Section */}
       {variants && variants.length > 0 && (
         <SculptureVariant 
           variants={variants}
@@ -369,7 +347,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       )}
 
-      {/* Fabrication Quotes for Selected Variant */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Fabrication Quotes</h2>

@@ -4,6 +4,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { SculptureVariantDetails } from "@/components/sculpture/detail/SculptureVariant";
 import { useToast } from "@/hooks/use-toast";
 
+// Define the shape of the data returned from the sculpture_variants table
+interface SculptureVariantRow {
+  id: string;
+  sculpture_id: string;
+  material_id: string | null;
+  method_id: string | null;
+  height_in: number | null;
+  width_in: number | null;
+  depth_in: number | null;
+  weight_kg: number | null;
+  weight_lbs: number | null;
+  base_material_id: string | null;
+  base_method_id: string | null;
+  base_height_in: number | null;
+  base_width_in: number | null;
+  base_depth_in: number | null;
+  base_weight_kg: number | null;
+  base_weight_lbs: number | null;
+  order_index: number;
+  is_archived: boolean;
+  created_at: string;
+}
+
 export function useSculptureVariants(sculptureId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -18,14 +41,14 @@ export function useSculptureVariants(sculptureId: string) {
         .select("*")
         .eq("sculpture_id", sculptureId)
         .eq("is_archived", false)
-        .order("order_index", { ascending: true });
+        .order("order_index", { ascending: true }) as { data: SculptureVariantRow[] | null, error: any };
 
       if (error) {
         throw error;
       }
 
       // If no variants found, try to fetch from quotes as fallback (temporary)
-      if (variantsData.length === 0) {
+      if (!variantsData || variantsData.length === 0) {
         // This fallback will be removed once all variants are migrated
         const { data: quotes, error: quotesError } = await supabase
           .from("fabrication_quotes")
@@ -180,15 +203,13 @@ export function useSculptureVariants(sculptureId: string) {
           base_weight_kg: currentVariant.baseWeightKg,
           base_weight_lbs: currentVariant.baseWeightLbs,
           order_index: maxOrderIndex + 1
-        })
-        .select()
-        .single();
+        }) as { data: SculptureVariantRow | null, error: any };
 
       if (error) {
         throw error;
       }
 
-      return data.id;
+      return data?.id;
     },
     onSuccess: (newVariantId) => {
       queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
@@ -214,7 +235,7 @@ export function useSculptureVariants(sculptureId: string) {
       const { error } = await supabase
         .from("sculpture_variants")
         .update({ is_archived: true })
-        .eq("id", variantId);
+        .eq("id", variantId) as { error: any };
 
       if (error) {
         throw error;
@@ -257,7 +278,7 @@ export function useSculptureVariants(sculptureId: string) {
       const { error } = await supabase
         .from("sculpture_variants")
         .delete()
-        .eq("id", variantId);
+        .eq("id", variantId) as { error: any };
 
       if (error) {
         throw error;

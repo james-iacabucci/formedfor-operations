@@ -43,6 +43,7 @@ export function EditFabricationQuoteSheet({
   const [isSaving, setIsSaving] = useState(false);
   const [newQuote, setNewQuote] = useState<NewQuote>({
     sculpture_id: sculptureId,
+    fabricator_id: undefined, // Initialize with undefined
     fabrication_cost: 500,
     shipping_cost: 0,
     customs_cost: 0,
@@ -74,6 +75,7 @@ export function EditFabricationQuoteSheet({
       // Reset to default values when adding a new quote
       setNewQuote({
         sculpture_id: sculptureId,
+        fabricator_id: undefined, // Initialize with undefined
         fabrication_cost: 500,
         shipping_cost: 0,
         customs_cost: 0,

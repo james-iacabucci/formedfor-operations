@@ -36,4 +36,7 @@ export interface FabricationQuote {
   base_depth_cm: number | null;
   base_weight_kg: number | null;
   base_weight_lbs: number | null;
+  
+  // Variant association
+  variant_id?: string;
 }
