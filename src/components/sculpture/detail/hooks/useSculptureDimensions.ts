@@ -115,7 +115,7 @@ export function useSculptureDimensions({
         description: "Dimensions updated successfully",
       });
       
-      // Always close the form after successful update
+      // Ensure we exit edit mode after successful save
       setIsEditingDimensions(false);
     } catch (err) {
       console.error('Error updating dimensions:', err);

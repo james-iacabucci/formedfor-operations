@@ -122,7 +122,7 @@ export function useSculptureWeight({
         description: "Weight updated successfully",
       });
       
-      // Always close the form after successful update
+      // Ensure we exit edit mode after successful save
       setIsEditingWeight(false);
     } catch (err) {
       console.error('Error updating weight:', err);
