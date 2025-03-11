@@ -11,6 +11,7 @@ interface ArchiveDeleteDialogProps {
   onArchive: () => void;
   onDelete: () => void;
   isLoading?: boolean;
+  disableActions?: boolean;
 }
 
 export function ArchiveDeleteDialog({
@@ -20,7 +21,8 @@ export function ArchiveDeleteDialog({
   description,
   onArchive,
   onDelete,
-  isLoading = false
+  isLoading = false,
+  disableActions = false
 }: ArchiveDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -44,7 +46,7 @@ export function ArchiveDeleteDialog({
             variant="outline"
             onClick={onArchive}
             className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
-            disabled={isLoading}
+            disabled={isLoading || disableActions}
           >
             <ArchiveIcon className="h-4 w-4 mr-2" />
             Archive
@@ -52,7 +54,7 @@ export function ArchiveDeleteDialog({
           <Button
             onClick={onDelete}
             className="bg-red-800 hover:bg-red-700 text-white border-none min-w-[160px]"
-            disabled={isLoading}
+            disabled={isLoading || disableActions}
           >
             <TrashIcon className="h-4 w-4 mr-2" />
             Delete Forever

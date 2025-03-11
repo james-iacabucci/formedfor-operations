@@ -7,6 +7,7 @@ interface VariantDeleteDialogProps {
   onArchive: () => void;
   onDelete: () => void;
   isLoading?: boolean;
+  isLastVariant?: boolean;
 }
 
 export function VariantDeleteDialog({
@@ -14,17 +15,21 @@ export function VariantDeleteDialog({
   setShowDialog,
   onArchive,
   onDelete,
-  isLoading = false
+  isLoading = false,
+  isLastVariant = false
 }: VariantDeleteDialogProps) {
   return (
     <ArchiveDeleteDialog
       open={showDialog}
       onOpenChange={setShowDialog}
       title="Manage Sculpture Variant"
-      description="You can either archive this variant or permanently delete it. Archived variants can be restored later."
+      description={isLastVariant 
+        ? "You cannot delete the last variant of a sculpture. Please create another variant first."
+        : "You can either archive this variant or permanently delete it. Archived variants can be restored later."}
       onArchive={onArchive}
       onDelete={onDelete}
       isLoading={isLoading}
+      disableActions={isLastVariant}
     />
   );
 }

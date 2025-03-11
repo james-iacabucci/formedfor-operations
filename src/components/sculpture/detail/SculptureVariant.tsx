@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { VariantNavigation } from "./components/VariantNavigation";
 import { VariantDeleteDialog } from "./components/VariantDeleteDialog";
@@ -82,6 +83,8 @@ export function SculptureVariant({
     );
   }
 
+  const isLastVariant = localVariants.length <= 1;
+
   return (
     <>
       <Card className="mb-6">
@@ -95,7 +98,7 @@ export function SculptureVariant({
             handleDeleteClick={handleDeleteClick}
             isCreatingVariant={isCreatingVariant}
             isDeletingVariant={isDeletingVariant}
-            disableDelete={localVariants.length <= 1}
+            disableDelete={isLastVariant}
             onCreateVariant={onCreateVariant}
             onDeleteVariant={onDeleteVariant}
             onArchiveVariant={onArchiveVariant}
@@ -142,6 +145,7 @@ export function SculptureVariant({
         onArchive={handleArchive}
         onDelete={handleDelete}
         isLoading={isDeletingVariant}
+        isLastVariant={isLastVariant}
       />
     </>
   );
