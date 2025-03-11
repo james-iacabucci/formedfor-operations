@@ -43,7 +43,7 @@ export function WeightDisplay({
       <div className="flex items-center gap-2">
         <span className="text-sm">
           <span className="text-muted-foreground mr-1">Weight:</span>
-          {formatWeightString(weightKg, weightLbs, unit)} {unit}
+          {formatWeightString(weightKg, weightLbs, unit)}
         </span>
         <Tabs
           value={unit}

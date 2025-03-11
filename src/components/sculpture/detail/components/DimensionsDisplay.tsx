@@ -35,7 +35,7 @@ export function DimensionsDisplay({
     const w_val = formatValue(w);
     const d_val = formatValue(d);
     
-    return `${h_val} × ${w_val} × ${d_val} ${unit === 'inches' ? 'in' : 'cm'}`;
+    return `${h_val} × ${w_val} × ${d_val}`;
   };
 
   const handleTabClick = (e: React.MouseEvent) => {
@@ -48,7 +48,7 @@ export function DimensionsDisplay({
         <span className="text-sm">
           <span className="text-muted-foreground mr-1">HWD:</span>
           {unit === "inches" ? 
-            `${displayValue.replace(" in", "")} in` : 
+            displayValue.replace(" in", "") : 
             formatDimensionString(height, width, depth, "centimeters")}
         </span>
         <Tabs
