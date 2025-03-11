@@ -2,14 +2,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
 import { EditFabricationQuoteSheet } from "./EditFabricationQuoteSheet";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { SculptureVariant } from "./SculptureVariant";
 import { useSculptureVariants } from "@/hooks/sculpture-variants";
 import { useFabricationQuotes } from "./hooks/useFabricationQuotes";
-import { QuotesList } from "./components/QuotesList";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   calculateTotal,
@@ -17,6 +14,8 @@ import {
   calculateRetailPrice,
   formatNumber
 } from "@/utils/fabrication-quote-calculations";
+import { FabricationQuotesHeader } from "./components/FabricationQuotesHeader";
+import { VariantQuotesSection } from "./components/VariantQuotesSection";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -99,30 +98,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   }, [createVariant, refetchVariants]);
 
-  const handleArchiveVariant = useCallback(async (variantId: string) => {
-    try {
-      await archiveVariant(variantId);
-    } catch (error) {
-      console.error("Error archiving variant:", error);
-      throw error;
-    }
-  }, [archiveVariant]);
-
-  const handleDeleteVariant = useCallback(async (variantId: string) => {
-    try {
-      await deleteVariant(variantId);
-    } catch (error) {
-      console.error("Error deleting variant:", error);
-      throw error;
-    }
-  }, [deleteVariant]);
-
   // Find current variant for adding quotes
   const currentVariant = useMemo(() => {
     if (!variants || !selectedVariantId) return null;
     return variants.find(v => v.id === selectedVariantId) || null;
   }, [variants, selectedVariantId]);
 
+  // Loading state for variants
   if (isLoadingVariants) {
     return (
       <div className="space-y-6">
@@ -143,45 +125,35 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           onVariantChange={handleVariantChange}
           selectedVariantId={selectedVariantId}
           onCreateVariant={handleCreateVariant}
-          onArchiveVariant={handleArchiveVariant}
-          onDeleteVariant={handleDeleteVariant}
+          onArchiveVariant={archiveVariant}
+          onDeleteVariant={deleteVariant}
           isCreatingVariant={isCreatingVariant}
           isDeletingVariant={isDeletingVariant}
         />
       )}
 
-      {/* Fabrication quotes section header - Always show */}
+      {/* Fabrication quotes section */}
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
-          <Button 
-            onClick={() => currentVariant && handleAddQuote(currentVariant)} 
-            size="sm" 
-            disabled={!selectedVariantId}
-            variant="outline"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Quote
-          </Button>
-        </div>
+        <FabricationQuotesHeader
+          onAddQuote={() => currentVariant && handleAddQuote(currentVariant)}
+          disabled={!selectedVariantId}
+        />
 
-        {/* Only show content below if a variant is selected */}
-        {selectedVariantId && (
-          <QuotesList
-            quotes={quotes}
-            isLoading={isLoadingQuotes}
-            isError={isQuotesError}
-            fabricators={fabricators || []}
-            handleSelectQuote={handleSelectQuote}
-            handleStartEdit={handleStartEdit}
-            handleDeleteQuote={handleDeleteQuote}
-            handleOpenChat={handleOpenChat}
-            calculateTotal={calculateTotal}
-            calculateTradePrice={calculateTradePrice}
-            calculateRetailPrice={calculateRetailPrice}
-            formatNumber={formatNumber}
-          />
-        )}
+        <VariantQuotesSection
+          selectedVariantId={selectedVariantId}
+          quotes={quotes}
+          isLoadingQuotes={isLoadingQuotes}
+          isQuotesError={isQuotesError}
+          fabricators={fabricators || []}
+          handleSelectQuote={handleSelectQuote}
+          handleStartEdit={handleStartEdit}
+          handleDeleteQuote={handleDeleteQuote}
+          handleOpenChat={handleOpenChat}
+          calculateTotal={calculateTotal}
+          calculateTradePrice={calculateTradePrice}
+          calculateRetailPrice={calculateRetailPrice}
+          formatNumber={formatNumber}
+        />
       </div>
 
       {/* Edit quote sheet */}
