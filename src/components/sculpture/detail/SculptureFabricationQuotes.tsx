@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     refetch: refetchVariants
   } = useSculptureVariants(sculptureId);
 
-  // Set selected variant when variants load
+  // Set selected variant when variants load - only once
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
       console.log("Setting initial selected variant:", variants[0].id);
@@ -56,35 +56,38 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   }, [variants, selectedVariantId]);
 
-  // Load quotes whenever the selected variant changes
-  useEffect(() => {
-    const loadQuotes = async () => {
-      if (!selectedVariantId) {
-        console.log("No variant selected, not loading quotes");
-        return;
-      }
-      
-      try {
-        setIsLoadingQuotes(true);
-        console.log("Loading quotes for variant:", selectedVariantId);
-        const quotes = await getQuotesForVariant(selectedVariantId);
-        console.log("Loaded quotes:", quotes?.length || 0);
-        setVariantQuotes(quotes || []);
-      } catch (error) {
-        console.error("Error loading quotes for variant:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load quotes for this variant",
-          variant: "destructive",
-        });
-        setVariantQuotes([]);
-      } finally {
-        setIsLoadingQuotes(false);
-      }
-    };
+  // Memoize the loadQuotes function to prevent recreating it on every render
+  const loadQuotes = useCallback(async (variantId: string) => {
+    if (!variantId) {
+      console.log("No variant selected, not loading quotes");
+      return;
+    }
     
-    loadQuotes();
-  }, [selectedVariantId, getQuotesForVariant, toast]);
+    try {
+      setIsLoadingQuotes(true);
+      console.log("Loading quotes for variant:", variantId);
+      const quotes = await getQuotesForVariant(variantId);
+      console.log("Loaded quotes:", quotes?.length || 0);
+      setVariantQuotes(quotes || []);
+    } catch (error) {
+      console.error("Error loading quotes for variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load quotes for this variant",
+        variant: "destructive",
+      });
+      setVariantQuotes([]);
+    } finally {
+      setIsLoadingQuotes(false);
+    }
+  }, [getQuotesForVariant, toast]);
+
+  // Load quotes whenever the selected variant changes - with the memoized function
+  useEffect(() => {
+    if (selectedVariantId) {
+      loadQuotes(selectedVariantId);
+    }
+  }, [selectedVariantId, loadQuotes]);
 
   const { data: fabricators } = useQuery({
     queryKey: ["value_lists", "fabricator"],
@@ -99,24 +102,10 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     },
   });
 
-  const handleVariantChange = async (variantId: string) => {
+  const handleVariantChange = (variantId: string) => {
     console.log("Variant changed to:", variantId);
-    setSelectedVariantId(variantId);
-    try {
-      setIsLoadingQuotes(true);
-      const quotes = await getQuotesForVariant(variantId);
-      console.log("Loaded quotes for new variant:", quotes?.length || 0);
-      setVariantQuotes(quotes || []);
-    } catch (error) {
-      console.error("Error changing variant:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load quotes for this variant",
-        variant: "destructive",
-      });
-      setVariantQuotes([]);
-    } finally {
-      setIsLoadingQuotes(false);
+    if (variantId !== selectedVariantId) {
+      setSelectedVariantId(variantId);
     }
   };
 
@@ -271,12 +260,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     // Remove from local state immediately for a faster UI update
     setVariantQuotes(current => current.filter(q => q.id !== quoteId));
     
-    // Then refresh from the server
-    if (selectedVariantId) {
-      const updatedQuotes = await getQuotesForVariant(selectedVariantId);
-      setVariantQuotes(updatedQuotes);
-    }
-    
     toast({
       title: "Success",
       description: "Quote deleted successfully",
@@ -307,12 +290,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       }))
     );
     
-    // Then refresh from the server
-    if (selectedVariantId) {
-      const updatedQuotes = await getQuotesForVariant(selectedVariantId);
-      setVariantQuotes(updatedQuotes);
-    }
-    
     toast({
       title: "Quote Selected",
       description: "The fabrication quote has been selected.",
@@ -321,15 +298,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
   const handleQuoteSaved = async () => {
     if (selectedVariantId) {
-      setIsLoadingQuotes(true);
-      try {
-        const updatedQuotes = await getQuotesForVariant(selectedVariantId);
-        setVariantQuotes(updatedQuotes);
-      } catch (error) {
-        console.error("Error refreshing quotes:", error);
-      } finally {
-        setIsLoadingQuotes(false);
-      }
+      loadQuotes(selectedVariantId);
     }
   };
 
