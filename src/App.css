@@ -83,3 +83,9 @@ a, button, [role="button"] {
 .radix-side-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
+
+/* Custom styles for rectangular tab navigation */
+.tab-rectangular {
+  border-radius: 0.375rem !important; /* md rounded corners */
+  margin: 0 1px;
+}
