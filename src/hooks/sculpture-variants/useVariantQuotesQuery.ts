@@ -12,7 +12,6 @@ export function useVariantQuotesQuery(variantId: string | null) {
       console.log("Getting quotes for variant:", variantId);
       
       try {
-        // First try to get quotes with the specific variant_id
         const { data: variantQuotes, error: variantQuotesError } = await supabase
           .from("fabrication_quotes")
           .select("*")
