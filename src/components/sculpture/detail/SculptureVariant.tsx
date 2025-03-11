@@ -9,6 +9,7 @@ import { SculptureDimensions } from "./SculptureDimensions";
 import { SculptureWeight } from "./SculptureWeight";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface SculptureVariantDetails {
   id: string;
@@ -179,6 +180,42 @@ export function SculptureVariant({
     }
   };
 
+  // New function to handle attribute changes and save to database
+  const handleAttributeChange = async (field: string, value: any) => {
+    if (!currentVariant) return;
+    
+    try {
+      console.log(`Updating variant ${currentVariant.id} field ${field} to:`, value);
+      
+      // Convert field name to snake_case for database
+      const dbFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase();
+      
+      const { error } = await supabase
+        .from('sculpture_variants')
+        .update({ [dbFieldName]: value })
+        .eq('id', currentVariant.id);
+        
+      if (error) {
+        console.error(`Error updating variant ${field}:`, error);
+        toast({
+          title: "Error",
+          description: `Failed to update variant: ${error.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log(`Successfully updated variant ${field}`);
+    } catch (error) {
+      console.error(`Error in handleAttributeChange for ${field}:`, error);
+      toast({
+        title: "Error",
+        description: "Failed to update variant",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!currentVariant || variants.length === 0) {
     return (
       <Card className="mb-6">
@@ -244,7 +281,7 @@ export function SculptureVariant({
               <SculptureMaterialFinish
                 sculptureId={currentVariant.sculptureId}
                 materialId={currentVariant.materialId}
-                onMaterialChange={(materialId) => console.log("Material changed to:", materialId)}
+                onMaterialChange={(materialId) => handleAttributeChange("materialId", materialId)}
                 isVariantForm={true}
                 variantId={currentVariant.id}
               />
@@ -252,7 +289,7 @@ export function SculptureVariant({
               <SculptureMethod
                 sculptureId={currentVariant.sculptureId}
                 methodId={currentVariant.methodId}
-                onMethodChange={(methodId) => console.log("Method changed to:", methodId)}
+                onMethodChange={(methodId) => handleAttributeChange("methodId", methodId)}
                 isVariantForm={true}
                 variantId={currentVariant.id}
               />
@@ -262,7 +299,7 @@ export function SculptureVariant({
                 height={currentVariant.heightIn}
                 width={currentVariant.widthIn}
                 depth={currentVariant.depthIn}
-                onDimensionsChange={(field, value) => console.log(field, "changed to:", value)}
+                onDimensionsChange={(field, value) => handleAttributeChange(field, value)}
                 isVariantForm={true}
                 variantId={currentVariant.id}
               />
@@ -271,7 +308,7 @@ export function SculptureVariant({
                 sculptureId={currentVariant.sculptureId}
                 weightKg={currentVariant.weightKg}
                 weightLbs={currentVariant.weightLbs}
-                onWeightChange={(field, value) => console.log(field, "changed to:", value)}
+                onWeightChange={(field, value) => handleAttributeChange(field, value)}
                 isVariantForm={true}
                 variantId={currentVariant.id}
               />
@@ -284,7 +321,7 @@ export function SculptureVariant({
               <SculptureMaterialFinish
                 sculptureId={currentVariant.sculptureId}
                 materialId={currentVariant.baseMaterialId}
-                onMaterialChange={(materialId) => console.log("Base material changed to:", materialId)}
+                onMaterialChange={(materialId) => handleAttributeChange("baseMaterialId", materialId)}
                 isBase={true}
                 isVariantForm={true}
                 variantId={currentVariant.id}
@@ -293,7 +330,7 @@ export function SculptureVariant({
               <SculptureMethod
                 sculptureId={currentVariant.sculptureId}
                 methodId={currentVariant.baseMethodId}
-                onMethodChange={(methodId) => console.log("Base method changed to:", methodId)}
+                onMethodChange={(methodId) => handleAttributeChange("baseMethodId", methodId)}
                 isBase={true}
                 isVariantForm={true}
                 variantId={currentVariant.id}
@@ -304,7 +341,7 @@ export function SculptureVariant({
                 height={currentVariant.baseHeightIn}
                 width={currentVariant.baseWidthIn}
                 depth={currentVariant.baseDepthIn}
-                onDimensionsChange={(field, value) => console.log(field, "changed to:", value)}
+                onDimensionsChange={(field, value) => handleAttributeChange(field, value)}
                 isBase={true}
                 isVariantForm={true}
                 variantId={currentVariant.id}
@@ -314,7 +351,7 @@ export function SculptureVariant({
                 sculptureId={currentVariant.sculptureId}
                 weightKg={currentVariant.baseWeightKg}
                 weightLbs={currentVariant.baseWeightLbs}
-                onWeightChange={(field, value) => console.log(field, "changed to:", value)}
+                onWeightChange={(field, value) => handleAttributeChange(field, value)}
                 isBase={true}
                 isVariantForm={true}
                 variantId={currentVariant.id}

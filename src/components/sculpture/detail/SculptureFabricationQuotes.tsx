@@ -85,6 +85,8 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   // Load quotes whenever the selected variant changes - with the memoized function
   useEffect(() => {
     if (selectedVariantId) {
+      // Clear current quotes first to prevent flickering of old quotes
+      setVariantQuotes([]);
       loadQuotes(selectedVariantId);
     }
   }, [selectedVariantId, loadQuotes]);
@@ -375,7 +377,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       )}
 
-      {/* Fabrication quotes for the selected variant */}
+      {/* Fabrication quotes section - Always show header */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
@@ -385,40 +387,45 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           </Button>
         </div>
 
-        {/* Loading state */}
-        {isLoadingQuotes && (
-          <div className="text-center py-8 text-muted-foreground">
-            Loading quotes...
-          </div>
-        )}
+        {/* Only show the loading or empty state and quotes list if variant is selected */}
+        {selectedVariantId && (
+          <>
+            {/* Loading state */}
+            {isLoadingQuotes && (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading quotes...
+              </div>
+            )}
 
-        {/* Empty state */}
-        {!isLoadingQuotes && selectedVariantId && variantQuotes.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No quotes available for this variant. Click "Add Quote" to create one.
-          </div>
-        )}
+            {/* Empty state - only shown when not loading and no quotes */}
+            {!isLoadingQuotes && variantQuotes.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No quotes available for this variant. Click "Add Quote" to create one.
+              </div>
+            )}
 
-        {/* Quotes list */}
-        {!isLoadingQuotes && variantQuotes.length > 0 && (
-          <div className="space-y-6">
-            {sortQuotes(variantQuotes).map((quote) => (
-              <FabricationQuoteCard
-                key={quote.id}
-                quote={quote}
-                fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
-                onSelect={() => handleSelectQuote(quote.id)}
-                onEdit={() => handleStartEdit(quote)}
-                onDelete={() => handleDeleteQuote(quote.id)}
-                onChat={() => handleOpenChat(quote.id)}
-                calculateTotal={calculateTotal}
-                calculateTradePrice={calculateTradePrice}
-                calculateRetailPrice={calculateRetailPrice}
-                formatNumber={formatNumber}
-                isEditing={false}
-              />
-            ))}
-          </div>
+            {/* Quotes list - only shown when not loading and has quotes */}
+            {!isLoadingQuotes && variantQuotes.length > 0 && (
+              <div className="space-y-6">
+                {sortQuotes(variantQuotes).map((quote) => (
+                  <FabricationQuoteCard
+                    key={quote.id}
+                    quote={quote}
+                    fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
+                    onSelect={() => handleSelectQuote(quote.id)}
+                    onEdit={() => handleStartEdit(quote)}
+                    onDelete={() => handleDeleteQuote(quote.id)}
+                    onChat={() => handleOpenChat(quote.id)}
+                    calculateTotal={calculateTotal}
+                    calculateTradePrice={calculateTradePrice}
+                    calculateRetailPrice={calculateRetailPrice}
+                    formatNumber={formatNumber}
+                    isEditing={false}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
