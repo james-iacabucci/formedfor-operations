@@ -28,12 +28,6 @@ interface SculptureVariantRow {
   created_at: string;
 }
 
-// This type helps us tell TypeScript that we're doing a custom query
-type CustomQueryResult<T> = {
-  data: T[] | null;
-  error: Error | null;
-};
-
 export function useSculptureVariants(sculptureId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -43,16 +37,14 @@ export function useSculptureVariants(sculptureId: string) {
     queryKey: ["sculpture-variants", sculptureId],
     queryFn: async () => {
       try {
-        // Use the custom query approach to avoid TypeScript errors with 'sculpture_variants'
-        const result = await supabase
+        // Use the raw query approach to avoid TypeScript errors
+        const { data: variantsData, error } = await supabase
           .from('sculpture_variants')
           .select('*')
           .eq('sculpture_id', sculptureId)
           .eq('is_archived', false)
           .order('order_index', { ascending: true });
           
-        const { data: variantsData, error } = result as unknown as CustomQueryResult<SculptureVariantRow>;
-
         if (error) {
           throw error;
         }
@@ -199,7 +191,7 @@ export function useSculptureVariants(sculptureId: string) {
 
       try {
         // Create a new variant based on the current one
-        const result = await supabase
+        const { data, error } = await supabase
           .from('sculpture_variants')
           .insert({
             sculpture_id: sculptureId,
@@ -222,8 +214,6 @@ export function useSculptureVariants(sculptureId: string) {
           })
           .select('id')
           .single();
-          
-        const { data, error } = result as unknown as { data: { id: string } | null, error: Error | null };
 
         if (error) {
           throw error;
@@ -257,12 +247,10 @@ export function useSculptureVariants(sculptureId: string) {
   const archiveVariant = useMutation({
     mutationFn: async (variantId: string) => {
       try {
-        const result = await supabase
+        const { error } = await supabase
           .from('sculpture_variants')
           .update({ is_archived: true })
           .eq('id', variantId);
-          
-        const { error } = result as unknown as { error: Error | null };
 
         if (error) {
           throw error;
@@ -307,12 +295,10 @@ export function useSculptureVariants(sculptureId: string) {
         }
 
         // Then delete the variant
-        const result = await supabase
+        const { error } = await supabase
           .from('sculpture_variants')
           .delete()
           .eq('id', variantId);
-          
-        const { error } = result as unknown as { error: Error | null };
 
         if (error) {
           throw error;

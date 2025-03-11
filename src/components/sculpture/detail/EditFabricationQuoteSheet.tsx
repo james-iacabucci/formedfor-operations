@@ -64,6 +64,7 @@ export function EditFabricationQuoteSheet({
     base_depth_in: null,
     base_weight_kg: null,
     base_weight_lbs: null,
+    variant_id: null
   });
 
   // When the sheet opens, initialize with the provided quote data if editing
@@ -96,6 +97,7 @@ export function EditFabricationQuoteSheet({
         base_depth_in: null,
         base_weight_kg: null,
         base_weight_lbs: null,
+        variant_id: null
       });
     }
   }, [open, initialQuote, sculptureId]);

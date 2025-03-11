@@ -164,6 +164,7 @@ export type Database = {
           quote_date: string
           sculpture_id: string
           shipping_cost: number
+          variant_id: string | null
           weight_kg: number | null
           weight_lbs: number | null
           width_cm: number | null
@@ -198,6 +199,7 @@ export type Database = {
           quote_date?: string
           sculpture_id: string
           shipping_cost?: number
+          variant_id?: string | null
           weight_kg?: number | null
           weight_lbs?: number | null
           width_cm?: number | null
@@ -232,6 +234,7 @@ export type Database = {
           quote_date?: string
           sculpture_id?: string
           shipping_cost?: number
+          variant_id?: string | null
           weight_kg?: number | null
           weight_lbs?: number | null
           width_cm?: number | null
@@ -278,6 +281,13 @@ export type Database = {
             columns: ["sculpture_id"]
             isOneToOne: false
             referencedRelation: "sculptures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fabrication_quotes_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "sculpture_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -368,6 +378,108 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sculpture_variants: {
+        Row: {
+          base_depth_in: number | null
+          base_height_in: number | null
+          base_material_id: string | null
+          base_method_id: string | null
+          base_weight_kg: number | null
+          base_weight_lbs: number | null
+          base_width_in: number | null
+          created_at: string
+          depth_in: number | null
+          height_in: number | null
+          id: string
+          is_archived: boolean
+          material_id: string | null
+          method_id: string | null
+          order_index: number
+          sculpture_id: string
+          weight_kg: number | null
+          weight_lbs: number | null
+          width_in: number | null
+        }
+        Insert: {
+          base_depth_in?: number | null
+          base_height_in?: number | null
+          base_material_id?: string | null
+          base_method_id?: string | null
+          base_weight_kg?: number | null
+          base_weight_lbs?: number | null
+          base_width_in?: number | null
+          created_at?: string
+          depth_in?: number | null
+          height_in?: number | null
+          id?: string
+          is_archived?: boolean
+          material_id?: string | null
+          method_id?: string | null
+          order_index?: number
+          sculpture_id: string
+          weight_kg?: number | null
+          weight_lbs?: number | null
+          width_in?: number | null
+        }
+        Update: {
+          base_depth_in?: number | null
+          base_height_in?: number | null
+          base_material_id?: string | null
+          base_method_id?: string | null
+          base_weight_kg?: number | null
+          base_weight_lbs?: number | null
+          base_width_in?: number | null
+          created_at?: string
+          depth_in?: number | null
+          height_in?: number | null
+          id?: string
+          is_archived?: boolean
+          material_id?: string | null
+          method_id?: string | null
+          order_index?: number
+          sculpture_id?: string
+          weight_kg?: number | null
+          weight_lbs?: number | null
+          width_in?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sculpture_variants_base_material_id_fkey"
+            columns: ["base_material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculpture_variants_base_method_id_fkey"
+            columns: ["base_method_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculpture_variants_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculpture_variants_method_id_fkey"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "value_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sculpture_variants_sculpture_id_fkey"
+            columns: ["sculpture_id"]
+            isOneToOne: false
+            referencedRelation: "sculptures"
             referencedColumns: ["id"]
           },
         ]
