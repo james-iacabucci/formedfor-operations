@@ -6,6 +6,7 @@ import { MessageListContent } from "./components/MessageListContent";
 import { Message, ThreadMessageWithProfile, UploadingFile, convertToMessage } from "./types";
 import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
 
 interface MessageListProps {
   threadId: string;
@@ -83,8 +84,14 @@ export function MessageList({
       return undefined;
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+  });
+
+  // Set up realtime subscription for new messages
+  useRealtimeMessages(threadId, () => {
+    console.log("New message received, refetching...");
+    refetch();
   });
 
   useEffect(() => {
