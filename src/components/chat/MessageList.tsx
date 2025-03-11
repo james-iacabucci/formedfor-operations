@@ -30,6 +30,7 @@ export function MessageList({
   const { user } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   
   const {
     data,
@@ -41,6 +42,7 @@ export function MessageList({
   } = useInfiniteQuery({
     queryKey: ["messages", threadId],
     queryFn: async ({ pageParam }) => {
+      console.log(`Fetching messages for thread ${threadId}, pageParam:`, pageParam);
       let query = supabase
         .from("chat_messages")
         .select(
@@ -74,6 +76,7 @@ export function MessageList({
         throw error;
       }
       
+      console.log(`Fetched ${data?.length || 0} messages for thread ${threadId}`);
       return data as ThreadMessageWithProfile[];
     },
     initialPageParam: null as string | null,
@@ -92,6 +95,7 @@ export function MessageList({
   useRealtimeMessages(threadId, () => {
     console.log("New message received, refetching...");
     refetch();
+    setShouldScrollToBottom(true);
   });
 
   useEffect(() => {
@@ -102,7 +106,7 @@ export function MessageList({
 
   // Auto-scroll to bottom when component initially loads or when new messages arrive
   useEffect(() => {
-    if (!isLoading && scrollAreaRef.current) {
+    if (!isLoading && scrollAreaRef.current && shouldScrollToBottom) {
       // Use setTimeout to ensure DOM is updated before scrolling
       setTimeout(() => {
         if (scrollAreaRef.current) {
@@ -112,11 +116,12 @@ export function MessageList({
             if (!initialLoadComplete) {
               setInitialLoadComplete(true);
             }
+            setShouldScrollToBottom(false);
           }
         }
       }, 100);
     }
-  }, [isLoading, data]);
+  }, [isLoading, data, shouldScrollToBottom]);
 
   // Transform raw messages to proper Message objects
   const rawMessages = data?.pages?.flatMap((page) => page) || [];

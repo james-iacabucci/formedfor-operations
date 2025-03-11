@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,7 +143,10 @@ export function MessageInput({
         })
         .select();
 
-      if (messageError) throw messageError;
+      if (messageError) {
+        console.error("Error inserting message:", messageError);
+        throw messageError;
+      }
       
       if (messageData && messageData.length > 0) {
         messageId = messageData[0].id;
@@ -169,7 +173,7 @@ export function MessageInput({
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
