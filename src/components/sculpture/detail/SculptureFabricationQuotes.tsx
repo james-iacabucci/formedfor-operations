@@ -35,8 +35,17 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
   const [variantQuotes, setVariantQuotes] = useState<FabricationQuote[]>([]);
   const { toast } = useToast();
 
-  // Get variants for this sculpture
-  const { variants, isLoading: isLoadingVariants, getQuotesForVariant } = useSculptureVariants(sculptureId);
+  // Get variants for this sculpture with the enhanced hook functions
+  const { 
+    variants, 
+    isLoading: isLoadingVariants, 
+    getQuotesForVariant,
+    createVariant,
+    archiveVariant,
+    deleteVariant,
+    isCreatingVariant,
+    isDeletingVariant
+  } = useSculptureVariants(sculptureId);
 
   // Set initial selected variant when variants load
   useEffect(() => {
@@ -97,6 +106,51 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     }
   };
 
+  const handleCreateVariant = async (currentVariantId: string) => {
+    try {
+      const newVariantId = await createVariant(currentVariantId);
+      return newVariantId;
+    } catch (error) {
+      console.error("Error creating variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create new variant",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to be caught by the caller
+    }
+  };
+
+  const handleArchiveVariant = async (variantId: string) => {
+    try {
+      await archiveVariant(variantId);
+      // The queryClient.invalidateQueries in the hook will refresh the variants
+    } catch (error) {
+      console.error("Error archiving variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive variant",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const handleDeleteVariant = async (variantId: string) => {
+    try {
+      await deleteVariant(variantId);
+      // The queryClient.invalidateQueries in the hook will refresh the variants
+    } catch (error) {
+      console.error("Error deleting variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete variant",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   const sortQuotes = (quotes: FabricationQuote[]) => {
     return [...quotes].sort((a, b) => {
       // Selected quote comes first
@@ -135,6 +189,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_depth_in: quote.base_depth_in,
       base_weight_kg: quote.base_weight_kg,
       base_weight_lbs: quote.base_weight_lbs,
+      variant_id: quote.variant_id
     });
     setIsSheetOpen(true);
   };
@@ -173,6 +228,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       base_depth_in: selectedVariant.baseDepthIn,
       base_weight_kg: selectedVariant.baseWeightKg,
       base_weight_lbs: selectedVariant.baseWeightLbs,
+      variant_id: selectedVariant.id // Set the variant_id field
     });
     setIsSheetOpen(true);
   };
@@ -305,6 +361,11 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           variants={variants}
           onVariantChange={handleVariantChange}
           selectedVariantId={selectedVariantId}
+          onCreateVariant={handleCreateVariant}
+          onArchiveVariant={handleArchiveVariant}
+          onDeleteVariant={handleDeleteVariant}
+          isCreatingVariant={isCreatingVariant}
+          isDeletingVariant={isDeletingVariant}
         />
       )}
 
