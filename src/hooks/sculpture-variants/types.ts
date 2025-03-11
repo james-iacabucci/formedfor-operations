@@ -27,11 +27,11 @@ export interface SculptureVariantRow {
 export interface UseSculptureVariantsReturn {
   variants: SculptureVariantDetails[] | undefined;
   isLoading: boolean;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<any>; // Updated type to accept any Promise return
   getQuotesForVariant: (variantId: string) => Promise<FabricationQuote[]>;
-  createVariant: (currentVariantId: string) => Promise<string>;
-  archiveVariant: (variantId: string) => Promise<void>;
-  deleteVariant: (variantId: string) => Promise<void>;
+  createVariant: (currentVariantId: string) => Promise<string>; // Updated to return Promise<string>
+  archiveVariant: (variantId: string) => Promise<any>; // Updated to return Promise<any>
+  deleteVariant: (variantId: string) => Promise<any>; // Updated to return Promise<any>
   isCreatingVariant: boolean;
   isArchivingVariant: boolean;
   isDeletingVariant: boolean;

@@ -18,7 +18,7 @@ export function useSculptureVariants(sculptureId: string): UseSculptureVariantsR
   
   const invalidateQueries = async () => {
     await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
-    await refetch();
+    return refetch();
   };
   
   const { 

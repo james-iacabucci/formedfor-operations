@@ -1,4 +1,3 @@
-
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +6,7 @@ import { SculptureVariantDetails } from "@/components/sculpture/detail/Sculpture
 export function useVariantMutations(
   sculptureId: string, 
   variants?: SculptureVariantDetails[],
-  onSuccess?: () => void
+  onSuccess?: () => Promise<any>
 ) {
   const { toast } = useToast();
 
@@ -109,15 +108,17 @@ export function useVariantMutations(
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (variantId) => {
       if (onSuccess) {
-        onSuccess();
+        await onSuccess();
       }
       
       toast({
         title: "Success",
         description: "Variant archived successfully",
       });
+      
+      return variantId;
     },
     onError: (error) => {
       console.error("Error archiving variant:", error);
@@ -162,15 +163,17 @@ export function useVariantMutations(
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (variantId) => {
       if (onSuccess) {
-        onSuccess();
+        await onSuccess();
       }
       
       toast({
         title: "Success",
         description: "Variant deleted permanently",
       });
+      
+      return variantId;
     },
     onError: (error) => {
       console.error("Error deleting variant:", error);
