@@ -4,9 +4,10 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageListContent } from "./components/MessageListContent";
 import { Message, ThreadMessageWithProfile, UploadingFile, convertToMessage } from "./types";
-import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRealtimeMessages } from "./hooks/useRealtimeMessages";
+import { useMessageScroll } from "./hooks/useMessageScroll";
+import { useEffect } from "react";
 
 interface MessageListProps {
   threadId: string;
@@ -28,9 +29,6 @@ export function MessageList({
   sculptureId
 }: MessageListProps) {
   const { user } = useAuth();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   
   const {
     data,
@@ -62,11 +60,11 @@ export function MessageList({
         `
         )
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: true }) // Changed to ascending order (oldest first)
-        .limit(50); // Increased limit to 50 messages per page
+        .order("created_at", { ascending: true }) 
+        .limit(50);
       
       if (pageParam) {
-        query = query.gt("created_at", pageParam); // Changed to "greater than" for ascending order
+        query = query.gt("created_at", pageParam);
       }
       
       const { data, error } = await query;
@@ -98,30 +96,18 @@ export function MessageList({
     setShouldScrollToBottom(true);
   });
 
+  // Use the custom hook for scroll behavior
+  const { scrollAreaRef, setShouldScrollToBottom } = useMessageScroll({
+    isLoading,
+    data,
+    uploadingFiles
+  });
+
   useEffect(() => {
     if (onLoadMore) {
       onLoadMore();
     }
   }, [isLoading]);
-
-  // Auto-scroll to bottom when component initially loads or when new messages arrive
-  useEffect(() => {
-    if (!isLoading && scrollAreaRef.current && shouldScrollToBottom) {
-      // Use setTimeout to ensure DOM is updated before scrolling
-      setTimeout(() => {
-        if (scrollAreaRef.current) {
-          const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-            if (!initialLoadComplete) {
-              setInitialLoadComplete(true);
-            }
-            setShouldScrollToBottom(false);
-          }
-        }
-      }, 100);
-    }
-  }, [isLoading, data, shouldScrollToBottom]);
 
   // Transform raw messages to proper Message objects
   const rawMessages = data?.pages?.flatMap((page) => page) || [];

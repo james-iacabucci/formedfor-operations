@@ -2,7 +2,7 @@
 import { User } from "@supabase/supabase-js";
 import { MessageItem } from "../MessageItem";
 import { Message, UploadingFile } from "../types";
-import { Loader2 } from "lucide-react";
+import { MessageLoading } from "./MessageLoading";
 
 interface MessageListContentProps {
   messages: Message[];
@@ -31,11 +31,7 @@ export function MessageListContent({
 }: MessageListContentProps) {
   return (
     <div className="pb-4 pt-2 px-4 min-h-full">
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
+      <MessageLoading isFetchingNextPage={isFetchingNextPage} />
       
       <div className="space-y-4">
         {messages.map((message) => (
