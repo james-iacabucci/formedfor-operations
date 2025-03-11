@@ -377,7 +377,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         />
       )}
 
-      {/* Fabrication quotes section - Always show header */}
+      {/* Fabrication quotes section header - Always show */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Fabrication Quotes</h2>
@@ -387,7 +387,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           </Button>
         </div>
 
-        {/* Only show the loading or empty state and quotes list if variant is selected */}
+        {/* Only show content below if a variant is selected */}
         {selectedVariantId && (
           <>
             {/* Loading state */}

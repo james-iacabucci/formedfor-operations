@@ -75,9 +75,9 @@ export function SculptureDimensions({
     
     if ((isQuoteForm || isVariantForm) && onDimensionsChange) {
       // In form mode, update the parent form state
-      if (dimensions.height) onDimensionsChange(`${prefix}height_in`, parseFloat(dimensions.height));
-      if (dimensions.width) onDimensionsChange(`${prefix}width_in`, parseFloat(dimensions.width));
-      if (dimensions.depth) onDimensionsChange(`${prefix}depth_in`, parseFloat(dimensions.depth));
+      if (dimensions.height) onDimensionsChange(`${prefix}heightIn`, parseFloat(dimensions.height));
+      if (dimensions.width) onDimensionsChange(`${prefix}widthIn`, parseFloat(dimensions.width));
+      if (dimensions.depth) onDimensionsChange(`${prefix}depthIn`, parseFloat(dimensions.depth));
       setIsEditingDimensions(false);
       return;
     }

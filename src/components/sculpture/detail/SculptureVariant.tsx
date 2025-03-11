@@ -10,6 +10,7 @@ import { SculptureWeight } from "./SculptureWeight";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface SculptureVariantDetails {
   id: string;
@@ -57,6 +58,7 @@ export function SculptureVariant({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteAction, setDeleteAction] = useState<"archive" | "delete" | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Update currentIndex whenever selectedVariantId or variants change
   useEffect(() => {
@@ -187,7 +189,7 @@ export function SculptureVariant({
     try {
       console.log(`Updating variant ${currentVariant.id} field ${field} to:`, value);
       
-      // Convert field name to snake_case for database
+      // Convert camelCase field name to snake_case for database
       const dbFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase();
       
       const { error } = await supabase
@@ -204,6 +206,11 @@ export function SculptureVariant({
         });
         return;
       }
+      
+      // Invalidate the sculpture-variants query to refresh the data
+      await queryClient.invalidateQueries({ 
+        queryKey: ["sculpture-variants", currentVariant.sculptureId] 
+      });
       
       console.log(`Successfully updated variant ${field}`);
     } catch (error) {

@@ -72,8 +72,8 @@ export function SculptureWeight({
 
     if ((isQuoteForm || isVariantForm) && onWeightChange) {
       // In form mode, update the parent form state
-      if (weight.kg) onWeightChange(`${prefix}weight_kg`, parseFloat(weight.kg));
-      if (weight.lbs) onWeightChange(`${prefix}weight_lbs`, parseFloat(weight.lbs));
+      if (weight.kg) onWeightChange(`${prefix}weightKg`, parseFloat(weight.kg));
+      if (weight.lbs) onWeightChange(`${prefix}weightLbs`, parseFloat(weight.lbs));
       setIsEditingWeight(false);
       return;
     }
