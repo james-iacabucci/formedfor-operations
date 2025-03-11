@@ -46,7 +46,6 @@ export function KanbanBoard() {
 
   const statusOrder: TaskStatus[] = ["todo", "today", "in_progress", "waiting", "done"];
   
-  // For drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -89,22 +88,17 @@ export function KanbanBoard() {
     
     if (!over || !active || active.id === over.id) return;
     
-    // Check if we're dragging over a column (status change)
     if (over.id.toString().includes('column-')) {
       const newStatus = over.id.toString().replace('column-', '') as TaskStatus;
       if (activeTask && activeTask.status !== newStatus) {
-        // Optimistically update the UI
         const updatedTasksByStatus = { ...tasksByStatus };
         
-        // Remove from old status
         updatedTasksByStatus[activeTask.status] = updatedTasksByStatus[activeTask.status].filter(
           task => task.id !== activeTask.id
         );
         
-        // Update the task with new status
         const updatedTask = { ...activeTask, status: newStatus };
         
-        // Add to new status
         updatedTasksByStatus[newStatus] = [...updatedTasksByStatus[newStatus], updatedTask];
         
         setTasksByStatus(updatedTasksByStatus);
@@ -121,7 +115,6 @@ export function KanbanBoard() {
       return;
     }
     
-    // Check if we're dropping on a column (status change)
     if (over.id.toString().includes('column-')) {
       const newStatus = over.id.toString().replace('column-', '') as TaskStatus;
       
@@ -133,13 +126,10 @@ export function KanbanBoard() {
           });
         } catch (error) {
           console.error("Failed to update task status:", error);
-          // Revert optimistic update on error
           setTasksByStatus(groupTasksByStatus(filteredTasks));
         }
       }
-    } 
-    // Check if we're reordering within the same status column
-    else if (active.id !== over.id) {
+    } else if (active.id !== over.id) {
       const activeId = active.id as string;
       const overId = over.id as string;
       
@@ -150,7 +140,6 @@ export function KanbanBoard() {
       const newIndex = statusTasks.findIndex(task => task.id === overId);
       
       if (oldIndex !== -1 && newIndex !== -1) {
-        // Update locally for optimistic UI
         const newTasksOrder = arrayMove(statusTasks, oldIndex, newIndex);
         
         const updatedTasksByStatus = {
@@ -160,23 +149,18 @@ export function KanbanBoard() {
         
         setTasksByStatus(updatedTasksByStatus);
         
-        // Calculate the new priority value
         let newPriority;
         
         if (newIndex === 0) {
-          // Moving to the top
           newPriority = newTasksOrder[1] ? Math.floor(newTasksOrder[1].priority_order - 1) : 0;
         } else if (newIndex === newTasksOrder.length - 1) {
-          // Moving to the bottom
           newPriority = newTasksOrder[newIndex - 1] ? Math.ceil(newTasksOrder[newIndex - 1].priority_order + 1) : 1000;
         } else {
-          // Moving to the middle - calculate average of surrounding priorities
           newPriority = Math.floor(
             (newTasksOrder[newIndex - 1].priority_order + newTasksOrder[newIndex + 1].priority_order) / 2
           );
         }
         
-        // Update on the server
         try {
           await reorderTasks.mutateAsync({
             taskId: activeId,
@@ -184,7 +168,6 @@ export function KanbanBoard() {
           });
         } catch (error) {
           console.error("Failed to reorder tasks:", error);
-          // Revert optimistic update on error
           setTasksByStatus(groupTasksByStatus(filteredTasks));
         }
       }
@@ -198,7 +181,7 @@ export function KanbanBoard() {
   };
 
   return (
-    <div className="container">
+    <div className="w-full">
       <KanbanBoardHeader 
         groupBy={groupBy}
         onGroupByChange={handleGroupByChange}

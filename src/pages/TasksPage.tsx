@@ -6,7 +6,7 @@ const TasksPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <div className="w-full py-6">
+      <div className="mx-auto max-w-7xl py-6 px-6">
         <KanbanBoard />
       </div>
     </div>
