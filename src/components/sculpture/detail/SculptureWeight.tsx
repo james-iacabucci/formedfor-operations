@@ -78,30 +78,56 @@ export function SculptureWeight({
       return;
     }
 
-    // In direct edit mode, update the database
-    const { error } = await supabase
-      .from('sculptures')
-      .update(updatedWeight)
-      .eq('id', sculptureId);
+    try {
+      let error;
+      
+      // In direct edit mode, update the database
+      if (isVariantForm && variantId) {
+        // Update the sculpture_variants table for variants
+        const { error: variantError } = await supabase
+          .from('sculpture_variants')
+          .update(updatedWeight)
+          .eq('id', variantId);
+        error = variantError;
+        
+        // Invalidate variant queries
+        await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      } else {
+        // Update the sculptures table
+        const { error: sculptureError } = await supabase
+          .from('sculptures')
+          .update(updatedWeight)
+          .eq('id', sculptureId);
+        error = sculptureError;
+      }
 
-    if (error) {
-      console.error('Error updating weight:', error);
+      if (error) {
+        console.error('Error updating weight:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update weight: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Invalidate sculpture query to refresh data
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      
+      toast({
+        title: "Success",
+        description: "Weight updated successfully",
+      });
+    } catch (err) {
+      console.error('Exception updating weight:', err);
       toast({
         title: "Error",
-        description: "Failed to update weight: " + error.message,
+        description: "An unexpected error occurred while updating weight",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsEditingWeight(false);
     }
-
-    await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-    
-    toast({
-      title: "Success",
-      description: "Weight updated successfully",
-    });
-    
-    setIsEditingWeight(false);
   };
 
   return (

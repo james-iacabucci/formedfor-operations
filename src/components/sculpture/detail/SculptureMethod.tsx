@@ -47,27 +47,53 @@ export function SculptureMethod({
       return;
     }
 
-    // In direct edit mode, update the database
-    const fieldName = isBase ? 'base_method_id' : 'method_id';
-    const { error } = await supabase
-      .from("sculptures")
-      .update({ [fieldName]: newMethodId })
-      .eq("id", sculptureId);
+    try {
+      let error;
+      const fieldName = isBase ? 'base_method_id' : 'method_id';
+      
+      if (isVariantForm && variantId) {
+        // Update the sculpture_variants table for variants
+        const { error: variantError } = await supabase
+          .from('sculpture_variants')
+          .update({ [fieldName]: newMethodId })
+          .eq('id', variantId);
+        error = variantError;
+        
+        // Invalidate variant queries
+        await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      } else {
+        // Update the sculptures table
+        const { error: sculptureError } = await supabase
+          .from("sculptures")
+          .update({ [fieldName]: newMethodId })
+          .eq("id", sculptureId);
+        error = sculptureError;
+      }
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update method",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Invalidate sculpture query to refresh data
+      queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      
+      toast({
+        title: "Success",
+        description: "Method updated successfully",
+      });
+    } catch (err) {
+      console.error('Exception updating method:', err);
       toast({
         title: "Error",
-        description: "Failed to update method",
+        description: "An unexpected error occurred while updating method",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-    toast({
-      title: "Success",
-      description: "Method updated successfully",
-    });
   };
 
   const selectedMethod = methods?.find(m => m.id === methodId)?.name || '';

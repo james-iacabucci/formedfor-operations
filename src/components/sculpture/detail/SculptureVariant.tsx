@@ -59,6 +59,7 @@ export function SculptureVariant({
   const [deleteAction, setDeleteAction] = useState<"archive" | "delete" | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [localVariant, setLocalVariant] = useState<SculptureVariantDetails | null>(null);
 
   // Update currentIndex whenever selectedVariantId or variants change
   useEffect(() => {
@@ -66,24 +67,35 @@ export function SculptureVariant({
       const newIndex = variants.findIndex(v => v.id === selectedVariantId);
       if (newIndex >= 0) {
         setCurrentIndex(newIndex);
+        setLocalVariant(variants[newIndex]);
       } else if (variants.length > 0) {
         // If the selected variant isn't found but we have variants, select the first one
         setCurrentIndex(0);
+        setLocalVariant(variants[0]);
         onVariantChange(variants[0].id);
       }
     } else if (variants && variants.length > 0 && !selectedVariantId) {
       // If no variant is selected but we have variants, select the first one
       setCurrentIndex(0);
+      setLocalVariant(variants[0]);
       onVariantChange(variants[0].id);
     }
   }, [variants, selectedVariantId, onVariantChange]);
 
-  const currentVariant = variants[currentIndex];
+  // Make sure to update localVariant when variants change (like after a DB update)
+  useEffect(() => {
+    if (variants && variants.length > currentIndex) {
+      setLocalVariant(variants[currentIndex]);
+    }
+  }, [variants, currentIndex]);
+
+  const currentVariant = localVariant || (variants && variants[currentIndex]);
   
   const handlePrevious = () => {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
+      setLocalVariant(variants[newIndex]);
       onVariantChange(variants[newIndex].id);
     }
   };
@@ -92,6 +104,7 @@ export function SculptureVariant({
     if (currentIndex < variants.length - 1) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
+      setLocalVariant(variants[newIndex]);
       onVariantChange(variants[newIndex].id);
     }
   };
@@ -116,6 +129,7 @@ export function SculptureVariant({
         if (newVariantIndex >= 0) {
           // If found, update the current index and notify parent
           setCurrentIndex(newVariantIndex);
+          setLocalVariant(variants[newVariantIndex]);
           onVariantChange(newVariantId);
         } else {
           // If not found yet (may still be loading), use the variant ID directly
@@ -167,6 +181,7 @@ export function SculptureVariant({
       // Ensure the variant exists (in case we deleted the last one)
       if (variants.length > 1) {
         setCurrentIndex(newIndex);
+        setLocalVariant(variants[newIndex]);
         onVariantChange(variants[newIndex].id);
       }
       
@@ -192,6 +207,15 @@ export function SculptureVariant({
       // Convert camelCase field name to snake_case for database
       const dbFieldName = field.replace(/([A-Z])/g, '_$1').toLowerCase();
       
+      // Update local state immediately for a responsive UI
+      setLocalVariant(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [field]: value
+        };
+      });
+      
       const { error } = await supabase
         .from('sculpture_variants')
         .update({ [dbFieldName]: value })
@@ -212,7 +236,17 @@ export function SculptureVariant({
         queryKey: ["sculpture-variants", currentVariant.sculptureId] 
       });
       
+      // Also invalidate the main sculpture query to ensure consistency
+      await queryClient.invalidateQueries({
+        queryKey: ["sculpture", currentVariant.sculptureId]
+      });
+      
       console.log(`Successfully updated variant ${field}`);
+      
+      toast({
+        title: "Success",
+        description: `Updated ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} successfully`,
+      });
     } catch (error) {
       console.error(`Error in handleAttributeChange for ${field}:`, error);
       toast({

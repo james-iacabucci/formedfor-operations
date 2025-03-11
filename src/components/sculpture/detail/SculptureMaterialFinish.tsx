@@ -35,27 +35,53 @@ export function SculptureMaterialFinish({
       return;
     }
 
-    // In direct edit mode, update the database
-    const fieldName = isBase ? 'base_material_id' : 'material_id';
-    const { error } = await supabase
-      .from("sculptures")
-      .update({ [fieldName]: newMaterialId })
-      .eq("id", sculptureId);
+    try {
+      let error;
+      const fieldName = isBase ? 'base_material_id' : 'material_id';
+      
+      if (isVariantForm && variantId) {
+        // Update the sculpture_variants table for variants
+        const { error: variantError } = await supabase
+          .from('sculpture_variants')
+          .update({ [fieldName]: newMaterialId })
+          .eq('id', variantId);
+        error = variantError;
+        
+        // Invalidate variant queries
+        await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      } else {
+        // Update the sculptures table
+        const { error: sculptureError } = await supabase
+          .from("sculptures")
+          .update({ [fieldName]: newMaterialId })
+          .eq("id", sculptureId);
+        error = sculptureError;
+      }
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update material",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Invalidate sculpture query to refresh data
+      queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      
+      toast({
+        title: "Success",
+        description: "Material updated successfully",
+      });
+    } catch (err) {
+      console.error('Exception updating material:', err);
       toast({
         title: "Error",
-        description: "Failed to update material",
+        description: "An unexpected error occurred while updating material",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-    toast({
-      title: "Success",
-      description: "Material updated successfully",
-    });
   };
 
   const selectedMaterial = materials?.find(m => m.id === materialId)?.name || '';

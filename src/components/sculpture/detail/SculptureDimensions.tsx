@@ -82,30 +82,56 @@ export function SculptureDimensions({
       return;
     }
     
-    // In direct edit mode, update the database
-    const { error } = await supabase
-      .from('sculptures')
-      .update(updatedDimensions)
-      .eq('id', sculptureId);
+    try {
+      let error;
+      
+      // In direct edit mode, update the database
+      if (isVariantForm && variantId) {
+        // Update the sculpture_variants table for variants
+        const { error: variantError } = await supabase
+          .from('sculpture_variants')
+          .update(updatedDimensions)
+          .eq('id', variantId);
+        error = variantError;
+        
+        // Invalidate variant queries
+        await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+      } else {
+        // Update the sculptures table
+        const { error: sculptureError } = await supabase
+          .from('sculptures')
+          .update(updatedDimensions)
+          .eq('id', sculptureId);
+        error = sculptureError;
+      }
 
-    if (error) {
-      console.error('Error updating dimensions:', error);
+      if (error) {
+        console.error('Error updating dimensions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update dimensions: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Invalidate sculpture query to refresh data
+      await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      
+      toast({
+        title: "Success",
+        description: "Dimensions updated successfully",
+      });
+    } catch (err) {
+      console.error('Exception updating dimensions:', err);
       toast({
         title: "Error",
-        description: "Failed to update dimensions: " + error.message,
+        description: "An unexpected error occurred while updating dimensions",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsEditingDimensions(false);
     }
-
-    await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
-    
-    toast({
-      title: "Success",
-      description: "Dimensions updated successfully",
-    });
-    
-    setIsEditingDimensions(false);
   };
 
   return (
