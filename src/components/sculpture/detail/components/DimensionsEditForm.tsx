@@ -1,0 +1,79 @@
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CheckIcon, XIcon } from "lucide-react";
+
+interface DimensionsEditFormProps {
+  dimensions: {
+    height: string;
+    width: string;
+    depth: string;
+  };
+  onDimensionChange: (field: keyof typeof dimensions, value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+export function DimensionsEditForm({
+  dimensions,
+  onDimensionChange,
+  onSave,
+  onCancel,
+}: DimensionsEditFormProps) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-2">
+          <Label htmlFor="height-input">Height (in)</Label>
+          <Input
+            id="height-input"
+            type="number"
+            value={dimensions.height}
+            onChange={(e) => onDimensionChange("height", e.target.value)}
+            placeholder="Height"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="width-input">Width (in)</Label>
+          <Input
+            id="width-input"
+            type="number"
+            value={dimensions.width}
+            onChange={(e) => onDimensionChange("width", e.target.value)}
+            placeholder="Width"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="depth-input">Depth (in)</Label>
+          <Input
+            id="depth-input"
+            type="number"
+            value={dimensions.depth}
+            onChange={(e) => onDimensionChange("depth", e.target.value)}
+            placeholder="Depth"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+        >
+          <XIcon className="h-4 w-4 mr-1" /> Cancel
+        </Button>
+        <Button
+          onClick={onSave}
+          size="sm"
+          variant="default"
+        >
+          <CheckIcon className="h-4 w-4 mr-1" /> Save
+        </Button>
+      </div>
+    </div>
+  );
+}
