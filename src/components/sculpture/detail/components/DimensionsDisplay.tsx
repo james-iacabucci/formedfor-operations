@@ -46,7 +46,7 @@ export function DimensionsDisplay({
     <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
       <div className="flex items-center gap-2">
         <span className="text-sm">
-          <span className="text-muted-foreground mr-1">HWD</span>
+          <span className="text-muted-foreground mr-1">HWD:</span>
           {unit === "inches" ? 
             `${displayValue.replace(" in", "")} in` : 
             formatDimensionString(height, width, depth, "centimeters")}

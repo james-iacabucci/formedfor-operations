@@ -42,7 +42,7 @@ export function WeightDisplay({
     <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
       <div className="flex items-center gap-2">
         <span className="text-sm">
-          <span className="text-muted-foreground mr-1">Weight</span>
+          <span className="text-muted-foreground mr-1">Weight:</span>
           {formatWeightString(weightKg, weightLbs, unit)} {unit}
         </span>
         <Tabs
