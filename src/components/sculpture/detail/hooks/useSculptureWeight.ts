@@ -99,6 +99,11 @@ export function useSculptureWeight({
           // Invalidate relevant queries
           await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
           
+          toast({
+            title: "Success",
+            description: "Weight updated successfully",
+          });
+          
           // Make sure we set editing mode to false
           setIsEditingWeight(false);
         } catch (err) {
@@ -153,6 +158,8 @@ export function useSculptureWeight({
 
       // Invalidate sculpture query to refresh data
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      // Force an immediate refetch to update the UI
+      await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       
       toast({
         title: "Success",

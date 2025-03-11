@@ -91,6 +91,12 @@ export function useSculptureDimensions({
           
           // Invalidate relevant queries
           await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculptureId] });
+          
+          toast({
+            title: "Success",
+            description: "Dimensions updated successfully",
+          });
+          
           setIsEditingDimensions(false);
         } catch (err) {
           console.error('Error updating variant dimensions:', err);
@@ -143,6 +149,7 @@ export function useSculptureDimensions({
 
       // Invalidate sculpture query to refresh data
       await queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      // Force an immediate refetch to update the UI
       await queryClient.refetchQueries({ queryKey: ["sculpture", sculptureId] });
       
       toast({
