@@ -11,27 +11,25 @@ export function useVariantQuotesQuery(variantId: string | null) {
       
       console.log("Getting quotes for variant:", variantId);
       
-      try {
-        const { data: variantQuotes, error: variantQuotesError } = await supabase
-          .from("fabrication_quotes")
-          .select("*")
-          .eq("variant_id", variantId)
-          .order("quote_date", { ascending: false });
+      const { data: variantQuotes, error: variantQuotesError } = await supabase
+        .from("fabrication_quotes")
+        .select("*")
+        .eq("variant_id", variantId)
+        .order("quote_date", { ascending: false });
 
-        if (variantQuotesError) throw variantQuotesError;
-
-        if (variantQuotes && variantQuotes.length > 0) {
-          console.log("Found quotes by variant_id:", variantQuotes.length);
-          return variantQuotes as FabricationQuote[];
-        }
-
-        // If no quotes found with variant_id, return empty array
-        console.log("No quotes found for variant:", variantId);
-        return [] as FabricationQuote[];
-      } catch (error) {
-        console.error("Error fetching quotes for variant:", error);
-        throw error;
+      if (variantQuotesError) {
+        console.error("Error fetching quotes for variant:", variantQuotesError);
+        throw variantQuotesError;
       }
+
+      if (variantQuotes && variantQuotes.length > 0) {
+        console.log("Found quotes by variant_id:", variantQuotes.length);
+        return variantQuotes as FabricationQuote[];
+      }
+
+      // If no quotes found with variant_id, return empty array
+      console.log("No quotes found for variant:", variantId);
+      return [] as FabricationQuote[];
     },
     enabled: !!variantId,
     staleTime: 30000, // Cache data for 30 seconds
