@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { VariantNavigation } from "./components/VariantNavigation";
 import { VariantDeleteDialog } from "./components/VariantDeleteDialog";
@@ -142,6 +141,7 @@ export function SculptureVariant({
         setShowDialog={setShowDeleteDialog}
         onArchive={handleArchive}
         onDelete={handleDelete}
+        isLoading={isDeletingVariant}
       />
     </>
   );

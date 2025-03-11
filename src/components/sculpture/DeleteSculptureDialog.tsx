@@ -1,20 +1,8 @@
-
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Sculpture } from "@/types/sculpture";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArchiveIcon, TrashIcon } from "lucide-react";
+import { Sculpture } from "@/types/sculpture";
+import { ArchiveDeleteDialog } from "@/components/common/ArchiveDeleteDialog";
 
 interface DeleteSculptureDialogProps {
   sculpture: Sculpture | null;
@@ -185,40 +173,14 @@ export function DeleteSculptureDialog({
   });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-black text-white border-none">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-2xl font-semibold">Manage Sculpture</AlertDialogTitle>
-          <AlertDialogDescription className="text-white/80 text-base">
-            You can either archive this sculpture or permanently delete it and all its variations.
-            Archived sculptures can be restored later.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="flex justify-center space-x-4 mt-6">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white min-w-[120px]"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => archiveMutation.mutate()}
-            className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
-          >
-            <ArchiveIcon className="h-4 w-4 mr-2" />
-            Archive
-          </Button>
-          <Button
-            onClick={() => deleteMutation.mutate()}
-            className="bg-red-800 hover:bg-red-700 text-white border-none min-w-[160px]"
-          >
-            <TrashIcon className="h-4 w-4 mr-2" />
-            Delete Forever
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ArchiveDeleteDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Manage Sculpture"
+      description="You can either archive this sculpture or permanently delete it and all its variations. Archived sculptures can be restored later."
+      onArchive={() => archiveMutation.mutate()}
+      onDelete={() => deleteMutation.mutate()}
+      isLoading={archiveMutation.isPending || deleteMutation.isPending}
+    />
   );
 }
