@@ -33,57 +33,47 @@ export function VariantNavigation({
 }: VariantNavigationProps) {
   return (
     <div className="flex justify-between items-center mb-4">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handlePrevious}
-            disabled={currentIndex === 0 || isCreatingVariant || isDeletingVariant}
-            className="h-8 w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <span className="text-sm font-medium">
-            Variant {currentIndex + 1} of {totalVariants}
-          </span>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleNext}
-            disabled={currentIndex === totalVariants - 1 || isCreatingVariant || isDeletingVariant}
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="flex items-center">
+        <h3 className="text-lg font-medium">
+          Variant {currentIndex + 1} of {totalVariants}
+        </h3>
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center space-x-2">
         <Button
           variant="outline"
-          size="sm"
-          onClick={handleAddVariant}
-          disabled={isCreatingVariant || isDeletingVariant || !onCreateVariant}
-          className="h-8"
+          size="icon"
+          onClick={handlePrevious}
+          disabled={currentIndex === 0 || isCreatingVariant || isDeletingVariant}
+          className="h-9 w-9"
         >
-          {isCreatingVariant ? (
-            <span className="flex items-center">
-              <span className="animate-spin mr-1">⏳</span> Adding...
-            </span>
-          ) : (
-            <>
-              <PlusIcon className="h-3.5 w-3.5 mr-1" />
-              Add Variant
-            </>
-          )}
+          <ChevronLeft className="h-4 w-4" />
         </Button>
         
         <Button
-          variant="destructive"
-          size="sm"
+          variant="outline"
+          size="icon"
+          onClick={handleNext}
+          disabled={currentIndex === totalVariants - 1 || isCreatingVariant || isDeletingVariant}
+          className="h-9 w-9"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleAddVariant}
+          disabled={isCreatingVariant || isDeletingVariant || !onCreateVariant}
+          className="h-9 w-9"
+          title="Add Variant"
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="icon"
           onClick={handleDeleteClick}
           disabled={
             isDeletingVariant || 
@@ -91,18 +81,10 @@ export function VariantNavigation({
             disableDelete || 
             (!onDeleteVariant && !onArchiveVariant)
           }
-          className="h-8"
+          className="h-9 w-9 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          title="Remove Variant"
         >
-          {isDeletingVariant ? (
-            <span className="flex items-center">
-              <span className="animate-spin mr-1">⏳</span> Deleting...
-            </span>
-          ) : (
-            <>
-              <Trash2Icon className="h-3.5 w-3.5 mr-1" />
-              Remove
-            </>
-          )}
+          <Trash2Icon className="h-4 w-4" />
         </Button>
       </div>
     </div>
