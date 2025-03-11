@@ -63,6 +63,8 @@ export function SculptureWeight({
           metricValue={formatMetricString(weightKg)}
           onEditClick={() => setIsEditingWeight(true)}
           isLoading={isSaving}
+          weightKg={weightKg}
+          weightLbs={weightLbs}
         />
       )}
     </div>

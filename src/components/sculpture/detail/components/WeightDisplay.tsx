@@ -1,27 +1,73 @@
 
 import { Button } from "@/components/ui/button";
 import { PencilIcon, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface WeightDisplayProps {
   displayValue: string;
   metricValue: string;
   onEditClick: () => void;
   isLoading?: boolean;
+  weightKg: number | null;
+  weightLbs: number | null;
 }
 
 export function WeightDisplay({ 
   displayValue, 
   metricValue, 
   onEditClick,
-  isLoading = false
+  isLoading = false,
+  weightKg,
+  weightLbs
 }: WeightDisplayProps) {
+  const [unit, setUnit] = useState<"lbs" | "kg">("lbs");
+  
+  const formatWeightString = (kg: number | null, lbs: number | null, unit: 'lbs' | 'kg') => {
+    if (!kg && !lbs) return "No weight set";
+    
+    const formatValue = (val: number | null) => {
+      if (val === null) return '-';
+      return val.toFixed(2);
+    };
+    
+    return unit === 'lbs' ? formatValue(lbs) : formatValue(kg);
+  };
+
+  const handleTabClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
-      <div>
-        <span className="text-sm">{displayValue}</span>
-        <span className="text-sm text-muted-foreground ml-1.5">
-          {metricValue && `(${metricValue})`}
+      <div className="flex items-center gap-2">
+        <span className="text-sm">
+          <span className="text-muted-foreground mr-1">Weight</span>
+          {formatWeightString(weightKg, weightLbs, unit)} {unit}
         </span>
+        <Tabs
+          value={unit}
+          onValueChange={(value) => setUnit(value as "lbs" | "kg")}
+          className="h-4 flex items-center"
+          onClick={handleTabClick}
+        >
+          <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
+            <TabsTrigger 
+              value="lbs" 
+              className="h-4 px-2 text-xs rounded-full text-black dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              lbs
+            </TabsTrigger>
+            <TabsTrigger 
+              value="kg" 
+              className="h-4 px-2 text-xs rounded-full text-black dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              kg
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
       <Button
         variant="ghost"
