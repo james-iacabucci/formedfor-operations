@@ -3,18 +3,29 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export function useQuoteChat(sculptureId: string) {
+export function useQuoteChat(sculptureId: string, variantId: string | null) {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [activeChatQuoteId, setActiveChatQuoteId] = useState<string | null>(null);
   const [chatThreadId, setChatThreadId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleOpenChat = useCallback(async (quoteId: string) => {
+  const handleOpenChat = useCallback(async () => {
+    if (!variantId) {
+      toast({
+        title: "Error",
+        description: "Please select a variant first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Check if there's an existing thread for this variant
       const { data: existingThreads, error: fetchError } = await supabase
         .from("chat_threads")
         .select("id")
-        .eq("fabrication_quote_id", quoteId)
+        .eq("sculpture_id", sculptureId)
+        .eq("variant_id", variantId)
+        .is("fabrication_quote_id", null)
         .limit(1);
 
       if (fetchError) throw fetchError;
@@ -24,11 +35,13 @@ export function useQuoteChat(sculptureId: string) {
       if (existingThreads && existingThreads.length > 0) {
         threadId = existingThreads[0].id;
       } else {
+        // Create a new thread for this variant
         const { data: newThread, error: createError } = await supabase
           .from("chat_threads")
           .insert({
-            fabrication_quote_id: quoteId,
             sculpture_id: sculptureId,
+            variant_id: variantId,
+            fabrication_quote_id: null,
             topic: 'general'
           })
           .select('id')
@@ -37,6 +50,7 @@ export function useQuoteChat(sculptureId: string) {
         if (createError) throw createError;
         threadId = newThread.id;
 
+        // Add the current user as a participant
         const { error: participantError } = await supabase
           .from("chat_thread_participants")
           .insert({
@@ -50,7 +64,6 @@ export function useQuoteChat(sculptureId: string) {
       }
 
       setChatThreadId(threadId);
-      setActiveChatQuoteId(quoteId);
       setIsChatOpen(true);
     } catch (error) {
       console.error("Error preparing chat:", error);
@@ -60,7 +73,7 @@ export function useQuoteChat(sculptureId: string) {
         variant: "destructive",
       });
     }
-  }, [sculptureId, toast]);
+  }, [sculptureId, variantId, toast]);
 
   return {
     isChatOpen,

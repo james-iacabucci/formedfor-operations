@@ -36,7 +36,7 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
     setIsChatOpen, 
     chatThreadId, 
     handleOpenChat 
-  } = useQuoteChat(sculptureId);
+  } = useQuoteChat(sculptureId, selectedVariantId);
 
   const handleQuoteSaved = useCallback(async () => {
     if (selectedVariantId) {

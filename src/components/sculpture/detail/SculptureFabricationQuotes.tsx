@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +48,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     setIsChatOpen,
     chatThreadId,
     handleSelectQuote,
-    handleDeleteQuote,
     handleStartEdit,
     handleAddQuote,
     handleOpenChat,
@@ -128,6 +128,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       <div className="space-y-6">
         <FabricationQuotesHeader
           onAddQuote={() => currentVariant && handleAddQuote(currentVariant)}
+          onOpenChat={handleOpenChat}
           disabled={!selectedVariantId}
         />
 
@@ -140,7 +141,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           handleSelectQuote={handleSelectQuote}
           handleStartEdit={handleStartEdit}
           handleDeleteQuote={handleDeleteQuote}
-          handleOpenChat={handleOpenChat}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}

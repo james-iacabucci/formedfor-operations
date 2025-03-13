@@ -31,6 +31,7 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
           .select("*, sculptures(*)")
           .eq("sculpture_id", threadId)
           .is("fabrication_quote_id", null)
+          .is("variant_id", null)
           .limit(1); // We now only need a single thread for sculpture chat
 
         if (error) {
