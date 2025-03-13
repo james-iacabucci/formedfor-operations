@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ import {
 } from "@/utils/fabrication-quote-calculations";
 import { FabricationQuotesHeader } from "./components/FabricationQuotesHeader";
 import { VariantQuotesSection } from "./components/VariantQuotesSection";
+import { useQuoteChat } from "./hooks/quotes/useQuoteChat";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -43,16 +45,20 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     initialQuote,
     isSheetOpen,
     setIsSheetOpen,
-    isChatOpen,
-    setIsChatOpen,
-    chatThreadId,
     handleSelectQuote,
     handleDeleteQuote,
     handleStartEdit,
     handleAddQuote,
-    handleOpenChat,
     handleQuoteSaved,
   } = useFabricationQuotes(sculptureId, selectedVariantId);
+
+  // Use quote chat at variant level
+  const {
+    isChatOpen,
+    setIsChatOpen,
+    chatThreadId,
+    handleOpenChat
+  } = useQuoteChat(sculptureId);
 
   useEffect(() => {
     if (variants && variants.length > 0 && !selectedVariantId) {
@@ -99,6 +105,12 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     return variants.find(v => v.id === selectedVariantId) || null;
   }, [variants, selectedVariantId]);
 
+  const handleOpenChatForVariant = useCallback(() => {
+    if (selectedVariantId) {
+      handleOpenChat(selectedVariantId);
+    }
+  }, [selectedVariantId, handleOpenChat]);
+
   if (isLoadingVariants) {
     return (
       <div className="space-y-6">
@@ -128,6 +140,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
       <div className="space-y-6">
         <FabricationQuotesHeader
           onAddQuote={() => currentVariant && handleAddQuote(currentVariant)}
+          onOpenChat={handleOpenChatForVariant}
           disabled={!selectedVariantId}
         />
 
@@ -140,7 +153,6 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           handleSelectQuote={handleSelectQuote}
           handleStartEdit={handleStartEdit}
           handleDeleteQuote={handleDeleteQuote}
-          handleOpenChat={handleOpenChat}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}

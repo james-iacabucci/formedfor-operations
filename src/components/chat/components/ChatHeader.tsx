@@ -22,51 +22,48 @@ export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteM
       if (!threadId) return;
       
       if (quoteMode) {
-        // For quote chat, get fabricator name + quote details
+        // For quote chat, get the variant details
         try {
-          // First, get the fabrication_quote_id from the thread
+          // Get the thread info which includes the variant_id
           const { data: threadData, error: threadError } = await supabase
             .from("chat_threads")
-            .select("fabrication_quote_id")
+            .select("variant_id, sculptures(ai_generated_name, manual_name)")
             .eq("id", threadId)
             .single();
           
           if (threadError) {
             console.error("Error fetching thread:", threadError);
-            setTitle("Fabrication Quote");
+            setTitle("Fabrication Quotes");
             return;
           }
           
-          if (!threadData?.fabrication_quote_id) {
-            setTitle("Fabrication Quote");
-            return;
+          // Get sculpture name
+          let sculptureName = "Untitled Sculpture";
+          if (threadData?.sculptures) {
+            sculptureName = threadData.sculptures.manual_name || 
+                           threadData.sculptures.ai_generated_name || 
+                           "Untitled Sculpture";
           }
           
-          // Then get the fabricator details using the quote_id
-          const { data: quoteData, error: quoteError } = await supabase
-            .from("fabrication_quotes")
-            .select(`
-              fabricator_id,
-              fabricator:value_lists!fabricator_id(name)
-            `)
-            .eq("id", threadData.fabrication_quote_id)
-            .single();
-          
-          if (quoteError) {
-            console.error("Error fetching quote:", quoteError);
-            setTitle("Fabrication Quote");
-            return;
-          }
-          
-          const fabricatorName = quoteData?.fabricator?.name;
-          if (fabricatorName) {
-            setTitle(`${fabricatorName} Quote`);
+          if (threadData?.variant_id) {
+            // Get the variant order index
+            const { data: variantData, error: variantError } = await supabase
+              .from("sculpture_variants")
+              .select("order_index")
+              .eq("id", threadData.variant_id)
+              .single();
+              
+            if (!variantError && variantData) {
+              setTitle(`${sculptureName} - Variant ${variantData.order_index + 1} Quotes`);
+            } else {
+              setTitle(`${sculptureName} - Fabrication Quotes`);
+            }
           } else {
-            setTitle("Fabrication Quote");
+            setTitle(`${sculptureName} - Fabrication Quotes`);
           }
         } catch (error) {
-          console.error("Error in fetching quote data:", error);
-          setTitle("Fabrication Quote");
+          console.error("Error in fetching variant data:", error);
+          setTitle("Fabrication Quotes");
         }
       } else {
         // For sculpture chat, get sculpture name

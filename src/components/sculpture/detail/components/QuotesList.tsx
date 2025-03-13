@@ -12,7 +12,6 @@ interface QuotesListProps {
   handleSelectQuote: (quoteId: string) => void;
   handleStartEdit: (quote: FabricationQuote) => void;
   handleDeleteQuote: (quoteId: string) => void;
-  handleOpenChat: (quoteId: string) => void;
   calculateTotal: (quote: FabricationQuote) => number;
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
@@ -27,7 +26,6 @@ export function QuotesList({
   handleSelectQuote,
   handleStartEdit,
   handleDeleteQuote,
-  handleOpenChat,
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
@@ -82,7 +80,7 @@ export function QuotesList({
   if (!isLoading && sortedQuotes.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No quotes available for this variant. Click "Add Quote" to create one.
+        No quotes available for this variant. Click "Request Quote" to create one.
       </div>
     );
   }
@@ -107,7 +105,6 @@ export function QuotesList({
           onSelect={() => handleSelectQuote(quote.id)}
           onEdit={() => handleStartEdit(quote)}
           onDelete={() => handleDeleteQuote(quote.id)}
-          onChat={() => handleOpenChat(quote.id)}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}
