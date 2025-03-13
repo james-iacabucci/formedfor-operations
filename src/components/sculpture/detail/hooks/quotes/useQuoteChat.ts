@@ -5,35 +5,31 @@ import { useToast } from "@/hooks/use-toast";
 
 export function useQuoteChat(sculptureId: string) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeChatQuoteId, setActiveChatQuoteId] = useState<string | null>(null);
   const [chatThreadId, setChatThreadId] = useState<string | null>(null);
-  const [activeVariantId, setActiveVariantId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleOpenChat = useCallback(async (variantId: string) => {
+  const handleOpenChat = useCallback(async (quoteId: string) => {
     try {
-      // Look for existing thread for this variant
       const { data: existingThreads, error: fetchError } = await supabase
         .from("chat_threads")
         .select("id")
-        .eq("sculpture_id", sculptureId)
-        .eq("variant_id", variantId)
+        .eq("fabrication_quote_id", quoteId)
         .limit(1);
 
       if (fetchError) throw fetchError;
 
       let threadId;
 
-      // If thread exists, use it; otherwise create a new one
       if (existingThreads && existingThreads.length > 0) {
         threadId = existingThreads[0].id;
       } else {
-        // Create new thread for the variant
         const { data: newThread, error: createError } = await supabase
           .from("chat_threads")
           .insert({
+            fabrication_quote_id: quoteId,
             sculpture_id: sculptureId,
-            variant_id: variantId,
-            topic: "fabrication" // Use fabrication topic
+            topic: 'general'
           })
           .select('id')
           .single();
@@ -41,7 +37,6 @@ export function useQuoteChat(sculptureId: string) {
         if (createError) throw createError;
         threadId = newThread.id;
 
-        // Add current user as participant
         const { error: participantError } = await supabase
           .from("chat_thread_participants")
           .insert({
@@ -55,7 +50,7 @@ export function useQuoteChat(sculptureId: string) {
       }
 
       setChatThreadId(threadId);
-      setActiveVariantId(variantId);
+      setActiveChatQuoteId(quoteId);
       setIsChatOpen(true);
     } catch (error) {
       console.error("Error preparing chat:", error);
@@ -71,7 +66,6 @@ export function useQuoteChat(sculptureId: string) {
     isChatOpen,
     setIsChatOpen,
     chatThreadId,
-    activeVariantId,
     handleOpenChat
   };
 }

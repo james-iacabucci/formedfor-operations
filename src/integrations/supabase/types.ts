@@ -100,7 +100,6 @@ export type Database = {
           sculpture_id: string
           topic: Database["public"]["Enums"]["chat_topic"] | null
           user_id: string | null
-          variant_id: string | null
         }
         Insert: {
           created_at?: string
@@ -109,7 +108,6 @@ export type Database = {
           sculpture_id: string
           topic?: Database["public"]["Enums"]["chat_topic"] | null
           user_id?: string | null
-          variant_id?: string | null
         }
         Update: {
           created_at?: string
@@ -118,7 +116,6 @@ export type Database = {
           sculpture_id?: string
           topic?: Database["public"]["Enums"]["chat_topic"] | null
           user_id?: string | null
-          variant_id?: string | null
         }
         Relationships: [
           {
@@ -133,13 +130,6 @@ export type Database = {
             columns: ["sculpture_id"]
             isOneToOne: false
             referencedRelation: "sculptures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_threads_variant_id_fkey"
-            columns: ["variant_id"]
-            isOneToOne: false
-            referencedRelation: "sculpture_variants"
             referencedColumns: ["id"]
           },
         ]
