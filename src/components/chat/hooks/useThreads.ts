@@ -14,7 +14,7 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
         console.log('Fetching thread for quote mode:', threadId);
         const { data, error } = await supabase
           .from("chat_threads")
-          .select("*, sculptures(*)")
+          .select("*, sculptures(*), variant_id")
           .eq("id", threadId);
 
         if (error) {

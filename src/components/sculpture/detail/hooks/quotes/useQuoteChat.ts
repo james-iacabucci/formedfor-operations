@@ -27,12 +27,13 @@ export function useQuoteChat(sculptureId: string) {
       if (existingThreads && existingThreads.length > 0) {
         threadId = existingThreads[0].id;
       } else {
+        // Create new thread for the variant
         const { data: newThread, error: createError } = await supabase
           .from("chat_threads")
           .insert({
             sculpture_id: sculptureId,
             variant_id: variantId,
-            topic: 'fabrication_quotes'
+            topic: "fabrication" // Use fabrication topic
           })
           .select('id')
           .single();

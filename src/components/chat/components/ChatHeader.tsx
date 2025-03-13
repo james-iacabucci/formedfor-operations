@@ -1,133 +1,82 @@
 
-import { useEffect, useState } from "react";
+import { ArrowLeftIcon, PaperclipIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Files, MessageSquare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SheetClose } from "@/components/ui/sheet";
+import { useCallback } from "react";
 
 interface ChatHeaderProps {
   threadId: string;
-  activeView: "chat" | "files";
-  onViewChange: (value: "chat" | "files") => void;
-  onClose?: () => void;
-  quoteMode?: boolean;
+  quoteMode: boolean;
+  onBackClick: () => void;
+  onFileUploadClick: () => void;
 }
 
-export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteMode = false }: ChatHeaderProps) {
-  const [title, setTitle] = useState<string>("");
+export const ChatHeader = ({ threadId, quoteMode, onBackClick, onFileUploadClick }: ChatHeaderProps) => {
+  const { data: threadDetails } = useQuery({
+    queryKey: ["thread-details", threadId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chat_threads")
+        .select(`
+          id,
+          topic,
+          sculpture_id,
+          fabrication_quote_id,
+          variant_id,
+          sculptures(id, ai_generated_name, image_url)
+        `)
+        .eq("id", threadId)
+        .single();
 
-  useEffect(() => {
-    const fetchTitle = async () => {
-      if (!threadId) return;
-      
-      if (quoteMode) {
-        // For quote chat, get the variant details
-        try {
-          // Get the thread info which includes the variant_id
-          const { data: threadData, error: threadError } = await supabase
-            .from("chat_threads")
-            .select("variant_id, sculptures(ai_generated_name, manual_name)")
-            .eq("id", threadId)
-            .single();
-          
-          if (threadError) {
-            console.error("Error fetching thread:", threadError);
-            setTitle("Fabrication Quotes");
-            return;
-          }
-          
-          // Get sculpture name
-          let sculptureName = "Untitled Sculpture";
-          if (threadData?.sculptures) {
-            sculptureName = threadData.sculptures.manual_name || 
-                           threadData.sculptures.ai_generated_name || 
-                           "Untitled Sculpture";
-          }
-          
-          if (threadData?.variant_id) {
-            // Get the variant order index
-            const { data: variantData, error: variantError } = await supabase
-              .from("sculpture_variants")
-              .select("order_index")
-              .eq("id", threadData.variant_id)
-              .single();
-              
-            if (!variantError && variantData) {
-              setTitle(`${sculptureName} - Variant ${variantData.order_index + 1} Quotes`);
-            } else {
-              setTitle(`${sculptureName} - Fabrication Quotes`);
-            }
-          } else {
-            setTitle(`${sculptureName} - Fabrication Quotes`);
-          }
-        } catch (error) {
-          console.error("Error in fetching variant data:", error);
-          setTitle("Fabrication Quotes");
-        }
-      } else {
-        // For sculpture chat, get sculpture name
-        const { data, error } = await supabase
-          .from("chat_threads")
-          .select("sculptures(ai_generated_name, manual_name)")
-          .eq("id", threadId)
-          .limit(1)
-          .single();
-        
-        if (error) {
-          console.error("Error fetching sculpture name:", error);
-          setTitle("Chat");
-          return;
-        }
-        
-        if (data?.sculptures) {
-          const name = data.sculptures.manual_name || data.sculptures.ai_generated_name || "Untitled Sculpture";
-          setTitle(name);
-        } else {
-          setTitle("Chat");
-        }
+      if (error) {
+        console.error("Error fetching thread details:", error);
+        return null;
       }
-    };
+      
+      return data;
+    },
+    enabled: !!threadId,
+  });
+
+  const renderTitle = useCallback(() => {
+    if (!threadDetails) return "Chat";
     
-    fetchTitle();
-  }, [threadId, quoteMode]);
+    // Get sculpture name if available
+    const sculptureName = threadDetails.sculptures?.ai_generated_name || "Untitled Sculpture";
+    
+    if (quoteMode) {
+      // Show different title format if it's for a variant
+      if (threadDetails.variant_id) {
+        return `Variant Fabrication - ${sculptureName}`;
+      }
+      
+      // Legacy format for fabrication quotes
+      return `Fabrication Quote - ${sculptureName}`;
+    }
+    
+    // For regular sculpture chat
+    return sculptureName;
+  }, [threadDetails, quoteMode]);
 
   return (
-    <div className="border-b shrink-0 py-3 px-4">
-      <div className="flex items-center justify-between">
-        <div className="font-medium truncate">{title}</div>
-        
-        <div className="flex items-center space-x-2">
-          <Tabs
-            value={activeView}
-            onValueChange={(value) => onViewChange(value as "chat" | "files")}
-            className="h-8"
-          >
-            <TabsList className="h-8 p-0.5 bg-muted/30">
-              <TabsTrigger 
-                value="chat" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-              >
-                <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                Chat
-              </TabsTrigger>
-              <TabsTrigger 
-                value="files" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-              >
-                <Files className="h-3.5 w-3.5 mr-1" />
-                Files
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <SheetClose asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </SheetClose>
+    <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background">
+      <div className="flex items-center space-x-4">
+        <Button variant="ghost" size="icon" onClick={onBackClick}>
+          <ArrowLeftIcon className="h-5 w-5" />
+        </Button>
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold">{renderTitle()}</h2>
+          {threadDetails?.topic && (
+            <span className="text-sm text-muted-foreground capitalize">
+              {threadDetails.topic}
+            </span>
+          )}
         </div>
       </div>
+      <Button variant="ghost" size="icon" onClick={onFileUploadClick}>
+        <PaperclipIcon className="h-5 w-5" />
+      </Button>
     </div>
   );
-}
+};
