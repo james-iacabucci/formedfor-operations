@@ -4,15 +4,25 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useCallback } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatHeaderProps {
   threadId: string;
   quoteMode: boolean;
   onBackClick: () => void;
   onFileUploadClick: () => void;
+  activeView: "chat" | "files";
+  onViewChange: (value: "chat" | "files") => void;
 }
 
-export const ChatHeader = ({ threadId, quoteMode, onBackClick, onFileUploadClick }: ChatHeaderProps) => {
+export const ChatHeader = ({ 
+  threadId, 
+  quoteMode, 
+  onBackClick, 
+  onFileUploadClick,
+  activeView,
+  onViewChange
+}: ChatHeaderProps) => {
   const { data: threadDetails } = useQuery({
     queryKey: ["thread-details", threadId],
     queryFn: async () => {
@@ -74,9 +84,21 @@ export const ChatHeader = ({ threadId, quoteMode, onBackClick, onFileUploadClick
           )}
         </div>
       </div>
-      <Button variant="ghost" size="icon" onClick={onFileUploadClick}>
-        <PaperclipIcon className="h-5 w-5" />
-      </Button>
+      
+      <div className="flex items-center space-x-2">
+        <Tabs value={activeView} onValueChange={onViewChange as (value: string) => void} className="mr-2">
+          <TabsList>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="files">Files</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        {activeView === "chat" && (
+          <Button variant="ghost" size="icon" onClick={onFileUploadClick}>
+            <PaperclipIcon className="h-5 w-5" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

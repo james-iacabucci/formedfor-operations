@@ -49,6 +49,8 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
             quoteMode={quoteMode}
             onBackClick={() => onOpenChange(false)}
             onFileUploadClick={() => setActiveView("files")}
+            activeView={activeView}
+            onViewChange={handleViewChange}
           />
           
           <ChatContent 
