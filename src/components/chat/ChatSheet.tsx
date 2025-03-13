@@ -46,10 +46,9 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
         <div className="flex flex-col h-full">
           <ChatHeader 
             threadId={currentThreadId || threadId} 
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            onClose={() => onOpenChange(false)}
             quoteMode={quoteMode}
+            onBackClick={() => onOpenChange(false)}
+            onFileUploadClick={() => setActiveView("files")}
           />
           
           <ChatContent 
