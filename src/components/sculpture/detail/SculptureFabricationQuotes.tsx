@@ -52,6 +52,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     handleAddQuote,
     handleOpenChat,
     handleQuoteSaved,
+    handleDeleteQuote,
   } = useFabricationQuotes(sculptureId, selectedVariantId);
 
   useEffect(() => {
