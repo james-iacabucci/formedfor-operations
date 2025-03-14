@@ -9,8 +9,6 @@ import {
 import { Settings2 } from "lucide-react";
 import { ManageTagsSection } from "./ManageTagsSection";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { AIContextSection } from "./AIContextSection";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
@@ -26,7 +24,6 @@ interface SettingsSheetProps {
 }
 
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
-  const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const { user } = useAuth();
   const { hasPermission } = useUserRoles();
@@ -54,16 +51,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       }, 300); // Wait for animation to complete
     }
   }, [open]);
-
-  const handleApply = async () => {
-    try {
-      toast.success("Settings saved successfully");
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error("Failed to save some settings. Please try again.");
-    }
-  };
 
   return (
     <Sheet 
@@ -93,7 +80,9 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
-              <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
+              <PermissionGuard requiredPermission="settings.manage_ai_context">
+                <AIContextSection />
+              </PermissionGuard>
               
               <PermissionGuard requiredPermission="settings.manage_tags">
                 <ManageTagsSection />
@@ -112,22 +101,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                 <RolePermissionsManagement />
               </PermissionGuard>
             </div>
-          </div>
-
-          <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              type="button"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleApply} 
-              type="button"
-            >
-              Apply Changes
-            </Button>
           </div>
         </div>
       </SheetContent>

@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppRole } from "@/types/roles";
-import { Save, Undo } from "lucide-react";
+import { Loader2, Save, Undo } from "lucide-react";
 
 interface RoleTabHeaderProps {
   activeTab: AppRole;
@@ -10,6 +10,7 @@ interface RoleTabHeaderProps {
   resetToDefaults: () => void;
   saveChanges: () => void;
   hasChanges: boolean;
+  isSaving?: boolean;
 }
 
 export function RoleTabHeader({
@@ -18,6 +19,7 @@ export function RoleTabHeader({
   resetToDefaults,
   saveChanges,
   hasChanges,
+  isSaving = false,
 }: RoleTabHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
@@ -26,6 +28,7 @@ export function RoleTabHeader({
           value="admin" 
           onClick={() => setActiveTab("admin")}
           className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          disabled={isSaving}
         >
           Admin
         </TabsTrigger>
@@ -33,6 +36,7 @@ export function RoleTabHeader({
           value="sales" 
           onClick={() => setActiveTab("sales")}
           className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          disabled={isSaving}
         >
           Sales
         </TabsTrigger>
@@ -40,6 +44,7 @@ export function RoleTabHeader({
           value="fabrication" 
           onClick={() => setActiveTab("fabrication")}
           className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          disabled={isSaving}
         >
           Fabrication
         </TabsTrigger>
@@ -47,6 +52,7 @@ export function RoleTabHeader({
           value="orders" 
           onClick={() => setActiveTab("orders")}
           className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          disabled={isSaving}
         >
           Orders
         </TabsTrigger>
@@ -58,17 +64,26 @@ export function RoleTabHeader({
           size="sm"
           onClick={resetToDefaults}
           className="gap-1"
+          disabled={isSaving}
         >
-          <Undo className="h-4 w-4" />
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Undo className="h-4 w-4" />
+          )}
           Reset
         </Button>
         <Button
           size="sm"
           onClick={saveChanges}
-          disabled={!hasChanges}
+          disabled={isSaving}
           className="gap-1"
         >
-          <Save className="h-4 w-4" />
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           Save Changes
         </Button>
       </div>

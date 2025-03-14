@@ -20,7 +20,7 @@ export function RolePermissionsManagement() {
   const {
     activeTab,
     setActiveTab,
-    hasChanges,
+    isSaving,
     togglePermission,
     saveChanges,
     resetToDefaults,
@@ -63,7 +63,8 @@ export function RolePermissionsManagement() {
             setActiveTab={setActiveTab}
             resetToDefaults={resetToDefaults}
             saveChanges={saveChanges}
-            hasChanges={hasChanges}
+            hasChanges={false}
+            isSaving={isSaving}
           />
           
           {Object.entries(permissionCategories).map(([category, permissions]) => (
@@ -74,6 +75,7 @@ export function RolePermissionsManagement() {
               activeTab={activeTab}
               getCurrentPermissions={getCurrentPermissions}
               togglePermission={togglePermission}
+              isSaving={isSaving}
             />
           ))}
         </Tabs>

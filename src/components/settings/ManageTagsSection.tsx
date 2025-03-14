@@ -3,33 +3,32 @@ import { useTagsManagement } from "../tags/useTagsManagement";
 import { useTagsState } from "./useTagsState";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
-import { DeletedTagItem } from "./DeletedTagItem";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CreateTagForm } from "../tags/CreateTagForm";
 import { TagsManagementHeader } from "./TagsManagementHeader";
+import { Input } from "@/components/ui/input";
 
 export function ManageTagsSection() {
   const { tags, createTagMutation } = useTagsManagement(undefined);
   const {
     editingTag,
     setEditingTag,
-    pendingDeletes,
-    pendingEdits,
+    savingTagId,
+    deletingTagId,
     startEditingTag,
     handleUpdateTag,
     handleDeleteTag,
-    undoDelete,
-    undoEdit,
-    applyChanges,
   } = useTagsState();
   const [isCreatingTag, setIsCreatingTag] = useState(false);
-
-  const visibleTags = tags?.filter(tag => !pendingDeletes.has(tag.id)) || [];
 
   const handleCreateTag = (name: string) => {
     createTagMutation.mutate(name);
     setIsCreatingTag(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTag(null);
   };
 
   return (
@@ -40,6 +39,7 @@ export function ManageTagsSection() {
         <CreateTagForm
           onCreateTag={handleCreateTag}
           onCancel={() => setIsCreatingTag(false)}
+          isSubmitting={createTagMutation.isPending}
         />
       )}
 
@@ -52,48 +52,79 @@ export function ManageTagsSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visibleTags.map((tag) => (
+            {tags?.map((tag) => (
               <TableRow key={tag.id} className="group">
                 <TableCell>
-                  {pendingEdits.has(tag.id) ? pendingEdits.get(tag.id)! : tag.name}
+                  {editingTag?.id === tag.id ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editingTag.name}
+                        onChange={(e) => setEditingTag({ ...editingTag, name: e.target.value })}
+                        className="h-8"
+                        autoFocus
+                        disabled={!!savingTagId}
+                      />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleUpdateTag}
+                          disabled={!!savingTagId}
+                          className="h-7 w-7 p-0 hover:bg-muted/50"
+                        >
+                          {savingTagId === tag.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <span className="text-xs">✓</span>
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCancelEdit}
+                          disabled={!!savingTagId}
+                          className="h-7 w-7 p-0 hover:bg-muted/50"
+                        >
+                          <span className="text-xs">✕</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    tag.name
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => startEditingTag(tag.id, tag.name)}
-                      className="h-7 w-7 p-0 hover:bg-muted/50"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteTag(tag.id)}
-                      className="h-7 w-7 p-0 hover:bg-muted/50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {editingTag?.id !== tag.id && (
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditingTag(tag.id, tag.name)}
+                        className="h-7 w-7 p-0 hover:bg-muted/50"
+                        disabled={!!savingTagId || !!deletingTagId}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTag(tag.id)}
+                        className="h-7 w-7 p-0 hover:bg-muted/50"
+                        disabled={!!savingTagId || !!deletingTagId}
+                      >
+                        {deletingTagId === tag.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-
-        {Array.from(pendingDeletes).map(tagId => {
-          const tag = tags?.find(t => t.id === tagId);
-          if (!tag) return null;
-          
-          return (
-            <DeletedTagItem
-              key={tag.id}
-              name={tag.name}
-              onUndo={() => undoDelete(tag.id)}
-            />
-          );
-        })}
       </div>
     </div>
   );

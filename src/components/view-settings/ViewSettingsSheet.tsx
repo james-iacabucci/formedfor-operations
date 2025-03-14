@@ -1,12 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
@@ -14,6 +13,7 @@ import { SortingSection } from "./components/SortingSection";
 import { HeightFilterSection } from "./components/HeightFilterSection";
 import { FilterOptionsSection } from "./components/FilterOptionsSection";
 import { ViewSettings } from "@/hooks/use-user-preferences";
+import { toast } from "sonner";
 
 interface ViewSettingsSheetProps {
   open: boolean;
@@ -33,7 +33,22 @@ export function ViewSettingsSheet({
     heightUnit: initialSettings.heightUnit || 'in',
     selectedStatusIds: initialSettings.selectedStatusIds || ['all']
   });
+  const [lastSavedSettings, setLastSavedSettings] = useState<ViewSettings>(settings);
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const { tags } = useTagsManagement(undefined);
+
+  // Set initial settings when sheet opens
+  useEffect(() => {
+    if (open) {
+      const initialState = { 
+        ...initialSettings,
+        heightUnit: initialSettings.heightUnit || 'in',
+        selectedStatusIds: initialSettings.selectedStatusIds || ['all']
+      };
+      setSettings(initialState);
+      setLastSavedSettings(initialState);
+    }
+  }, [open, initialSettings]);
 
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
@@ -48,67 +63,68 @@ export function ViewSettingsSheet({
     },
   });
 
-  const handleTagSelection = (tagId: string, checked: boolean) => {
-    if (tagId === 'all') {
-      setSettings(prev => ({
-        ...prev,
-        selectedTagIds: checked ? ['all'] : []
-      }));
-    } else {
-      setSettings(prev => {
-        const newSelectedTags = checked
-          ? [...prev.selectedTagIds.filter(id => id !== 'all'), tagId]
-          : prev.selectedTagIds.filter(id => id !== tagId);
-
-        if (newSelectedTags.length === 0) {
-          return {
-            ...prev,
-            selectedTagIds: ['all']
-          };
-        }
-        
-        return {
-          ...prev,
-          selectedTagIds: newSelectedTags
-        };
-      });
+  // Apply changes with debounce
+  const applyChangesWithDebounce = (newSettings: ViewSettings) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
     }
+    
+    setSettings(newSettings);
+    
+    // Only save if something has changed
+    if (JSON.stringify(newSettings) !== JSON.stringify(lastSavedSettings)) {
+      const timeout = setTimeout(() => {
+        onApply(newSettings);
+        setLastSavedSettings(newSettings);
+        toast.success("View settings updated");
+      }, 800); // 800ms debounce
+      
+      setDebounceTimeout(timeout);
+    }
+  };
+
+  const handleTagSelection = (tagId: string, checked: boolean) => {
+    const newSettings = { ...settings };
+    
+    if (tagId === 'all') {
+      newSettings.selectedTagIds = checked ? ['all'] : [];
+    } else {
+      newSettings.selectedTagIds = checked
+        ? [...newSettings.selectedTagIds.filter(id => id !== 'all'), tagId]
+        : newSettings.selectedTagIds.filter(id => id !== tagId);
+
+      if (newSettings.selectedTagIds.length === 0) {
+        newSettings.selectedTagIds = ['all'];
+      }
+    }
+    
+    applyChangesWithDebounce(newSettings);
   };
 
   const handleStatusSelection = (statusId: string, checked: boolean) => {
+    const newSettings = { ...settings };
+    
     if (statusId === 'all') {
-      setSettings(prev => ({
-        ...prev,
-        selectedStatusIds: checked ? ['all'] : []
-      }));
+      newSettings.selectedStatusIds = checked ? ['all'] : [];
     } else {
-      setSettings(prev => {
-        const newSelectedStatuses = checked
-          ? [...prev.selectedStatusIds.filter(id => id !== 'all'), statusId]
-          : prev.selectedStatusIds.filter(id => id !== statusId);
+      newSettings.selectedStatusIds = checked
+        ? [...newSettings.selectedStatusIds.filter(id => id !== 'all'), statusId]
+        : newSettings.selectedStatusIds.filter(id => id !== statusId);
 
-        if (newSelectedStatuses.length === 0) {
-          return {
-            ...prev,
-            selectedStatusIds: ['all']
-          };
-        }
-        
-        return {
-          ...prev,
-          selectedStatusIds: newSelectedStatuses
-        };
-      });
+      if (newSettings.selectedStatusIds.length === 0) {
+        newSettings.selectedStatusIds = ['all'];
+      }
     }
+    
+    applyChangesWithDebounce(newSettings);
   };
 
-  const handleApply = () => {
-    onApply(settings);
-    onOpenChange(false);
-  };
-
-  const handleCancel = () => {
-    setSettings({ ...initialSettings });
+  const handleClose = () => {
+    // Make sure any pending changes are applied
+    if (JSON.stringify(settings) !== JSON.stringify(lastSavedSettings)) {
+      onApply(settings);
+    }
+    
     onOpenChange(false);
   };
 
@@ -126,11 +142,11 @@ export function ViewSettingsSheet({
   ];
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent 
         className="sm:max-w-md flex flex-col"
         onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={() => handleCancel()}
+        onEscapeKeyDown={() => handleClose()}
       >
         <SheetHeader>
           <SheetTitle>View Settings</SheetTitle>
@@ -141,8 +157,14 @@ export function ViewSettingsSheet({
             <SortingSection
               sortBy={settings.sortBy}
               sortOrder={settings.sortOrder}
-              onSortByChange={(value) => setSettings(prev => ({ ...prev, sortBy: value }))}
-              onSortOrderChange={(value) => setSettings(prev => ({ ...prev, sortOrder: value }))}
+              onSortByChange={(value) => {
+                const newSettings = { ...settings, sortBy: value };
+                applyChangesWithDebounce(newSettings);
+              }}
+              onSortOrderChange={(value) => {
+                const newSettings = { ...settings, sortOrder: value };
+                applyChangesWithDebounce(newSettings);
+              }}
             />
 
             <FilterOptionsSection
@@ -163,20 +185,20 @@ export function ViewSettingsSheet({
               heightOperator={settings.heightOperator}
               heightValue={settings.heightValue}
               heightUnit={settings.heightUnit}
-              onHeightOperatorChange={(value) => setSettings(prev => ({ ...prev, heightOperator: value }))}
-              onHeightValueChange={(value) => setSettings(prev => ({ ...prev, heightValue: value }))}
-              onHeightUnitChange={(value) => setSettings(prev => ({ ...prev, heightUnit: value }))}
+              onHeightOperatorChange={(value) => {
+                const newSettings = { ...settings, heightOperator: value };
+                applyChangesWithDebounce(newSettings);
+              }}
+              onHeightValueChange={(value) => {
+                const newSettings = { ...settings, heightValue: value };
+                applyChangesWithDebounce(newSettings);
+              }}
+              onHeightUnitChange={(value) => {
+                const newSettings = { ...settings, heightUnit: value };
+                applyChangesWithDebounce(newSettings);
+              }}
             />
           </div>
-        </div>
-
-        <div className="border-t pt-4 flex justify-end gap-4">
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button onClick={handleApply}>
-            Apply
-          </Button>
         </div>
       </SheetContent>
     </Sheet>

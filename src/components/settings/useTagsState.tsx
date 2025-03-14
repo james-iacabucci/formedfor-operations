@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface TagEdit {
   id: string;
@@ -11,8 +12,8 @@ interface TagEdit {
 
 export function useTagsState() {
   const [editingTag, setEditingTag] = useState<TagEdit | null>(null);
-  const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
-  const [pendingEdits, setPendingEdits] = useState<Map<string, string>>(new Map());
+  const [savingTagId, setSavingTagId] = useState<string | null>(null);
+  const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const startEditingTag = (tagId: string, currentName: string) => {
@@ -22,91 +23,68 @@ export function useTagsState() {
   const handleUpdateTag = async () => {
     if (!editingTag) return;
     
-    console.log("Handling tag update:", editingTag);
-    
-    // Only add to pending edits if the name has actually changed
-    if (editingTag.name !== editingTag.originalName) {
-      console.log("Adding pending edit for tag:", editingTag.id, editingTag.name);
-      setPendingEdits(new Map(pendingEdits.set(editingTag.id, editingTag.name)));
+    // Only proceed with update if the name has changed
+    if (editingTag.name === editingTag.originalName) {
+      setEditingTag(null);
+      return;
     }
-    setEditingTag(null);
-  };
-
-  const handleDeleteTag = (tagId: string) => {
-    setPendingDeletes(new Set([...pendingDeletes, tagId]));
-  };
-
-  const undoDelete = (tagId: string) => {
-    const newDeletes = new Set(pendingDeletes);
-    newDeletes.delete(tagId);
-    setPendingDeletes(newDeletes);
-  };
-
-  const undoEdit = (tagId: string) => {
-    const newEdits = new Map(pendingEdits);
-    newEdits.delete(tagId);
-    setPendingEdits(newEdits);
-  };
-
-  const applyChanges = async () => {
+    
     try {
-      console.log("Applying changes - Deletes:", Array.from(pendingDeletes));
-      console.log("Applying changes - Edits:", Array.from(pendingEdits.entries()));
-
-      // Handle deletes
-      for (const tagId of pendingDeletes) {
-        console.log("Deleting tag:", tagId);
-        const { error } = await supabase
-          .from('tags')
-          .delete()
-          .eq('id', tagId);
-        
-        if (error) throw error;
-      }
-
-      // Handle edits
-      for (const [tagId, newName] of pendingEdits) {
-        console.log("Updating tag:", tagId, "with new name:", newName);
-        const { error } = await supabase
-          .from('tags')
-          .update({ name: newName })
-          .eq('id', tagId);
-        
-        if (error) throw error;
-      }
-
-      // Clear pending changes
-      setPendingDeletes(new Set());
-      setPendingEdits(new Map());
+      console.log("Updating tag:", editingTag.id, "with new name:", editingTag.name);
+      setSavingTagId(editingTag.id);
+      
+      const { error } = await supabase
+        .from('tags')
+        .update({ name: editingTag.name })
+        .eq('id', editingTag.id);
+      
+      if (error) throw error;
       
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['tags'] });
       await queryClient.invalidateQueries({ queryKey: ['sculptures'] });
       
-      toast({
-        title: "Success",
-        description: "Tag changes saved successfully.",
-      });
+      toast.success("Tag updated successfully");
     } catch (error) {
-      console.error('Error applying tag changes:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save tag changes. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error updating tag:', error);
+      toast.error("Failed to update tag. Please try again.");
+    } finally {
+      setSavingTagId(null);
+      setEditingTag(null);
+    }
+  };
+
+  const handleDeleteTag = async (tagId: string) => {
+    try {
+      setDeletingTagId(tagId);
+      
+      const { error } = await supabase
+        .from('tags')
+        .delete()
+        .eq('id', tagId);
+      
+      if (error) throw error;
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['tags'] });
+      await queryClient.invalidateQueries({ queryKey: ['sculptures'] });
+      
+      toast.success("Tag deleted successfully");
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      toast.error("Failed to delete tag. Please try again.");
+    } finally {
+      setDeletingTagId(null);
     }
   };
 
   return {
     editingTag,
     setEditingTag,
-    pendingDeletes,
-    pendingEdits,
+    savingTagId,
+    deletingTagId,
     startEditingTag,
     handleUpdateTag,
     handleDeleteTag,
-    undoDelete,
-    undoEdit,
-    applyChanges,
   };
 }

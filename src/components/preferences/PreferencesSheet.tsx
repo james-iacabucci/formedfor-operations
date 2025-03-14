@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -39,6 +40,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     avatar_url: ""
   });
   const [activeTab, setActiveTab] = useState("profile");
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (open && user) {
@@ -68,29 +70,55 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     }
   };
 
-  const handleSave = async () => {
+  const saveProfileField = async (field: keyof ProfileData, value: string | null) => {
     if (!user) return;
+    
+    // Don't save if value hasn't changed
+    if (profileData[field] === value) return;
+    
     setLoading(true);
     
     try {
+      const updateData = { [field]: value };
+      
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username: profileData.username,
-          phone: profileData.phone,
-          avatar_url: profileData.avatar_url
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) throw error;
-      toast.success("Profile updated successfully");
-      onOpenChange(false);
+      
+      // Update local state
+      setProfileData(prev => ({ ...prev, [field]: value }));
+      
+      toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error("Failed to update profile");
+      console.error(`Error updating ${field}:`, error);
+      toast.error(`Failed to update ${field}`);
+      
+      // Revert to previous value on error
+      setProfileData(prev => ({ ...prev }));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle debounced text field updates
+  const handleTextFieldChange = (field: keyof ProfileData, value: string) => {
+    // Update local state immediately for responsive feel
+    setProfileData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear any existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Set a new timeout to save after user stops typing
+    const timeout = setTimeout(() => {
+      saveProfileField(field, value);
+    }, 1000); // Wait 1 second after typing stops
+    
+    setTypingTimeout(timeout);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +126,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     if (!file || !user) return;
 
     try {
+      setLoading(true);
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
@@ -124,11 +153,15 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
 
       console.log('Generated public URL:', publicUrl);
 
-      setProfileData(prev => ({ ...prev, avatar_url: publicUrl }));
+      // Save the avatar URL to the profile
+      await saveProfileField('avatar_url', publicUrl);
+      
       toast.success("Profile picture uploaded successfully");
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error("Failed to upload image");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -171,23 +204,26 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                           previewUrl={profileData.avatar_url || null}
                           onFileChange={handleImageUpload}
                           className="hover:opacity-90 transition-opacity cursor-pointer"
+                          disabled={loading}
                         />
                       </div>
                       <div className="flex-1 space-y-3">
                         <Input
                           id="name"
                           value={profileData.username || ""}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                          onChange={(e) => handleTextFieldChange('username', e.target.value)}
                           placeholder="Your name"
                           className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                          disabled={loading}
                         />
                         <Input
                           id="phone"
                           value={profileData.phone || ""}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                          onChange={(e) => handleTextFieldChange('phone', e.target.value)}
                           placeholder="Your phone number"
                           type="tel"
                           className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                          disabled={loading}
                         />
                       </div>
                     </div>
@@ -216,24 +252,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
               </TabsContent>
             </div>
           </Tabs>
-
-          <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            {activeTab === "profile" && (
-              <Button 
-                onClick={handleSave}
-                disabled={loading}
-              >
-                Save Changes
-              </Button>
-            )}
-          </div>
         </div>
       </SheetContent>
     </Sheet>

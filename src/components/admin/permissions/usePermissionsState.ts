@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AppRole } from "@/types/roles";
 import { DEFAULT_ROLE_PERMISSIONS, PermissionAction } from "@/types/permissions";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePermissionsState() {
   const [activeTab, setActiveTab] = useState<AppRole>("admin");
@@ -21,15 +22,15 @@ export function usePermissionsState() {
     new Set(DEFAULT_ROLE_PERMISSIONS.orders)
   );
   
-  // Track if we have unsaved changes
-  const [hasChanges, setHasChanges] = useState(false);
+  // Add loading state
+  const [isSaving, setIsSaving] = useState(false);
   
-  // Handle permission toggle
-  const togglePermission = (permission: PermissionAction) => {
+  // Handle permission toggle with immediate save
+  const togglePermission = async (role: AppRole, permission: string) => {
     let permissionSet: Set<PermissionAction>;
     let setPermissionSet: React.Dispatch<React.SetStateAction<Set<PermissionAction>>>;
     
-    switch (activeTab) {
+    switch (role) {
       case "admin":
         permissionSet = adminPermissions;
         setPermissionSet = setAdminPermissions;
@@ -51,37 +52,83 @@ export function usePermissionsState() {
     }
     
     const newPermissions = new Set(permissionSet);
-    if (newPermissions.has(permission)) {
-      newPermissions.delete(permission);
+    if (newPermissions.has(permission as PermissionAction)) {
+      newPermissions.delete(permission as PermissionAction);
     } else {
-      newPermissions.add(permission);
+      newPermissions.add(permission as PermissionAction);
     }
     
+    // Update state immediately for responsive UI
     setPermissionSet(newPermissions);
-    setHasChanges(true);
+    
+    // Save changes to the database
+    try {
+      setIsSaving(true);
+      
+      // In a real implementation, we would save to the database here
+      // For now, we'll just simulate a save with a timeout
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // In the future, this would be an actual save operation:
+      // await supabase.from('role_permissions').upsert([...])
+      
+      // Show success toast
+      toast.success(`Permission updated for ${role} role`);
+    } catch (error) {
+      console.error("Error saving permission change:", error);
+      toast.error(`Failed to update permission for ${role} role`);
+      
+      // Revert the state change on error
+      setPermissionSet(permissionSet);
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  // Handle saving changes
+  // Save multiple changes at once
   const saveChanges = async () => {
-    // In the future, this would save to the database
-    // For now, we'll just show a success message
-    toast.success("Permission changes saved");
-    setHasChanges(false);
+    try {
+      setIsSaving(true);
+      
+      // In a real implementation, we would save to the database here
+      // For the moment, we'll use a simulated save with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success("Permission changes saved");
+    } catch (error) {
+      console.error("Error saving permissions:", error);
+      toast.error("Failed to save permission changes");
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  // Handle resetting to defaults
-  const resetToDefaults = () => {
-    setAdminPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.admin));
-    setSalesPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.sales));
-    setFabricationPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.fabrication));
-    setOrdersPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.orders));
-    setHasChanges(true);
-    toast.info("Reset to default permissions");
+  // Reset to defaults with immediate save
+  const resetToDefaults = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Update state immediately
+      setAdminPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.admin));
+      setSalesPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.sales));
+      setFabricationPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.fabrication));
+      setOrdersPermissions(new Set(DEFAULT_ROLE_PERMISSIONS.orders));
+      
+      // Simulated save
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success("Reset to default permissions");
+    } catch (error) {
+      console.error("Error resetting permissions:", error);
+      toast.error("Failed to reset permissions");
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   // Get current permission set based on active tab
-  const getCurrentPermissions = () => {
-    switch (activeTab) {
+  const getCurrentPermissions = (role: AppRole) => {
+    switch (role) {
       case "admin":
         return adminPermissions;
       case "sales":
@@ -98,7 +145,7 @@ export function usePermissionsState() {
   return {
     activeTab,
     setActiveTab,
-    hasChanges,
+    isSaving,
     togglePermission,
     saveChanges,
     resetToDefaults,
