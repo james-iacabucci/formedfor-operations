@@ -2,10 +2,10 @@
 export interface NewQuote {
   sculpture_id: string;
   fabricator_id: string | undefined;
-  fabrication_cost: number;
-  shipping_cost: number;
-  customs_cost: number;
-  other_cost: number;
+  fabrication_cost: number | null;
+  shipping_cost: number | null;
+  customs_cost: number | null;
+  other_cost: number | null;
   markup: number;
   notes: string | null;
   quote_date: string;

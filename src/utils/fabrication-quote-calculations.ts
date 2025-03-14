@@ -1,24 +1,24 @@
 
 export function calculateTotal(quote: { 
-  fabrication_cost: number; 
-  shipping_cost: number; 
-  customs_cost: number; 
-  other_cost: number; 
+  fabrication_cost: number | null; 
+  shipping_cost: number | null; 
+  customs_cost: number | null; 
+  other_cost: number | null; 
 }) {
   return (
-    (quote.fabrication_cost || 0) +
-    (quote.shipping_cost || 0) +
-    (quote.customs_cost || 0) +
-    (quote.other_cost || 0)
+    Number(quote.fabrication_cost || 0) +
+    Number(quote.shipping_cost || 0) +
+    Number(quote.customs_cost || 0) +
+    Number(quote.other_cost || 0)
   );
 }
 
 export function calculateTradePrice(quote: { 
   markup: number;
-  fabrication_cost: number;
-  shipping_cost: number;
-  customs_cost: number;
-  other_cost: number;
+  fabrication_cost: number | null;
+  shipping_cost: number | null;
+  customs_cost: number | null;
+  other_cost: number | null;
 }) {
   return calculateTotal(quote) * (quote.markup || 4);
 }

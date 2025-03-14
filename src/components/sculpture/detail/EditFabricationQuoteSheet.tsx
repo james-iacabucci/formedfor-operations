@@ -126,7 +126,7 @@ export function EditFabricationQuoteSheet({
                 className="gap-1"
               >
                 <SendIcon className="h-4 w-4" />
-                {isSubmitting ? "Submitting..." : "Submit for Approval"}
+                {isSubmitting ? "Submitting..." : "Submit Quote"}
               </Button>
             )}
           </div>
@@ -140,10 +140,10 @@ function createDefaultQuote(sculptureId: string): NewQuote {
   return {
     sculpture_id: sculptureId,
     fabricator_id: undefined,
-    fabrication_cost: 500,
-    shipping_cost: 0,
-    customs_cost: 0,
-    other_cost: 0,
+    fabrication_cost: null,
+    shipping_cost: null,
+    customs_cost: null,
+    other_cost: null,
     markup: 4,
     notes: "",
     quote_date: new Date().toISOString(),

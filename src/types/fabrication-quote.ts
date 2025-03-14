@@ -3,10 +3,10 @@ export interface FabricationQuote {
   id: string;
   sculpture_id: string;
   fabricator_id: string;
-  fabrication_cost: number;
-  shipping_cost: number;
-  customs_cost: number;
-  other_cost: number;
+  fabrication_cost: number | null;
+  shipping_cost: number | null;
+  customs_cost: number | null;
+  other_cost: number | null;
   markup: number;
   quote_date: string;
   notes: string | null;
