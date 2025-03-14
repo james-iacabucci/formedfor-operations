@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { DeleteQuoteDialog } from "./components/DeleteQuoteDialog";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
@@ -45,6 +45,7 @@ export function FabricationQuoteCard({
 }: FabricationQuoteCardProps) {
   // We'll keep the state but make it always expanded by default
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Helper to display dash for null/undefined/0 values
   const displayValue = (value: number | null | undefined) => {
@@ -72,6 +73,18 @@ export function FabricationQuoteCard({
       default: return 'outline';
     }
   };
+
+  // Handle confirmation of delete
+  const handleConfirmDelete = () => {
+    onDelete();
+    setIsDeleteDialogOpen(false);
+  };
+
+  // Check if the delete button should be shown
+  const showDeleteButton = quote.status === 'requested' || quote.status === 'approved';
+  
+  // Check if markup and pricing details should be hidden
+  const hidePricingDetails = quote.status === 'requested';
 
   return (
     <div 
@@ -152,11 +165,24 @@ export function FabricationQuoteCard({
             </Button>
           )}
           
+          {/* Delete button for requested or approved quotes */}
+          {showDeleteButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-destructive hover:text-destructive"
+              title="Delete quote"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+          )}
+          
           {isEditing && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={onDelete}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="text-destructive hover:text-destructive"
               title="Delete quote"
             >
@@ -192,21 +218,23 @@ export function FabricationQuoteCard({
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-4 text-sm mt-4">
-            <div>
-              <p className="font-medium text-muted-foreground">Markup</p>
-              <p>{quote.markup ? `${quote.markup}x` : "-"}</p>
+          {!hidePricingDetails && (
+            <div className="grid grid-cols-5 gap-4 text-sm mt-4">
+              <div>
+                <p className="font-medium text-muted-foreground">Markup</p>
+                <p>{quote.markup ? `${quote.markup}x` : "-"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-muted-foreground">Trade Price</p>
+                <p>{safeCalculate(calculateTradePrice, quote)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-muted-foreground">Retail Price</p>
+                <p>{safeCalculate(calculateRetailPrice, calculateTradePrice(quote))}</p>
+              </div>
+              <div className="col-span-2" />
             </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Trade Price</p>
-              <p>{safeCalculate(calculateTradePrice, quote)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-muted-foreground">Retail Price</p>
-              <p>{safeCalculate(calculateRetailPrice, calculateTradePrice(quote))}</p>
-            </div>
-            <div className="col-span-2" />
-          </div>
+          )}
         </CollapsibleContent>
       </Collapsible>
 
@@ -223,6 +251,13 @@ export function FabricationQuoteCard({
           <span>Selected Quote</span>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <DeleteQuoteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirmDelete={handleConfirmDelete}
+      />
     </div>
   );
 }
