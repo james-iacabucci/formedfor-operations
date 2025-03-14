@@ -787,6 +787,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       value_lists: {
         Row: {
           code: string | null
@@ -823,6 +844,19 @@ export type Database = {
         }
         Returns: number
       }
+      get_user_roles: {
+        Args: {
+          _user_id: string
+        }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       update_message_reactions: {
         Args: {
           message_id: string
@@ -841,6 +875,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "sales" | "fabrication" | "orders"
       chat_topic: "pricing" | "fabrication" | "operations" | "general"
       value_list_type:
         | "finish"

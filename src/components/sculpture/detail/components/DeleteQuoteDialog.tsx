@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2Icon } from "lucide-react";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface DeleteQuoteDialogProps {
   open: boolean;
@@ -23,6 +24,9 @@ export function DeleteQuoteDialog({
   onConfirmDelete,
   isLoading = false,
 }: DeleteQuoteDialogProps) {
+  const { hasRole } = useUserRoles();
+  const canDelete = hasRole('admin') || hasRole('fabrication');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -43,7 +47,7 @@ export function DeleteQuoteDialog({
           <Button
             variant="destructive"
             onClick={onConfirmDelete}
-            disabled={isLoading}
+            disabled={isLoading || !canDelete}
             className="gap-1"
           >
             <Trash2Icon className="h-4 w-4" />

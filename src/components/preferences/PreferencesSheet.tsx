@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -14,6 +15,9 @@ import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppearanceSection } from "./AppearanceSection";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { RoleManagement } from "../admin/RoleManagement";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -28,12 +32,14 @@ interface ProfileData {
 
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
+  const { isAdmin } = useUserRoles();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
     phone: "",
     avatar_url: ""
   });
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     if (open && user) {
@@ -142,43 +148,63 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
             </SheetDescription>
           </SheetHeader>
           
-          <div className="flex-1 overflow-y-auto px-6">
-            <div className="py-6 space-y-8">
-              <AppearanceSection />
-              
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Profile</h3>
-                <div className="rounded-xl border border-muted p-6">
-                  <div className="flex gap-6">
-                    <div className="h-[108px] w-[108px]">
-                      <ImageUpload 
-                        previewUrl={profileData.avatar_url || null}
-                        onFileChange={handleImageUpload}
-                        className="hover:opacity-90 transition-opacity cursor-pointer"
-                      />
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <Input
-                        id="name"
-                        value={profileData.username || ""}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                        placeholder="Your name"
-                        className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
-                      />
-                      <Input
-                        id="phone"
-                        value={profileData.phone || ""}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="Your phone number"
-                        type="tel"
-                        className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
-                      />
+          <Tabs 
+            value={activeTab} 
+            onValueChange={setActiveTab}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            <TabsList className="px-6 pt-2 justify-start border-b rounded-none">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="appearance">Appearance</TabsTrigger>
+              {isAdmin && <TabsTrigger value="roles">User Roles</TabsTrigger>}
+            </TabsList>
+            
+            <div className="flex-1 overflow-y-auto px-6">
+              <TabsContent value="profile" className="mt-0 py-6 h-full">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Profile</h3>
+                  <div className="rounded-xl border border-muted p-6">
+                    <div className="flex gap-6">
+                      <div className="h-[108px] w-[108px]">
+                        <ImageUpload 
+                          previewUrl={profileData.avatar_url || null}
+                          onFileChange={handleImageUpload}
+                          className="hover:opacity-90 transition-opacity cursor-pointer"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <Input
+                          id="name"
+                          value={profileData.username || ""}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                          placeholder="Your name"
+                          className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                        />
+                        <Input
+                          id="phone"
+                          value={profileData.phone || ""}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Your phone number"
+                          type="tel"
+                          className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </TabsContent>
+              
+              <TabsContent value="appearance" className="mt-0 py-6 h-full">
+                <AppearanceSection />
+              </TabsContent>
+              
+              {isAdmin && (
+                <TabsContent value="roles" className="mt-0 py-6 h-full">
+                  <RoleManagement />
+                </TabsContent>
+              )}
             </div>
-          </div>
+          </Tabs>
 
           <div className="sticky bottom-0 border-t bg-background px-6 py-4 flex justify-end gap-2">
             <Button
@@ -188,12 +214,14 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-            >
-              Save Changes
-            </Button>
+            {activeTab === "profile" && (
+              <Button 
+                onClick={handleSave}
+                disabled={loading}
+              >
+                Save Changes
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>

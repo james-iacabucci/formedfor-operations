@@ -2,6 +2,7 @@
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface PricingDetailsFormProps {
   newQuote: NewQuote;
@@ -20,6 +21,8 @@ export function PricingDetailsForm({
   calculateRetailPrice,
   formatNumber
 }: PricingDetailsFormProps) {
+  const { hasRole } = useUserRoles();
+  
   const handleChange = (field: keyof NewQuote, value: any) => {
     onQuoteChange({
       ...newQuote,
@@ -33,7 +36,10 @@ export function PricingDetailsForm({
   const retailPrice = calculateRetailPrice(tradePrice);
 
   // Check if pricing details should be hidden
-  const hidePricingDetails = newQuote.status === 'requested';
+  // Hide pricing details if it's a requested quote OR if user doesn't have appropriate roles
+  const hidePricingDetails = 
+    newQuote.status === 'requested' || 
+    !(hasRole('admin') || hasRole('sales') || hasRole('fabrication'));
 
   return (
     <div className="space-y-4">
