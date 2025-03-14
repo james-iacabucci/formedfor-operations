@@ -8,6 +8,7 @@ import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -26,9 +27,10 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  const { hasPermission } = useUserRoles();
 
   const handleRegenerate = useCallback(async () => {
-    if (isRegenerating(sculpture.id)) return;
+    if (isRegenerating(sculpture.id) || !hasPermission('sculpture.regenerate')) return;
     
     try {
       await regenerateImage(sculpture.id);
@@ -45,7 +47,7 @@ export function SculptureDetailContent({
         variant: "destructive",
       });
     }
-  }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating]);
+  }, [sculpture.id, regenerateImage, queryClient, toast, isRegenerating, hasPermission]);
 
   const handleGenerateVariant = async (options: {
     creativity: "none" | "small" | "medium" | "large";
@@ -54,6 +56,22 @@ export function SculptureDetailContent({
     regenerateImage: boolean;
     regenerateMetadata: boolean;
   }) => {
+    // Check permissions based on whether we're creating or updating
+    const hasPermission = options.updateExisting 
+      ? hasPermission('sculpture.edit')
+      : hasPermission('variant.create');
+      
+    if (!hasPermission) {
+      toast({
+        title: "Permission Denied",
+        description: options.updateExisting 
+          ? "You don't have permission to update sculptures." 
+          : "You don't have permission to create variants.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await generateVariant(sculpture.id, sculpture.created_by, sculpture.prompt, options);
       await queryClient.invalidateQueries({ queryKey: ["sculptures"] });

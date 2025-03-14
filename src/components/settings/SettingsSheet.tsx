@@ -15,7 +15,10 @@ import { AIContextSection } from "./AIContextSection";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
 import { RoleManagement } from "@/components/admin/RoleManagement";
+import { RolePermissionsManagement } from "@/components/admin/RolePermissionsManagement";
 import { useAuth } from "@/components/AuthProvider";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -26,6 +29,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const { user } = useAuth();
+  const { hasPermission } = useUserRoles();
   const isJames = user?.email === "james@formedfor.com";
 
   // Reset state when sheet closes
@@ -90,10 +94,23 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
               <AIContextSection aiContext={aiContext} setAiContext={setAiContext} />
-              <ManageTagsSection />
-              <ValueListsSection />
-              <ProductLinesSection />
-              {isJames && <RoleManagement />}
+              
+              <PermissionGuard requiredPermission="settings.manage_tags">
+                <ManageTagsSection />
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="settings.manage_value_lists">
+                <ValueListsSection />
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="settings.manage_product_lines">
+                <ProductLinesSection />
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="settings.manage_roles">
+                <RoleManagement />
+                <RolePermissionsManagement />
+              </PermissionGuard>
             </div>
           </div>
 

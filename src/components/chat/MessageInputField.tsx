@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Loader2 } from "lucide-react";
 import { FileUpload } from "./FileUpload";
 import { UploadingFile } from "./types";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface MessageInputFieldProps {
   message: string;
@@ -17,6 +18,7 @@ interface MessageInputFieldProps {
   uploadingFiles: UploadingFile[];
   onFilesSelected: (files: UploadingFile[]) => void;
   onSubmit: (e: React.FormEvent) => void;
+  isQuoteChat?: boolean;
 }
 
 export function MessageInputField({
@@ -29,9 +31,29 @@ export function MessageInputField({
   disabled,
   uploadingFiles,
   onFilesSelected,
-  onSubmit
+  onSubmit,
+  isQuoteChat = false
 }: MessageInputFieldProps) {
+  const { hasPermission } = useUserRoles();
   const hasContent = message.trim() || uploadingFiles.length > 0;
+  
+  // Check permissions based on chat type
+  const canSendMessages = isQuoteChat 
+    ? hasPermission('quote_chat.send_messages')
+    : hasPermission('sculpture_chat.send_messages');
+    
+  const canUploadFiles = isQuoteChat
+    ? hasPermission('quote_chat.upload_files')
+    : hasPermission('sculpture_chat.upload_files');
+  
+  // If user doesn't have permission to send messages, disable the input
+  if (!canSendMessages) {
+    return (
+      <div className="p-3 text-center text-sm text-muted-foreground bg-muted/20">
+        You don't have permission to send messages in this chat.
+      </div>
+    );
+  }
   
   return (
     <div className="relative">
@@ -46,10 +68,12 @@ export function MessageInputField({
         disabled={isSending || disabled}
       />
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-        <FileUpload 
-          disabled={isSending || disabled}
-          onFilesSelected={onFilesSelected}
-        />
+        {canUploadFiles && (
+          <FileUpload 
+            disabled={isSending || disabled}
+            onFilesSelected={onFilesSelected}
+          />
+        )}
         <Button
           type="submit"
           size="icon"

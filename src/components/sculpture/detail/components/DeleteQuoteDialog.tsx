@@ -24,8 +24,8 @@ export function DeleteQuoteDialog({
   onConfirmDelete,
   isLoading = false,
 }: DeleteQuoteDialogProps) {
-  const { hasRole } = useUserRoles();
-  const canDelete = hasRole('admin') || hasRole('fabrication');
+  const { hasPermission } = useUserRoles();
+  const canDelete = hasPermission('quote.delete');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

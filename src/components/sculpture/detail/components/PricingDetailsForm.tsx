@@ -21,7 +21,7 @@ export function PricingDetailsForm({
   calculateRetailPrice,
   formatNumber
 }: PricingDetailsFormProps) {
-  const { hasRole } = useUserRoles();
+  const { hasPermission } = useUserRoles();
   
   const handleChange = (field: keyof NewQuote, value: any) => {
     onQuoteChange({
@@ -36,10 +36,10 @@ export function PricingDetailsForm({
   const retailPrice = calculateRetailPrice(tradePrice);
 
   // Check if pricing details should be hidden
-  // Hide pricing details if it's a requested quote OR if user doesn't have appropriate roles
+  // Hide pricing details if it's a requested quote OR if user doesn't have appropriate permissions
   const hidePricingDetails = 
     newQuote.status === 'requested' || 
-    !(hasRole('admin') || hasRole('sales') || hasRole('fabrication'));
+    !hasPermission('quote.view');
 
   return (
     <div className="space-y-4">

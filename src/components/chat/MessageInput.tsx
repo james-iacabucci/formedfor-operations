@@ -14,6 +14,7 @@ interface MessageInputProps {
   uploadingFiles: UploadingFile[];
   onUploadComplete: (fileIds: string[]) => void;
   disabled?: boolean;
+  isQuoteChat?: boolean;
 }
 
 export function MessageInput({ 
@@ -22,7 +23,8 @@ export function MessageInput({
   onUploadingFiles,
   uploadingFiles,
   onUploadComplete,
-  disabled = false
+  disabled = false,
+  isQuoteChat = false
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const { textareaRef, adjustHeight } = useTextareaAutosize(message);
@@ -91,6 +93,7 @@ export function MessageInput({
         uploadingFiles={uploadingFiles}
         onFilesSelected={handleFilesSelected}
         onSubmit={handleFormSubmit}
+        isQuoteChat={isQuoteChat}
       />
       
       <PendingFiles 

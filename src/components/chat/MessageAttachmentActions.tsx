@@ -7,20 +7,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface MessageAttachmentActionsProps {
   onDownload: (e: React.MouseEvent) => void;
   onDelete?: () => void;
   onAttachToSculpture?: (category: "renderings" | "models" | "dimensions" | "other") => void;
   canDelete?: boolean;
+  isQuoteChat?: boolean;
 }
 
 export function MessageAttachmentActions({
   onDownload,
   onDelete,
   onAttachToSculpture,
-  canDelete
+  canDelete,
+  isQuoteChat = false
 }: MessageAttachmentActionsProps) {
+  const { hasPermission } = useUserRoles();
+  
+  // Determine if the user has permission to delete based on the chat type
+  const hasDeletePermission = isQuoteChat
+    ? hasPermission('quote_chat.send_messages')
+    : hasPermission('sculpture_chat.send_messages');
+  
+  // Only allow deletion if both the user has permission and canDelete flag is true
+  const allowDelete = hasDeletePermission && canDelete;
+
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
       <div className="flex gap-2">
@@ -36,7 +49,7 @@ export function MessageAttachmentActions({
           <Download className="h-4 w-4" />
         </Button>
 
-        {canDelete && onDelete && (
+        {allowDelete && onDelete && (
           <Button
             size="icon"
             variant="ghost"
@@ -50,7 +63,7 @@ export function MessageAttachmentActions({
           </Button>
         )}
 
-        {onAttachToSculpture && (
+        {onAttachToSculpture && hasPermission('sculpture.edit') && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

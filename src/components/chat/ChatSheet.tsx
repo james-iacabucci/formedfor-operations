@@ -6,6 +6,7 @@ import { useThreads } from "./hooks/useThreads";
 import { ChatHeader } from "./components/ChatHeader";
 import { ChatContent } from "./components/ChatContent";
 import { MessageInput } from "./MessageInput";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface ChatSheetProps {
   open: boolean;
@@ -19,6 +20,12 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
+  const { hasPermission } = useUserRoles();
+
+  // Check permissions based on chat type
+  const canViewChat = quoteMode 
+    ? hasPermission('quote_chat.view')
+    : hasPermission('sculpture_chat.view');
 
   // Get threads data using custom hook
   const { threads } = useThreads(threadId, quoteMode);
@@ -39,6 +46,22 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
   const currentThreadId = quoteMode 
     ? threadId 
     : threads?.[0]?.id; // For sculpture chat, use the first thread
+
+  // If user doesn't have permission to view this chat, show an access denied message
+  if (!canViewChat) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="flex flex-col p-6 w-full sm:max-w-lg h-[100dvh]">
+          <div className="flex flex-col items-center justify-center h-full">
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p className="text-center text-muted-foreground">
+              You don't have permission to view this chat.
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -69,6 +92,7 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
                 uploadingFiles={uploadingFiles}
                 onUploadComplete={handleUploadComplete}
                 disabled={!!editingMessage}
+                isQuoteChat={quoteMode}
               />
             </div>
           )}

@@ -1,19 +1,23 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppRole } from "@/types/roles";
 import { toast } from "sonner";
+import { PermissionAction, DEFAULT_ROLE_PERMISSIONS } from "@/types/permissions";
 
 export function useUserRoles() {
   const { user } = useAuth();
   const [role, setRole] = useState<AppRole>('sales'); // Default to sales
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [permissions, setPermissions] = useState<PermissionAction[]>([]);
 
   useEffect(() => {
     if (!user) {
       setRole('sales'); // Default role
       setIsAdmin(false);
+      setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']); // Default permissions
       setLoading(false);
       return;
     }
@@ -37,11 +41,18 @@ export function useUserRoles() {
         setRole(userRole);
         setIsAdmin(userRole === 'admin');
         
+        // Set default permissions based on role
+        setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+        
+        // TODO: In the future, fetch custom permissions from the database
+        // This would replace the default permissions with custom ones
+        
       } catch (error) {
         console.error('Error fetching user role:', error);
         // If there's an error, set a default role
         setRole('sales');
         setIsAdmin(false);
+        setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
       } finally {
         setLoading(false);
       }
@@ -53,6 +64,10 @@ export function useUserRoles() {
   const hasRole = (requiredRole: AppRole) => {
     return role === requiredRole;
   };
+
+  const hasPermission = useCallback((requiredPermission: PermissionAction) => {
+    return permissions.includes(requiredPermission);
+  }, [permissions]);
 
   const assignRole = async (userId: string, newRole: AppRole) => {
     try {
@@ -78,6 +93,7 @@ export function useUserRoles() {
       if (user && userId === user.id) {
         setRole(newRole);
         setIsAdmin(newRole === 'admin');
+        setPermissions(DEFAULT_ROLE_PERMISSIONS[newRole]);
       }
       
       return true;
@@ -100,7 +116,9 @@ export function useUserRoles() {
     loading,
     isAdmin,
     hasRole,
+    hasPermission,
     assignRole,
-    removeRole // Kept for backwards compatibility
+    removeRole, // Kept for backwards compatibility
+    permissions
   };
 }

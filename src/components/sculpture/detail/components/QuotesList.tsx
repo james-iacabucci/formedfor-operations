@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { FabricationQuoteCard } from "../FabricationQuoteCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface QuotesListProps {
   quotes: FabricationQuote[];
@@ -39,6 +40,8 @@ export function QuotesList({
   calculateRetailPrice,
   formatNumber
 }: QuotesListProps) {
+  const { hasPermission } = useUserRoles();
+  
   // Memoize sorting operation to avoid unnecessary re-renders
   const sortedQuotes = useMemo(() => {
     if (!quotes) return [];
@@ -123,13 +126,13 @@ export function QuotesList({
           key={quote.id}
           quote={quote}
           fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
-          onSelect={() => handleSelectQuote(quote.id)}
-          onEdit={() => handleStartEdit(quote)}
-          onDelete={() => handleDeleteQuote(quote.id)}
-          onSubmitForApproval={handleSubmitForApproval}
-          onApprove={handleApproveQuote}
-          onReject={handleRejectQuote}
-          onRequote={handleRequoteQuote}
+          onSelect={hasPermission('quote.edit') ? () => handleSelectQuote(quote.id) : undefined}
+          onEdit={hasPermission('quote.edit') ? () => handleStartEdit(quote) : undefined}
+          onDelete={hasPermission('quote.delete') ? () => handleDeleteQuote(quote.id) : undefined}
+          onSubmitForApproval={hasPermission('quote.edit') ? handleSubmitForApproval : undefined}
+          onApprove={hasPermission('quote.approve') ? handleApproveQuote : undefined}
+          onReject={hasPermission('quote.reject') ? handleRejectQuote : undefined}
+          onRequote={hasPermission('quote.edit') ? handleRequoteQuote : undefined}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}
