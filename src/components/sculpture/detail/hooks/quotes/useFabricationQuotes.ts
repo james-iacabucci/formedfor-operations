@@ -7,6 +7,7 @@ import { useQuoteEditing } from "./useQuoteEditing";
 import { useQuoteChat } from "./useQuoteChat";
 import { useQuoteSave } from "./useQuoteSave";
 import { NewQuote } from "@/types/fabrication-quote-form";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useFabricationQuotes(sculptureId: string, selectedVariantId: string | null) {
   // Use the query hook for variant quotes
@@ -56,7 +57,7 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
     
     const variant = await (async () => {
       try {
-        const { data: variant } = await window.supabase
+        const { data: variant } = await supabase
           .from('sculpture_variants')
           .select('*')
           .eq('id', selectedVariantId)
