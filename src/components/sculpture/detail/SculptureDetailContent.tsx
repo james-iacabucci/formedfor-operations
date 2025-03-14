@@ -27,6 +27,7 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  // Move the useUserRoles hook call up here before it's used
   const { hasPermission } = useUserRoles();
 
   const handleRegenerate = useCallback(async () => {
@@ -57,11 +58,11 @@ export function SculptureDetailContent({
     regenerateMetadata: boolean;
   }) => {
     // Check permissions based on whether we're creating or updating
-    const hasPermission = options.updateExisting 
-      ? hasPermission('sculpture.edit')
-      : hasPermission('variant.create');
+    const permissionRequired = options.updateExisting 
+      ? 'sculpture.edit'
+      : 'variant.create';
       
-    if (!hasPermission) {
+    if (!hasPermission(permissionRequired)) {
       toast({
         title: "Permission Denied",
         description: options.updateExisting 
