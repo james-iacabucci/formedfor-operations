@@ -21,17 +21,33 @@ export function RoleTabHeader({
 }: RoleTabHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <TabsList>
-        <TabsTrigger value="admin" onClick={() => setActiveTab("admin")}>
+      <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-md border border-[#333333]">
+        <TabsTrigger 
+          value="admin" 
+          onClick={() => setActiveTab("admin")}
+          className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+        >
           Admin
         </TabsTrigger>
-        <TabsTrigger value="sales" onClick={() => setActiveTab("sales")}>
+        <TabsTrigger 
+          value="sales" 
+          onClick={() => setActiveTab("sales")}
+          className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+        >
           Sales
         </TabsTrigger>
-        <TabsTrigger value="fabrication" onClick={() => setActiveTab("fabrication")}>
+        <TabsTrigger 
+          value="fabrication" 
+          onClick={() => setActiveTab("fabrication")}
+          className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+        >
           Fabrication
         </TabsTrigger>
-        <TabsTrigger value="orders" onClick={() => setActiveTab("orders")}>
+        <TabsTrigger 
+          value="orders" 
+          onClick={() => setActiveTab("orders")}
+          className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+        >
           Orders
         </TabsTrigger>
       </TabsList>

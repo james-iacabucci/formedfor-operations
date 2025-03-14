@@ -7,6 +7,13 @@ import { Shield } from "lucide-react";
 import { PermissionCategory } from "./permissions/PermissionCategory";
 import { RoleTabHeader } from "./permissions/RoleTabHeader";
 import { usePermissionsState } from "./permissions/usePermissionsState";
+import { AppRole } from "@/types/roles";
+
+// Define local Permission type since we need to handle the type error
+interface Permission {
+  action: string;
+  description: string;
+}
 
 export function RolePermissionsManagement() {
   const { isAdmin } = useUserRoles();
@@ -28,7 +35,7 @@ export function RolePermissionsManagement() {
     }
     acc[category].push(permission);
     return acc;
-  }, {} as Record<string, typeof ALL_PERMISSIONS>);
+  }, {} as Record<string, Permission[]>);
   
   if (!isAdmin) {
     return (
@@ -50,7 +57,7 @@ export function RolePermissionsManagement() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AppRole)}>
           <RoleTabHeader
             activeTab={activeTab}
             setActiveTab={setActiveTab}

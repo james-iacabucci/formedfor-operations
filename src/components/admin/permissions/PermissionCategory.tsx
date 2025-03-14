@@ -2,10 +2,14 @@
 import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { AppRole } from "@/types/roles";
-import { Permission } from "@/types/permissions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight } from "lucide-react";
+
+interface Permission {
+  action: string;
+  description: string;
+}
 
 interface PermissionCategoryProps {
   category: string;
