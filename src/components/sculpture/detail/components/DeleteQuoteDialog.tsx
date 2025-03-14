@@ -45,7 +45,7 @@ export function DeleteQuoteDialog({
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
             onClick={onConfirmDelete}
             disabled={isLoading || !canDelete}
             className="gap-1"

@@ -43,17 +43,14 @@ export function FabricationQuoteCard({
   formatNumber,
   isEditing
 }: FabricationQuoteCardProps) {
-  // We'll keep the state but make it always expanded by default
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Helper to display dash for null/undefined/0 values
   const displayValue = (value: number | null | undefined) => {
     if (value === null || value === undefined) return "-";
     return `$${formatNumber(value)}`;
   };
 
-  // Helper for calculating values that might be null
   const safeCalculate = (calculator: Function, ...args: any[]) => {
     try {
       const result = calculator(...args);
@@ -63,27 +60,23 @@ export function FabricationQuoteCard({
     }
   };
 
-  // Function to get the status badge color based on status
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'requested': return 'secondary';
       case 'submitted': return 'default';
-      case 'approved': return 'default'; // Using default which is primary in our theme
+      case 'approved': return 'default';
       case 'rejected': return 'destructive';
       default: return 'outline';
     }
   };
 
-  // Handle confirmation of delete
   const handleConfirmDelete = () => {
     onDelete();
     setIsDeleteDialogOpen(false);
   };
 
-  // Check if the delete button should be shown
   const showDeleteButton = quote.status === 'requested' || quote.status === 'approved';
   
-  // Check if markup and pricing details should be hidden
   const hidePricingDetails = quote.status === 'requested';
 
   return (
@@ -108,7 +101,6 @@ export function FabricationQuoteCard({
             {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
           </Badge>
           
-          {/* Conditional buttons based on status */}
           {quote.status === 'approved' && !quote.is_selected && (
             <Button
               variant="outline"
@@ -165,13 +157,11 @@ export function FabricationQuoteCard({
             </Button>
           )}
           
-          {/* Delete button for requested or approved quotes */}
           {showDeleteButton && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsDeleteDialogOpen(true)}
-              className="text-destructive hover:text-destructive"
               title="Delete quote"
             >
               <Trash2Icon className="h-4 w-4" />
@@ -183,7 +173,6 @@ export function FabricationQuoteCard({
               variant="ghost"
               size="sm"
               onClick={() => setIsDeleteDialogOpen(true)}
-              className="text-destructive hover:text-destructive"
               title="Delete quote"
             >
               <Trash2Icon className="h-4 w-4" />
@@ -192,7 +181,6 @@ export function FabricationQuoteCard({
         </div>
       </div>
       
-      {/* Pricing Details Section - Always visible now */}
       <Collapsible open={pricingDetailsOpen} onOpenChange={setPricingDetailsOpen}>
         <CollapsibleContent className="pt-2">
           <div className="grid grid-cols-5 gap-4 text-sm">
@@ -252,7 +240,6 @@ export function FabricationQuoteCard({
         </div>
       )}
 
-      {/* Delete confirmation dialog */}
       <DeleteQuoteDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
