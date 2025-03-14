@@ -15,6 +15,8 @@ import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppearanceSection } from "./AppearanceSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -29,6 +31,7 @@ interface ProfileData {
 
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
+  const { role, loading: roleLoading } = useUserRoles();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
@@ -129,6 +132,10 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     }
   };
 
+  const formatRole = (role: string) => {
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-2xl flex flex-col p-0 overflow-hidden">
@@ -182,6 +189,22 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                           type="tel"
                           className="bg-muted/50 border-0 h-12 text-base placeholder:text-muted-foreground/50"
                         />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-muted">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium mb-1">Role</label>
+                        {roleLoading ? (
+                          <Skeleton className="h-12 w-full" />
+                        ) : (
+                          <div className="bg-muted/50 border-0 rounded-md h-12 px-3 flex items-center text-base">
+                            {formatRole(role)}
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Your system role determines what permissions you have. Contact an administrator to change this.
+                        </p>
                       </div>
                     </div>
                   </div>
