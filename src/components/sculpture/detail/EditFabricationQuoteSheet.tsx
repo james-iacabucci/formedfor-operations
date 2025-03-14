@@ -66,7 +66,18 @@ export function EditFabricationQuoteSheet({
     
     setIsSubmitting(true);
     try {
-      const success = await saveQuote(newQuote, editingQuoteId, onQuoteSaved, true);
+      // Save the quote with updated status
+      const success = await saveQuote(
+        { ...newQuote, status: "submitted" },
+        editingQuoteId, 
+        onQuoteSaved
+      );
+      
+      if (success && onSubmitForApproval) {
+        // Call the provided callback to update the status in the parent component
+        await onSubmitForApproval(editingQuoteId);
+      }
+      
       if (success) {
         onOpenChange(false);
       }
@@ -76,9 +87,13 @@ export function EditFabricationQuoteSheet({
   };
 
   // Determine if we should show the Submit for Approval button
-  const showSubmitForApproval = editingQuoteId && 
-    initialQuote?.status === 'requested' && 
-    onSubmitForApproval;
+  // Make sure to check if the newQuote (current state) has the requested status
+  const showSubmitForApproval = !!editingQuoteId && 
+    newQuote.status === 'requested' && 
+    !!onSubmitForApproval;
+
+  console.log("Quote status:", newQuote.status);
+  console.log("Should show Submit for Approval button:", showSubmitForApproval);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

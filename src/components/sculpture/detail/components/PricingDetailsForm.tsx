@@ -31,6 +31,9 @@ export function PricingDetailsForm({
 
   // Don't show pricing calculations for quotes with status "requested"
   const showPricingCalculations = newQuote.status !== 'requested';
+  
+  console.log("Quote status in PricingDetailsForm:", newQuote.status);
+  console.log("Should show pricing calculations:", showPricingCalculations);
 
   return (
     <div className="space-y-4">

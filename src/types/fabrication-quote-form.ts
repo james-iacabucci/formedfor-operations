@@ -9,7 +9,7 @@ export interface NewQuote {
   markup: number;
   notes: string | null;
   quote_date: string;
-  status?: 'requested' | 'submitted' | 'approved' | 'rejected';
+  status: 'requested' | 'submitted' | 'approved' | 'rejected';
   
   // Physical attributes
   material_id: string | null;

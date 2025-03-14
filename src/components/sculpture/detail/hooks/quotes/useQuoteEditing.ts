@@ -20,6 +20,7 @@ export function useQuoteEditing() {
       markup: quote.markup,
       notes: quote.notes,
       quote_date: quote.quote_date,
+      status: quote.status, // Make sure status is included here
       material_id: quote.material_id,
       method_id: quote.method_id,
       height_in: quote.height_in,
@@ -57,6 +58,7 @@ export function useQuoteEditing() {
       markup: 4,
       notes: "",
       quote_date: new Date().toISOString(),
+      status: "requested", // Make sure we set a default status for new quotes
       material_id: variant.materialId,
       method_id: variant.methodId,
       height_in: variant.heightIn,
