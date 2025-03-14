@@ -86,17 +86,31 @@ export function RoleManagement() {
     
     try {
       setIsDeleting(true);
+
+      // Instead of using supabase.auth.admin.deleteUser which requires Supabase admin privileges,
+      // we'll use a different approach that works with application admin role
       
-      // Delete user from auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(
-        userToDelete.id
-      );
+      // First, delete the user's role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userToDelete.id);
+        
+      if (roleError) throw roleError;
       
-      if (authError) throw authError;
+      // Then delete the user's profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userToDelete.id);
+        
+      if (profileError) throw profileError;
       
-      // No need to delete profile or roles as they have cascade delete constraints
+      // Note: We can't actually delete the user from auth.users without service role privileges
+      // Instead, we'll inform the user that only the profile has been removed from the system
       
-      toast.success("User deleted successfully");
+      toast.success("User's profile has been deleted from the system");
+      toast.info("Note: The actual auth record requires administrative access");
       
       // Remove user from local state
       setUsers(users.filter(user => user.id !== userToDelete.id));
@@ -104,7 +118,7 @@ export function RoleManagement() {
       setUserToDelete(null);
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast.error("Failed to delete user. Admin role required.");
+      toast.error("Failed to delete user profile");
     } finally {
       setIsDeleting(false);
     }
@@ -154,25 +168,27 @@ export function RoleManagement() {
           ) : (
             users.map(user => (
               <div key={user.id} className="border rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar_url || undefined} alt={user.username || "User"} />
-                    <AvatarFallback>
-                      {getInitials(user.username)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{user.username || 'Unnamed User'}</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.avatar_url || undefined} alt={user.username || "User"} />
+                      <AvatarFallback>
+                        {getInitials(user.username)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{user.username || 'Unnamed User'}</h3>
+                    </div>
                   </div>
                   
-                  <div className="w-48">
+                  <div className="flex items-center space-x-2">
                     <Select 
                       defaultValue={user.role} 
                       onValueChange={(value) => {
                         handleRoleChange(user.id, value as AppRole);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-32 sm:w-40">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                       <SelectContent>
@@ -183,18 +199,18 @@ export function RoleManagement() {
                         ))}
                       </SelectContent>
                     </Select>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setUserToDelete(user);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      setUserToDelete(user);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             ))
@@ -206,7 +222,7 @@ export function RoleManagement() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Delete User"
-        description={`Are you sure you want to delete ${userToDelete?.username || 'this user'}? This action cannot be undone.`}
+        description={`Are you sure you want to delete ${userToDelete?.username || 'this user'}? This will remove their profile from the system, but the authentication record will require administrative access to fully remove.`}
         onArchive={() => setDeleteDialogOpen(false)} // Required by the component
         onDelete={handleDeleteUser}
         isLoading={isDeleting}
