@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -15,8 +14,6 @@ import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppearanceSection } from "./AppearanceSection";
-import { useUserRoles } from "@/hooks/use-user-roles";
-import { RoleManagement } from "../admin/RoleManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PreferencesSheetProps {
@@ -32,7 +29,6 @@ interface ProfileData {
 
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
-  const { isAdmin } = useUserRoles();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
@@ -99,7 +95,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     if (!file || !user) return;
 
     try {
-      // Create storage bucket if it doesn't exist
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
@@ -156,7 +151,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
             <TabsList className="px-6 pt-2 justify-start border-b rounded-none">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
-              {isAdmin && <TabsTrigger value="roles">User Roles</TabsTrigger>}
             </TabsList>
             
             <div className="flex-1 overflow-y-auto px-6">
@@ -197,12 +191,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
               <TabsContent value="appearance" className="mt-0 py-6 h-full">
                 <AppearanceSection />
               </TabsContent>
-              
-              {isAdmin && (
-                <TabsContent value="roles" className="mt-0 py-6 h-full">
-                  <RoleManagement />
-                </TabsContent>
-              )}
             </div>
           </Tabs>
 

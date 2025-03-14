@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types/profile";
 import { AppRole, UserWithRoles } from "@/types/roles";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ export function RoleManagement() {
         
         // Fetch roles for each user
         const usersWithRoles = await Promise.all(
-          profiles.map(async (profile: Profile) => {
+          profiles.map(async (profile) => {
             const { data: roleData, error: roleError } = await supabase.rpc('get_user_roles', {
               _user_id: profile.id
             });

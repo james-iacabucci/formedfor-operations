@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { AIContextSection } from "./AIContextSection";
 import { ValueListsSection } from "./ValueListsSection";
 import { ProductLinesSection } from "./ProductLinesSection";
+import { RoleManagement } from "@/components/admin/RoleManagement";
+import { useAuth } from "@/components/AuthProvider";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -23,6 +25,8 @@ interface SettingsSheetProps {
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [aiContext, setAiContext] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const { user } = useAuth();
+  const isJames = user?.email === "james@formedfor.com";
 
   // Reset state when sheet closes
   useEffect(() => {
@@ -89,6 +93,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               <ManageTagsSection />
               <ValueListsSection />
               <ProductLinesSection />
+              {isJames && <RoleManagement />}
             </div>
           </div>
 

@@ -8,6 +8,11 @@ export interface UserRole {
   created_at: string;
 }
 
-export interface UserWithRoles extends Profile {
+export interface UserWithRoles {
+  id: string;
+  username: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
+  created_at?: string;
   roles: AppRole[];
 }
