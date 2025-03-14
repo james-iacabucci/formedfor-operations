@@ -5,25 +5,36 @@ interface QuoteFormActionsProps {
   onSave?: () => void;
   onCancel?: () => void;
   isEditing: boolean;
+  isReadOnly?: boolean;
 }
 
-export function QuoteFormActions({
-  onSave,
+export function QuoteFormActions({ 
+  onSave, 
   onCancel,
-  isEditing
+  isEditing,
+  isReadOnly = false
 }: QuoteFormActionsProps) {
-  if (!onSave || !onCancel) {
+  // Don't render any buttons if in read-only mode
+  if (isReadOnly) {
     return null;
   }
   
   return (
     <div className="flex justify-end space-x-2">
-      <Button variant="outline" onClick={onCancel}>
-        Cancel
-      </Button>
-      <Button onClick={onSave}>
-        {isEditing ? "Save Changes" : "Save Quote"}
-      </Button>
+      {onCancel && (
+        <Button
+          variant="outline"
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
+      )}
+      
+      {onSave && (
+        <Button onClick={onSave}>
+          {isEditing ? "Update" : "Save"}
+        </Button>
+      )}
     </div>
   );
 }

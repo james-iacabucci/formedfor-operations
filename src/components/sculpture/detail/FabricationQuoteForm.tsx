@@ -19,6 +19,7 @@ interface FabricationQuoteFormProps {
   formatNumber: (num: number) => string;
   isInSheet?: boolean;
   isVariantMode?: boolean;
+  isReadOnly?: boolean;
 }
 
 export function FabricationQuoteForm({
@@ -33,7 +34,8 @@ export function FabricationQuoteForm({
   calculateRetailPrice,
   formatNumber,
   isInSheet = false,
-  isVariantMode = false
+  isVariantMode = false,
+  isReadOnly = false
 }: FabricationQuoteFormProps) {
   const handleNotesChange = (newNotes: string) => {
     onQuoteChange({ ...newQuote, notes: newNotes });
@@ -46,6 +48,7 @@ export function FabricationQuoteForm({
         newQuote={newQuote}
         onQuoteChange={onQuoteChange}
         fabricators={fabricators}
+        isReadOnly={isReadOnly}
       />
 
       {/* Sculpture and Base Details are now read-only in variant mode */}
@@ -56,6 +59,7 @@ export function FabricationQuoteForm({
             sculptureId={newQuote.sculpture_id}
             newQuote={newQuote}
             onQuoteChange={onQuoteChange}
+            isReadOnly={isReadOnly}
           />
 
           {/* Base Details Section */}
@@ -64,6 +68,7 @@ export function FabricationQuoteForm({
             newQuote={newQuote}
             onQuoteChange={onQuoteChange}
             isBase={true}
+            isReadOnly={isReadOnly}
           />
         </>
       )}
@@ -80,7 +85,8 @@ export function FabricationQuoteForm({
 
       <NotesSection 
         notes={newQuote.notes} 
-        onChange={handleNotesChange} 
+        onChange={handleNotesChange}
+        isReadOnly={isReadOnly}
       />
 
       {/* Only show buttons if not in sheet mode */}
@@ -89,6 +95,7 @@ export function FabricationQuoteForm({
           onSave={onSave}
           onCancel={onCancel}
           isEditing={!!editingQuoteId}
+          isReadOnly={isReadOnly}
         />
       )}
     </div>
