@@ -29,7 +29,7 @@ export function PricingDetailsForm({
     onQuoteChange({ ...newQuote, [field]: numValue });
   };
 
-  // Check if we should show pricing calculations
+  // Don't show pricing calculations for quotes with status "requested"
   const showPricingCalculations = newQuote.status !== 'requested';
 
   return (
