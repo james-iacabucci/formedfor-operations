@@ -85,7 +85,9 @@ export function FabricationQuoteCard({
             {fabricatorName}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {format(new Date(quote.quote_date), "PPP")}
+            {quote.updated_at 
+              ? `Updated ${format(new Date(quote.updated_at), "PPP")}`
+              : `Created ${format(new Date(quote.quote_date), "PPP")}`}
           </p>
         </div>
         <div className="flex gap-2 items-center">
