@@ -6,14 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/use-user-roles";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Shield, UserCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Shield, Trash, User } from "lucide-react";
+import { ArchiveDeleteDialog } from "@/components/common/ArchiveDeleteDialog";
 
 export function RoleManagement() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAdmin, assignRole } = useUserRoles();
+  const [userToDelete, setUserToDelete] = useState<UserWithRoles | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Available roles
   const availableRoles: AppRole[] = ['admin', 'sales', 'fabrication', 'orders'];
@@ -77,10 +81,44 @@ export function RoleManagement() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      // Delete user from auth
+      const { error: authError } = await supabase.auth.admin.deleteUser(
+        userToDelete.id
+      );
+      
+      if (authError) throw authError;
+      
+      // No need to delete profile or roles as they have cascade delete constraints
+      
+      toast.success("User deleted successfully");
+      
+      // Remove user from local state
+      setUsers(users.filter(user => user.id !== userToDelete.id));
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error("Failed to delete user. Admin role required.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const getInitials = (username: string | null): string => {
+    if (!username) return "U";
+    return username.charAt(0).toUpperCase();
+  };
+
   if (!isAdmin) {
     return (
       <div className="p-4">
-        <p>You don't have permission to manage roles.</p>
+        <p>You don't have permission to manage users.</p>
       </div>
     );
   }
@@ -98,10 +136,10 @@ export function RoleManagement() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
-          User Role Management
+          User Management
         </CardTitle>
         <CardDescription>
-          Assign a role to each user in the system.
+          Manage users and their roles in the system.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -112,34 +150,64 @@ export function RoleManagement() {
             users.map(user => (
               <div key={user.id} className="border rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <UserCircle className="h-10 w-10 text-muted-foreground" />
-                  <div>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.avatar_url || undefined} alt={user.username || "User"} />
+                    <AvatarFallback>
+                      {getInitials(user.username)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
                     <h3 className="font-medium">{user.username || 'Unnamed User'}</h3>
-                    <p className="text-sm text-muted-foreground">{user.id}</p>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setUserToDelete(user);
+                      setDeleteDialogOpen(true);
+                    }}
+                    className="text-white"
+                  >
+                    <Trash className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
                 </div>
                 
-                <RadioGroup 
-                  value={user.role} 
-                  onValueChange={(value) => {
-                    handleRoleChange(user.id, value as AppRole);
-                  }}
-                  className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-                >
-                  {availableRoles.map(role => (
-                    <div key={role} className="flex items-center space-x-2">
-                      <RadioGroupItem value={role} id={`${user.id}-${role}`} />
-                      <Label htmlFor={`${user.id}-${role}`} className="capitalize">
-                        {role}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+                <div className="w-full">
+                  <Select 
+                    defaultValue={user.role} 
+                    onValueChange={(value) => {
+                      handleRoleChange(user.id, value as AppRole);
+                    }}
+                  >
+                    <SelectTrigger className="w-full mb-1">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRoles.map(role => (
+                        <SelectItem key={role} value={role} className="capitalize">
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Select the appropriate role for this user</p>
+                </div>
               </div>
             ))
           )}
         </div>
       </CardContent>
+      
+      <ArchiveDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete User"
+        description={`Are you sure you want to delete ${userToDelete?.username || 'this user'}? This action cannot be undone.`}
+        onArchive={() => setDeleteDialogOpen(false)} // Archive not applicable for users
+        onDelete={handleDeleteUser}
+        isLoading={isDeleting}
+      />
     </Card>
   );
 }
