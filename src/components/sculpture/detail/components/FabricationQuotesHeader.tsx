@@ -20,7 +20,7 @@ export function FabricationQuotesHeader({
         <Button 
           onClick={onOpenChat} 
           size="sm"
-          variant="ghost"
+          variant="outline"
           className="h-10 w-10 p-0"
           title="Chat about quotes"
         >
