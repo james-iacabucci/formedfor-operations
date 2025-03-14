@@ -23,7 +23,7 @@ export function AIContextSection() {
       
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("ai_context")
+        .select("settings")
         .eq("user_id", user.id)
         .maybeSingle();
       
@@ -48,7 +48,12 @@ export function AIContextSection() {
         // Update existing preferences
         const { error } = await supabase
           .from("user_preferences")
-          .update({ ai_context: context })
+          .update({ 
+            settings: { 
+              ...userPreferences?.settings, 
+              ai_context: context 
+            } 
+          })
           .eq("user_id", user.id);
         
         if (error) throw error;
@@ -56,7 +61,10 @@ export function AIContextSection() {
         // Create new preferences record
         const { error } = await supabase
           .from("user_preferences")
-          .insert({ user_id: user.id, ai_context: context });
+          .insert({ 
+            user_id: user.id, 
+            settings: { ai_context: context }
+          });
         
         if (error) throw error;
       }
@@ -73,8 +81,8 @@ export function AIContextSection() {
 
   // Initialize AI context from fetched data
   useEffect(() => {
-    if (userPreferences?.ai_context !== undefined) {
-      setAiContext(userPreferences.ai_context || "");
+    if (userPreferences?.settings) {
+      setAiContext(userPreferences.settings.ai_context || "");
     }
   }, [userPreferences]);
 

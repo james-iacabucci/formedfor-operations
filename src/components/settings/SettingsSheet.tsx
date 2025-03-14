@@ -80,7 +80,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
-              <PermissionGuard requiredPermission="settings.manage_ai_context">
+              <PermissionGuard requiredPermission="settings.manage">
                 <AIContextSection />
               </PermissionGuard>
               

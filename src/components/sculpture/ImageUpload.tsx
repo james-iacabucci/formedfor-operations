@@ -8,13 +8,16 @@ interface ImageUploadProps {
   previewUrl: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function ImageUpload({ previewUrl, onFileChange, className }: ImageUploadProps) {
+export function ImageUpload({ previewUrl, onFileChange, className, disabled = false }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!disabled && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
@@ -22,6 +25,7 @@ export function ImageUpload({ previewUrl, onFileChange, className }: ImageUpload
       onClick={handleClick}
       className={cn(
         "group relative aspect-square w-full overflow-hidden rounded-xl border border-muted bg-background",
+        disabled ? "opacity-70 cursor-not-allowed" : "cursor-pointer",
         className
       )}
     >
@@ -32,12 +36,14 @@ export function ImageUpload({ previewUrl, onFileChange, className }: ImageUpload
             alt="Profile"
             className="object-cover w-full h-full"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2 text-white">
-              <PencilIcon className="w-4 h-4" />
-              <span className="text-sm font-medium">Edit picture</span>
+          {!disabled && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2 text-white">
+                <PencilIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">Edit picture</span>
+              </div>
             </div>
-          </div>
+          )}
         </>
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -52,6 +58,7 @@ export function ImageUpload({ previewUrl, onFileChange, className }: ImageUpload
         accept="image/*"
         onChange={onFileChange}
         className="hidden"
+        disabled={disabled}
       />
     </div>
   );

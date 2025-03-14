@@ -25,6 +25,7 @@ export function RolePermissionsManagement() {
     saveChanges,
     resetToDefaults,
     getCurrentPermissions,
+    hasChanges
   } = usePermissionsState();
   
   // Group permissions by category
@@ -63,20 +64,22 @@ export function RolePermissionsManagement() {
             setActiveTab={setActiveTab}
             resetToDefaults={resetToDefaults}
             saveChanges={saveChanges}
-            hasChanges={false}
+            hasChanges={hasChanges}
             isSaving={isSaving}
           />
           
           {Object.entries(permissionCategories).map(([category, permissions]) => (
-            <PermissionCategory
-              key={category}
-              category={category}
-              permissions={permissions}
-              activeTab={activeTab}
-              getCurrentPermissions={getCurrentPermissions}
-              togglePermission={togglePermission}
-              isSaving={isSaving}
-            />
+            <TabsContent key={category} value={activeTab}>
+              <PermissionCategory
+                key={category}
+                category={category}
+                permissions={permissions}
+                activeTab={activeTab}
+                getCurrentPermissions={getCurrentPermissions}
+                togglePermission={togglePermission}
+                isSaving={isSaving}
+              />
+            </TabsContent>
           ))}
         </Tabs>
       </CardContent>
