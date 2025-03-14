@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppRole, UserWithRoles } from "@/types/roles";
@@ -147,13 +148,13 @@ export function RoleManagement() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {users.length === 0 ? (
             <p className="text-muted-foreground">No users found.</p>
           ) : (
             users.map(user => (
               <div key={user.id} className="border rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={user.avatar_url || undefined} alt={user.username || "User"} />
                     <AvatarFallback>
@@ -163,8 +164,29 @@ export function RoleManagement() {
                   <div className="flex-1">
                     <h3 className="font-medium">{user.username || 'Unnamed User'}</h3>
                   </div>
+                  
+                  <div className="w-48">
+                    <Select 
+                      defaultValue={user.role} 
+                      onValueChange={(value) => {
+                        handleRoleChange(user.id, value as AppRole);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableRoles.map(role => (
+                          <SelectItem key={role} value={role} className="capitalize">
+                            {formatRoleName(role)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={() => {
                       setUserToDelete(user);
@@ -173,27 +195,6 @@ export function RoleManagement() {
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
-                </div>
-                
-                <div className="w-full">
-                  <Select 
-                    defaultValue={user.role} 
-                    onValueChange={(value) => {
-                      handleRoleChange(user.id, value as AppRole);
-                    }}
-                  >
-                    <SelectTrigger className="w-full mb-1">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableRoles.map(role => (
-                        <SelectItem key={role} value={role} className="capitalize">
-                          {formatRoleName(role)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">Select the appropriate role for this user</p>
                 </div>
               </div>
             ))

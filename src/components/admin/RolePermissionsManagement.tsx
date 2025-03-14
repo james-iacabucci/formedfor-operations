@@ -22,10 +22,7 @@ export function RolePermissionsManagement() {
     setActiveTab,
     isSaving,
     togglePermission,
-    saveChanges,
-    resetToDefaults,
-    getCurrentPermissions,
-    hasChanges
+    getCurrentPermissions
   } = usePermissionsState();
   
   // Group permissions by category
@@ -62,9 +59,6 @@ export function RolePermissionsManagement() {
           <RoleTabHeader
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            resetToDefaults={resetToDefaults}
-            saveChanges={saveChanges}
-            hasChanges={hasChanges()}
             isSaving={isSaving}
           />
           
