@@ -69,7 +69,7 @@ export function RolePermissionsManagement() {
           />
           
           {Object.entries(permissionCategories).map(([category, permissions]) => (
-            <TabsContent key={category} value={activeTab}>
+            <TabsContent key={`${activeTab}-${category}`} value={activeTab}>
               <PermissionCategory
                 key={category}
                 category={category}

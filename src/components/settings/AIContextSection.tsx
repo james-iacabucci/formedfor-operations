@@ -46,13 +46,15 @@ export function AIContextSection() {
       
       if (existingPrefs) {
         // Update existing preferences
+        const updatedSettings = {
+          ...userPreferences?.settings as Record<string, unknown>,
+          ai_context: context
+        };
+        
         const { error } = await supabase
           .from("user_preferences")
           .update({ 
-            settings: { 
-              ...userPreferences?.settings, 
-              ai_context: context 
-            } 
+            settings: updatedSettings
           })
           .eq("user_id", user.id);
         
@@ -82,7 +84,12 @@ export function AIContextSection() {
   // Initialize AI context from fetched data
   useEffect(() => {
     if (userPreferences?.settings) {
-      setAiContext(userPreferences.settings.ai_context || "");
+      // Type-check the settings object first
+      if (typeof userPreferences.settings === 'object' && userPreferences.settings !== null) {
+        // Now safely access ai_context
+        const settings = userPreferences.settings as Record<string, unknown>;
+        setAiContext(settings.ai_context as string || "");
+      }
     }
   }, [userPreferences]);
 

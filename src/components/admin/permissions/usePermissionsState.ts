@@ -22,8 +22,37 @@ export function usePermissionsState() {
     new Set(DEFAULT_ROLE_PERMISSIONS.orders)
   );
   
+  // Track original permissions to detect changes
+  const [originalPermissions] = useState({
+    admin: new Set(DEFAULT_ROLE_PERMISSIONS.admin),
+    sales: new Set(DEFAULT_ROLE_PERMISSIONS.sales),
+    fabrication: new Set(DEFAULT_ROLE_PERMISSIONS.fabrication),
+    orders: new Set(DEFAULT_ROLE_PERMISSIONS.orders)
+  });
+  
   // Add loading state
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Determine if there are unsaved changes
+  const hasChanges = () => {
+    const adminDiff = comparePermissionSets(adminPermissions, originalPermissions.admin);
+    const salesDiff = comparePermissionSets(salesPermissions, originalPermissions.sales);
+    const fabricationDiff = comparePermissionSets(fabricationPermissions, originalPermissions.fabrication);
+    const ordersDiff = comparePermissionSets(ordersPermissions, originalPermissions.orders);
+    
+    return adminDiff || salesDiff || fabricationDiff || ordersDiff;
+  };
+  
+  // Helper to compare two permission sets
+  const comparePermissionSets = (set1: Set<PermissionAction>, set2: Set<PermissionAction>) => {
+    if (set1.size !== set2.size) return true;
+    
+    for (const item of set1) {
+      if (!set2.has(item)) return true;
+    }
+    
+    return false;
+  };
   
   // Handle permission toggle with immediate save
   const togglePermission = async (role: AppRole, permission: string) => {
@@ -150,5 +179,6 @@ export function usePermissionsState() {
     saveChanges,
     resetToDefaults,
     getCurrentPermissions,
+    hasChanges
   };
 }
