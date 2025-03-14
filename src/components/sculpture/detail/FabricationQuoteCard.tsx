@@ -48,7 +48,7 @@ export function FabricationQuoteCard({
 }: FabricationQuoteCardProps) {
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { hasPermission } = useUserRoles();
+  const { hasPermission, role } = useUserRoles();
 
   const displayValue = (value: number | null | undefined) => {
     if (value === null || value === undefined) return "-";
@@ -79,21 +79,21 @@ export function FabricationQuoteCard({
     setIsDeleteDialogOpen(false);
   };
 
-  // Determine if we should allow editing - only fabrication can edit requested quotes
+  // Determine if we should allow editing 
+  // Fabrication role can only edit requested quotes
   const canEditQuote = 
-    hasPermission('quote.edit') || 
-    (hasPermission('quote.edit_requested') && quote.status === 'requested');
+    (hasPermission('quote.edit') && role !== 'fabrication') || 
+    (role === 'fabrication' && quote.status === 'requested' && hasPermission('quote.edit_requested'));
   
   // Whether to display pricing details
-  const canViewPricingDetails = hasPermission('quote.view_pricing');
+  const canViewPricingDetails = hasPermission('quote.view_pricing') && role !== 'fabrication';
   
-  // Buttons visibility based on status and permissions
-  const showDeleteButton = 
-    hasPermission('quote.delete') && 
-    (quote.status === 'requested' || quote.status === 'approved');
-  
-  // Hide pricing details if user doesn't have pricing view permission
+  // Hide pricing details if user doesn't have pricing view permission or is fabrication role
   const hidePricingDetails = !canViewPricingDetails;
+
+  // Fabrication role cannot see any action buttons for approved or submitted quotes
+  const isFabricationRoleWithRestrictedStatus = 
+    role === 'fabrication' && (quote.status === 'approved' || quote.status === 'submitted');
 
   return (
     <div 
@@ -117,91 +117,84 @@ export function FabricationQuoteCard({
             {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
           </Badge>
           
-          <PermissionGuard requiredPermission="quote.select">
-            {quote.status === 'approved' && !quote.is_selected && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSelect}
-                title="Select this quote"
-              >
-                <CheckCircle2Icon className="h-4 w-4" />
-              </Button>
-            )}
-          </PermissionGuard>
-          
-          <PermissionGuard requiredPermission="quote.approve">
-            {quote.status === 'submitted' && onApprove && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onApprove(quote.id)}
-                title="Approve quote"
-                className="text-green-600"
-              >
-                <ThumbsUpIcon className="h-4 w-4" />
-              </Button>
-            )}
-          </PermissionGuard>
-          
-          <PermissionGuard requiredPermission="quote.reject">
-            {quote.status === 'submitted' && onReject && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onReject(quote.id)}
-                title="Reject quote"
-                className="text-destructive"
-              >
-                <ThumbsDownIcon className="h-4 w-4" />
-              </Button>
-            )}
-          </PermissionGuard>
-          
-          <PermissionGuard requiredPermission="quote.requote">
-            {quote.status === 'approved' && onRequote && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRequote(quote)}
-                title="Request requote"
-              >
-                <RefreshCcwIcon className="h-4 w-4" />
-              </Button>
-            )}
-          </PermissionGuard>
-          
-          {canEditQuote && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-              title="Edit quote"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </Button>
-          )}
-          
-          {showDeleteButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              title="Delete quote"
-            >
-              <Trash2Icon className="h-4 w-4" />
-            </Button>
-          )}
-          
-          {isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              title="Delete quote"
-            >
-              <Trash2Icon className="h-4 w-4" />
-            </Button>
+          {!isFabricationRoleWithRestrictedStatus && (
+            <>
+              <PermissionGuard requiredPermission="quote.select">
+                {role !== 'fabrication' && quote.status === 'approved' && !quote.is_selected && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onSelect}
+                    title="Select this quote"
+                  >
+                    <CheckCircle2Icon className="h-4 w-4" />
+                  </Button>
+                )}
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="quote.approve">
+                {role !== 'fabrication' && quote.status === 'submitted' && onApprove && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onApprove(quote.id)}
+                    title="Approve quote"
+                    className="text-green-600"
+                  >
+                    <ThumbsUpIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="quote.reject">
+                {role !== 'fabrication' && quote.status === 'submitted' && onReject && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onReject(quote.id)}
+                    title="Reject quote"
+                    className="text-destructive"
+                  >
+                    <ThumbsDownIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </PermissionGuard>
+              
+              <PermissionGuard requiredPermission="quote.requote">
+                {role !== 'fabrication' && quote.status === 'approved' && onRequote && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRequote(quote)}
+                    title="Request requote"
+                  >
+                    <RefreshCcwIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </PermissionGuard>
+              
+              {canEditQuote && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onEdit}
+                  title="Edit quote"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {hasPermission('quote.delete') && role !== 'fabrication' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  title="Delete quote"
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -211,23 +204,23 @@ export function FabricationQuoteCard({
           <div className="grid grid-cols-5 gap-4 text-sm">
             <div>
               <p className="font-medium text-muted-foreground">Fabrication</p>
-              <p>{canViewPricingDetails ? displayValue(quote.fabrication_cost) : "-"}</p>
+              <p>{displayValue(quote.fabrication_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Shipping</p>
-              <p>{canViewPricingDetails ? displayValue(quote.shipping_cost) : "-"}</p>
+              <p>{displayValue(quote.shipping_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Customs</p>
-              <p>{canViewPricingDetails ? displayValue(quote.customs_cost) : "-"}</p>
+              <p>{displayValue(quote.customs_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Other</p>
-              <p>{canViewPricingDetails ? displayValue(quote.other_cost) : "-"}</p>
+              <p>{displayValue(quote.other_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Total Cost</p>
-              <p>{canViewPricingDetails ? safeCalculate(calculateTotal, quote) : "-"}</p>
+              <p>{safeCalculate(calculateTotal, quote)}</p>
             </div>
           </div>
 

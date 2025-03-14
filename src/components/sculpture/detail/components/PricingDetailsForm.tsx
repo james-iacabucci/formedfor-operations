@@ -11,6 +11,7 @@ interface PricingDetailsFormProps {
   calculateTradePrice: (quote: NewQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
   formatNumber: (num: number) => string;
+  isReadOnly?: boolean;
 }
 
 export function PricingDetailsForm({
@@ -19,9 +20,10 @@ export function PricingDetailsForm({
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
-  formatNumber
+  formatNumber,
+  isReadOnly = false
 }: PricingDetailsFormProps) {
-  const { hasPermission } = useUserRoles();
+  const { hasPermission, role } = useUserRoles();
   
   const handleChange = (field: keyof NewQuote, value: any) => {
     onQuoteChange({
@@ -35,18 +37,17 @@ export function PricingDetailsForm({
   const tradePrice = calculateTradePrice(newQuote);
   const retailPrice = calculateRetailPrice(tradePrice);
 
-  // Check if pricing details should be hidden
   // Hide pricing details if user doesn't have view_pricing permission
-  const hidePricingDetails = !hasPermission('quote.view_pricing');
+  const hidePricingDetails = !hasPermission('quote.view_pricing') || role === 'fabrication';
 
   // Determine if the user can edit the pricing fields
   // Fabrication can only edit requested quotes
   const canEditPricing = 
-    hasPermission('quote.edit') || 
+    (hasPermission('quote.edit') && role !== 'fabrication') || 
     (hasPermission('quote.edit_requested') && newQuote.status === 'requested');
 
   // If the user can't edit, we show read-only fields
-  const isReadOnly = !canEditPricing;
+  const finalIsReadOnly = isReadOnly || !canEditPricing;
 
   return (
     <div className="space-y-4">
@@ -55,7 +56,7 @@ export function PricingDetailsForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fabrication_cost">Fabrication Cost ($)</Label>
-          {isReadOnly ? (
+          {finalIsReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.fabrication_cost !== null ? formatNumber(newQuote.fabrication_cost) : "0.00"}
             </div>
@@ -74,7 +75,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="shipping_cost">Shipping Cost ($)</Label>
-          {isReadOnly ? (
+          {finalIsReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.shipping_cost !== null ? formatNumber(newQuote.shipping_cost) : "0.00"}
             </div>
@@ -93,7 +94,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="customs_cost">Customs Cost ($)</Label>
-          {isReadOnly ? (
+          {finalIsReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.customs_cost !== null ? formatNumber(newQuote.customs_cost) : "0.00"}
             </div>
@@ -112,7 +113,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="other_cost">Other Cost ($)</Label>
-          {isReadOnly ? (
+          {finalIsReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.other_cost !== null ? formatNumber(newQuote.other_cost) : "0.00"}
             </div>
@@ -140,7 +141,7 @@ export function PricingDetailsForm({
           <>
             <div className="space-y-2">
               <Label htmlFor="markup">Markup Multiplier</Label>
-              {isReadOnly ? (
+              {finalIsReadOnly ? (
                 <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
                   {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
                 </div>

@@ -39,7 +39,7 @@ export function EditFabricationQuoteSheet({
   const { saveQuote, isSaving } = useQuoteSave();
   const [newQuote, setNewQuote] = useState<NewQuote>(createDefaultQuote(sculptureId));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { hasPermission } = useUserRoles();
+  const { hasPermission, role } = useUserRoles();
 
   // When the sheet opens, initialize with the provided quote data if editing
   useEffect(() => {
@@ -90,16 +90,18 @@ export function EditFabricationQuoteSheet({
   };
 
   // Determine if we should show the Submit for Approval button
-  // Only show for requested quotes, and only for fabrication role
+  // Only show for requested quotes, and only for fabrication role with submit_approval permission
   const showSubmitForApproval = 
     !!editingQuoteId && 
     newQuote.status === 'requested' && 
+    role === 'fabrication' &&
     hasPermission('quote.submit_approval') && 
     !!onSubmitForApproval;
 
   // Determine if the form is editable based on permission and quote status
-  const canEdit = hasPermission('quote.edit') || 
-    (hasPermission('quote.edit_requested') && newQuote.status === 'requested');
+  const canEdit = 
+    (hasPermission('quote.edit') && role !== 'fabrication') ||
+    (role === 'fabrication' && hasPermission('quote.edit_requested') && newQuote.status === 'requested');
 
   console.log("Quote status:", newQuote.status);
   console.log("Can edit:", canEdit);
