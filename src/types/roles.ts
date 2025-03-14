@@ -14,5 +14,5 @@ export interface UserWithRoles {
   avatar_url?: string | null;
   phone?: string | null;
   created_at?: string;
-  role: AppRole | null;
+  role: AppRole; // Always has a role, never null
 }

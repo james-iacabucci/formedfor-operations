@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,13 +6,13 @@ import { toast } from "sonner";
 
 export function useUserRoles() {
   const { user } = useAuth();
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [role, setRole] = useState<AppRole>('sales'); // Default to sales
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      setRole(null);
+      setRole('sales'); // Default role
       setIsAdmin(false);
       setLoading(false);
       return;
@@ -34,12 +33,15 @@ export function useUserRoles() {
           throw error;
         }
         
-        const userRole = data?.role || null;
+        const userRole = data?.role || 'sales'; // Default to sales if no role found
         setRole(userRole);
         setIsAdmin(userRole === 'admin');
         
       } catch (error) {
         console.error('Error fetching user role:', error);
+        // If there's an error, set a default role
+        setRole('sales');
+        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -86,29 +88,11 @@ export function useUserRoles() {
     }
   };
 
+  // The removeRole function is no longer needed since users always have a role
+  // We'll keep it for backwards compatibility but make it a no-op that logs a warning
   const removeRole = async (userId: string) => {
-    try {
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      
-      toast.success(`Role removed successfully`);
-      
-      // If the current user's role is being removed, update the local state
-      if (user && userId === user.id) {
-        setRole(null);
-        setIsAdmin(false);
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error removing role:', error);
-      toast.error(`Failed to remove role: ${error.message}`);
-      return false;
-    }
+    console.warn('Removing roles is no longer supported. All users must have a role.');
+    return false;
   };
 
   return {
@@ -117,6 +101,6 @@ export function useUserRoles() {
     isAdmin,
     hasRole,
     assignRole,
-    removeRole
+    removeRole // Kept for backwards compatibility
   };
 }

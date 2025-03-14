@@ -13,7 +13,7 @@ import { Shield, UserCircle } from "lucide-react";
 export function RoleManagement() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isAdmin, assignRole, removeRole } = useUserRoles();
+  const { isAdmin, assignRole } = useUserRoles();
   
   // Available roles
   const availableRoles: AppRole[] = ['admin', 'sales', 'fabrication', 'orders'];
@@ -46,7 +46,7 @@ export function RoleManagement() {
             
             return {
               ...profile,
-              role: roleData?.role || null
+              role: roleData?.role || 'sales' // Default to 'sales' if no role found
             };
           })
         );
@@ -65,27 +65,15 @@ export function RoleManagement() {
     }
   }, [isAdmin]);
 
-  const handleRoleChange = async (userId: string, newRole: AppRole | null) => {
-    if (newRole === null) {
-      // Remove role
-      const success = await removeRole(userId);
-      if (success) {
-        setUsers(users.map(user => 
-          user.id === userId 
-            ? { ...user, role: null } 
-            : user
-        ));
-      }
-    } else {
-      // Assign new role
-      const success = await assignRole(userId, newRole);
-      if (success) {
-        setUsers(users.map(user => 
-          user.id === userId 
-            ? { ...user, role: newRole } 
-            : user
-        ));
-      }
+  const handleRoleChange = async (userId: string, newRole: AppRole) => {
+    // Always assign a role, never remove
+    const success = await assignRole(userId, newRole);
+    if (success) {
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, role: newRole } 
+          : user
+      ));
     }
   };
 
@@ -132,10 +120,9 @@ export function RoleManagement() {
                 </div>
                 
                 <RadioGroup 
-                  value={user.role || ""} 
+                  value={user.role} 
                   onValueChange={(value) => {
-                    const newRole = value ? value as AppRole : null;
-                    handleRoleChange(user.id, newRole);
+                    handleRoleChange(user.id, value as AppRole);
                   }}
                   className="grid grid-cols-2 sm:grid-cols-4 gap-3"
                 >
@@ -147,12 +134,6 @@ export function RoleManagement() {
                       </Label>
                     </div>
                   ))}
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="" id={`${user.id}-none`} />
-                    <Label htmlFor={`${user.id}-none`}>
-                      No Role
-                    </Label>
-                  </div>
                 </RadioGroup>
               </div>
             ))
