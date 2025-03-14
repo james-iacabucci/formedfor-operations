@@ -12,6 +12,7 @@ interface ArchiveDeleteDialogProps {
   onDelete: () => void;
   isLoading?: boolean;
   disableActions?: boolean;
+  hideArchive?: boolean;
 }
 
 export function ArchiveDeleteDialog({
@@ -22,7 +23,8 @@ export function ArchiveDeleteDialog({
   onArchive,
   onDelete,
   isLoading = false,
-  disableActions = false
+  disableActions = false,
+  hideArchive = false
 }: ArchiveDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -42,15 +44,19 @@ export function ArchiveDeleteDialog({
           >
             Cancel
           </Button>
-          <Button
-            variant="outline"
-            onClick={onArchive}
-            className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
-            disabled={isLoading || disableActions}
-          >
-            <ArchiveIcon className="h-4 w-4 mr-2" />
-            Archive
-          </Button>
+          
+          {!hideArchive && (
+            <Button
+              variant="outline"
+              onClick={onArchive}
+              className="bg-neutral-800 text-white border-none hover:bg-neutral-700 min-w-[120px]"
+              disabled={isLoading || disableActions}
+            >
+              <ArchiveIcon className="h-4 w-4 mr-2" />
+              Archive
+            </Button>
+          )}
+          
           <Button
             onClick={onDelete}
             className="bg-red-800 hover:bg-red-700 text-white border-none min-w-[160px]"

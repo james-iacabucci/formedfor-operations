@@ -1,17 +1,18 @@
 
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { TabsContent } from "@/components/ui/tabs";
+import { AppRole } from "@/types/roles";
+import { Permission } from "@/types/permissions";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { PermissionAction, PermissionDefinition } from "@/types/permissions";
-import { Info } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface PermissionCategoryProps {
   category: string;
-  permissions: PermissionDefinition[];
-  activeTab: string;
-  getCurrentPermissions: () => Set<PermissionAction>;
-  togglePermission: (permission: PermissionAction) => void;
+  permissions: Permission[];
+  activeTab: AppRole;
+  getCurrentPermissions: (role: AppRole) => Record<string, boolean>;
+  togglePermission: (role: AppRole, permissionAction: string) => void;
 }
 
 export function PermissionCategory({
@@ -21,47 +22,39 @@ export function PermissionCategory({
   getCurrentPermissions,
   togglePermission,
 }: PermissionCategoryProps) {
+  const [open, setOpen] = useState(true);
+  const currentPermissions = getCurrentPermissions(activeTab);
+  
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-medium mb-3 capitalize flex items-center gap-2">
-        {category}
-        <Badge variant="outline" className="ml-2">
-          {permissions.length}
-        </Badge>
-      </h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {permissions.map((permission) => (
-          <div key={permission.id} className="flex items-start space-x-2">
-            <Checkbox
-              id={`${activeTab}-${permission.id}`}
-              checked={getCurrentPermissions().has(permission.action)}
-              onCheckedChange={() => togglePermission(permission.action)}
-            />
-            <div className="grid gap-1">
-              <Label
-                htmlFor={`${activeTab}-${permission.id}`}
-                className="font-medium"
+    <TabsContent value={activeTab} className="py-2">
+      <Collapsible open={open} onOpenChange={setOpen} className="mb-4">
+        <CollapsibleTrigger className="flex items-center gap-2 py-2 w-full text-left font-medium text-lg border-b">
+          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          <span className="capitalize">{category}</span>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-2">
+          <div className="grid gap-2">
+            {permissions.map((permission) => (
+              <div
+                key={permission.action}
+                className="flex items-center space-x-2 py-1.5"
               >
-                {permission.description}
-              </Label>
-              <div className="flex items-center">
-                <code className="text-xs text-muted-foreground">
-                  {permission.action}
-                </code>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-3 w-3 text-muted-foreground ml-1 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">Permission ID: {permission.action}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Checkbox
+                  id={`${activeTab}-${permission.action}`}
+                  checked={currentPermissions[permission.action] || false}
+                  onCheckedChange={() => togglePermission(activeTab, permission.action)}
+                />
+                <label
+                  htmlFor={`${activeTab}-${permission.action}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {permission.description}
+                </label>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </TabsContent>
   );
 }
