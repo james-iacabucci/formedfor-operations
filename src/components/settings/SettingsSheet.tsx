@@ -6,7 +6,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Settings2 } from "lucide-react";
+import { Settings2, X } from "lucide-react";
 import { ManageTagsSection } from "./ManageTagsSection";
 import { useState, useEffect } from "react";
 import { AIContextSection } from "./AIContextSection";
@@ -17,6 +17,7 @@ import { RolePermissionsManagement } from "@/components/admin/RolePermissionsMan
 import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
+import { Button } from "@/components/ui/button";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -52,6 +53,18 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     }
   }, [open]);
 
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onOpenChange]);
+
   return (
     <Sheet 
       open={open} 
@@ -69,10 +82,21 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       >
         <div className="flex flex-col h-full">
           <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
-            <SheetTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5" />
-              Settings
-            </SheetTitle>
+            <div className="flex items-center justify-between">
+              <SheetTitle className="flex items-center gap-2">
+                <Settings2 className="h-5 w-5" />
+                Settings
+              </SheetTitle>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => onOpenChange(false)}
+                className="h-8 w-8" 
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             <SheetDescription className="sr-only">
               Configure application settings
             </SheetDescription>
