@@ -64,7 +64,7 @@ export function RolePermissionsManagement() {
             setActiveTab={setActiveTab}
             resetToDefaults={resetToDefaults}
             saveChanges={saveChanges}
-            hasChanges={hasChanges}
+            hasChanges={hasChanges()}
             isSaving={isSaving}
           />
           
