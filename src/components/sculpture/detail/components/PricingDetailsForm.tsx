@@ -36,10 +36,17 @@ export function PricingDetailsForm({
   const retailPrice = calculateRetailPrice(tradePrice);
 
   // Check if pricing details should be hidden
-  // Hide pricing details if it's a requested quote OR if user doesn't have appropriate permissions
-  const hidePricingDetails = 
-    newQuote.status === 'requested' || 
-    !hasPermission('quote.view');
+  // Hide pricing details if user doesn't have view_pricing permission
+  const hidePricingDetails = !hasPermission('quote.view_pricing');
+
+  // Determine if the user can edit the pricing fields
+  // Fabrication can only edit requested quotes
+  const canEditPricing = 
+    hasPermission('quote.edit') || 
+    (hasPermission('quote.edit_requested') && newQuote.status === 'requested');
+
+  // If the user can't edit, we show read-only fields
+  const isReadOnly = !canEditPricing;
 
   return (
     <div className="space-y-4">
@@ -48,54 +55,78 @@ export function PricingDetailsForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fabrication_cost">Fabrication Cost ($)</Label>
-          <Input
-            id="fabrication_cost"
-            type="number"
-            value={newQuote.fabrication_cost ?? ''}
-            onChange={(e) => handleChange('fabrication_cost', e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-          />
+          {isReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.fabrication_cost !== null ? formatNumber(newQuote.fabrication_cost) : "0.00"}
+            </div>
+          ) : (
+            <Input
+              id="fabrication_cost"
+              type="number"
+              value={newQuote.fabrication_cost ?? ''}
+              onChange={(e) => handleChange('fabrication_cost', e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+          )}
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="shipping_cost">Shipping Cost ($)</Label>
-          <Input
-            id="shipping_cost"
-            type="number"
-            value={newQuote.shipping_cost ?? ''}
-            onChange={(e) => handleChange('shipping_cost', e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-          />
+          {isReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.shipping_cost !== null ? formatNumber(newQuote.shipping_cost) : "0.00"}
+            </div>
+          ) : (
+            <Input
+              id="shipping_cost"
+              type="number"
+              value={newQuote.shipping_cost ?? ''}
+              onChange={(e) => handleChange('shipping_cost', e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+          )}
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="customs_cost">Customs Cost ($)</Label>
-          <Input
-            id="customs_cost"
-            type="number"
-            value={newQuote.customs_cost ?? ''}
-            onChange={(e) => handleChange('customs_cost', e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-          />
+          {isReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.customs_cost !== null ? formatNumber(newQuote.customs_cost) : "0.00"}
+            </div>
+          ) : (
+            <Input
+              id="customs_cost"
+              type="number"
+              value={newQuote.customs_cost ?? ''}
+              onChange={(e) => handleChange('customs_cost', e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+          )}
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="other_cost">Other Cost ($)</Label>
-          <Input
-            id="other_cost"
-            type="number"
-            value={newQuote.other_cost ?? ''}
-            onChange={(e) => handleChange('other_cost', e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-          />
+          {isReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.other_cost !== null ? formatNumber(newQuote.other_cost) : "0.00"}
+            </div>
+          ) : (
+            <Input
+              id="other_cost"
+              type="number"
+              value={newQuote.other_cost ?? ''}
+              onChange={(e) => handleChange('other_cost', e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+          )}
         </div>
         
         <div className="space-y-2">
@@ -109,15 +140,21 @@ export function PricingDetailsForm({
           <>
             <div className="space-y-2">
               <Label htmlFor="markup">Markup Multiplier</Label>
-              <Input
-                id="markup"
-                type="number"
-                value={newQuote.markup}
-                onChange={(e) => handleChange('markup', e.target.value)}
-                placeholder="1"
-                min="1"
-                step="0.1"
-              />
+              {isReadOnly ? (
+                <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+                  {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
+                </div>
+              ) : (
+                <Input
+                  id="markup"
+                  type="number"
+                  value={newQuote.markup}
+                  onChange={(e) => handleChange('markup', e.target.value)}
+                  placeholder="1"
+                  min="1"
+                  step="0.1"
+                />
+              )}
             </div>
             
             <div className="space-y-2">

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
@@ -9,6 +10,8 @@ import {
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteQuoteDialog } from "./components/DeleteQuoteDialog";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
@@ -45,6 +48,7 @@ export function FabricationQuoteCard({
 }: FabricationQuoteCardProps) {
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { hasPermission } = useUserRoles();
 
   const displayValue = (value: number | null | undefined) => {
     if (value === null || value === undefined) return "-";
@@ -75,9 +79,21 @@ export function FabricationQuoteCard({
     setIsDeleteDialogOpen(false);
   };
 
-  const showDeleteButton = quote.status === 'requested' || quote.status === 'approved';
+  // Determine if we should allow editing - only fabrication can edit requested quotes
+  const canEditQuote = 
+    hasPermission('quote.edit') || 
+    (hasPermission('quote.edit_requested') && quote.status === 'requested');
   
-  const hidePricingDetails = quote.status === 'requested';
+  // Whether to display pricing details
+  const canViewPricingDetails = hasPermission('quote.view_pricing');
+  
+  // Buttons visibility based on status and permissions
+  const showDeleteButton = 
+    hasPermission('quote.delete') && 
+    (quote.status === 'requested' || quote.status === 'approved');
+  
+  // Hide pricing details if user doesn't have pricing view permission
+  const hidePricingDetails = !canViewPricingDetails;
 
   return (
     <div 
@@ -101,19 +117,21 @@ export function FabricationQuoteCard({
             {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
           </Badge>
           
-          {quote.status === 'approved' && !quote.is_selected && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSelect}
-              title="Select this quote"
-            >
-              <CheckCircle2Icon className="h-4 w-4" />
-            </Button>
-          )}
+          <PermissionGuard requiredPermission="quote.select">
+            {quote.status === 'approved' && !quote.is_selected && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSelect}
+                title="Select this quote"
+              >
+                <CheckCircle2Icon className="h-4 w-4" />
+              </Button>
+            )}
+          </PermissionGuard>
           
-          {quote.status === 'submitted' && onApprove && onReject && (
-            <>
+          <PermissionGuard requiredPermission="quote.approve">
+            {quote.status === 'submitted' && onApprove && (
               <Button
                 variant="outline"
                 size="sm"
@@ -123,6 +141,11 @@ export function FabricationQuoteCard({
               >
                 <ThumbsUpIcon className="h-4 w-4" />
               </Button>
+            )}
+          </PermissionGuard>
+          
+          <PermissionGuard requiredPermission="quote.reject">
+            {quote.status === 'submitted' && onReject && (
               <Button
                 variant="outline"
                 size="sm"
@@ -132,21 +155,23 @@ export function FabricationQuoteCard({
               >
                 <ThumbsDownIcon className="h-4 w-4" />
               </Button>
-            </>
-          )}
+            )}
+          </PermissionGuard>
           
-          {quote.status === 'approved' && onRequote && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onRequote(quote)}
-              title="Request requote"
-            >
-              <RefreshCcwIcon className="h-4 w-4" />
-            </Button>
-          )}
+          <PermissionGuard requiredPermission="quote.requote">
+            {quote.status === 'approved' && onRequote && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRequote(quote)}
+                title="Request requote"
+              >
+                <RefreshCcwIcon className="h-4 w-4" />
+              </Button>
+            )}
+          </PermissionGuard>
           
-          {(quote.status === 'requested' || quote.status === 'rejected') && (
+          {canEditQuote && (
             <Button
               variant="ghost"
               size="sm"
@@ -186,23 +211,23 @@ export function FabricationQuoteCard({
           <div className="grid grid-cols-5 gap-4 text-sm">
             <div>
               <p className="font-medium text-muted-foreground">Fabrication</p>
-              <p>{displayValue(quote.fabrication_cost)}</p>
+              <p>{canViewPricingDetails ? displayValue(quote.fabrication_cost) : "-"}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Shipping</p>
-              <p>{displayValue(quote.shipping_cost)}</p>
+              <p>{canViewPricingDetails ? displayValue(quote.shipping_cost) : "-"}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Customs</p>
-              <p>{displayValue(quote.customs_cost)}</p>
+              <p>{canViewPricingDetails ? displayValue(quote.customs_cost) : "-"}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Other</p>
-              <p>{displayValue(quote.other_cost)}</p>
+              <p>{canViewPricingDetails ? displayValue(quote.other_cost) : "-"}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Total Cost</p>
-              <p>{safeCalculate(calculateTotal, quote)}</p>
+              <p>{canViewPricingDetails ? safeCalculate(calculateTotal, quote) : "-"}</p>
             </div>
           </div>
 

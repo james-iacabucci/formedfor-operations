@@ -12,6 +12,8 @@ import {
 import { useQuoteSave } from "./hooks/quotes/useQuoteSave";
 import { Button } from "@/components/ui/button";
 import { SendIcon } from "lucide-react";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface EditFabricationQuoteSheetProps {
   open: boolean;
@@ -37,6 +39,7 @@ export function EditFabricationQuoteSheet({
   const { saveQuote, isSaving } = useQuoteSave();
   const [newQuote, setNewQuote] = useState<NewQuote>(createDefaultQuote(sculptureId));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { hasPermission } = useUserRoles();
 
   // When the sheet opens, initialize with the provided quote data if editing
   useEffect(() => {
@@ -87,12 +90,19 @@ export function EditFabricationQuoteSheet({
   };
 
   // Determine if we should show the Submit for Approval button
-  // Make sure to check if the newQuote (current state) has the requested status
-  const showSubmitForApproval = !!editingQuoteId && 
+  // Only show for requested quotes, and only for fabrication role
+  const showSubmitForApproval = 
+    !!editingQuoteId && 
     newQuote.status === 'requested' && 
+    hasPermission('quote.submit_approval') && 
     !!onSubmitForApproval;
 
+  // Determine if the form is editable based on permission and quote status
+  const canEdit = hasPermission('quote.edit') || 
+    (hasPermission('quote.edit_requested') && newQuote.status === 'requested');
+
   console.log("Quote status:", newQuote.status);
+  console.log("Can edit:", canEdit);
   console.log("Should show Submit for Approval button:", showSubmitForApproval);
 
   return (
@@ -114,6 +124,7 @@ export function EditFabricationQuoteSheet({
             formatNumber={formatNumber}
             isInSheet={true}
             isVariantMode={true}
+            isReadOnly={!canEdit}
           />
         </div>
         
@@ -127,12 +138,14 @@ export function EditFabricationQuoteSheet({
               Cancel
             </Button>
             
-            <Button 
-              onClick={handleSave}
-              disabled={isSaving || isSubmitting}
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
+            {canEdit && (
+              <Button 
+                onClick={handleSave}
+                disabled={isSaving || isSubmitting}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            )}
             
             {showSubmitForApproval && (
               <Button 

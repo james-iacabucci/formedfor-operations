@@ -67,6 +67,12 @@ export function QuotesList({
     });
   }, [quotes]);
 
+  // Function to determine if a user can edit a specific quote
+  const canEditQuote = (quote: FabricationQuote) => {
+    return hasPermission('quote.edit') || 
+      (hasPermission('quote.edit_requested') && quote.status === 'requested');
+  };
+
   // Loading state - with improved skeleton UI
   if (isLoading) {
     return (
@@ -126,13 +132,13 @@ export function QuotesList({
           key={quote.id}
           quote={quote}
           fabricatorName={fabricators?.find((f) => f.id === quote.fabricator_id)?.name}
-          onSelect={hasPermission('quote.edit') ? () => handleSelectQuote(quote.id) : undefined}
-          onEdit={hasPermission('quote.edit') ? () => handleStartEdit(quote) : undefined}
-          onDelete={hasPermission('quote.delete') ? () => handleDeleteQuote(quote.id) : undefined}
-          onSubmitForApproval={hasPermission('quote.edit') ? handleSubmitForApproval : undefined}
-          onApprove={hasPermission('quote.approve') ? handleApproveQuote : undefined}
-          onReject={hasPermission('quote.reject') ? handleRejectQuote : undefined}
-          onRequote={hasPermission('quote.edit') ? handleRequoteQuote : undefined}
+          onSelect={() => handleSelectQuote(quote.id)}
+          onEdit={() => handleStartEdit(quote)}
+          onDelete={() => handleDeleteQuote(quote.id)}
+          onSubmitForApproval={handleSubmitForApproval}
+          onApprove={handleApproveQuote}
+          onReject={handleRejectQuote}
+          onRequote={handleRequoteQuote}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}
