@@ -2,12 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
-import { PencilIcon, Trash2Icon, CheckCircle2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon, CheckCircle2Icon, RefreshCcwIcon, ThumbsUpIcon, ThumbsDownIcon, SendIcon } from "lucide-react";
 import { 
   Collapsible,
   CollapsibleContent
 } from "@/components/ui/collapsible";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface FabricationQuoteCardProps {
   quote: FabricationQuote;
@@ -15,6 +16,10 @@ interface FabricationQuoteCardProps {
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onSubmitForApproval?: (quoteId: string) => void;
+  onApprove?: (quoteId: string) => void;
+  onReject?: (quoteId: string) => void;
+  onRequote?: (quote: FabricationQuote) => void;
   calculateTotal: (quote: FabricationQuote) => number;
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
@@ -28,6 +33,10 @@ export function FabricationQuoteCard({
   onSelect,
   onEdit,
   onDelete,
+  onSubmitForApproval,
+  onApprove,
+  onReject,
+  onRequote,
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
@@ -53,6 +62,17 @@ export function FabricationQuoteCard({
     }
   };
 
+  // Function to get the status badge color based on status
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'requested': return 'secondary';
+      case 'submitted': return 'default';
+      case 'approved': return 'default'; // Using default which is primary in our theme
+      case 'rejected': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
   return (
     <div 
       className={`border rounded-lg p-4 space-y-4 transition-colors ${
@@ -68,8 +88,13 @@ export function FabricationQuoteCard({
             {format(new Date(quote.quote_date), "PPP")}
           </p>
         </div>
-        <div className="flex gap-2">
-          {!quote.is_selected && (
+        <div className="flex gap-2 items-center">
+          <Badge variant={getStatusBadgeVariant(quote.status)}>
+            {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
+          </Badge>
+          
+          {/* Conditional buttons based on status */}
+          {quote.status === 'approved' && !quote.is_selected && (
             <Button
               variant="outline"
               size="sm"
@@ -79,14 +104,52 @@ export function FabricationQuoteCard({
               <CheckCircle2Icon className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onEdit}
-            title="Edit quote"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </Button>
+          
+          {quote.status === 'submitted' && onApprove && onReject && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onApprove(quote.id)}
+                title="Approve quote"
+                className="text-green-600"
+              >
+                <ThumbsUpIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onReject(quote.id)}
+                title="Reject quote"
+                className="text-destructive"
+              >
+                <ThumbsDownIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          
+          {quote.status === 'approved' && onRequote && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRequote(quote)}
+              title="Request requote"
+            >
+              <RefreshCcwIcon className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {(quote.status === 'requested' || quote.status === 'rejected') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+              title="Edit quote"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+          )}
+          
           {isEditing && (
             <Button
               variant="ghost"

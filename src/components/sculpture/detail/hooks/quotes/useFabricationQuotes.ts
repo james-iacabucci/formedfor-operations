@@ -8,8 +8,12 @@ import { useQuoteChat } from "./useQuoteChat";
 import { useQuoteSave } from "./useQuoteSave";
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { FabricationQuote } from "@/types/fabrication-quote";
 
 export function useFabricationQuotes(sculptureId: string, selectedVariantId: string | null) {
+  const { toast } = useToast();
+  
   // Use the query hook for variant quotes
   const {
     data: quotes = [],
@@ -51,6 +55,110 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
     }
   }, [selectedVariantId, refetchQuotes]);
 
+  // New status change handlers
+  const handleSubmitForApproval = useCallback(async (quoteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("fabrication_quotes")
+        .update({ status: "submitted" })
+        .eq("id", quoteId);
+
+      if (error) throw error;
+      
+      await refetchQuotes();
+      
+      toast({
+        title: "Quote Submitted",
+        description: "The quote has been submitted for approval."
+      });
+    } catch (error: any) {
+      console.error("Error submitting quote for approval:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit quote: " + error.message,
+        variant: "destructive"
+      });
+    }
+  }, [refetchQuotes, toast]);
+
+  const handleApproveQuote = useCallback(async (quoteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("fabrication_quotes")
+        .update({ status: "approved" })
+        .eq("id", quoteId);
+
+      if (error) throw error;
+      
+      await refetchQuotes();
+      
+      toast({
+        title: "Quote Approved",
+        description: "The quote has been approved."
+      });
+    } catch (error: any) {
+      console.error("Error approving quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve quote: " + error.message,
+        variant: "destructive"
+      });
+    }
+  }, [refetchQuotes, toast]);
+
+  const handleRejectQuote = useCallback(async (quoteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("fabrication_quotes")
+        .update({ status: "rejected" })
+        .eq("id", quoteId);
+
+      if (error) throw error;
+      
+      await refetchQuotes();
+      
+      toast({
+        title: "Quote Rejected",
+        description: "The quote has been rejected."
+      });
+    } catch (error: any) {
+      console.error("Error rejecting quote:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reject quote: " + error.message,
+        variant: "destructive"
+      });
+    }
+  }, [refetchQuotes, toast]);
+
+  const handleRequoteQuote = useCallback(async (quote: FabricationQuote) => {
+    try {
+      const { error } = await supabase
+        .from("fabrication_quotes")
+        .update({ status: "requested" })
+        .eq("id", quote.id);
+
+      if (error) throw error;
+      
+      await refetchQuotes();
+      
+      // Also open the edit sheet for the requote
+      handleStartEdit(quote);
+      
+      toast({
+        title: "Quote Updated",
+        description: "The quote is ready for requoting."
+      });
+    } catch (error: any) {
+      console.error("Error requoting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update quote: " + error.message,
+        variant: "destructive"
+      });
+    }
+  }, [refetchQuotes, toast, handleStartEdit]);
+
   // New method to handle quote requests
   const handleQuoteRequest = useCallback(async (fabricatorId: string, notes: string) => {
     if (!selectedVariantId) return;
@@ -82,6 +190,7 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
       markup: 4, // Default markup
       notes: notes,
       quote_date: new Date().toISOString(),
+      status: "requested", // Set initial status
       material_id: variant.material_id,
       method_id: variant.method_id,
       height_in: variant.height_in,
@@ -122,6 +231,11 @@ export function useFabricationQuotes(sculptureId: string, selectedVariantId: str
     handleAddQuote: (variant: any) => handleAddQuote(sculptureId, variant),
     handleOpenChat,
     handleQuoteSaved,
-    handleQuoteRequest
+    handleQuoteRequest,
+    // Add new status change handlers
+    handleSubmitForApproval,
+    handleApproveQuote,
+    handleRejectQuote,
+    handleRequoteQuote
   };
 }

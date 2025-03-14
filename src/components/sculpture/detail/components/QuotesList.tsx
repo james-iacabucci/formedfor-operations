@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { FabricationQuoteCard } from "../FabricationQuoteCard";
@@ -11,6 +12,10 @@ interface QuotesListProps {
   handleSelectQuote: (quoteId: string) => void;
   handleStartEdit: (quote: FabricationQuote) => void;
   handleDeleteQuote: (quoteId: string) => void;
+  handleSubmitForApproval?: (quoteId: string) => void;
+  handleApproveQuote?: (quoteId: string) => void;
+  handleRejectQuote?: (quoteId: string) => void;
+  handleRequoteQuote?: (quote: FabricationQuote) => void;
   calculateTotal: (quote: FabricationQuote) => number;
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
@@ -25,6 +30,10 @@ export function QuotesList({
   handleSelectQuote,
   handleStartEdit,
   handleDeleteQuote,
+  handleSubmitForApproval,
+  handleApproveQuote,
+  handleRejectQuote,
+  handleRequoteQuote,
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
@@ -38,6 +47,19 @@ export function QuotesList({
       if (a.is_selected) return -1;
       if (b.is_selected) return 1;
       
+      // Then sort by status priority
+      const statusPriority: Record<string, number> = {
+        'submitted': 1,
+        'requested': 2,
+        'approved': 3,
+        'rejected': 4
+      };
+      
+      if (statusPriority[a.status] !== statusPriority[b.status]) {
+        return statusPriority[a.status] - statusPriority[b.status];
+      }
+      
+      // Then by date (newest first)
       return new Date(b.quote_date).getTime() - new Date(a.quote_date).getTime();
     });
   }, [quotes]);
@@ -79,7 +101,7 @@ export function QuotesList({
   if (!isLoading && quotes.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No quotes available for this variant. Click "Add Quote" to create one.
+        No quotes available for this variant. Click "Request Quote" to create one.
       </div>
     );
   }
@@ -104,6 +126,10 @@ export function QuotesList({
           onSelect={() => handleSelectQuote(quote.id)}
           onEdit={() => handleStartEdit(quote)}
           onDelete={() => handleDeleteQuote(quote.id)}
+          onSubmitForApproval={handleSubmitForApproval}
+          onApprove={handleApproveQuote}
+          onReject={handleRejectQuote}
+          onRequote={handleRequoteQuote}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}

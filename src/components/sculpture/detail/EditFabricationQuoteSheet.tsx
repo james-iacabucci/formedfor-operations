@@ -10,13 +10,8 @@ import {
   SheetFooter
 } from "@/components/ui/sheet";
 import { useQuoteSave } from "./hooks/quotes/useQuoteSave";
-import { SheetFooterActions } from "./components/SheetFooterActions";
-import { 
-  calculateTotal,
-  calculateTradePrice,
-  calculateRetailPrice,
-  formatNumber
-} from "@/utils/fabrication-quote-calculations";
+import { Button } from "@/components/ui/button";
+import { SendIcon } from "lucide-react";
 
 interface EditFabricationQuoteSheetProps {
   open: boolean;
@@ -26,6 +21,7 @@ interface EditFabricationQuoteSheetProps {
   fabricators: any[];
   onQuoteSaved: () => Promise<void>;
   initialQuote?: NewQuote;
+  onSubmitForApproval?: (quoteId: string) => Promise<void>;
 }
 
 export function EditFabricationQuoteSheet({
@@ -35,10 +31,12 @@ export function EditFabricationQuoteSheet({
   editingQuoteId,
   fabricators,
   onQuoteSaved,
-  initialQuote
+  initialQuote,
+  onSubmitForApproval
 }: EditFabricationQuoteSheetProps) {
   const { saveQuote, isSaving } = useQuoteSave();
   const [newQuote, setNewQuote] = useState<NewQuote>(createDefaultQuote(sculptureId));
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // When the sheet opens, initialize with the provided quote data if editing
   useEffect(() => {
@@ -63,6 +61,25 @@ export function EditFabricationQuoteSheet({
     }
   };
 
+  const handleSubmitForApproval = async () => {
+    if (!editingQuoteId) return;
+    
+    setIsSubmitting(true);
+    try {
+      const success = await saveQuote(newQuote, editingQuoteId, onQuoteSaved, true);
+      if (success) {
+        onOpenChange(false);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Determine if we should show the Submit for Approval button
+  const showSubmitForApproval = editingQuoteId && 
+    initialQuote?.status === 'requested' && 
+    onSubmitForApproval;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
@@ -86,11 +103,33 @@ export function EditFabricationQuoteSheet({
         </div>
         
         <SheetFooter className="pt-4 border-t">
-          <SheetFooterActions 
-            onCancel={() => onOpenChange(false)}
-            onSave={handleSave}
-            isSaving={isSaving}
-          />
+          <div className="flex justify-end gap-2 w-full">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSaving || isSubmitting}
+            >
+              Cancel
+            </Button>
+            
+            <Button 
+              onClick={handleSave}
+              disabled={isSaving || isSubmitting}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+            
+            {showSubmitForApproval && (
+              <Button 
+                onClick={handleSubmitForApproval}
+                disabled={isSaving || isSubmitting}
+                className="gap-1"
+              >
+                <SendIcon className="h-4 w-4" />
+                {isSubmitting ? "Submitting..." : "Submit for Approval"}
+              </Button>
+            )}
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>
@@ -108,6 +147,7 @@ function createDefaultQuote(sculptureId: string): NewQuote {
     markup: 4,
     notes: "",
     quote_date: new Date().toISOString(),
+    status: "requested",
     material_id: null,
     method_id: null,
     height_in: null,
@@ -124,4 +164,29 @@ function createDefaultQuote(sculptureId: string): NewQuote {
     base_weight_lbs: null,
     variant_id: null
   };
+}
+
+// Helper functions to calculate quote values
+function calculateTotal(quote: any) {
+  return (
+    Number(quote.fabrication_cost || 0) +
+    Number(quote.shipping_cost || 0) +
+    Number(quote.customs_cost || 0) +
+    Number(quote.other_cost || 0)
+  );
+}
+
+function calculateTradePrice(quote: any) {
+  return calculateTotal(quote) * (quote.markup || 1);
+}
+
+function calculateRetailPrice(tradePrice: number) {
+  return tradePrice * 2;
+}
+
+function formatNumber(num: number) {
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }

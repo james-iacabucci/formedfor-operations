@@ -174,6 +174,7 @@ export type Database = {
           quote_date: string
           sculpture_id: string
           shipping_cost: number
+          status: string
           variant_id: string | null
           weight_kg: number | null
           weight_lbs: number | null
@@ -209,6 +210,7 @@ export type Database = {
           quote_date?: string
           sculpture_id: string
           shipping_cost?: number
+          status?: string
           variant_id?: string | null
           weight_kg?: number | null
           weight_lbs?: number | null
@@ -244,6 +246,7 @@ export type Database = {
           quote_date?: string
           sculpture_id?: string
           shipping_cost?: number
+          status?: string
           variant_id?: string | null
           weight_kg?: number | null
           weight_lbs?: number | null

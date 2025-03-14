@@ -12,6 +12,10 @@ interface VariantQuotesSectionProps {
   handleSelectQuote: (quoteId: string) => void;
   handleStartEdit: (quote: FabricationQuote) => void;
   handleDeleteQuote: (quoteId: string) => void;
+  handleSubmitForApproval?: (quoteId: string) => void;
+  handleApproveQuote?: (quoteId: string) => void;
+  handleRejectQuote?: (quoteId: string) => void;
+  handleRequoteQuote?: (quote: FabricationQuote) => void;
   calculateTotal: (quote: FabricationQuote) => number;
   calculateTradePrice: (quote: FabricationQuote) => number;
   calculateRetailPrice: (tradePrice: number) => number;
@@ -27,6 +31,10 @@ export function VariantQuotesSection({
   handleSelectQuote,
   handleStartEdit,
   handleDeleteQuote,
+  handleSubmitForApproval,
+  handleApproveQuote,
+  handleRejectQuote,
+  handleRequoteQuote,
   calculateTotal,
   calculateTradePrice,
   calculateRetailPrice,
@@ -49,6 +57,10 @@ export function VariantQuotesSection({
       handleSelectQuote={handleSelectQuote}
       handleStartEdit={handleStartEdit}
       handleDeleteQuote={handleDeleteQuote}
+      handleSubmitForApproval={handleSubmitForApproval}
+      handleApproveQuote={handleApproveQuote}
+      handleRejectQuote={handleRejectQuote}
+      handleRequoteQuote={handleRequoteQuote}
       calculateTotal={calculateTotal}
       calculateTradePrice={calculateTradePrice}
       calculateRetailPrice={calculateRetailPrice}

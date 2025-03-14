@@ -51,11 +51,15 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     isRequestDialogOpen,
     setIsRequestDialogOpen,
     handleSelectQuote,
+    handleDeleteQuote,
     handleStartEdit,
     handleOpenChat,
     handleQuoteSaved,
-    handleDeleteQuote,
-    handleQuoteRequest
+    handleQuoteRequest,
+    handleSubmitForApproval,
+    handleApproveQuote,
+    handleRejectQuote,
+    handleRequoteQuote
   } = useFabricationQuotes(sculptureId, selectedVariantId);
 
   useEffect(() => {
@@ -145,6 +149,10 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           handleSelectQuote={handleSelectQuote}
           handleStartEdit={handleStartEdit}
           handleDeleteQuote={handleDeleteQuote}
+          handleSubmitForApproval={handleSubmitForApproval}
+          handleApproveQuote={handleApproveQuote}
+          handleRejectQuote={handleRejectQuote}
+          handleRequoteQuote={handleRequoteQuote}
           calculateTotal={calculateTotal}
           calculateTradePrice={calculateTradePrice}
           calculateRetailPrice={calculateRetailPrice}
@@ -160,6 +168,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         fabricators={fabricators || []}
         onQuoteSaved={handleQuoteSaved}
         initialQuote={initialQuote}
+        onSubmitForApproval={handleSubmitForApproval}
       />
 
       <RequestQuoteDialog

@@ -12,6 +12,7 @@ export interface FabricationQuote {
   notes: string | null;
   created_at: string;
   is_selected: boolean;
+  status: 'requested' | 'submitted' | 'approved' | 'rejected';
   
   // Sculpture Details (moved from sculpture)
   material_id: string | null;

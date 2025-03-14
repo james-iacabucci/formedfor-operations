@@ -11,7 +11,8 @@ export function useQuoteSave() {
   const saveQuote = async (
     newQuote: NewQuote, 
     editingQuoteId: string | null, 
-    onSuccess: () => Promise<void>
+    onSuccess: () => Promise<void>,
+    submitForApproval: boolean = false
   ) => {
     if (!newQuote.fabricator_id) {
       toast({
@@ -19,12 +20,19 @@ export function useQuoteSave() {
         description: "Please select a fabricator",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     setIsSaving(true);
     try {
       console.log("Saving quote:", newQuote);
+      
+      // If submitting for approval, update status
+      if (submitForApproval) {
+        newQuote.status = "submitted";
+      } else if (!newQuote.status) {
+        newQuote.status = "requested";
+      }
       
       if (editingQuoteId) {
         // Update existing quote
@@ -39,6 +47,7 @@ export function useQuoteSave() {
             markup: newQuote.markup,
             notes: newQuote.notes,
             quote_date: newQuote.quote_date,
+            status: newQuote.status,
             // Include all physical attributes from the variant
             material_id: newQuote.material_id,
             method_id: newQuote.method_id,
@@ -65,7 +74,7 @@ export function useQuoteSave() {
 
         toast({
           title: "Success",
-          description: "Quote updated successfully",
+          description: submitForApproval ? "Quote submitted for approval" : "Quote updated successfully",
         });
       } else {
         // Add new quote
