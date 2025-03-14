@@ -14,5 +14,5 @@ export interface UserWithRoles {
   avatar_url?: string | null;
   phone?: string | null;
   created_at?: string;
-  roles: AppRole[];
+  role: AppRole | null;
 }

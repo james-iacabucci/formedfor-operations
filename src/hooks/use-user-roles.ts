@@ -2,62 +2,82 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { AppRole, UserRole } from "@/types/roles";
+import { AppRole } from "@/types/roles";
 import { toast } from "sonner";
 
 export function useUserRoles() {
   const { user } = useAuth();
-  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      setRoles([]);
+      setRole(null);
       setIsAdmin(false);
       setLoading(false);
       return;
     }
 
-    const fetchRoles = async () => {
+    const fetchRole = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase.rpc('get_user_roles', {
-          _user_id: user.id
-        });
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
 
-        if (error) throw error;
+        if (error && error.code !== 'PGRST116') {
+          // PGRST116 is not found error, which is expected if user has no role
+          console.error('Error fetching user role:', error);
+          throw error;
+        }
         
-        const userRoles = data || [];
-        setRoles(userRoles);
-        setIsAdmin(userRoles.includes('admin'));
+        const userRole = data?.role || null;
+        setRole(userRole);
+        setIsAdmin(userRole === 'admin');
         
       } catch (error) {
-        console.error('Error fetching user roles:', error);
+        console.error('Error fetching user role:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRoles();
+    fetchRole();
   }, [user]);
 
-  const hasRole = (role: AppRole) => {
-    return roles.includes(role);
+  const hasRole = (requiredRole: AppRole) => {
+    return role === requiredRole;
   };
 
-  const assignRole = async (userId: string, role: AppRole) => {
+  const assignRole = async (userId: string, newRole: AppRole) => {
     try {
+      // First, delete any existing role for this user
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+      
+      // Then insert the new role
       const { error } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: role
+          role: newRole
         });
 
       if (error) throw error;
       
-      toast.success(`Role ${role} assigned successfully`);
+      toast.success(`Role ${newRole} assigned successfully`);
+      
+      // If the current user's role is being updated, update the local state
+      if (user && userId === user.id) {
+        setRole(newRole);
+        setIsAdmin(newRole === 'admin');
+      }
+      
       return true;
     } catch (error) {
       console.error('Error assigning role:', error);
@@ -66,17 +86,23 @@ export function useUserRoles() {
     }
   };
 
-  const removeRole = async (userId: string, role: AppRole) => {
+  const removeRole = async (userId: string) => {
     try {
       const { error } = await supabase
         .from('user_roles')
         .delete()
-        .eq('user_id', userId)
-        .eq('role', role);
+        .eq('user_id', userId);
 
       if (error) throw error;
       
-      toast.success(`Role ${role} removed successfully`);
+      toast.success(`Role removed successfully`);
+      
+      // If the current user's role is being removed, update the local state
+      if (user && userId === user.id) {
+        setRole(null);
+        setIsAdmin(false);
+      }
+      
       return true;
     } catch (error) {
       console.error('Error removing role:', error);
@@ -86,7 +112,7 @@ export function useUserRoles() {
   };
 
   return {
-    roles,
+    role,
     loading,
     isAdmin,
     hasRole,

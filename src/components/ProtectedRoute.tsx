@@ -11,9 +11,9 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, requiredRoles }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const { roles, loading: rolesLoading } = useUserRoles();
+  const { role, loading: roleLoading } = useUserRoles();
 
-  if (loading || rolesLoading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -25,9 +25,9 @@ export const ProtectedRoute = ({ children, requiredRoles }: ProtectedRouteProps)
     return <Navigate to="/login" replace />;
   }
 
-  // If roles are required, check if the user has at least one of them
+  // If roles are required, check if the user has one of them
   if (requiredRoles && requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role => roles.includes(role));
+    const hasRequiredRole = role !== null && requiredRoles.includes(role);
     
     if (!hasRequiredRole) {
       return (

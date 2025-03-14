@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/use-user-roles";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Shield, UserCircle } from "lucide-react";
 
 export function RoleManagement() {
@@ -32,15 +33,20 @@ export function RoleManagement() {
         // Fetch roles for each user
         const usersWithRoles = await Promise.all(
           profiles.map(async (profile) => {
-            const { data: roleData, error: roleError } = await supabase.rpc('get_user_roles', {
-              _user_id: profile.id
-            });
+            const { data: roleData, error: roleError } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', profile.id)
+              .single();
             
-            if (roleError) throw roleError;
+            if (roleError && roleError.code !== 'PGRST116') {
+              // PGRST116 is not found error, which is expected if user has no role
+              throw roleError;
+            }
             
             return {
               ...profile,
-              roles: roleData || []
+              role: roleData?.role || null
             };
           })
         );
@@ -59,24 +65,24 @@ export function RoleManagement() {
     }
   }, [isAdmin]);
 
-  const handleRoleToggle = async (userId: string, role: AppRole, hasRole: boolean) => {
-    if (hasRole) {
-      // Remove the role
-      const success = await removeRole(userId, role);
+  const handleRoleChange = async (userId: string, newRole: AppRole | null) => {
+    if (newRole === null) {
+      // Remove role
+      const success = await removeRole(userId);
       if (success) {
         setUsers(users.map(user => 
           user.id === userId 
-            ? { ...user, roles: user.roles.filter(r => r !== role) } 
+            ? { ...user, role: null } 
             : user
         ));
       }
     } else {
-      // Add the role
-      const success = await assignRole(userId, role);
+      // Assign new role
+      const success = await assignRole(userId, newRole);
       if (success) {
         setUsers(users.map(user => 
           user.id === userId 
-            ? { ...user, roles: [...user.roles, role] } 
+            ? { ...user, role: newRole } 
             : user
         ));
       }
@@ -107,7 +113,7 @@ export function RoleManagement() {
           User Role Management
         </CardTitle>
         <CardDescription>
-          Assign or remove roles for users in the system.
+          Assign a role to each user in the system.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,28 +131,29 @@ export function RoleManagement() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {availableRoles.map(role => {
-                    const hasRole = user.roles.includes(role);
-                    return (
-                      <div key={role} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${user.id}-${role}`}
-                          checked={hasRole}
-                          onCheckedChange={(checked) => {
-                            handleRoleToggle(user.id, role, !!hasRole);
-                          }}
-                        />
-                        <label
-                          htmlFor={`${user.id}-${role}`}
-                          className="text-sm font-medium capitalize leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {role}
-                        </label>
-                      </div>
-                    );
-                  })}
-                </div>
+                <RadioGroup 
+                  value={user.role || ""} 
+                  onValueChange={(value) => {
+                    const newRole = value ? value as AppRole : null;
+                    handleRoleChange(user.id, newRole);
+                  }}
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+                >
+                  {availableRoles.map(role => (
+                    <div key={role} className="flex items-center space-x-2">
+                      <RadioGroupItem value={role} id={`${user.id}-${role}`} />
+                      <Label htmlFor={`${user.id}-${role}`} className="capitalize">
+                        {role}
+                      </Label>
+                    </div>
+                  ))}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="" id={`${user.id}-none`} />
+                    <Label htmlFor={`${user.id}-none`}>
+                      No Role
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
             ))
           )}
