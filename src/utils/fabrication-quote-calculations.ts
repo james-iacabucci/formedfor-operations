@@ -5,6 +5,7 @@ export function calculateTotal(quote: {
   customs_cost: number | null; 
   other_cost: number | null; 
 }) {
+  // Safely handle null values by defaulting to 0
   return (
     Number(quote.fabrication_cost || 0) +
     Number(quote.shipping_cost || 0) +

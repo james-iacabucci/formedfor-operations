@@ -157,10 +157,10 @@ export type Database = {
           base_width_cm: number | null
           base_width_in: number | null
           created_at: string
-          customs_cost: number
+          customs_cost: number | null
           depth_cm: number | null
           depth_in: number | null
-          fabrication_cost: number
+          fabrication_cost: number | null
           fabricator_id: string
           height_cm: number | null
           height_in: number | null
@@ -170,10 +170,10 @@ export type Database = {
           material_id: string | null
           method_id: string | null
           notes: string | null
-          other_cost: number
+          other_cost: number | null
           quote_date: string
           sculpture_id: string
-          shipping_cost: number
+          shipping_cost: number | null
           status: string
           variant_id: string | null
           weight_kg: number | null
@@ -193,10 +193,10 @@ export type Database = {
           base_width_cm?: number | null
           base_width_in?: number | null
           created_at?: string
-          customs_cost?: number
+          customs_cost?: number | null
           depth_cm?: number | null
           depth_in?: number | null
-          fabrication_cost?: number
+          fabrication_cost?: number | null
           fabricator_id: string
           height_cm?: number | null
           height_in?: number | null
@@ -206,10 +206,10 @@ export type Database = {
           material_id?: string | null
           method_id?: string | null
           notes?: string | null
-          other_cost?: number
+          other_cost?: number | null
           quote_date?: string
           sculpture_id: string
-          shipping_cost?: number
+          shipping_cost?: number | null
           status?: string
           variant_id?: string | null
           weight_kg?: number | null
@@ -229,10 +229,10 @@ export type Database = {
           base_width_cm?: number | null
           base_width_in?: number | null
           created_at?: string
-          customs_cost?: number
+          customs_cost?: number | null
           depth_cm?: number | null
           depth_in?: number | null
-          fabrication_cost?: number
+          fabrication_cost?: number | null
           fabricator_id?: string
           height_cm?: number | null
           height_in?: number | null
@@ -242,10 +242,10 @@ export type Database = {
           material_id?: string | null
           method_id?: string | null
           notes?: string | null
-          other_cost?: number
+          other_cost?: number | null
           quote_date?: string
           sculpture_id?: string
-          shipping_cost?: number
+          shipping_cost?: number | null
           status?: string
           variant_id?: string | null
           weight_kg?: number | null
