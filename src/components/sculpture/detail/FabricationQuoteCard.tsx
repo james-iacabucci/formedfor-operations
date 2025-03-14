@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { FabricationQuote } from "@/types/fabrication-quote";
 import { format } from "date-fns";
@@ -35,6 +36,22 @@ export function FabricationQuoteCard({
 }: FabricationQuoteCardProps) {
   // We'll keep the state but make it always expanded by default
   const [pricingDetailsOpen, setPricingDetailsOpen] = useState(true);
+
+  // Helper to display dash for null/undefined/0 values
+  const displayValue = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    return `$${formatNumber(value)}`;
+  };
+
+  // Helper for calculating values that might be null
+  const safeCalculate = (calculator: Function, ...args: any[]) => {
+    try {
+      const result = calculator(...args);
+      return result === 0 ? "-" : `$${formatNumber(result)}`;
+    } catch (error) {
+      return "-";
+    }
+  };
 
   return (
     <div 
@@ -90,38 +107,38 @@ export function FabricationQuoteCard({
           <div className="grid grid-cols-5 gap-4 text-sm">
             <div>
               <p className="font-medium text-muted-foreground">Fabrication</p>
-              <p>${formatNumber(quote.fabrication_cost)}</p>
+              <p>{displayValue(quote.fabrication_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Shipping</p>
-              <p>${formatNumber(quote.shipping_cost)}</p>
+              <p>{displayValue(quote.shipping_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Customs</p>
-              <p>${formatNumber(quote.customs_cost)}</p>
+              <p>{displayValue(quote.customs_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Other</p>
-              <p>${formatNumber(quote.other_cost)}</p>
+              <p>{displayValue(quote.other_cost)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Total Cost</p>
-              <p>${formatNumber(calculateTotal(quote))}</p>
+              <p>{safeCalculate(calculateTotal, quote)}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-5 gap-4 text-sm mt-4">
             <div>
               <p className="font-medium text-muted-foreground">Markup</p>
-              <p>{quote.markup}x</p>
+              <p>{quote.markup ? `${quote.markup}x` : "-"}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Trade Price</p>
-              <p>${formatNumber(calculateTradePrice(quote))}</p>
+              <p>{safeCalculate(calculateTradePrice, quote)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Retail Price</p>
-              <p>${formatNumber(calculateRetailPrice(calculateTradePrice(quote)))}</p>
+              <p>{safeCalculate(calculateRetailPrice, calculateTradePrice(quote))}</p>
             </div>
             <div className="col-span-2" />
           </div>

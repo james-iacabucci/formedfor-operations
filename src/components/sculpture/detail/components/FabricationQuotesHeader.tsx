@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { PlusIcon, MessageSquareIcon } from "lucide-react";
+import { DollarSign, MessageSquare } from "lucide-react";
 
 interface FabricationQuotesHeaderProps {
   onAddQuote: () => void;
@@ -24,15 +24,16 @@ export function FabricationQuotesHeader({
           className="h-10 w-10 p-0"
           title="Chat about quotes"
         >
-          <MessageSquareIcon className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4 stroke-[1.5px]" />
         </Button>
         <Button 
           onClick={onAddQuote} 
           size="sm" 
           disabled={disabled}
           variant="outline"
+          className="gap-1"
         >
-          <PlusIcon className="h-4 w-4 mr-2" />
+          <DollarSign className="h-4 w-4" />
           Request Quote
         </Button>
       </div>

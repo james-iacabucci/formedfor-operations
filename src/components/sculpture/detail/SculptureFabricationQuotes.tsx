@@ -16,6 +16,7 @@ import {
 } from "@/utils/fabrication-quote-calculations";
 import { FabricationQuotesHeader } from "./components/FabricationQuotesHeader";
 import { VariantQuotesSection } from "./components/VariantQuotesSection";
+import { RequestQuoteDialog } from "./components/RequestQuoteDialog";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
@@ -47,12 +48,14 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
     isChatOpen,
     setIsChatOpen,
     chatThreadId,
+    isRequestDialogOpen,
+    setIsRequestDialogOpen,
     handleSelectQuote,
     handleStartEdit,
-    handleAddQuote,
     handleOpenChat,
     handleQuoteSaved,
     handleDeleteQuote,
+    handleQuoteRequest
   } = useFabricationQuotes(sculptureId, selectedVariantId);
 
   useEffect(() => {
@@ -128,7 +131,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
 
       <div className="space-y-6">
         <FabricationQuotesHeader
-          onAddQuote={() => currentVariant && handleAddQuote(currentVariant)}
+          onAddQuote={() => setIsRequestDialogOpen(true)}
           onOpenChat={handleOpenChat}
           disabled={!selectedVariantId}
         />
@@ -157,6 +160,13 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
         fabricators={fabricators || []}
         onQuoteSaved={handleQuoteSaved}
         initialQuote={initialQuote}
+      />
+
+      <RequestQuoteDialog
+        open={isRequestDialogOpen}
+        onOpenChange={setIsRequestDialogOpen}
+        fabricators={fabricators || []}
+        onRequestSubmit={handleQuoteRequest}
       />
 
       {chatThreadId && (
