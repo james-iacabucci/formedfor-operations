@@ -21,13 +21,17 @@ export const ProtectedRoute = ({
   const { role, loading: roleLoading, hasPermission, fetchRole } = useUserRoles();
   const location = useLocation();
   const lastPathRef = useRef(location.pathname);
+  const initialRoleFetchDone = useRef(false);
 
-  // Only refresh role when route path changes, not on every render
+  // Only fetch role once when component mounts or when path changes
   useEffect(() => {
-    if (user && location.pathname !== lastPathRef.current) {
-      console.log('Route changed to a new path - refreshing user role');
-      lastPathRef.current = location.pathname;
-      fetchRole(false); // Not forcing refresh to allow caching
+    if (user) {
+      if (!initialRoleFetchDone.current || location.pathname !== lastPathRef.current) {
+        console.log(`Route changed or initial load - checking user role`);
+        lastPathRef.current = location.pathname;
+        initialRoleFetchDone.current = true;
+        fetchRole(false); // Not forcing refresh to allow caching
+      }
     }
   }, [location.pathname, user, fetchRole]);
 

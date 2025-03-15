@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,29 +61,33 @@ export function useUserRoles() {
         throw error;
       }
       
-      const userRole = data?.role || (role || 'sales');
+      // Remove the default fallback to 'sales' when no role is found
+      const userRole = data?.role || null;
       console.log(`User ${user.id} has role: ${userRole}`);
       
       if (role !== userRole) {
         setRole(userRole);
-        setIsAdmin(userRole === 'admin');
-        setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+        if (userRole) {
+          setIsAdmin(userRole === 'admin');
+          setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+        } else {
+          setIsAdmin(false);
+          setPermissions([]);
+        }
       }
 
-      roleCache.current[user.id] = {
-        role: userRole,
-        timestamp: currentTime
-      };
+      if (userRole) {
+        roleCache.current[user.id] = {
+          role: userRole,
+          timestamp: currentTime
+        };
+      }
       
       setLastRefreshTime(currentTime);
       
     } catch (error) {
       console.error('Error fetching user role:', error);
-      if (!role) {
-        setRole('sales');
-        setIsAdmin(false);
-        setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
-      }
+      // Don't set a default role on error
     } finally {
       setLoading(false);
       setTimeout(() => {
