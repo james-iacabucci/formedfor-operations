@@ -56,12 +56,27 @@ export function useUserRoles() {
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching user role:', error);
-        throw error;
+        if (error.code === 'PGRST116') {
+          // No role found, check database directly to see what's going on
+          console.log('No role found in user_roles table, checking if role exists');
+          const { count, error: countError } = await supabase
+            .from('user_roles')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+            
+          if (countError) {
+            console.error('Error checking role count:', countError);
+          } else {
+            console.log(`Found ${count} roles for user ${user.id}`);
+          }
+        }
+        if (error.code !== 'PGRST116') {
+          throw error;
+        }
       }
       
-      // Remove the default fallback to 'sales' when no role is found
       const userRole = data?.role || null;
       console.log(`User ${user.id} has role: ${userRole}`);
       
@@ -87,7 +102,6 @@ export function useUserRoles() {
       
     } catch (error) {
       console.error('Error fetching user role:', error);
-      // Don't set a default role on error
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -96,16 +110,53 @@ export function useUserRoles() {
     }
   }, [user, lastRefreshTime, role, loading]);
 
+  // Add a function to ensure user has a role
+  const ensureUserHasRole = async () => {
+    if (!user || role) return; // Skip if no user or already has role
+    
+    try {
+      console.log(`Checking if user ${user.id} needs a default role assigned`);
+      
+      // Only proceed if we're sure the user has no role
+      const { count, error: countError } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+        
+      if (countError) {
+        console.error('Error checking role count:', countError);
+        return;
+      }
+      
+      if (count === 0) {
+        console.log(`No roles found for user ${user.id}, assigning default role`);
+        await assignRole(user.id, 'fabrication');
+        toast.success('Default role assigned');
+        fetchRole(true);
+      }
+    } catch (error) {
+      console.error('Error ensuring user has role:', error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchRole(!role);
+      
+      // If after initial fetch there's still no role, ensure a default one
+      if (!role && !loading) {
+        const timer = setTimeout(() => {
+          ensureUserHasRole();
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
     } else {
       setRole(null);
       setIsAdmin(false);
       setPermissions([]);
       setLoading(false);
     }
-  }, [fetchRole, user, role]);
+  }, [fetchRole, user, role, loading]);
 
   const hasRole = useCallback((requiredRole: AppRole) => {
     return role === requiredRole;
@@ -119,19 +170,36 @@ export function useUserRoles() {
     try {
       console.log(`Attempting to assign role ${newRole} to user ${userId}`);
       
-      await supabase
+      // First check if a role already exists
+      const { data: existingRole, error: checkError } = await supabase
         .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
       
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: newRole
-        });
-
-      if (error) throw error;
+      if (existingRole) {
+        // Update existing role
+        const { error } = await supabase
+          .from('user_roles')
+          .update({ role: newRole })
+          .eq('id', existingRole.id);
+          
+        if (error) throw error;
+      } else {
+        // Create new role
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: newRole
+          });
+          
+        if (error) throw error;
+      }
       
       console.log(`Successfully assigned role ${newRole} to user ${userId}`);
       toast.success(`Role ${newRole} assigned successfully`);
@@ -169,6 +237,7 @@ export function useUserRoles() {
     assignRole,
     removeRole,
     permissions,
-    fetchRole
+    fetchRole,
+    ensureUserHasRole
   };
 }

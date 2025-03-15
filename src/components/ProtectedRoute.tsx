@@ -18,7 +18,7 @@ export const ProtectedRoute = ({
   requiredPermissions 
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const { role, loading: roleLoading, hasPermission, fetchRole } = useUserRoles();
+  const { role, loading: roleLoading, hasPermission, fetchRole, ensureUserHasRole } = useUserRoles();
   const location = useLocation();
   const lastPathRef = useRef(location.pathname);
   const initialRoleFetchDone = useRef(false);
@@ -31,9 +31,19 @@ export const ProtectedRoute = ({
         lastPathRef.current = location.pathname;
         initialRoleFetchDone.current = true;
         fetchRole(false); // Not forcing refresh to allow caching
+        
+        // If no role is found, ensure the user has one
+        const timer = setTimeout(() => {
+          if (!role && !roleLoading) {
+            console.log('No role found in protected route, ensuring user has a default role');
+            ensureUserHasRole();
+          }
+        }, 1500);
+        
+        return () => clearTimeout(timer);
       }
     }
-  }, [location.pathname, user, fetchRole]);
+  }, [location.pathname, user, fetchRole, role, roleLoading, ensureUserHasRole]);
 
   if (loading || roleLoading) {
     return (
