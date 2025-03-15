@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 import { ProfileField } from "./ProfileField";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AppRole } from "@/types/roles";
 
 interface ProfileData {
   username: string | null;
@@ -146,7 +147,12 @@ export function ProfileSection({ roleLoading, role }: ProfileSectionProps) {
   };
 
   const formatRole = (role: string) => {
-    return role.charAt(0).toUpperCase() + role.slice(1);
+    // Format each word in the role (e.g., "sales_manager" becomes "Sales Manager")
+    if (!role) return '';
+    
+    return role.split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   return (

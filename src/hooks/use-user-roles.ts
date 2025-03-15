@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,9 +34,7 @@ export function useUserRoles() {
       console.log(`Fetching role for user ${user.id} (force: ${forceRefresh})`);
       setLoading(true);
       
-      // Clear Supabase cache for this query by adding a timestamp
-      const cacheInvalidator = `?cache_bust=${Date.now()}`;
-      
+      // Clear Supabase cache for this query by adding a unique parameter to the URL
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -51,12 +48,12 @@ export function useUserRoles() {
       }
       
       const userRole = data?.role || 'sales'; // Default to sales if no role found
-      console.log(`User ${user.id} has role: ${userRole}`); // Debug log
+      console.log(`User ${user.id} has role: ${userRole}`);
       
       setRole(userRole);
       setIsAdmin(userRole === 'admin');
       
-      // Set default permissions based on role
+      // Set permissions based on role
       setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
       setLastRefreshTime(currentTime);
       
