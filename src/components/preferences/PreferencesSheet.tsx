@@ -24,7 +24,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
   const { user } = useAuth();
   const { role, loading: roleLoading, fetchRole } = useUserRoles();
   const didFetchRef = useRef(false);
-  const roleAssignmentAttempted = useRef(false);
 
   // Only fetch role once when sheet opens and user exists
   useEffect(() => {
