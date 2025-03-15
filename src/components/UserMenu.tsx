@@ -17,11 +17,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "./permissions/PermissionGuard";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
-  const { fetchRole } = useUserRoles();
+  const { fetchRole, hasPermission } = useUserRoles();
   const [showSettings, setShowSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -141,10 +142,17 @@ export function UserMenu() {
             <User className="mr-2 h-4 w-4" />
             User Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowSettings(true)}>
-            <Settings className="mr-2 h-4 w-4" />
-            System Settings
-          </DropdownMenuItem>
+          
+          <PermissionGuard 
+            requiredPermission="settings.manage"
+            fallback={null}
+          >
+            <DropdownMenuItem onClick={() => setShowSettings(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              System Settings
+            </DropdownMenuItem>
+          </PermissionGuard>
+          
           <DropdownMenuItem onClick={handleThemeChange} disabled={isChangingTheme}>
             {theme === "light" ? (
               <Moon className="mr-2 h-4 w-4" />
