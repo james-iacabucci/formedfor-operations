@@ -8,7 +8,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { User, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../AuthProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserRoles } from "@/hooks/use-user-roles";
@@ -25,12 +25,19 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
   const { user } = useAuth();
   const { role, loading: roleLoading, fetchRole } = useUserRoles();
   const [activeTab, setActiveTab] = useState("profile");
+  const didFetchRef = useRef(false);
 
-  // Force refresh roles when sheet opens
+  // Only fetch role once when sheet opens and user exists
   useEffect(() => {
-    if (open && user) {
-      console.log('PreferencesSheet opened - forcing role refresh');
-      fetchRole(true); // Force refresh
+    if (open && user && !didFetchRef.current) {
+      console.log('PreferencesSheet opened - refreshing role');
+      didFetchRef.current = true;
+      fetchRole(true); // Force refresh once
+    }
+    
+    // Reset the flag when sheet closes
+    if (!open) {
+      didFetchRef.current = false;
     }
   }, [open, user, fetchRole]);
 
@@ -90,7 +97,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
             
             <div className="flex-1 overflow-y-auto px-6">
               <TabsContent value="profile" className="mt-0 py-6 h-full">
-                <ProfileSection roleLoading={roleLoading} role={role} />
+                <ProfileSection roleLoading={roleLoading} role={role || ''} />
               </TabsContent>
               
               <TabsContent value="appearance" className="mt-0 py-6 h-full">

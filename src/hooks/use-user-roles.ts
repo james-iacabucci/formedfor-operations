@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { AppRole } from "@/types/roles";
@@ -7,34 +7,48 @@ import { PermissionAction, DEFAULT_ROLE_PERMISSIONS } from "@/types/permissions"
 
 export function useUserRoles() {
   const { user } = useAuth();
-  const [role, setRole] = useState<AppRole>('sales'); // Default to sales
+  const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [permissions, setPermissions] = useState<PermissionAction[]>([]);
   const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
+  const fetchInProgress = useRef(false);
+  const roleCache = useRef<Record<string, { role: AppRole, timestamp: number }>>({});
 
   const fetchRole = useCallback(async (forceRefresh = false) => {
-    if (!user) {
-      console.log('No user logged in, setting default role and permissions');
-      setRole('sales'); // Default role
-      setIsAdmin(false);
-      setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']); // Default permissions
-      setLoading(false);
+    if (!user || fetchInProgress.current) {
+      if (!user) {
+        console.log('No user logged in, keeping current role state');
+        if (loading) setLoading(false);
+      }
       return;
     }
 
-    // Only refresh if it's been more than 5 seconds since the last refresh or if force refresh is requested
+    const cachedData = roleCache.current[user.id];
     const currentTime = Date.now();
+    const cacheAge = cachedData ? currentTime - cachedData.timestamp : Infinity;
+    
+    if (!forceRefresh && cachedData && cacheAge < 10000) {
+      console.log(`Using cached role for user ${user.id}: ${cachedData.role}`);
+      if (role !== cachedData.role) {
+        setRole(cachedData.role);
+        setIsAdmin(cachedData.role === 'admin');
+        setPermissions(DEFAULT_ROLE_PERMISSIONS[cachedData.role]);
+      }
+      if (loading) setLoading(false);
+      return;
+    }
+
     if (!forceRefresh && (currentTime - lastRefreshTime) < 5000) {
       console.log('Skipping role refresh - recent refresh occurred');
       return;
     }
 
     try {
+      fetchInProgress.current = true;
       console.log(`Fetching role for user ${user.id} (force: ${forceRefresh})`);
       setLoading(true);
       
-      // Clear Supabase cache for this query by adding a unique parameter to the URL
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -42,40 +56,55 @@ export function useUserRoles() {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        // PGRST116 is not found error, which is expected if user has no role
         console.error('Error fetching user role:', error);
         throw error;
       }
       
-      const userRole = data?.role || 'sales'; // Default to sales if no role found
+      const userRole = data?.role || (role || 'sales');
       console.log(`User ${user.id} has role: ${userRole}`);
       
-      setRole(userRole);
-      setIsAdmin(userRole === 'admin');
+      if (role !== userRole) {
+        setRole(userRole);
+        setIsAdmin(userRole === 'admin');
+        setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+      }
+
+      roleCache.current[user.id] = {
+        role: userRole,
+        timestamp: currentTime
+      };
       
-      // Set permissions based on role
-      setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
       setLastRefreshTime(currentTime);
       
     } catch (error) {
       console.error('Error fetching user role:', error);
-      // If there's an error, set a default role
-      setRole('sales');
-      setIsAdmin(false);
-      setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
+      if (!role) {
+        setRole('sales');
+        setIsAdmin(false);
+        setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
+      }
     } finally {
       setLoading(false);
+      setTimeout(() => {
+        fetchInProgress.current = false;
+      }, 300);
     }
-  }, [user, lastRefreshTime]);
+  }, [user, lastRefreshTime, role, loading]);
 
-  // Fetch roles on component mount and when user changes
   useEffect(() => {
-    fetchRole(true);
-  }, [fetchRole, user]);
+    if (user) {
+      fetchRole(!role);
+    } else {
+      setRole(null);
+      setIsAdmin(false);
+      setPermissions([]);
+      setLoading(false);
+    }
+  }, [fetchRole, user, role]);
 
-  const hasRole = (requiredRole: AppRole) => {
+  const hasRole = useCallback((requiredRole: AppRole) => {
     return role === requiredRole;
-  };
+  }, [role]);
 
   const hasPermission = useCallback((requiredPermission: PermissionAction) => {
     return permissions.includes(requiredPermission);
@@ -85,13 +114,11 @@ export function useUserRoles() {
     try {
       console.log(`Attempting to assign role ${newRole} to user ${userId}`);
       
-      // First, delete any existing role for this user
       await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
       
-      // Then insert the new role
       const { error } = await supabase
         .from('user_roles')
         .insert({
@@ -104,16 +131,15 @@ export function useUserRoles() {
       console.log(`Successfully assigned role ${newRole} to user ${userId}`);
       toast.success(`Role ${newRole} assigned successfully`);
       
-      // If the current user's role is being updated, update the local state
       if (user && userId === user.id) {
+        roleCache.current[userId] = {
+          role: newRole,
+          timestamp: Date.now()
+        };
+        
         setRole(newRole);
         setIsAdmin(newRole === 'admin');
         setPermissions(DEFAULT_ROLE_PERMISSIONS[newRole]);
-      }
-      
-      // Force refresh the role if the user being updated is the current user
-      if (user && userId === user.id) {
-        fetchRole(true);
       }
       
       return true;
@@ -124,8 +150,6 @@ export function useUserRoles() {
     }
   };
 
-  // The removeRole function is no longer needed since users always have a role
-  // We'll keep it for backwards compatibility but make it a no-op that logs a warning
   const removeRole = async (userId: string) => {
     console.warn('Removing roles is no longer supported. All users must have a role.');
     return false;
@@ -138,8 +162,8 @@ export function useUserRoles() {
     hasRole,
     hasPermission,
     assignRole,
-    removeRole, // Kept for backwards compatibility
+    removeRole,
     permissions,
-    fetchRole // Export the fetchRole function to allow manual refresh
+    fetchRole
   };
 }
