@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppRole, UserWithRoles } from "@/types/roles";
@@ -48,6 +47,9 @@ export function RoleManagement() {
               throw roleError;
             }
             
+            // Log the role for debugging
+            console.log(`User ${profile.username || profile.id} has role: ${roleData?.role || 'sales'}`);
+            
             return {
               ...profile,
               role: roleData?.role || 'sales' // Default to 'sales' if no role found
@@ -73,11 +75,61 @@ export function RoleManagement() {
     // Always assign a role, never remove
     const success = await assignRole(userId, newRole);
     if (success) {
+      // Immediately update the UI
       setUsers(users.map(user => 
         user.id === userId 
           ? { ...user, role: newRole } 
           : user
       ));
+      
+      // Log the changed role for debugging
+      console.log(`Changed role for user ${userId} to ${newRole}`);
+      
+      // Additionally, force a refresh from the database to ensure consistency
+      const { data: updatedRoleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+        
+      if (roleError) {
+        console.error("Error verifying role update:", roleError);
+      } else {
+        console.log(`Verified role from database: ${updatedRoleData.role}`);
+        // If the fetched role is different from what we expected, refresh the user list
+        if (updatedRoleData.role !== newRole) {
+          // Something odd happened, refresh all users
+          setLoading(true);
+          supabase
+            .from('profiles')
+            .select('*')
+            .then(({ data: profiles, error: profilesError }) => {
+              if (profilesError) {
+                console.error("Error refreshing users:", profilesError);
+                setLoading(false);
+                return;
+              }
+              
+              Promise.all(
+                profiles.map(async (profile) => {
+                  const { data: roleData } = await supabase
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', profile.id)
+                    .single();
+                  
+                  return {
+                    ...profile,
+                    role: roleData?.role || 'sales'
+                  };
+                })
+              ).then(refreshedUsers => {
+                setUsers(refreshedUsers);
+                setLoading(false);
+              });
+            });
+        }
+      }
     }
   };
 
@@ -178,12 +230,14 @@ export function RoleManagement() {
                     </Avatar>
                     <div className="flex-1">
                       <h3 className="font-medium">{user.username || 'Unnamed User'}</h3>
+                      <p className="text-sm text-muted-foreground">{user.id}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <Select 
                       defaultValue={user.role} 
+                      value={user.role}
                       onValueChange={(value) => {
                         handleRoleChange(user.id, value as AppRole);
                       }}

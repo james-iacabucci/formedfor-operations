@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,10 +15,12 @@ import { useTheme } from "./ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { fetchRole } = useUserRoles();
   const [showSettings, setShowSettings] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -107,6 +108,14 @@ export function UserMenu() {
     }
   };
 
+  const handlePreferencesClick = () => {
+    // Refresh role data before showing preferences
+    if (fetchRole) {
+      fetchRole();
+    }
+    setShowPreferences(true);
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -126,7 +135,7 @@ export function UserMenu() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="transition-all duration-300 ease-in-out">
-          <DropdownMenuItem onClick={() => setShowPreferences(true)}>
+          <DropdownMenuItem onClick={handlePreferencesClick}>
             <User className="mr-2 h-4 w-4" />
             User Profile
           </DropdownMenuItem>

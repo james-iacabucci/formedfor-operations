@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -32,7 +31,7 @@ interface ProfileData {
 
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
-  const { role, loading: roleLoading } = useUserRoles();
+  const { role, loading: roleLoading, fetchRole } = useUserRoles();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
@@ -45,8 +44,9 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
   useEffect(() => {
     if (open && user) {
       fetchProfile();
+      fetchRole();
     }
-  }, [open, user]);
+  }, [open, user, fetchRole]);
 
   const fetchProfile = async () => {
     try {
@@ -73,7 +73,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
   const saveProfileField = async (field: keyof ProfileData, value: string | null) => {
     if (!user) return;
     
-    // Don't save if value hasn't changed
     if (profileData[field] === value) return;
     
     setLoading(true);
@@ -88,7 +87,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
 
       if (error) throw error;
       
-      // Update local state
       setProfileData(prev => ({ ...prev, [field]: value }));
       
       toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`);
@@ -96,27 +94,22 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
       console.error(`Error updating ${field}:`, error);
       toast.error(`Failed to update ${field}`);
       
-      // Revert to previous value on error
       setProfileData(prev => ({ ...prev }));
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle debounced text field updates
   const handleTextFieldChange = (field: keyof ProfileData, value: string) => {
-    // Update local state immediately for responsive feel
     setProfileData(prev => ({ ...prev, [field]: value }));
     
-    // Clear any existing timeout
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
     
-    // Set a new timeout to save after user stops typing
     const timeout = setTimeout(() => {
       saveProfileField(field, value);
-    }, 1000); // Wait 1 second after typing stops
+    }, 1000);
     
     setTypingTimeout(timeout);
   };
@@ -153,7 +146,6 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
 
       console.log('Generated public URL:', publicUrl);
 
-      // Save the avatar URL to the profile
       await saveProfileField('avatar_url', publicUrl);
       
       toast.success("Profile picture uploaded successfully");

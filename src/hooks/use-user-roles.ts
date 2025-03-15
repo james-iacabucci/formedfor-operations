@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +12,7 @@ export function useUserRoles() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [permissions, setPermissions] = useState<PermissionAction[]>([]);
 
-  useEffect(() => {
+  const fetchRole = useCallback(async () => {
     if (!user) {
       setRole('sales'); // Default role
       setIsAdmin(false);
@@ -22,44 +21,42 @@ export function useUserRoles() {
       return;
     }
 
-    const fetchRole = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
 
-        if (error && error.code !== 'PGRST116') {
-          // PGRST116 is not found error, which is expected if user has no role
-          console.error('Error fetching user role:', error);
-          throw error;
-        }
-        
-        const userRole = data?.role || 'sales'; // Default to sales if no role found
-        setRole(userRole);
-        setIsAdmin(userRole === 'admin');
-        
-        // Set default permissions based on role
-        setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
-        
-        // TODO: In the future, fetch custom permissions from the database
-        // This would replace the default permissions with custom ones
-        
-      } catch (error) {
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is not found error, which is expected if user has no role
         console.error('Error fetching user role:', error);
-        // If there's an error, set a default role
-        setRole('sales');
-        setIsAdmin(false);
-        setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
-      } finally {
-        setLoading(false);
+        throw error;
       }
-    };
-
-    fetchRole();
+      
+      const userRole = data?.role || 'sales'; // Default to sales if no role found
+      console.log('Fetched user role:', userRole); // Debug log
+      setRole(userRole);
+      setIsAdmin(userRole === 'admin');
+      
+      // Set default permissions based on role
+      setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+      
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      // If there's an error, set a default role
+      setRole('sales');
+      setIsAdmin(false);
+      setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchRole();
+  }, [fetchRole]);
 
   const hasRole = (requiredRole: AppRole) => {
     return role === requiredRole;
@@ -96,6 +93,11 @@ export function useUserRoles() {
         setPermissions(DEFAULT_ROLE_PERMISSIONS[newRole]);
       }
       
+      // Force refresh the role if the user being updated is the current user
+      if (user && userId === user.id) {
+        fetchRole();
+      }
+      
       return true;
     } catch (error) {
       console.error('Error assigning role:', error);
@@ -119,6 +121,7 @@ export function useUserRoles() {
     hasPermission,
     assignRole,
     removeRole, // Kept for backwards compatibility
-    permissions
+    permissions,
+    fetchRole // Export the fetchRole function to allow manual refresh
   };
 }
