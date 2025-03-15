@@ -17,6 +17,40 @@ export function useUserRoles() {
   const roleCache = useRef<Record<string, { role: AppRole, timestamp: number }>>({});
   const roleAssignAttempted = useRef(false);
 
+  // Use a custom function to fetch roles directly
+  const fetchUserRoleDirectly = async (userId: string) => {
+    try {
+      console.log(`Checking role for user ${userId} using the role lookup function`);
+      
+      // Call the has_role function for each possible role
+      // This bypasses RLS policies
+      const possibleRoles: AppRole[] = ['admin', 'sales', 'fabrication', 'orders'];
+      
+      for (const possibleRole of possibleRoles) {
+        const { data, error } = await supabase.rpc('has_role', { 
+          _user_id: userId, 
+          _role: possibleRole 
+        });
+        
+        if (error) {
+          console.error(`Error checking for role ${possibleRole}:`, error);
+          continue;
+        }
+        
+        if (data === true) {
+          console.log(`Found role through RPC function: ${possibleRole}`);
+          return possibleRole;
+        }
+      }
+      
+      console.log('No roles found using RPC function');
+      return null;
+    } catch (error) {
+      console.error('Error in fetchUserRoleDirectly:', error);
+      return null;
+    }
+  };
+
   const fetchRole = useCallback(async (forceRefresh = false) => {
     if (!user || fetchInProgress.current) {
       if (!user) {
@@ -51,34 +85,33 @@ export function useUserRoles() {
       console.log(`Fetching role for user ${user.id} (force: ${forceRefresh})`);
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+      let userRole: AppRole | null = null;
+      
+      try {
+        // First attempt: try normal query
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
 
-      if (error) {
-        console.error('Error fetching user role:', error);
-        if (error.code === 'PGRST116') {
-          // No role found, check database directly to see what's going on
-          console.log('No role found in user_roles table, checking if role exists');
-          const { count, error: countError } = await supabase
-            .from('user_roles')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id);
-            
-          if (countError) {
-            console.error('Error checking role count:', countError);
-          } else {
-            console.log(`Found ${count} roles for user ${user.id}`);
+        if (error) {
+          console.error('Error fetching user role:', error);
+          if (error.code !== 'PGRST116') {
+            throw error;
           }
+        } else if (data) {
+          userRole = data.role;
         }
-        if (error.code !== 'PGRST116') {
-          throw error;
-        }
+      } catch (error) {
+        console.log('Error in primary role fetch method, trying backup method');
       }
       
-      const userRole = data?.role || null;
+      // If we didn't get a role from the primary method, try the direct method
+      if (!userRole) {
+        userRole = await fetchUserRoleDirectly(user.id);
+      }
+      
       console.log(`User ${user.id} has role: ${userRole}`);
       
       if (role !== userRole) {

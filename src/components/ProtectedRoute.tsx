@@ -22,7 +22,6 @@ export const ProtectedRoute = ({
   const location = useLocation();
   const lastPathRef = useRef(location.pathname);
   const initialRoleFetchDone = useRef(false);
-  const roleAssignmentAttempted = useRef(false);
 
   // Only fetch role once when component mounts or when path changes
   useEffect(() => {
@@ -32,21 +31,7 @@ export const ProtectedRoute = ({
         lastPathRef.current = location.pathname;
         initialRoleFetchDone.current = true;
         fetchRole(false); // Not forcing refresh to allow caching
-        
-        // If no role is found, ensure the user has one, but only once
-        if (!role && !roleLoading && !roleAssignmentAttempted.current) {
-          const timer = setTimeout(() => {
-            roleAssignmentAttempted.current = true;
-            console.log('No role found in protected route, ensuring user has a default role');
-            ensureUserHasRole();
-          }, 1500);
-          
-          return () => clearTimeout(timer);
-        }
       }
-    } else {
-      // Reset the assignment flag when user changes
-      roleAssignmentAttempted.current = false;
     }
   }, [location.pathname, user, fetchRole, role, roleLoading, ensureUserHasRole]);
 

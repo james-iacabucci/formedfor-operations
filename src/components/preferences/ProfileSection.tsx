@@ -7,8 +7,6 @@ import { useAuth } from "../AuthProvider";
 import { ProfileField } from "./ProfileField";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppRole } from "@/types/roles";
-import { Button } from "../ui/button";
-import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface ProfileData {
   username: string | null;
@@ -23,9 +21,7 @@ interface ProfileSectionProps {
 
 export function ProfileSection({ roleLoading, role }: ProfileSectionProps) {
   const { user } = useAuth();
-  const { assignRole } = useUserRoles();
   const [loading, setLoading] = useState(false);
-  const [assigning, setAssigning] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
     phone: "",
@@ -152,26 +148,11 @@ export function ProfileSection({ roleLoading, role }: ProfileSectionProps) {
 
   const formatRole = (role: string) => {
     // Format each word in the role (e.g., "sales_manager" becomes "Sales Manager")
-    if (!role) return '';
+    if (!role) return 'No role assigned';
     
     return role.split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
-
-  const handleAssignRole = async () => {
-    if (!user) return;
-    
-    setAssigning(true);
-    try {
-      await assignRole(user.id, 'fabrication');
-      toast.success('Role assigned successfully');
-    } catch (error) {
-      console.error('Error assigning role:', error);
-      toast.error('Failed to assign role');
-    } finally {
-      setAssigning(false);
-    }
   };
 
   return (
@@ -212,18 +193,8 @@ export function ProfileSection({ roleLoading, role }: ProfileSectionProps) {
             {roleLoading ? (
               <Skeleton className="h-12 w-full" />
             ) : (
-              <div className="bg-muted/50 border-0 rounded-md h-12 px-3 flex items-center justify-between text-base">
-                <span>{formatRole(role) || 'No role assigned'}</span>
-                {!role && (
-                  <Button 
-                    size="sm" 
-                    onClick={handleAssignRole} 
-                    disabled={assigning}
-                    className="ml-2"
-                  >
-                    {assigning ? 'Assigning...' : 'Assign Fabrication Role'}
-                  </Button>
-                )}
+              <div className="bg-muted/50 border-0 rounded-md h-12 px-3 flex items-center text-base">
+                {formatRole(role)}
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
