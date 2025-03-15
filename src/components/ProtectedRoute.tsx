@@ -1,9 +1,10 @@
 
 import { useAuth } from "./AuthProvider";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { AppRole } from "@/types/roles";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionAction } from "@/types/permissions";
+import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,7 +18,16 @@ export const ProtectedRoute = ({
   requiredPermissions 
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const { role, loading: roleLoading, hasPermission } = useUserRoles();
+  const { role, loading: roleLoading, hasPermission, fetchRole } = useUserRoles();
+  const location = useLocation();
+
+  // Refresh role on route change
+  useEffect(() => {
+    if (user) {
+      console.log('Route changed - refreshing user role');
+      fetchRole(true);
+    }
+  }, [location.pathname, user, fetchRole]);
 
   if (loading || roleLoading) {
     return (
@@ -34,6 +44,7 @@ export const ProtectedRoute = ({
   // If roles are required, check if the user has one of them
   if (requiredRoles && requiredRoles.length > 0) {
     const hasRequiredRole = requiredRoles.includes(role);
+    console.log(`Required roles: ${requiredRoles.join(', ')}, User role: ${role}, Has required role: ${hasRequiredRole}`);
     
     if (!hasRequiredRole) {
       return (

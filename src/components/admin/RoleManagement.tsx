@@ -1,10 +1,11 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
+import { RefreshCw, Shield } from "lucide-react";
 import { ArchiveDeleteDialog } from "@/components/common/ArchiveDeleteDialog";
 import { useRoleManagement } from "@/hooks/admin/useRoleManagement";
 import { UsersList } from "./users/UsersList";
+import { Button } from "@/components/ui/button";
 
 export function RoleManagement() {
   const {
@@ -19,7 +20,8 @@ export function RoleManagement() {
     setDeleteDialogOpen,
     isDeleting,
     handleDeleteUser,
-    formatRoleName
+    formatRoleName,
+    refreshAllUsers
   } = useRoleManagement();
 
   if (!isAdmin) {
@@ -40,14 +42,25 @@ export function RoleManagement() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          User Management
-        </CardTitle>
-        <CardDescription>
-          Manage users and their roles in the system.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            User Management
+          </CardTitle>
+          <CardDescription>
+            Manage users and their roles in the system.
+          </CardDescription>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={refreshAllUsers}
+          className="flex items-center gap-1"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>Refresh</span>
+        </Button>
       </CardHeader>
       <CardContent>
         <UsersList 

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -109,9 +110,10 @@ export function UserMenu() {
   };
 
   const handlePreferencesClick = () => {
+    console.log('Opening preferences - refreshing role data');
     // Refresh role data before showing preferences
     if (fetchRole) {
-      fetchRole();
+      fetchRole(true); // Force refresh
     }
     setShowPreferences(true);
   };

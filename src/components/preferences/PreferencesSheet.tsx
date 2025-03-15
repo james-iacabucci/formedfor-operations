@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -41,15 +42,18 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
   const [activeTab, setActiveTab] = useState("profile");
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  // Force refresh roles when sheet opens
   useEffect(() => {
     if (open && user) {
+      console.log('PreferencesSheet opened - forcing role refresh');
+      fetchRole(true); // Force refresh
       fetchProfile();
-      fetchRole();
     }
   }, [open, user, fetchRole]);
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile data');
       const { data, error } = await supabase
         .from('profiles')
         .select('username, avatar_url, phone')
@@ -58,6 +62,7 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
 
       if (error) throw error;
       if (data) {
+        console.log('Profile data fetched:', data);
         setProfileData({
           username: data.username,
           phone: data.phone,

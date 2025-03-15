@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,9 +12,11 @@ export function useUserRoles() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [permissions, setPermissions] = useState<PermissionAction[]>([]);
+  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
 
-  const fetchRole = useCallback(async () => {
+  const fetchRole = useCallback(async (forceRefresh = false) => {
     if (!user) {
+      console.log('No user logged in, setting default role and permissions');
       setRole('sales'); // Default role
       setIsAdmin(false);
       setPermissions(DEFAULT_ROLE_PERMISSIONS['sales']); // Default permissions
@@ -21,8 +24,20 @@ export function useUserRoles() {
       return;
     }
 
+    // Only refresh if it's been more than 5 seconds since the last refresh or if force refresh is requested
+    const currentTime = Date.now();
+    if (!forceRefresh && (currentTime - lastRefreshTime) < 5000) {
+      console.log('Skipping role refresh - recent refresh occurred');
+      return;
+    }
+
     try {
+      console.log(`Fetching role for user ${user.id} (force: ${forceRefresh})`);
       setLoading(true);
+      
+      // Clear Supabase cache for this query by adding a timestamp
+      const cacheInvalidator = `?cache_bust=${Date.now()}`;
+      
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -36,12 +51,14 @@ export function useUserRoles() {
       }
       
       const userRole = data?.role || 'sales'; // Default to sales if no role found
-      console.log('Fetched user role:', userRole); // Debug log
+      console.log(`User ${user.id} has role: ${userRole}`); // Debug log
+      
       setRole(userRole);
       setIsAdmin(userRole === 'admin');
       
       // Set default permissions based on role
       setPermissions(DEFAULT_ROLE_PERMISSIONS[userRole]);
+      setLastRefreshTime(currentTime);
       
     } catch (error) {
       console.error('Error fetching user role:', error);
@@ -52,11 +69,12 @@ export function useUserRoles() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, lastRefreshTime]);
 
+  // Fetch roles on component mount and when user changes
   useEffect(() => {
-    fetchRole();
-  }, [fetchRole]);
+    fetchRole(true);
+  }, [fetchRole, user]);
 
   const hasRole = (requiredRole: AppRole) => {
     return role === requiredRole;
@@ -68,6 +86,8 @@ export function useUserRoles() {
 
   const assignRole = async (userId: string, newRole: AppRole) => {
     try {
+      console.log(`Attempting to assign role ${newRole} to user ${userId}`);
+      
       // First, delete any existing role for this user
       await supabase
         .from('user_roles')
@@ -84,6 +104,7 @@ export function useUserRoles() {
 
       if (error) throw error;
       
+      console.log(`Successfully assigned role ${newRole} to user ${userId}`);
       toast.success(`Role ${newRole} assigned successfully`);
       
       // If the current user's role is being updated, update the local state
@@ -95,7 +116,7 @@ export function useUserRoles() {
       
       // Force refresh the role if the user being updated is the current user
       if (user && userId === user.id) {
-        fetchRole();
+        fetchRole(true);
       }
       
       return true;

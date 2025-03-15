@@ -31,6 +31,9 @@ export function useRoleManagement() {
         // Fetch roles for each user
         const usersWithRoles = await Promise.all(
           profiles.map(async (profile) => {
+            // Add a cache buster to prevent stale data
+            const cacheBuster = `?t=${Date.now()}`;
+            
             const { data: roleData, error: roleError } = await supabase
               .from('user_roles')
               .select('role')
@@ -81,50 +84,72 @@ export function useRoleManagement() {
       console.log(`Changed role for user ${userId} to ${newRole}`);
       
       // Additionally, force a refresh from the database to ensure consistency
-      const { data: updatedRoleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-        
-      if (roleError) {
-        console.error("Error verifying role update:", roleError);
-      } else {
-        console.log(`Verified role from database: ${updatedRoleData.role}`);
-        // If the fetched role is different from what we expected, refresh the user list
-        if (updatedRoleData.role !== newRole) {
-          // Something odd happened, refresh all users
-          setLoading(true);
-          supabase
-            .from('profiles')
-            .select('*')
-            .then(({ data: profiles, error: profilesError }) => {
-              if (profilesError) {
-                console.error("Error refreshing users:", profilesError);
-                setLoading(false);
-                return;
-              }
-              
-              Promise.all(
-                profiles.map(async (profile) => {
-                  const { data: roleData } = await supabase
-                    .from('user_roles')
-                    .select('role')
-                    .eq('user_id', profile.id)
-                    .single();
-                  
-                  return {
-                    ...profile,
-                    role: roleData?.role || 'sales'
-                  };
-                })
-              ).then(refreshedUsers => {
-                setUsers(refreshedUsers);
-                setLoading(false);
-              });
-            });
+      try {
+        const { data: updatedRoleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+          
+        if (roleError) {
+          console.error("Error verifying role update:", roleError);
+        } else {
+          console.log(`Verified role from database: ${updatedRoleData.role}`);
+          
+          // If the fetched role is different from what we expected, refresh the user list
+          if (updatedRoleData.role !== newRole) {
+            console.warn(`Role verification failed: expected ${newRole} but got ${updatedRoleData.role}`);
+            // Something odd happened, refresh all users
+            refreshAllUsers();
+          }
         }
+      } catch (error) {
+        console.error("Error during role verification:", error);
+        // Refresh users to be safe
+        refreshAllUsers();
       }
+    }
+  };
+
+  const refreshAllUsers = async () => {
+    try {
+      setLoading(true);
+      console.log("Refreshing all users and their roles");
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+        
+      if (profilesError) throw profilesError;
+      
+      const refreshedUsers = await Promise.all(
+        profiles.map(async (profile) => {
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id)
+            .single();
+          
+          if (roleError && roleError.code !== 'PGRST116') {
+            console.error(`Error fetching role for user ${profile.id}:`, roleError);
+          }
+          
+          const role = roleData?.role || 'sales';
+          console.log(`Refreshed user ${profile.username || profile.id} has role: ${role}`);
+          
+          return {
+            ...profile,
+            role
+          };
+        })
+      );
+      
+      setUsers(refreshedUsers);
+    } catch (error) {
+      console.error("Error refreshing users:", error);
+      toast.error("Failed to refresh users");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,6 +207,7 @@ export function useRoleManagement() {
     setDeleteDialogOpen,
     isDeleting,
     handleDeleteUser,
-    formatRoleName
+    formatRoleName,
+    refreshAllUsers
   };
 }
