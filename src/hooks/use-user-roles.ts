@@ -15,6 +15,7 @@ export function useUserRoles() {
   const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
   const fetchInProgress = useRef(false);
   const roleCache = useRef<Record<string, { role: AppRole, timestamp: number }>>({});
+  const roleAssignAttempted = useRef(false);
 
   const fetchRole = useCallback(async (forceRefresh = false) => {
     if (!user || fetchInProgress.current) {
@@ -112,7 +113,9 @@ export function useUserRoles() {
 
   // Add a function to ensure user has a role
   const ensureUserHasRole = async () => {
-    if (!user || role) return; // Skip if no user or already has role
+    if (!user || role || roleAssignAttempted.current) return; // Skip if no user, already has role, or already attempted
+    
+    roleAssignAttempted.current = true; // Mark as attempted to prevent multiple attempts
     
     try {
       console.log(`Checking if user ${user.id} needs a default role assigned`);
@@ -136,6 +139,10 @@ export function useUserRoles() {
       }
     } catch (error) {
       console.error('Error ensuring user has role:', error);
+      if (error.code === '42501') {
+        // This is a row-level security policy error, don't retry
+        console.log('Row-level security prevented role assignment. This is a permissions issue.');
+      }
     }
   };
 
@@ -146,7 +153,9 @@ export function useUserRoles() {
       // If after initial fetch there's still no role, ensure a default one
       if (!role && !loading) {
         const timer = setTimeout(() => {
-          ensureUserHasRole();
+          if (!roleAssignAttempted.current) {
+            ensureUserHasRole();
+          }
         }, 1000);
         return () => clearTimeout(timer);
       }
@@ -155,6 +164,7 @@ export function useUserRoles() {
       setIsAdmin(false);
       setPermissions([]);
       setLoading(false);
+      roleAssignAttempted.current = false; // Reset the attempt flag when user changes
     }
   }, [fetchRole, user, role, loading]);
 

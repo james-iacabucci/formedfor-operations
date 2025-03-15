@@ -22,8 +22,9 @@ interface PreferencesSheetProps {
 
 export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) {
   const { user } = useAuth();
-  const { role, loading: roleLoading, fetchRole, ensureUserHasRole } = useUserRoles();
+  const { role, loading: roleLoading, fetchRole } = useUserRoles();
   const didFetchRef = useRef(false);
+  const roleAssignmentAttempted = useRef(false);
 
   // Only fetch role once when sheet opens and user exists
   useEffect(() => {
@@ -31,23 +32,13 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
       console.log('PreferencesSheet opened - refreshing role');
       didFetchRef.current = true;
       fetchRole(true); // Force refresh once
-      
-      // If no role is found, ensure the user has one
-      const timer = setTimeout(() => {
-        if (!role) {
-          console.log('No role found, ensuring user has a default role');
-          ensureUserHasRole();
-        }
-      }, 1500);
-      
-      return () => clearTimeout(timer);
     }
     
     // Reset the flag when sheet closes
     if (!open) {
       didFetchRef.current = false;
     }
-  }, [open, user, fetchRole, role, ensureUserHasRole]);
+  }, [open, user, fetchRole]);
 
   // Clean up closed portals to prevent unresponsive UI
   useEffect(() => {
