@@ -6,6 +6,8 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 import { RegenerationSheet } from "./RegenerationSheet";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface RegenerationOptions {
   creativity: "none" | "small" | "medium" | "large";
@@ -27,6 +29,7 @@ export function SculptureActions({
   onRegenerate,
 }: SculptureActionsProps) {
   const [isRegenerateOpen, setIsRegenerateOpen] = useState(false);
+  const { hasPermission } = useUserRoles();
 
   const handleRegenerateImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,35 +44,51 @@ export function SculptureActions({
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Button
-          size="icon"
-          variant="secondary"
-          className="bg-black/50 hover:bg-black/70 text-white"
-          onClick={(e) => {
-            e.stopPropagation();
-            onManageTags();
-          }}
+        <PermissionGuard
+          requiredPermission="settings.manage_tags"
+          fallback={null}
         >
-          <TagIcon className="w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="bg-black/50 hover:bg-black/70 text-white"
-          disabled={isRegenerating}
-          onClick={handleRegenerateImage}
-          title="Regenerate Image"
+          <Button
+            size="icon"
+            variant="secondary"
+            className="bg-black/50 hover:bg-black/70 text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              onManageTags();
+            }}
+          >
+            <TagIcon className="w-4 h-4" />
+          </Button>
+        </PermissionGuard>
+        
+        <PermissionGuard
+          requiredPermission="sculpture.regenerate"
+          fallback={null}
         >
-          <RefreshCwIcon className="w-4 h-4" />
-        </Button>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="bg-black/50 hover:bg-black/70 text-white"
+            disabled={isRegenerating}
+            onClick={handleRegenerateImage}
+            title="Regenerate Image"
+          >
+            <RefreshCwIcon className="w-4 w-4" />
+          </Button>
+        </PermissionGuard>
       </div>
 
-      <RegenerationSheet
-        open={isRegenerateOpen}
-        onOpenChange={setIsRegenerateOpen}
-        onRegenerate={onRegenerate}
-        isRegenerating={isRegenerating}
-      />
+      <PermissionGuard
+        requiredPermission="sculpture.regenerate"
+        fallback={null}
+      >
+        <RegenerationSheet
+          open={isRegenerateOpen}
+          onOpenChange={setIsRegenerateOpen}
+          onRegenerate={onRegenerate}
+          isRegenerating={isRegenerating}
+        />
+      </PermissionGuard>
     </>
   );
 }

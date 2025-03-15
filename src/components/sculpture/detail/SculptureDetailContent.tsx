@@ -9,6 +9,7 @@ import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
 import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -113,13 +114,18 @@ export function SculptureDetailContent({
         </div>
       </div>
 
-      <RegenerationSheet
-        open={isRegenerationSheetOpen}
-        onOpenChange={setIsRegenerationSheetOpen}
-        onRegenerate={handleGenerateVariant}
-        isRegenerating={isRegenerating(sculpture.id)}
-        defaultPrompt={sculpture.prompt}
-      />
+      <PermissionGuard
+        requiredPermission={isRegenerationSheetOpen ? "variant.create" : "sculpture.regenerate"}
+        fallback={null}
+      >
+        <RegenerationSheet
+          open={isRegenerationSheetOpen}
+          onOpenChange={setIsRegenerationSheetOpen}
+          onRegenerate={handleGenerateVariant}
+          isRegenerating={isRegenerating(sculpture.id)}
+          defaultPrompt={sculpture.prompt}
+        />
+      </PermissionGuard>
     </div>
   );
 }

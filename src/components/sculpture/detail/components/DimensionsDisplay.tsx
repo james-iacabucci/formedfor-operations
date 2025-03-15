@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { PencilIcon, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionAction } from "@/types/permissions";
 
 interface DimensionsDisplayProps {
   displayValue: string;
@@ -11,6 +13,7 @@ interface DimensionsDisplayProps {
   height: number | null;
   width: number | null;
   depth: number | null;
+  requiredPermission?: PermissionAction;
 }
 
 export function DimensionsDisplay({ 
@@ -19,9 +22,12 @@ export function DimensionsDisplay({
   isLoading = false,
   height,
   width,
-  depth
+  depth,
+  requiredPermission = "sculpture.edit"
 }: DimensionsDisplayProps) {
   const [unit, setUnit] = useState<"inches" | "centimeters">("inches");
+  const { hasPermission } = useUserRoles();
+  const canEdit = hasPermission(requiredPermission);
   
   const formatDimensionString = (h: number | null, w: number | null, d: number | null, unit: 'inches' | 'centimeters') => {
     if (!h && !w && !d) return "No dimensions set";
@@ -43,7 +49,7 @@ export function DimensionsDisplay({
   };
 
   return (
-    <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
+    <div className={`flex justify-between items-center border rounded-md px-3 py-2 ${canEdit ? 'group relative' : ''}`}>
       <div className="flex items-center gap-2">
         <span className="text-sm">
           <span className="text-muted-foreground mr-1">HWD:</span>
@@ -76,19 +82,21 @@ export function DimensionsDisplay({
         </Tabs>
       </div>
       
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onEditClick}
-        disabled={isLoading}
-        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2"
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <PencilIcon className="h-4 w-4" />
-        )}
-      </Button>
+      {canEdit && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onEditClick}
+          disabled={isLoading}
+          className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <PencilIcon className="h-4 w-4" />
+          )}
+        </Button>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface SculptureMethodProps {
   sculptureId: string;
@@ -27,6 +28,8 @@ export function SculptureMethod({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const { hasPermission } = useUserRoles();
+  const canEdit = isQuoteForm || hasPermission("sculpture.edit");
   
   const { data: methods } = useQuery({
     queryKey: ['value-lists', 'method'],
@@ -43,6 +46,8 @@ export function SculptureMethod({
   });
 
   const handleMethodChange = async (newMethodId: string) => {
+    if (!canEdit) return;
+    
     try {
       if ((isQuoteForm || isVariantForm) && onMethodChange) {
         // In form mode, just update the form state
@@ -107,12 +112,17 @@ export function SculptureMethod({
   const selectedMethod = methods?.find(m => m.id === methodId)?.name || '';
 
   return (
-    <Select value={methodId || ''} onValueChange={handleMethodChange} onOpenChange={(open) => {
-      if (!open && triggerRef.current) {
-        triggerRef.current.blur();
-      }
-    }}>
-      <SelectTrigger className="group" ref={triggerRef}>
+    <Select
+      value={methodId || ''}
+      onValueChange={handleMethodChange}
+      onOpenChange={(open) => {
+        if (!open && triggerRef.current) {
+          triggerRef.current.blur();
+        }
+      }}
+      disabled={!canEdit}
+    >
+      <SelectTrigger className={`group ${!canEdit ? 'cursor-not-allowed opacity-70' : ''}`} ref={triggerRef}>
         <div className="flex gap-1 items-center">
           <span className="text-muted-foreground">Method:</span>
           <SelectValue placeholder="Select method">
@@ -120,13 +130,15 @@ export function SculptureMethod({
           </SelectValue>
         </div>
       </SelectTrigger>
-      <SelectContent>
-        {methods?.map((method) => (
-          <SelectItem key={method.id} value={method.id}>
-            {method.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
+      {canEdit && (
+        <SelectContent>
+          {methods?.map((method) => (
+            <SelectItem key={method.id} value={method.id}>
+              {method.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      )}
     </Select>
   );
 }

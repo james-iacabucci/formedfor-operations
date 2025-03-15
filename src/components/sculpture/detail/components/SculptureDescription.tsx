@@ -7,6 +7,8 @@ import { useAIGeneration } from "@/hooks/use-ai-generation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface SculptureDescriptionProps {
   sculptureId: string;
@@ -21,9 +23,12 @@ export function SculptureDescription({ sculptureId, imageUrl, description, name 
   const editableFieldRef = useRef<EditableFieldRef>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { hasPermission } = useUserRoles();
+  const canEdit = hasPermission("sculpture.edit");
+  const canRegenerate = hasPermission("sculpture.regenerate");
 
   const handleRegenerateDescription = async () => {
-    if (!imageUrl) return;
+    if (!imageUrl || !canRegenerate) return;
     
     try {
       const response = await fetch(imageUrl);
@@ -67,7 +72,7 @@ export function SculptureDescription({ sculptureId, imageUrl, description, name 
     <div className="group space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Description</h3>
-        {isDescriptionEditing ? (
+        {isDescriptionEditing && canEdit ? (
           <div className="flex gap-2">
             <Button 
               onClick={handleSaveDescription}
@@ -88,16 +93,18 @@ export function SculptureDescription({ sculptureId, imageUrl, description, name 
           </div>
         ) : (
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRegenerateDescription}
-              disabled={isGeneratingDescription}
-              className={isGeneratingDescription ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"}
-            >
-              <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
-            </Button>
-            {!isGeneratingDescription && (
+            {canRegenerate && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRegenerateDescription}
+                disabled={isGeneratingDescription}
+                className={isGeneratingDescription ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"}
+              >
+                <RefreshCw className={`h-4 w-4 ${isGeneratingDescription ? "animate-spin" : ""}`} />
+              </Button>
+            )}
+            {canEdit && !isGeneratingDescription && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -118,8 +125,8 @@ export function SculptureDescription({ sculptureId, imageUrl, description, name 
         field="ai_description"
         className="text-muted-foreground"
         hideControls
-        isEditing={isDescriptionEditing}
-        onEditingChange={setIsDescriptionEditing}
+        isEditing={isDescriptionEditing && canEdit}
+        onEditingChange={(editing) => canEdit && setIsDescriptionEditing(editing)}
       />
     </div>
   );

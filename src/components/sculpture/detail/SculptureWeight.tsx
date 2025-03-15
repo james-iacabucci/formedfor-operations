@@ -2,6 +2,7 @@
 import { useSculptureWeight } from "./hooks/useSculptureWeight";
 import { WeightDisplay } from "./components/WeightDisplay";
 import { WeightEditForm } from "./components/WeightEditForm";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface SculptureWeightProps {
   sculptureId: string;
@@ -24,6 +25,9 @@ export function SculptureWeight({
   variantId,
   onWeightChange,
 }: SculptureWeightProps) {
+  const { hasPermission } = useUserRoles();
+  const canEdit = isQuoteForm || hasPermission("sculpture.edit");
+  
   const {
     isEditingWeight,
     weight,
@@ -48,7 +52,7 @@ export function SculptureWeight({
 
   return (
     <div className="relative">
-      {isEditingWeight ? (
+      {isEditingWeight && canEdit ? (
         <WeightEditForm
           weight={weight}
           onLbsChange={handleLbsChange}
@@ -61,10 +65,11 @@ export function SculptureWeight({
         <WeightDisplay
           displayValue={formatWeightString(weightKg, weightLbs)}
           metricValue={formatMetricString(weightKg)}
-          onEditClick={() => setIsEditingWeight(true)}
+          onEditClick={() => canEdit && setIsEditingWeight(true)}
           isLoading={isSaving}
           weightKg={weightKg}
           weightLbs={weightLbs}
+          requiredPermission="sculpture.edit"
         />
       )}
     </div>

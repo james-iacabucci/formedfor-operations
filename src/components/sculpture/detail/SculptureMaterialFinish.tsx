@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMaterialFinishData } from "./useMaterialFinishData";
 import { useRef } from "react";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface SculptureMaterialFinishProps {
   sculptureId: string;
@@ -29,8 +30,12 @@ export function SculptureMaterialFinish({
   const queryClient = useQueryClient();
   const { materials } = useMaterialFinishData(materialId);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const { hasPermission } = useUserRoles();
+  const canEdit = isQuoteForm || hasPermission("sculpture.edit");
 
   const handleMaterialChange = async (newMaterialId: string) => {
+    if (!canEdit) return;
+    
     try {
       if ((isQuoteForm || isVariantForm) && onMaterialChange) {
         // In form mode, just update the form state
@@ -95,12 +100,17 @@ export function SculptureMaterialFinish({
   const selectedMaterial = materials?.find(m => m.id === materialId)?.name || '';
 
   return (
-    <Select value={materialId || ''} onValueChange={handleMaterialChange} onOpenChange={(open) => {
-      if (!open && triggerRef.current) {
-        triggerRef.current.blur();
-      }
-    }}>
-      <SelectTrigger className="group" ref={triggerRef}>
+    <Select
+      value={materialId || ''}
+      onValueChange={handleMaterialChange}
+      onOpenChange={(open) => {
+        if (!open && triggerRef.current) {
+          triggerRef.current.blur();
+        }
+      }}
+      disabled={!canEdit}
+    >
+      <SelectTrigger className={`group ${!canEdit ? 'cursor-not-allowed opacity-70' : ''}`} ref={triggerRef}>
         <div className="flex gap-1 items-center">
           <span className="text-muted-foreground">Material:</span>
           <SelectValue placeholder="Select material">
@@ -108,13 +118,15 @@ export function SculptureMaterialFinish({
           </SelectValue>
         </div>
       </SelectTrigger>
-      <SelectContent>
-        {materials?.map((material) => (
-          <SelectItem key={material.id} value={material.id}>
-            {material.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
+      {canEdit && (
+        <SelectContent>
+          {materials?.map((material) => (
+            <SelectItem key={material.id} value={material.id}>
+              {material.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      )}
     </Select>
   );
 }

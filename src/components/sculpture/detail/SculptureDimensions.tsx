@@ -2,6 +2,7 @@
 import { useSculptureDimensions } from "./hooks/useSculptureDimensions";
 import { DimensionsDisplay } from "./components/DimensionsDisplay";
 import { DimensionsEditForm } from "./components/DimensionsEditForm";
+import { useUserRoles } from "@/hooks/use-user-roles";
 
 interface SculptureDimensionsProps {
   sculptureId: string;
@@ -26,6 +27,9 @@ export function SculptureDimensions({
   variantId,
   onDimensionsChange,
 }: SculptureDimensionsProps) {
+  const { hasPermission } = useUserRoles();
+  const canEdit = isQuoteForm || hasPermission("sculpture.edit");
+  
   const {
     isEditingDimensions,
     dimensions,
@@ -53,7 +57,7 @@ export function SculptureDimensions({
 
   return (
     <div className="relative">
-      {isEditingDimensions ? (
+      {isEditingDimensions && canEdit ? (
         <DimensionsEditForm
           dimensions={dimensions}
           onDimensionChange={handleDimensionChange}
@@ -64,11 +68,12 @@ export function SculptureDimensions({
       ) : (
         <DimensionsDisplay
           displayValue={formatDimensionsString(height, width, depth)}
-          onEditClick={() => setIsEditingDimensions(true)}
+          onEditClick={() => canEdit && setIsEditingDimensions(true)}
           isLoading={isSaving}
           height={height}
           width={width}
           depth={depth}
+          requiredPermission="sculpture.edit"
         />
       )}
     </div>

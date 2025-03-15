@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionAction } from "@/types/permissions";
 
 interface EditableFieldProps {
   value: string;
@@ -20,6 +22,7 @@ interface EditableFieldProps {
   hideControls?: boolean;
   isEditing?: boolean;
   onEditingChange?: (isEditing: boolean) => void;
+  requiredPermission?: PermissionAction;
 }
 
 export interface EditableFieldRef {
@@ -36,7 +39,8 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   options = [],
   hideControls = false,
   isEditing: controlledEditing,
-  onEditingChange
+  onEditingChange,
+  requiredPermission = "sculpture.edit"
 }, ref) => {
   const [isInternalEditing, setIsInternalEditing] = useState(false);
   const isEditing = controlledEditing ?? isInternalEditing;
@@ -46,6 +50,8 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { hasPermission } = useUserRoles();
+  const canEdit = hasPermission(requiredPermission);
 
   useEffect(() => {
     setEditedValue(value);
@@ -53,6 +59,16 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
 
   const handleUpdate = async () => {
     if (editedValue === value) {
+      setIsEditing(false);
+      return;
+    }
+
+    if (!canEdit) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit this field",
+        variant: "destructive",
+      });
       setIsEditing(false);
       return;
     }
@@ -153,14 +169,14 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
     <div className="group relative" data-field={field}>
       <div 
         className={`${className}`}
-        onClick={() => !hideControls && setIsEditing(true)}
-        style={{ cursor: hideControls ? 'text' : 'pointer' }}
+        onClick={() => !hideControls && canEdit && setIsEditing(true)}
+        style={{ cursor: (!hideControls && canEdit) ? 'pointer' : 'text' }}
       >
         {label ? (
           <Input
             type="text"
             value={displayValue}
-            className="cursor-pointer"
+            className={`${canEdit ? 'cursor-pointer' : 'cursor-text'}`}
             readOnly
             placeholder={label}
           />
@@ -168,7 +184,7 @@ export const EditableField = forwardRef<EditableFieldRef, EditableFieldProps>(({
           displayValue
         )}
       </div>
-      {!hideControls && !isEditing && (
+      {!hideControls && !isEditing && canEdit && (
         <div className="absolute -right-16 top-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => setIsEditing(true)}

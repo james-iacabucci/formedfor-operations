@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { PencilIcon, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { PermissionAction } from "@/types/permissions";
 
 interface WeightDisplayProps {
   displayValue: string;
@@ -11,6 +13,7 @@ interface WeightDisplayProps {
   isLoading?: boolean;
   weightKg: number | null;
   weightLbs: number | null;
+  requiredPermission?: PermissionAction;
 }
 
 export function WeightDisplay({ 
@@ -19,9 +22,12 @@ export function WeightDisplay({
   onEditClick,
   isLoading = false,
   weightKg,
-  weightLbs
+  weightLbs,
+  requiredPermission = "sculpture.edit"
 }: WeightDisplayProps) {
   const [unit, setUnit] = useState<"lbs" | "kg">("lbs");
+  const { hasPermission } = useUserRoles();
+  const canEdit = hasPermission(requiredPermission);
   
   const formatWeightString = (kg: number | null, lbs: number | null, unit: 'lbs' | 'kg') => {
     if (!kg && !lbs) return "";
@@ -39,7 +45,7 @@ export function WeightDisplay({
   };
 
   return (
-    <div className="flex justify-between items-center border rounded-md px-3 py-2 group relative">
+    <div className={`flex justify-between items-center border rounded-md px-3 py-2 ${canEdit ? 'group relative' : ''}`}>
       <div className="flex items-center gap-2">
         <span className="text-sm">
           <span className="text-muted-foreground mr-1">Weight:</span>
@@ -69,19 +75,21 @@ export function WeightDisplay({
           </TabsList>
         </Tabs>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onEditClick}
-        disabled={isLoading}
-        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2"
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <PencilIcon className="h-4 w-4" />
-        )}
-      </Button>
+      {canEdit && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onEditClick}
+          disabled={isLoading}
+          className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <PencilIcon className="h-4 w-4" />
+          )}
+        </Button>
+      )}
     </div>
   );
 }
