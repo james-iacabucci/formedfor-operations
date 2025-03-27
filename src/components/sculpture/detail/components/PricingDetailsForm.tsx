@@ -49,6 +49,48 @@ export function PricingDetailsForm({
   // If the user can't edit, we show read-only fields
   const finalIsReadOnly = isReadOnly || !canEditPricing;
 
+  // Calculate kg from lbs
+  const handleLbsChange = (field: string, lbsValue: string) => {
+    const lbs = lbsValue === "" ? null : Number(lbsValue);
+    const kg = lbs !== null ? Number((lbs / 2.20462).toFixed(2)) : null;
+    
+    // Update both kg and lbs
+    if (field === 'weight_lbs') {
+      onQuoteChange({
+        ...newQuote,
+        weight_lbs: lbs,
+        weight_kg: kg
+      });
+    } else if (field === 'base_weight_lbs') {
+      onQuoteChange({
+        ...newQuote,
+        base_weight_lbs: lbs,
+        base_weight_kg: kg
+      });
+    }
+  };
+
+  // Calculate lbs from kg
+  const handleKgChange = (field: string, kgValue: string) => {
+    const kg = kgValue === "" ? null : Number(kgValue);
+    const lbs = kg !== null ? Number((kg * 2.20462).toFixed(2)) : null;
+    
+    // Update both kg and lbs
+    if (field === 'weight_kg') {
+      onQuoteChange({
+        ...newQuote,
+        weight_kg: kg,
+        weight_lbs: lbs
+      });
+    } else if (field === 'base_weight_kg') {
+      onQuoteChange({
+        ...newQuote,
+        base_weight_kg: kg,
+        base_weight_lbs: lbs
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Pricing Details</h3>
@@ -173,6 +215,89 @@ export function PricingDetailsForm({
             </div>
           </>
         )}
+      </div>
+
+      {/* Weight Fields */}
+      <h4 className="text-md font-medium mt-6">Sculpture Weight</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="weight_kg">Weight (kg)</Label>
+          {finalIsReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.weight_kg !== null ? formatNumber(newQuote.weight_kg) : "Not specified"}
+            </div>
+          ) : (
+            <Input
+              id="weight_kg"
+              type="number"
+              value={newQuote.weight_kg ?? ''}
+              onChange={(e) => handleKgChange('weight_kg', e.target.value)}
+              placeholder="Weight in kg"
+              min="0"
+              step="0.01"
+            />
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="weight_lbs">Weight (lbs)</Label>
+          {finalIsReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.weight_lbs !== null ? formatNumber(newQuote.weight_lbs) : "Not specified"}
+            </div>
+          ) : (
+            <Input
+              id="weight_lbs"
+              type="number"
+              value={newQuote.weight_lbs ?? ''}
+              onChange={(e) => handleLbsChange('weight_lbs', e.target.value)}
+              placeholder="Weight in lbs"
+              min="0"
+              step="0.01"
+            />
+          )}
+        </div>
+      </div>
+
+      <h4 className="text-md font-medium mt-6">Base Weight</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="base_weight_kg">Weight (kg)</Label>
+          {finalIsReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.base_weight_kg !== null ? formatNumber(newQuote.base_weight_kg) : "Not specified"}
+            </div>
+          ) : (
+            <Input
+              id="base_weight_kg"
+              type="number"
+              value={newQuote.base_weight_kg ?? ''}
+              onChange={(e) => handleKgChange('base_weight_kg', e.target.value)}
+              placeholder="Base weight in kg"
+              min="0"
+              step="0.01"
+            />
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="base_weight_lbs">Weight (lbs)</Label>
+          {finalIsReadOnly ? (
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              {newQuote.base_weight_lbs !== null ? formatNumber(newQuote.base_weight_lbs) : "Not specified"}
+            </div>
+          ) : (
+            <Input
+              id="base_weight_lbs"
+              type="number"
+              value={newQuote.base_weight_lbs ?? ''}
+              onChange={(e) => handleLbsChange('base_weight_lbs', e.target.value)}
+              placeholder="Base weight in lbs"
+              min="0"
+              step="0.01"
+            />
+          )}
+        </div>
       </div>
     </div>
   );

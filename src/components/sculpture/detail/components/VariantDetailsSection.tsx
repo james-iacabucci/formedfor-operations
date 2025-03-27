@@ -2,7 +2,6 @@
 import { SculptureMaterialFinish } from "../SculptureMaterialFinish";
 import { SculptureMethod } from "../SculptureMethod";
 import { SculptureDimensions } from "../SculptureDimensions";
-import { SculptureWeight } from "../SculptureWeight";
 
 interface VariantDetailsSectionProps {
   sculptureId: string;
@@ -58,16 +57,6 @@ export function VariantDetailsSection({
           width={details.widthIn}
           depth={details.depthIn}
           onDimensionsChange={(field, value) => onAttributeChange(field, value)}
-          isBase={isBase}
-          isVariantForm={true}
-          variantId={variantId}
-        />
-        
-        <SculptureWeight
-          sculptureId={sculptureId}
-          weightKg={details.weightKg}
-          weightLbs={details.weightLbs}
-          onWeightChange={(field, value) => onAttributeChange(field, value)}
           isBase={isBase}
           isVariantForm={true}
           variantId={variantId}

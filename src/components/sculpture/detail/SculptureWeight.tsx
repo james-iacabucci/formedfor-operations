@@ -50,6 +50,11 @@ export function SculptureWeight({
     onWeightChange,
   });
 
+  // If we're in a variant form and not a quote form, don't render the weight
+  if (isVariantForm && !isQuoteForm) {
+    return null;
+  }
+
   return (
     <div className="relative">
       {isEditingWeight && canEdit ? (
