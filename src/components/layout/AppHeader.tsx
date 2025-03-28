@@ -6,11 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/AuthProvider";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
 
   // Fetch product lines
   const { data: productLines } = useQuery({
@@ -25,6 +27,9 @@ export function AppHeader() {
       return data as ProductLine[];
     },
   });
+
+  // Log user state to debug
+  console.log('App header rendered, user state:', user ? 'logged in' : 'not logged in');
 
   // Determine active tab based on current path
   const getActiveTab = () => {
@@ -112,7 +117,7 @@ export function AppHeader() {
           </div>
           
           <div className="flex items-center gap-4">
-            <UserMenu />
+            {user && <UserMenu />}
           </div>
         </div>
       </div>

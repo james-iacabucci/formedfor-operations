@@ -9,7 +9,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { PageTransition } from "./components/layout/PageTransition";
 import { useEffect } from "react";
-import { cleanupClosedPortals } from "./lib/portalUtils";
+import { cleanupClosedPortals, markClosedPortals } from "./lib/portalUtils";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
@@ -36,12 +36,32 @@ const queryClient = new QueryClient({
 function AppWithCleanup() {
   // Global portal cleanup on route changes
   useEffect(() => {
-    // Setup periodic cleanup of stale portals
+    // First set up a mutation observer to watch for portal state changes
+    const portalObserver = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && 
+            mutation.attributeName === 'data-state' &&
+            (mutation.target as HTMLElement).getAttribute('data-state') === 'closed') {
+          // Mark newly closed portals with timestamp
+          markClosedPortals();
+        }
+      });
+    });
+    
+    // Start observing attribute changes on the document body
+    portalObserver.observe(document.body, { 
+      attributes: true, 
+      attributeFilter: ['data-state'], 
+      subtree: true 
+    });
+    
+    // Also setup periodic cleanup of stale portals, but be conservative
     const cleanupInterval = setInterval(() => {
       cleanupClosedPortals('', '', 0);
-    }, 5000);
+    }, 30000); // Less aggressive - run every 30 seconds
     
     return () => {
+      portalObserver.disconnect();
       clearInterval(cleanupInterval);
     };
   }, []);

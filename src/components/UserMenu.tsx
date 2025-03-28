@@ -27,6 +27,7 @@ export function UserMenu() {
   const [showPreferences, setShowPreferences] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isChangingTheme, setIsChangingTheme] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -119,14 +120,20 @@ export function UserMenu() {
     setShowPreferences(true);
   };
 
+  // Log the user state to help debug
+  useEffect(() => {
+    console.log("UserMenu rendered, user:", user ? "logged in" : "not logged in");
+  }, [user]);
+
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="ghost" 
             size="icon" 
             className="relative p-0 h-9 w-9 transition-all duration-300 ease-in-out hover:bg-transparent focus:bg-transparent"
+            data-testid="user-menu-button"
           >
             <Avatar className="h-full w-full overflow-hidden">
               <AvatarImage src={avatar || undefined} />
@@ -137,7 +144,10 @@ export function UserMenu() {
             <span className="sr-only">User menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="transition-all duration-300 ease-in-out">
+        <DropdownMenuContent 
+          align="end" 
+          className="transition-all duration-300 ease-in-out z-50 bg-background border shadow-md"
+        >
           <DropdownMenuItem onClick={handlePreferencesClick}>
             <User className="mr-2 h-4 w-4" />
             User Profile
