@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ImageIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface ActionsDropdownProps {
   imageUrl?: string;
@@ -17,6 +18,35 @@ interface ActionsDropdownProps {
 
 export function ActionsDropdown({ imageUrl, sculptureName, onDelete }: ActionsDropdownProps) {
   const { toast } = useToast();
+
+  // Clean up portals when component unmounts
+  useEffect(() => {
+    return () => {
+      // Add a small delay to ensure animations have completed
+      setTimeout(() => {
+        try {
+          const portals = document.querySelectorAll('[data-state="closed"]');
+          portals.forEach(portal => {
+            try {
+              // Only target dropdown-specific portals
+              if (portal.classList.contains('dropdown-content') || 
+                  (portal.getAttribute('role') === 'menu')) {
+                const parent = portal.parentNode;
+                if (parent && parent.contains(portal)) {
+                  parent.removeChild(portal);
+                }
+              }
+            } catch (error) {
+              // Silently handle individual portal cleanup errors
+              console.error('Portal child removal error:', error);
+            }
+          });
+        } catch (error) {
+          console.error('Portal cleanup error:', error);
+        }
+      }, 100);
+    };
+  }, []);
 
   const handleDownload = () => {
     if (imageUrl) {
@@ -43,7 +73,7 @@ export function ActionsDropdown({ imageUrl, sculptureName, onDelete }: ActionsDr
           <MoreHorizontalIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 dropdown-content">
         <DropdownMenuItem onClick={handleDownload}>
           <ImageIcon className="h-4 w-4 mr-2" />
           Download Image

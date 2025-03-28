@@ -8,6 +8,8 @@ import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { PageTransition } from "./components/layout/PageTransition";
+import { useEffect } from "react";
+import { cleanupClosedPortals } from "./lib/portalUtils";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
@@ -31,6 +33,106 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppWithCleanup() {
+  // Global portal cleanup on route changes
+  useEffect(() => {
+    // Setup periodic cleanup of stale portals
+    const cleanupInterval = setInterval(() => {
+      cleanupClosedPortals('', '', 0);
+    }, 5000);
+    
+    return () => {
+      clearInterval(cleanupInterval);
+    };
+  }, []);
+  
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <Dashboard />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sculpture/:id"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <SculptureDetail />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leads"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <LeadsPage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <OrdersPage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chats"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <ChatsPage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <ClientsPage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <TasksPage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/productline/:productLineId"
+        element={
+          <ProtectedRoute>
+            <PageTransition>
+              <ProductLinePage />
+            </PageTransition>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
 const App = () => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
@@ -39,89 +141,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <Dashboard />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/sculpture/:id"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <SculptureDetail />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/leads"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <LeadsPage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/orders"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <OrdersPage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chats"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <ChatsPage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clients"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <ClientsPage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tasks"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <TasksPage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/productline/:productLineId"
-                element={
-                  <ProtectedRoute>
-                    <PageTransition>
-                      <ProductLinePage />
-                    </PageTransition>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+            <AppWithCleanup />
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

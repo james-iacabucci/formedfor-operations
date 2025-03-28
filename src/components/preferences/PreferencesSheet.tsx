@@ -46,12 +46,16 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
         try {
           const portals = document.querySelectorAll('[data-state="closed"]');
           portals.forEach(portal => {
-            // Only target Preferences-related portals
-            if (portal.textContent?.includes('Preferences')) {
-              const parent = portal.parentNode;
-              if (parent && parent.contains(portal)) {
-                parent.removeChild(portal);
+            try {
+              // Only target Preferences-related portals
+              if (portal.textContent?.includes('Preferences')) {
+                const parent = portal.parentNode;
+                if (parent && parent.contains(portal)) {
+                  parent.removeChild(portal);
+                }
               }
+            } catch (error) {
+              console.error('Portal child removal error:', error);
             }
           });
         } catch (error) {
