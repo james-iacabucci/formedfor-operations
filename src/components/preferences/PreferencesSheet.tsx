@@ -14,6 +14,7 @@ import { useUserRoles } from "@/hooks/use-user-roles";
 import { AppearanceSection } from "./AppearanceSection";
 import { ProfileSection } from "./ProfileSection";
 import { Button } from "@/components/ui/button";
+import { registerPortalCleanup } from "@/lib/portalUtils";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -39,31 +40,10 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     }
   }, [open, user, fetchRole]);
 
-  // Clean up closed portals to prevent unresponsive UI
+  // Clean up closed portals to prevent unresponsive UI using the improved utility
   useEffect(() => {
-    if (!open) {
-      setTimeout(() => {
-        try {
-          const portals = document.querySelectorAll('[data-state="closed"]');
-          portals.forEach(portal => {
-            try {
-              // Only target Preferences-related portals
-              if (portal.textContent?.includes('Preferences')) {
-                const parent = portal.parentNode;
-                if (parent && parent.contains(portal)) {
-                  parent.removeChild(portal);
-                }
-              }
-            } catch (error) {
-              console.error('Portal child removal error:', error);
-            }
-          });
-        } catch (error) {
-          console.error('Portal cleanup error:', error);
-        }
-      }, 300); // Wait for animation to complete
-    }
-  }, [open]);
+    return registerPortalCleanup('', 'Preferences', 300);
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

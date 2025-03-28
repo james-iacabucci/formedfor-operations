@@ -33,8 +33,10 @@ export function cleanupClosedPortals(
             return;
           }
           
+          // CRITICAL FIX: Verify parent-child relationship before removal
           const parent = portal.parentNode;
           if (parent && parent.contains(portal)) {
+            // Only remove if the portal is actually a child of this parent
             parent.removeChild(portal);
             console.log('Portal successfully removed');
           }

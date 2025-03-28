@@ -9,6 +9,7 @@ import {
 import { ImageIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { registerPortalCleanup } from "@/lib/portalUtils";
 
 interface ActionsDropdownProps {
   imageUrl?: string;
@@ -19,33 +20,10 @@ interface ActionsDropdownProps {
 export function ActionsDropdown({ imageUrl, sculptureName, onDelete }: ActionsDropdownProps) {
   const { toast } = useToast();
 
-  // Clean up portals when component unmounts
+  // Clean up portals when component unmounts using the improved utility
   useEffect(() => {
-    return () => {
-      // Add a small delay to ensure animations have completed
-      setTimeout(() => {
-        try {
-          const portals = document.querySelectorAll('[data-state="closed"]');
-          portals.forEach(portal => {
-            try {
-              // Only target dropdown-specific portals
-              if (portal.classList.contains('dropdown-content') || 
-                  (portal.getAttribute('role') === 'menu')) {
-                const parent = portal.parentNode;
-                if (parent && parent.contains(portal)) {
-                  parent.removeChild(portal);
-                }
-              }
-            } catch (error) {
-              // Silently handle individual portal cleanup errors
-              console.error('Portal child removal error:', error);
-            }
-          });
-        } catch (error) {
-          console.error('Portal cleanup error:', error);
-        }
-      }, 100);
-    };
+    // Register cleanup for dropdown-specific portals
+    return registerPortalCleanup('', 'Download Image', 200);
   }, []);
 
   const handleDownload = () => {
