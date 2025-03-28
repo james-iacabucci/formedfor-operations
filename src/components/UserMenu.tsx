@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,11 +6,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, User, LogOut, Moon, Sun } from "lucide-react";
+import { Settings, User, LogOut, Moon, Sun, UserCog } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState, useEffect } from "react";
 import { SettingsSheet } from "./settings/SettingsSheet";
 import { PreferencesSheet } from "./preferences/PreferencesSheet";
+import { UserManagementSheet } from "./admin/UserManagementSheet";
 import { useTheme } from "./ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -24,6 +24,7 @@ export function UserMenu() {
   const { theme, setTheme } = useTheme();
   const { fetchRole, hasPermission } = useUserRoles();
   const [showSettings, setShowSettings] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isChangingTheme, setIsChangingTheme] = useState(false);
@@ -53,23 +54,19 @@ export function UserMenu() {
   };
 
   const handleThemeChange = async () => {
-    // Prevent multiple clicks
     if (isChangingTheme) return;
     
     setIsChangingTheme(true);
     
-    // Set the new theme
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     
     if (!user) {
-      // If no user, just update local storage and release the lock
       setTimeout(() => setIsChangingTheme(false), 300);
       return;
     }
 
     try {
-      // First check if user has preferences record
       const { data: existingPref, error: fetchError } = await supabase
         .from('user_preferences')
         .select('id, settings')
@@ -79,7 +76,6 @@ export function UserMenu() {
       if (fetchError) throw fetchError;
 
       if (existingPref) {
-        // Update existing record
         const updatedSettings = {
           ...(typeof existingPref.settings === 'object' ? existingPref.settings : {}),
           theme: newTheme
@@ -92,7 +88,6 @@ export function UserMenu() {
 
         if (error) throw error;
       } else {
-        // Create new record
         const { error } = await supabase
           .from('user_preferences')
           .insert({
@@ -106,21 +101,18 @@ export function UserMenu() {
       console.error('Error saving theme preference:', error);
       toast.error("Failed to save theme preference");
     } finally {
-      // Release the lock after a delay
       setTimeout(() => setIsChangingTheme(false), 400);
     }
   };
 
   const handlePreferencesClick = () => {
     console.log('Opening preferences - refreshing role data');
-    // Refresh role data before showing preferences
     if (fetchRole) {
-      fetchRole(true); // Force refresh
+      fetchRole(true);
     }
     setShowPreferences(true);
   };
 
-  // Log the user state to help debug
   useEffect(() => {
     console.log("UserMenu rendered, user:", user ? "logged in" : "not logged in");
   }, [user]);
@@ -154,6 +146,16 @@ export function UserMenu() {
           </DropdownMenuItem>
           
           <PermissionGuard 
+            requiredPermission="settings.manage_roles"
+            fallback={null}
+          >
+            <DropdownMenuItem onClick={() => setShowUserManagement(true)}>
+              <UserCog className="mr-2 h-4 w-4" />
+              User Management
+            </DropdownMenuItem>
+          </PermissionGuard>
+          
+          <PermissionGuard 
             requiredPermission="settings.manage"
             fallback={null}
           >
@@ -182,6 +184,11 @@ export function UserMenu() {
       <SettingsSheet 
         open={showSettings} 
         onOpenChange={setShowSettings}
+      />
+
+      <UserManagementSheet
+        open={showUserManagement}
+        onOpenChange={setShowUserManagement}
       />
 
       <PreferencesSheet

@@ -6,36 +6,29 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Settings2, X } from "lucide-react";
-import { ManageTagsSection } from "./ManageTagsSection";
+import { UserCog, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { AIContextSection } from "./AIContextSection";
-import { ValueListsSection } from "./ValueListsSection";
-import { ProductLinesSection } from "./ProductLinesSection";
+import { RoleManagement } from "@/components/admin/RoleManagement";
+import { RolePermissionsManagement } from "@/components/admin/RolePermissionsManagement";
 import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
 import { registerPortalCleanup } from "@/lib/portalUtils";
 
-interface SettingsSheetProps {
+interface UserManagementSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
-  const [showCreateForm, setShowCreateForm] = useState(false);
+export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetProps) {
   const { user } = useAuth();
   const { hasPermission } = useUserRoles();
-  const isJames = user?.email === "james@formedfor.com";
 
-  // Reset state when sheet closes
+  // Reset state when sheet closes and clean up portals
   useEffect(() => {
     if (!open) {
-      setShowCreateForm(false);
-      
-      // Use the portal cleanup utility
-      const cleanup = registerPortalCleanup('[role="dialog"]', 'Settings', 300);
+      const cleanup = registerPortalCleanup('[role="dialog"]', 'User Management', 500);
       return cleanup;
     }
   }, [open]);
@@ -71,8 +64,8 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b">
             <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center gap-2">
-                <Settings2 className="h-5 w-5" />
-                Settings
+                <UserCog className="h-5 w-5" />
+                User Management
               </SheetTitle>
               <Button 
                 variant="ghost" 
@@ -85,26 +78,15 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               </Button>
             </div>
             <SheetDescription className="sr-only">
-              Configure application settings
+              Manage users and roles
             </SheetDescription>
           </SheetHeader>
           
           <div className="flex-1 overflow-y-auto px-6">
             <div className="py-6 space-y-8">
-              <PermissionGuard requiredPermission="settings.manage">
-                <AIContextSection />
-              </PermissionGuard>
-              
-              <PermissionGuard requiredPermission="settings.manage_tags">
-                <ManageTagsSection />
-              </PermissionGuard>
-              
-              <PermissionGuard requiredPermission="settings.manage_value_lists">
-                <ValueListsSection />
-              </PermissionGuard>
-              
-              <PermissionGuard requiredPermission="settings.manage_product_lines">
-                <ProductLinesSection />
+              <PermissionGuard requiredPermission="settings.manage_roles">
+                <RoleManagement />
+                <RolePermissionsManagement />
               </PermissionGuard>
             </div>
           </div>
