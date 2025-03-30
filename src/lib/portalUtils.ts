@@ -46,16 +46,17 @@ export function cleanupClosedPortals(
           // Check closed timestamp if available
           const closedTimestamp = portal.getAttribute('data-closed-time');
           const closedTimeMs = closedTimestamp ? parseInt(closedTimestamp, 10) : 0;
-          const hasBeenClosedLongEnough = closedTimeMs && (Date.now() - closedTimeMs) > 2000;
+          const hasBeenClosedLongEnough = closedTimeMs && (Date.now() - closedTimeMs) > 5000; // Increased to 5 seconds
           
-          // Only clean up if outside viewport AND closed for a while
-          if (isOutsideViewport && hasBeenClosedLongEnough) {
+          // Even more strict condition: Must be outside viewport AND closed for a long time 
+          // AND be explicitly allowed to be cleaned up
+          if (isOutsideViewport && hasBeenClosedLongEnough && portal.getAttribute('data-allow-cleanup') === 'true') {
             // CRITICAL FIX: Verify parent-child relationship before removal
             const parent = portal.parentNode;
             if (parent && parent.contains(portal)) {
               // Only remove if the portal is actually a child of this parent
               parent.removeChild(portal);
-              console.log('Portal safely removed');
+              console.log('Portal safely removed with strict conditions');
             }
           }
         } catch (removeError) {
@@ -77,9 +78,31 @@ export function markClosedPortals(): void {
     const newlyClosedPortals = document.querySelectorAll('[data-state="closed"]:not([data-closed-time])');
     newlyClosedPortals.forEach(portal => {
       portal.setAttribute('data-closed-time', Date.now().toString());
+      
+      // By default, do not allow cleanup - components must explicitly opt-in
+      if (!portal.hasAttribute('data-allow-cleanup')) {
+        portal.setAttribute('data-allow-cleanup', 'false');
+      }
     });
   } catch (error) {
     console.error('Error marking closed portals:', error);
+  }
+}
+
+/**
+ * Marks a portal as safe to clean up
+ * @param portalOrSelector Portal element or selector to find portal
+ */
+export function allowPortalCleanup(portalOrSelector: Element | string): void {
+  try {
+    if (typeof portalOrSelector === 'string') {
+      const portals = document.querySelectorAll(portalOrSelector);
+      portals.forEach(portal => portal.setAttribute('data-allow-cleanup', 'true'));
+    } else {
+      portalOrSelector.setAttribute('data-allow-cleanup', 'true');
+    }
+  } catch (error) {
+    console.error('Error allowing portal cleanup:', error);
   }
 }
 
@@ -100,9 +123,8 @@ export function registerPortalCleanup(
     // Mark portals as closed but don't immediately remove them
     markClosedPortals();
     
-    // Schedule a very conservative cleanup
-    setTimeout(() => {
-      cleanupClosedPortals(selector, textContent, delay);
-    }, 2000);
+    // We no longer automatically schedule a cleanup, we just mark the portals
+    // The global cleanup mechanism will handle it conservatively
   };
 }
+

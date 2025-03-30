@@ -14,7 +14,7 @@ import { useUserRoles } from "@/hooks/use-user-roles";
 import { AppearanceSection } from "./AppearanceSection";
 import { ProfileSection } from "./ProfileSection";
 import { Button } from "@/components/ui/button";
-import { registerPortalCleanup } from "@/lib/portalUtils";
+import { markClosedPortals } from "@/lib/portalUtils";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -37,13 +37,13 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
     // Reset the flag when sheet closes
     if (!open) {
       didFetchRef.current = false;
+      
+      // Just mark portals as closed, don't try to remove them
+      setTimeout(() => {
+        markClosedPortals();
+      }, 300);
     }
   }, [open, user, fetchRole]);
-
-  // Clean up closed portals to prevent unresponsive UI using the improved utility
-  useEffect(() => {
-    return registerPortalCleanup('', 'Preferences', 300);
-  }, []);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

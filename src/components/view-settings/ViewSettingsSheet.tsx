@@ -14,6 +14,7 @@ import { HeightFilterSection } from "./components/HeightFilterSection";
 import { FilterOptionsSection } from "./components/FilterOptionsSection";
 import { ViewSettings } from "@/hooks/use-user-preferences";
 import { toast } from "sonner";
+import { markClosedPortals } from "@/lib/portalUtils";
 
 interface ViewSettingsSheetProps {
   open: boolean;
@@ -47,6 +48,11 @@ export function ViewSettingsSheet({
       };
       setSettings(initialState);
       setLastSavedSettings(initialState);
+    } else {
+      // Just mark portals as closed when sheet closes
+      setTimeout(() => {
+        markClosedPortals();
+      }, 300);
     }
   }, [open, initialSettings]);
 

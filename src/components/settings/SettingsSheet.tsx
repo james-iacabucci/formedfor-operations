@@ -34,7 +34,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!open) {
       setShowCreateForm(false);
       
-      // Mark portals that are closing, but don't aggressively remove them
+      // Just mark portals as closed, don't try to remove them
       setTimeout(() => {
         markClosedPortals();
       }, 300);

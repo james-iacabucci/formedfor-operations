@@ -9,7 +9,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { PageTransition } from "./components/layout/PageTransition";
 import { useEffect } from "react";
-import { cleanupClosedPortals, markClosedPortals } from "./lib/portalUtils";
+import { cleanupClosedPortals, markClosedPortals, allowPortalCleanup } from "./lib/portalUtils";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
@@ -55,14 +55,27 @@ function AppWithCleanup() {
       subtree: true 
     });
     
-    // Also setup periodic cleanup of stale portals, but be very conservative
+    // Also set up a visibility change listener to safely allow cleanup when tab is not visible
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        // When tab is hidden, we can safely mark portals for cleanup
+        const closedPortals = document.querySelectorAll('[data-state="closed"]');
+        closedPortals.forEach(portal => {
+          allowPortalCleanup(portal);
+        });
+      }
+    });
+    
+    // Ultra-conservative cleanup approach - only run once every 2 minutes
+    // and only for portals that are explicitly allowed to be cleaned up
     const cleanupInterval = setInterval(() => {
       cleanupClosedPortals('', '', 0);
-    }, 60000); // Even more conservative - run once per minute
+    }, 120000); // 2 minutes
     
     return () => {
       portalObserver.disconnect();
       clearInterval(cleanupInterval);
+      document.removeEventListener('visibilitychange', () => {});
     };
   }, []);
   
