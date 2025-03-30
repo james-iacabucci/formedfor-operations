@@ -55,10 +55,10 @@ function AppWithCleanup() {
       subtree: true 
     });
     
-    // Also setup periodic cleanup of stale portals, but be conservative
+    // Also setup periodic cleanup of stale portals, but be very conservative
     const cleanupInterval = setInterval(() => {
       cleanupClosedPortals('', '', 0);
-    }, 30000); // Less aggressive - run every 30 seconds
+    }, 60000); // Even more conservative - run once per minute
     
     return () => {
       portalObserver.disconnect();

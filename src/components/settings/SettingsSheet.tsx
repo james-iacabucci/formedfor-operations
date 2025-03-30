@@ -16,7 +16,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
-import { registerPortalCleanup } from "@/lib/portalUtils";
+import { markClosedPortals } from "@/lib/portalUtils";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -34,9 +34,10 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!open) {
       setShowCreateForm(false);
       
-      // Use the portal cleanup utility
-      const cleanup = registerPortalCleanup('[role="dialog"]', 'Settings', 300);
-      return cleanup;
+      // Mark portals that are closing, but don't aggressively remove them
+      setTimeout(() => {
+        markClosedPortals();
+      }, 300);
     }
   }, [open]);
 

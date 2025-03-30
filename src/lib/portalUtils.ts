@@ -46,16 +46,16 @@ export function cleanupClosedPortals(
           // Check closed timestamp if available
           const closedTimestamp = portal.getAttribute('data-closed-time');
           const closedTimeMs = closedTimestamp ? parseInt(closedTimestamp, 10) : 0;
-          const hasBeenClosedLongEnough = closedTimeMs && (Date.now() - closedTimeMs) > 1000;
+          const hasBeenClosedLongEnough = closedTimeMs && (Date.now() - closedTimeMs) > 2000;
           
-          // Only clean up if outside viewport or closed for a while
-          if (isOutsideViewport || hasBeenClosedLongEnough) {
+          // Only clean up if outside viewport AND closed for a while
+          if (isOutsideViewport && hasBeenClosedLongEnough) {
             // CRITICAL FIX: Verify parent-child relationship before removal
             const parent = portal.parentNode;
             if (parent && parent.contains(portal)) {
               // Only remove if the portal is actually a child of this parent
               parent.removeChild(portal);
-              console.log('Portal successfully removed');
+              console.log('Portal safely removed');
             }
           }
         } catch (removeError) {
@@ -97,6 +97,12 @@ export function registerPortalCleanup(
   delay: number = 300
 ): () => void {
   return () => {
-    cleanupClosedPortals(selector, textContent, delay);
+    // Mark portals as closed but don't immediately remove them
+    markClosedPortals();
+    
+    // Schedule a very conservative cleanup
+    setTimeout(() => {
+      cleanupClosedPortals(selector, textContent, delay);
+    }, 2000);
   };
 }

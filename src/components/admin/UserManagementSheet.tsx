@@ -14,7 +14,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
-import { registerPortalCleanup } from "@/lib/portalUtils";
+import { markClosedPortals } from "@/lib/portalUtils";
 
 interface UserManagementSheetProps {
   open: boolean;
@@ -25,11 +25,12 @@ export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetP
   const { user } = useAuth();
   const { hasPermission } = useUserRoles();
 
-  // Reset state when sheet closes and clean up portals
+  // Reset state when sheet closes and mark portals (but don't aggressively cleanup)
   useEffect(() => {
     if (!open) {
-      const cleanup = registerPortalCleanup('[role="dialog"]', 'User Management', 500);
-      return cleanup;
+      setTimeout(() => {
+        markClosedPortals();
+      }, 300);
     }
   }, [open]);
 
