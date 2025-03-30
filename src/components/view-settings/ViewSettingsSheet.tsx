@@ -14,7 +14,7 @@ import { HeightFilterSection } from "./components/HeightFilterSection";
 import { FilterOptionsSection } from "./components/FilterOptionsSection";
 import { ViewSettings } from "@/hooks/use-user-preferences";
 import { toast } from "sonner";
-import { markClosedPortals } from "@/lib/portalUtils";
+import { markClosedPortals, fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 interface ViewSettingsSheetProps {
   open: boolean;
@@ -49,12 +49,29 @@ export function ViewSettingsSheet({
       setSettings(initialState);
       setLastSavedSettings(initialState);
     } else {
-      // Just mark portals as closed when sheet closes
+      // Mark portals as closed and apply UI fix
       setTimeout(() => {
         markClosedPortals();
+        
+        // Apply UI fix after animation completes
+        setTimeout(() => {
+          fixUIAfterPortalClose();
+        }, 500);
       }, 300);
     }
   }, [open, initialSettings]);
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
 
   const { data: materials } = useQuery({
     queryKey: ["value_lists_materials"],
@@ -132,6 +149,11 @@ export function ViewSettingsSheet({
     }
     
     onOpenChange(false);
+    
+    // Apply UI fix after closing
+    setTimeout(() => {
+      fixUIAfterPortalClose();
+    }, 500);
   };
 
   const allTags = [

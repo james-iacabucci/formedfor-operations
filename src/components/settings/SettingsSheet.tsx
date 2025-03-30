@@ -16,7 +16,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
-import { markClosedPortals } from "@/lib/portalUtils";
+import { markClosedPortals, fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -29,14 +29,19 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const { hasPermission } = useUserRoles();
   const isJames = user?.email === "james@formedfor.com";
 
-  // Reset state when sheet closes
+  // Reset state when sheet closes and perform UI fix
   useEffect(() => {
     if (!open) {
       setShowCreateForm(false);
       
-      // Just mark portals as closed, don't try to remove them
+      // Mark portals as closed but don't aggressively remove them
       setTimeout(() => {
         markClosedPortals();
+        
+        // Apply UI fix after a delay to ensure all animations finish
+        setTimeout(() => {
+          fixUIAfterPortalClose();
+        }, 500);
       }, 300);
     }
   }, [open]);
@@ -53,12 +58,21 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onOpenChange]);
 
+  const handleClose = () => {
+    onOpenChange(false);
+    
+    // Apply UI fix after closing
+    setTimeout(() => {
+      fixUIAfterPortalClose();
+    }, 500);
+  };
+
   return (
     <Sheet 
       open={open} 
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          onOpenChange(false);
+          handleClose();
         }
       }}
     >
@@ -78,7 +92,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => onOpenChange(false)}
+                onClick={handleClose}
                 className="h-8 w-8" 
                 aria-label="Close"
               >

@@ -8,8 +8,8 @@ import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { PageTransition } from "./components/layout/PageTransition";
-import { useEffect } from "react";
-import { cleanupClosedPortals, markClosedPortals, allowPortalCleanup } from "./lib/portalUtils";
+import { useEffect, useRef } from "react";
+import { cleanupClosedPortals, markClosedPortals, fixUIAfterPortalClose } from "./lib/portalUtils";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import SculptureDetail from "./pages/SculptureDetail";
@@ -34,6 +34,8 @@ const queryClient = new QueryClient({
 });
 
 function AppWithCleanup() {
+  const routeChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Global portal cleanup on route changes
   useEffect(() => {
     // First set up a mutation observer to watch for portal state changes
@@ -55,27 +57,53 @@ function AppWithCleanup() {
       subtree: true 
     });
     
-    // Also set up a visibility change listener to safely allow cleanup when tab is not visible
+    // When visibility changes, fix UI and attempt cleanup
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        // When tab is hidden, we can safely mark portals for cleanup
-        const closedPortals = document.querySelectorAll('[data-state="closed"]');
-        closedPortals.forEach(portal => {
-          allowPortalCleanup(portal);
-        });
+      // Fix UI issues when tab becomes visible again
+      if (document.visibilityState === 'visible') {
+        fixUIAfterPortalClose();
       }
     });
     
-    // Ultra-conservative cleanup approach - only run once every 2 minutes
-    // and only for portals that are explicitly allowed to be cleaned up
+    // Monitor for clicks that might be blocked
+    document.addEventListener('click', (e) => {
+      // Check if click target is null or document
+      if (!e.target || e.target === document) {
+        console.log('[Portal Debug] Detected possible blocked click, fixing UI');
+        fixUIAfterPortalClose();
+      }
+    }, true);
+    
+    // Listen for route changes and fix UI after each change
+    const handleRouteChange = () => {
+      if (routeChangeTimeoutRef.current) {
+        clearTimeout(routeChangeTimeoutRef.current);
+      }
+      
+      // Fix UI slightly after route changes
+      routeChangeTimeoutRef.current = setTimeout(() => {
+        fixUIAfterPortalClose();
+      }, 300);
+    };
+    
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // Ultra-conservative cleanup approach - only run once every 5 minutes
     const cleanupInterval = setInterval(() => {
-      cleanupClosedPortals('', '', 0);
-    }, 120000); // 2 minutes
+      cleanupClosedPortals({
+        minTimeClosedMs: 60000 // Only remove portals closed for at least 1 minute
+      });
+    }, 300000); // 5 minutes
     
     return () => {
       portalObserver.disconnect();
       clearInterval(cleanupInterval);
+      if (routeChangeTimeoutRef.current) {
+        clearTimeout(routeChangeTimeoutRef.current);
+      }
       document.removeEventListener('visibilitychange', () => {});
+      document.removeEventListener('click', () => {}, true);
+      window.removeEventListener('popstate', handleRouteChange);
     };
   }, []);
   

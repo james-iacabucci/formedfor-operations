@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Settings, User, LogOut, Moon, Sun, UserCog } from "lucide-react";
 import { useAuth } from "./AuthProvider";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SettingsSheet } from "./settings/SettingsSheet";
 import { PreferencesSheet } from "./preferences/PreferencesSheet";
 import { UserManagementSheet } from "./admin/UserManagementSheet";
@@ -18,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "./permissions/PermissionGuard";
+import { fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
@@ -29,6 +31,7 @@ export function UserMenu() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isChangingTheme, setIsChangingTheme] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -110,12 +113,32 @@ export function UserMenu() {
     if (fetchRole) {
       fetchRole(true);
     }
+    setIsMenuOpen(false);
     setShowPreferences(true);
   };
 
+  // Clean up menu timeout on unmount
   useEffect(() => {
-    console.log("UserMenu rendered, user:", user ? "logged in" : "not logged in");
-  }, [user]);
+    return () => {
+      if (menuTimeoutRef.current) {
+        clearTimeout(menuTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Add an effect to handle menu state changes
+  useEffect(() => {
+    // When menu closes, wait a bit and then fix UI
+    if (!isMenuOpen) {
+      if (menuTimeoutRef.current) {
+        clearTimeout(menuTimeoutRef.current);
+      }
+      
+      menuTimeoutRef.current = setTimeout(() => {
+        fixUIAfterPortalClose();
+      }, 300);
+    }
+  }, [isMenuOpen]);
 
   return (
     <>
@@ -139,6 +162,10 @@ export function UserMenu() {
         <DropdownMenuContent 
           align="end" 
           className="transition-all duration-300 ease-in-out z-50 bg-background border shadow-md"
+          // Important: Never allow dropdown menu content to be removed by cleanup
+          data-allow-cleanup="false"
+          // Apply attributes to highlight this is a dropdown menu
+          data-dropdown-menu="true"
         >
           <DropdownMenuItem onClick={handlePreferencesClick}>
             <User className="mr-2 h-4 w-4" />
@@ -149,7 +176,10 @@ export function UserMenu() {
             requiredPermission="settings.manage_roles"
             fallback={null}
           >
-            <DropdownMenuItem onClick={() => setShowUserManagement(true)}>
+            <DropdownMenuItem onClick={() => {
+              setIsMenuOpen(false);
+              setShowUserManagement(true);
+            }}>
               <UserCog className="mr-2 h-4 w-4" />
               User Management
             </DropdownMenuItem>
@@ -159,7 +189,10 @@ export function UserMenu() {
             requiredPermission="settings.manage"
             fallback={null}
           >
-            <DropdownMenuItem onClick={() => setShowSettings(true)}>
+            <DropdownMenuItem onClick={() => {
+              setIsMenuOpen(false);
+              setShowSettings(true);
+            }}>
               <Settings className="mr-2 h-4 w-4" />
               System Settings
             </DropdownMenuItem>

@@ -14,7 +14,7 @@ import { useUserRoles } from "@/hooks/use-user-roles";
 import { AppearanceSection } from "./AppearanceSection";
 import { ProfileSection } from "./ProfileSection";
 import { Button } from "@/components/ui/button";
-import { markClosedPortals } from "@/lib/portalUtils";
+import { markClosedPortals, fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 interface PreferencesSheetProps {
   open: boolean;
@@ -34,20 +34,58 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
       fetchRole(true); // Force refresh once
     }
     
-    // Reset the flag when sheet closes
+    // Reset the flag when sheet closes and fix UI
     if (!open) {
       didFetchRef.current = false;
       
-      // Just mark portals as closed, don't try to remove them
+      // Mark portals as closed first
       setTimeout(() => {
         markClosedPortals();
+        
+        // Apply UI fix after the animation completes
+        setTimeout(() => {
+          fixUIAfterPortalClose();
+        }, 500);
       }, 300);
     }
   }, [open, user, fetchRole]);
 
+  const handleClose = () => {
+    onOpenChange(false);
+    
+    // Apply UI fix after closing
+    setTimeout(() => {
+      fixUIAfterPortalClose();
+    }, 500);
+  };
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-2xl flex flex-col p-0 overflow-hidden">
+    <Sheet 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          handleClose();
+        }
+      }}
+    >
+      <SheetContent 
+        className="sm:max-w-2xl flex flex-col p-0 overflow-hidden"
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
         <div className="flex flex-col h-full">
           <SheetHeader className="sticky top-0 z-10 bg-background px-6 py-4 border-b flex-shrink-0 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
@@ -59,12 +97,15 @@ export function PreferencesSheet({ open, onOpenChange }: PreferencesSheetProps) 
                 Manage your profile preferences
               </SheetDescription>
             </div>
-            <SheetClose asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </SheetClose>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8"
+              onClick={handleClose}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
           </SheetHeader>
           
           <div className="flex-1 overflow-y-auto px-6 py-6">

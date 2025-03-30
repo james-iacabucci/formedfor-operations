@@ -14,7 +14,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
-import { markClosedPortals } from "@/lib/portalUtils";
+import { markClosedPortals, fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 interface UserManagementSheetProps {
   open: boolean;
@@ -25,11 +25,17 @@ export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetP
   const { user } = useAuth();
   const { hasPermission } = useUserRoles();
 
-  // Reset state when sheet closes and mark portals (but don't aggressively cleanup)
+  // Reset state when sheet closes and fix UI
   useEffect(() => {
     if (!open) {
+      // Just mark portals as closed, don't try to remove them
       setTimeout(() => {
         markClosedPortals();
+        
+        // Apply UI fix after animation completes
+        setTimeout(() => {
+          fixUIAfterPortalClose();
+        }, 500);
       }, 300);
     }
   }, [open]);
@@ -46,12 +52,21 @@ export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetP
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onOpenChange]);
 
+  const handleClose = () => {
+    onOpenChange(false);
+    
+    // Apply UI fix after closing
+    setTimeout(() => {
+      fixUIAfterPortalClose();
+    }, 500);
+  };
+
   return (
     <Sheet 
       open={open} 
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          onOpenChange(false);
+          handleClose();
         }
       }}
     >
@@ -71,7 +86,7 @@ export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetP
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => onOpenChange(false)}
+                onClick={handleClose}
                 className="h-8 w-8" 
                 aria-label="Close"
               >
