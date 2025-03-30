@@ -23,7 +23,7 @@ export function ActionsDropdown({ imageUrl, sculptureName, onDelete }: ActionsDr
   // Clean up portals when component unmounts using the improved utility
   useEffect(() => {
     // Register cleanup for dropdown-specific portals
-    return registerPortalCleanup('', 'Download Image', 200);
+    return registerPortalCleanup();
   }, []);
 
   const handleDownload = () => {

@@ -186,8 +186,10 @@ export function fixUIAfterPortalClose(): void {
   const overlays = document.querySelectorAll('[role="presentation"]');
   overlays.forEach(overlay => {
     if (overlay.getAttribute('data-state') === 'closed') {
-      overlay.style.display = 'none';
-      overlay.style.pointerEvents = 'none';
+      // Use type assertion to tell TypeScript this is an HTMLElement
+      const htmlOverlay = overlay as HTMLElement;
+      htmlOverlay.style.display = 'none';
+      htmlOverlay.style.pointerEvents = 'none';
     }
   });
 }
