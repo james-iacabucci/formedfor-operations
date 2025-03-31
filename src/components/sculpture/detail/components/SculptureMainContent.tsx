@@ -31,9 +31,19 @@ export function SculptureMainContent({
       <div className="relative border rounded-lg overflow-hidden">
         <AspectRatio ratio={1}>
           <SculptureDetailImage
-            sculpture={sculpture}
+            imageUrl={sculpture.image_url || ""}
+            prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
+            sculptureId={sculpture.id}
+            userId={sculpture.created_by}
             onRegenerate={onRegenerate}
+            onManageTags={() => {
+              // Placeholder for manage tags functionality
+              toast({
+                title: "Feature not implemented",
+                description: "Tag management feature is not yet implemented.",
+              });
+            }}
           />
         </AspectRatio>
         <Button
@@ -54,10 +64,20 @@ export function SculptureMainContent({
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
         </TabsList>
         <TabsContent value="details">
-          <SculptureDescription sculpture={sculpture} />
+          <SculptureDescription 
+            sculptureId={sculpture.id}
+            imageUrl={sculpture.image_url}
+            description={sculpture.ai_description}
+            name={sculpture.ai_generated_name}
+          />
         </TabsContent>
         <TabsContent value="files">
-          <SculptureFiles sculpture={sculpture} />
+          <SculptureFiles 
+            sculptureId={sculpture.id}
+            models={sculpture.models}
+            renderings={sculpture.renderings}
+            dimensions={sculpture.dimensions}
+          />
         </TabsContent>
         <TabsContent value="tasks">
           <div className="border rounded-md p-4">

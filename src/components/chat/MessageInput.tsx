@@ -28,7 +28,7 @@ export function MessageInput({
   sculptureId
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
-  const { textareaRef, adjustHeight, resetTextarea } = useTextareaAutosize();
+  const { textareaRef, adjustHeight } = useTextareaAutosize(message);
   const { hasPermission } = useUserRoles();
 
   // Check permissions based on chat type
@@ -41,13 +41,13 @@ export function MessageInput({
     onUploadingFiles,
     uploadingFiles,
     onUploadComplete,
-    resetTextarea,
+    resetTextarea: () => setMessage(""),
     adjustHeight,
     textareaRef,
     sculptureId
   });
 
-  const { onPaste } = usePasteHandler({
+  const { handlePaste } = usePasteHandler({
     onUploadingFiles
   });
 
@@ -73,6 +73,7 @@ export function MessageInput({
       {uploadingFiles.length > 0 && (
         <PendingFiles 
           files={uploadingFiles} 
+          isSending={isSending}
           onRemove={(id) => {
             onUploadingFiles(uploadingFiles.filter(f => f.id !== id));
           }} 
@@ -87,13 +88,20 @@ export function MessageInput({
         className="flex flex-col space-y-2"
       >
         <MessageInputField
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onPaste={onPaste}
+          message={message}
+          setMessage={setMessage}
+          handleKeyDown={handleKeyDown}
+          handlePaste={handlePaste}
           textareaRef={textareaRef}
+          isSending={isSending}
           disabled={disabled || isSending}
-          adjustHeight={adjustHeight}
+          uploadingFiles={uploadingFiles}
+          onFilesSelected={onUploadingFiles}
+          onSubmit={(e) => {
+            handleSubmit(e, message);
+            setMessage("");
+          }}
+          isQuoteChat={isQuoteChat}
         />
       </form>
     </div>
