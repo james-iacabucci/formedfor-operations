@@ -109,6 +109,7 @@ export function PricingDetailsForm({
               placeholder="0.00"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
@@ -128,6 +129,7 @@ export function PricingDetailsForm({
               placeholder="0.00"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
@@ -147,6 +149,7 @@ export function PricingDetailsForm({
               placeholder="0.00"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
@@ -166,6 +169,7 @@ export function PricingDetailsForm({
               placeholder="0.00"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
@@ -196,7 +200,7 @@ export function PricingDetailsForm({
                 placeholder="1"
                 min="1"
                 step="0.1"
-                className={canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}
+                className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}`}
               />
             )}
           </div>
@@ -235,6 +239,7 @@ export function PricingDetailsForm({
               placeholder="Weight in kg"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
@@ -254,6 +259,7 @@ export function PricingDetailsForm({
               placeholder="Weight in lbs"
               min="0"
               step="0.01"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           )}
         </div>
