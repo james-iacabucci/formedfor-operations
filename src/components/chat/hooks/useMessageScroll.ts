@@ -28,9 +28,16 @@ export function useMessageScroll({ isLoading, data, uploadingFiles }: UseMessage
             setShouldScrollToBottom(false);
           }
         }
-      }, 100);
+      }, 150); // Slight increase in delay to ensure DOM is fully updated
     }
-  }, [isLoading, data, shouldScrollToBottom]);
+  }, [isLoading, data, shouldScrollToBottom, initialLoadComplete]);
+
+  // Always scroll to bottom when chat is opened (data is initially loaded)
+  useEffect(() => {
+    if (data && !isLoading && !initialLoadComplete) {
+      setShouldScrollToBottom(true);
+    }
+  }, [data, isLoading, initialLoadComplete]);
 
   // Set shouldScrollToBottom to true when uploadingFiles changes
   useEffect(() => {

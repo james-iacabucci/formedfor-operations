@@ -4,7 +4,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { convertToMessage } from "../types";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 30; // Set this to exactly 30 messages as requested
 
 export function useMessages(threadId: string) {
   const lastMessageRef = useRef<string | null>(null);
@@ -50,7 +50,7 @@ export function useMessages(threadId: string) {
           )
         `)
         .eq("thread_id", threadId)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false }) // Get newest messages first
         .limit(PAGE_SIZE);
 
       // Important: ensure strict pagination boundaries based on created_at timestamp
@@ -66,23 +66,6 @@ export function useMessages(threadId: string) {
       }
       
       console.log(`[DEBUG][useMessages] Fetched ${data?.length || 0} messages for thread: ${threadId}, instance: ${instanceId}`);
-      
-      // Check if we have any messages with reactions
-      if (data) {
-        const messagesWithReactions = data.filter(msg => {
-          // Safely check if reactions is an array and has items
-          return msg.reactions && Array.isArray(msg.reactions) && msg.reactions.length > 0;
-        });
-        
-        if (messagesWithReactions.length > 0) {
-          console.log(`[DEBUG][useMessages] Found ${messagesWithReactions.length} messages with reactions`);
-          messagesWithReactions.forEach(msg => {
-            if (msg.reactions && Array.isArray(msg.reactions)) {
-              console.log(`[DEBUG][useMessages] Message ${msg.id} has ${msg.reactions.length} reactions in DB response`);
-            }
-          });
-        }
-      }
       
       return data || [];
     },
@@ -156,7 +139,7 @@ export function useMessages(threadId: string) {
     
     // Convert back to array, reverse (for chronological order), and process
     return Array.from(messageMap.values())
-      .reverse()
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) // Sort chronologically
       .map(msg => {
         // Safely check if reactions exists and log
         if (msg.reactions && Array.isArray(msg.reactions)) {

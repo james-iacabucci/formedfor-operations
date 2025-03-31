@@ -13,9 +13,16 @@ interface ChatSheetProps {
   onOpenChange: (open: boolean) => void;
   threadId: string;
   quoteMode?: boolean;
+  sculptureId?: string; // Add sculptureId prop
 }
 
-export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: ChatSheetProps) {
+export function ChatSheet({ 
+  open, 
+  onOpenChange, 
+  threadId, 
+  quoteMode = false,
+  sculptureId 
+}: ChatSheetProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -82,6 +89,7 @@ export function ChatSheet({ open, onOpenChange, threadId, quoteMode = false }: C
             uploadingFiles={uploadingFiles}
             editingMessage={editingMessage}
             setEditingMessage={setEditingMessage}
+            sculptureId={sculptureId} // Pass sculptureId to ChatContent
           />
           
           {activeView === "chat" && currentThreadId && (

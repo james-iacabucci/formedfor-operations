@@ -61,7 +61,7 @@ export function MessageList({
         )
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true }) 
-        .limit(50);
+        .limit(30); // Limit to 30 recent messages
       
       if (pageParam) {
         query = query.gt("created_at", pageParam);
@@ -102,6 +102,13 @@ export function MessageList({
     data,
     uploadingFiles
   });
+
+  // Always trigger scroll to bottom when chat opens and messages load
+  useEffect(() => {
+    if (!isLoading && data?.pages?.length && data.pages[0]?.length) {
+      setShouldScrollToBottom(true);
+    }
+  }, [isLoading, data?.pages]);
 
   useEffect(() => {
     if (onLoadMore) {

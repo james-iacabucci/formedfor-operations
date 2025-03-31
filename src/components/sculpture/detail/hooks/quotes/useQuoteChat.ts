@@ -79,6 +79,7 @@ export function useQuoteChat(sculptureId: string, variantId: string | null) {
     isChatOpen,
     setIsChatOpen,
     chatThreadId,
+    sculptureId, // Make sure to return sculptureId
     handleOpenChat
   };
 }
