@@ -14,6 +14,7 @@ interface UseMessageSendProps {
   resetTextarea: () => void;
   adjustHeight: () => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  sculptureId?: string;
 }
 
 export function useMessageSend({
@@ -23,7 +24,8 @@ export function useMessageSend({
   onUploadComplete,
   resetTextarea,
   adjustHeight,
-  textareaRef
+  textareaRef,
+  sculptureId
 }: UseMessageSendProps) {
   const [isSending, setIsSending] = useState(false);
   const { user } = useAuth();
@@ -37,6 +39,9 @@ export function useMessageSend({
     let messageId: string | null = null;
 
     try {
+      // Log current thread ID and sculpture ID for debugging
+      console.log(`Sending message to thread ${threadId}, sculptureId: ${sculptureId || 'none'}`);
+      
       const filesToUpload = uploadingFiles;
       let uploadedFiles: any[] = [];
 

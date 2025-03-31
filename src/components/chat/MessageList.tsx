@@ -38,9 +38,9 @@ export function MessageList({
     isLoading,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["messages", threadId],
+    queryKey: ["messages", threadId, sculptureId],
     queryFn: async ({ pageParam }) => {
-      console.log(`Fetching messages for thread ${threadId}, pageParam:`, pageParam);
+      console.log(`Fetching messages for thread ${threadId}, sculptureId: ${sculptureId}, pageParam:`, pageParam);
       let query = supabase
         .from("chat_messages")
         .select(
@@ -61,7 +61,7 @@ export function MessageList({
         )
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true }) 
-        .limit(30); // Limit to 30 recent messages
+        .limit(30);
       
       if (pageParam) {
         query = query.gt("created_at", pageParam);

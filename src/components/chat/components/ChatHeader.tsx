@@ -1,135 +1,127 @@
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Files, MessageSquare, X } from "lucide-react";
+import { VariantProps } from "class-variance-authority";
+import { FileIcon, ImageIcon, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SheetClose } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChatHeaderProps {
   threadId: string;
   activeView: "chat" | "files";
-  onViewChange: (value: "chat" | "files") => void;
+  onViewChange: (view: "chat" | "files") => void;
   onClose?: () => void;
   quoteMode?: boolean;
+  sculptureId?: string;
 }
 
-export function ChatHeader({ threadId, activeView, onViewChange, onClose, quoteMode = false }: ChatHeaderProps) {
-  const [title, setTitle] = useState<string>("");
+export function ChatHeader({
+  threadId,
+  activeView,
+  onViewChange,
+  onClose,
+  quoteMode = false,
+  sculptureId
+}: ChatHeaderProps) {
+  const { data: threadInfo, isLoading } = useQuery({
+    queryKey: ["thread-info", threadId, sculptureId],
+    queryFn: async () => {
+      if (!threadId) return null;
 
-  useEffect(() => {
-    const fetchTitle = async () => {
-      if (!threadId) return;
-      
-      if (quoteMode) {
-        // For quote chat, get fabricator name + quote details
-        try {
-          // First, get the fabrication_quote_id from the thread
-          const { data: threadData, error: threadError } = await supabase
-            .from("chat_threads")
-            .select("fabrication_quote_id")
-            .eq("id", threadId)
-            .single();
-          
-          if (threadError) {
-            console.error("Error fetching thread:", threadError);
-            setTitle("Fabrication Quote");
-            return;
-          }
-          
-          if (!threadData?.fabrication_quote_id) {
-            setTitle("Fabrication Quote");
-            return;
-          }
-          
-          // Then get the fabricator details using the quote_id
-          const { data: quoteData, error: quoteError } = await supabase
-            .from("fabrication_quotes")
-            .select(`
-              fabricator_id,
-              fabricator:value_lists!fabricator_id(name)
-            `)
-            .eq("id", threadData.fabrication_quote_id)
-            .single();
-          
-          if (quoteError) {
-            console.error("Error fetching quote:", quoteError);
-            setTitle("Fabrication Quote");
-            return;
-          }
-          
-          const fabricatorName = quoteData?.fabricator?.name;
-          if (fabricatorName) {
-            setTitle(`${fabricatorName} Quote`);
-          } else {
-            setTitle("Fabrication Quote");
-          }
-        } catch (error) {
-          console.error("Error in fetching quote data:", error);
-          setTitle("Fabrication Quote");
-        }
-      } else {
-        // For sculpture chat, get sculpture name
-        const { data, error } = await supabase
-          .from("chat_threads")
-          .select("sculptures(ai_generated_name, manual_name)")
-          .eq("id", threadId)
-          .limit(1)
-          .single();
-        
-        if (error) {
-          console.error("Error fetching sculpture name:", error);
-          setTitle("Chat");
-          return;
-        }
-        
-        if (data?.sculptures) {
-          const name = data.sculptures.manual_name || data.sculptures.ai_generated_name || "Untitled Sculpture";
-          setTitle(name);
-        } else {
-          setTitle("Chat");
-        }
+      const { data, error } = await supabase
+        .from("chat_threads")
+        .select(`
+          id,
+          topic,
+          sculpture_id,
+          fabrication_quote_id,
+          variant_id
+        `)
+        .eq("id", threadId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching thread info:", error);
+        return null;
       }
-    };
-    
-    fetchTitle();
-  }, [threadId, quoteMode]);
+
+      return data;
+    },
+  });
+
+  // Get sculpture info if sculptureId is provided
+  const { data: sculptureInfo } = useQuery({
+    queryKey: ["sculpture-chat-info", sculptureId],
+    queryFn: async () => {
+      if (!sculptureId) return null;
+      
+      const { data, error } = await supabase
+        .from("sculptures")
+        .select("ai_generated_name")
+        .eq("id", sculptureId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching sculpture info:", error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!sculptureId
+  });
+
+  // Determine the title of the chat
+  const title = isLoading 
+    ? "Loading..." 
+    : quoteMode 
+      ? "Quote Chat" 
+      : sculptureInfo?.ai_generated_name
+        ? `${sculptureInfo.ai_generated_name} Chat`
+        : "Sculpture Chat";
 
   return (
-    <div className="border-b shrink-0 py-3 px-4">
-      <div className="flex items-center justify-between">
-        <div className="font-medium truncate">{title}</div>
-        
-        <div className="flex items-center space-x-2">
-          <Tabs
-            value={activeView}
-            onValueChange={(value) => onViewChange(value as "chat" | "files")}
-            className="h-8"
+    <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex flex-col">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        {threadInfo?.topic && (
+          <span className="text-sm text-muted-foreground">
+            {threadInfo.topic}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex rounded-md border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "rounded-none rounded-l-md px-3 text-xs h-8",
+              activeView === "chat" && "bg-muted"
+            )}
+            onClick={() => onViewChange("chat")}
           >
-            <TabsList className="h-8 p-0.5 bg-muted/30">
-              <TabsTrigger 
-                value="chat" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-              >
-                <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                Chat
-              </TabsTrigger>
-              <TabsTrigger 
-                value="files" 
-                className="h-7 px-3 py-1 text-xs font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-              >
-                <Files className="h-3.5 w-3.5 mr-1" />
-                Files
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <SheetClose asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </SheetClose>
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Chat
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "rounded-none rounded-r-md px-3 text-xs h-8",
+              activeView === "files" && "bg-muted"
+            )}
+            onClick={() => onViewChange("files")}
+          >
+            <FileIcon className="mr-2 h-4 w-4" />
+            Files
+          </Button>
         </div>
+        {onClose && (
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
           .eq("sculpture_id", threadId)
           .is("fabrication_quote_id", null)
           .is("variant_id", null)
-          .limit(1); // We now only need a single thread for sculpture chat
+          .limit(1); // We only need a single thread for sculpture chat
 
         if (error) {
           console.error("Error fetching thread:", error);
@@ -43,6 +43,7 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
         return data || [];
       }
     },
+    refetchOnWindowFocus: false,
   });
 
   // Create default thread if needed (for sculpture)
@@ -52,18 +53,40 @@ export function useThreads(threadId: string, quoteMode: boolean = false) {
 
       console.log('Creating default thread for sculpture:', threadId);
       
-      const { error } = await supabase
-        .from("chat_threads")
-        .insert({
-          sculpture_id: threadId,
-          topic: "general", // Single general thread for all sculpture chat
-          user_id: user.id
-        });
+      try {
+        const { data: newThread, error } = await supabase
+          .from("chat_threads")
+          .insert({
+            sculpture_id: threadId,
+            topic: "general", // Single general thread for all sculpture chat
+            user_id: user.id
+          })
+          .select();
 
-      if (error) {
-        console.error("Error creating thread:", error);
-      } else {
+        if (error) {
+          console.error("Error creating thread:", error);
+          return;
+        }
+        
+        console.log('Created new thread:', newThread);
+        
+        if (newThread && newThread.length > 0) {
+          // Add the current user as a participant
+          const { error: participantError } = await supabase
+            .from("chat_thread_participants")
+            .insert({
+              thread_id: newThread[0].id,
+              user_id: user.id,
+            });
+
+          if (participantError) {
+            console.error("Error adding participant:", participantError);
+          }
+        }
+        
         refetch();
+      } catch (err) {
+        console.error("Error in createDefaultThread:", err);
       }
     };
 

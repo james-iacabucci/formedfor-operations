@@ -80,6 +80,7 @@ export function ChatSheet({
             onViewChange={handleViewChange}
             onClose={() => onOpenChange(false)}
             quoteMode={quoteMode}
+            sculptureId={sculptureId}
           />
           
           <ChatContent 
@@ -101,6 +102,7 @@ export function ChatSheet({
                 onUploadComplete={handleUploadComplete}
                 disabled={!!editingMessage}
                 isQuoteChat={quoteMode}
+                sculptureId={sculptureId}
               />
             </div>
           )}

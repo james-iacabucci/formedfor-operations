@@ -1,4 +1,3 @@
-
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
@@ -146,6 +145,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
         open={isChatSheetOpen}
         onOpenChange={setIsChatSheetOpen}
         threadId={sculpture.id}
+        sculptureId={sculpture.id}
       />
     </div>
   );
