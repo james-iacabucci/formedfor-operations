@@ -13,7 +13,7 @@ interface ChatSheetProps {
   onOpenChange: (open: boolean) => void;
   threadId: string;
   quoteMode?: boolean;
-  sculptureId?: string; // Add sculptureId prop
+  sculptureId?: string;
 }
 
 export function ChatSheet({ 
@@ -26,7 +26,7 @@ export function ChatSheet({
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [activeView, setActiveView] = useState<"chat" | "files">("chat");
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
-  const [resetScroll, setResetScroll] = useState(0); // Used to trigger scroll reset
+  const [resetScroll, setResetScroll] = useState(0);
   const { hasPermission } = useUserRoles();
 
   // Check permissions based on chat type
@@ -89,7 +89,7 @@ export function ChatSheet({
             uploadingFiles={uploadingFiles}
             editingMessage={editingMessage}
             setEditingMessage={setEditingMessage}
-            sculptureId={sculptureId} // Pass sculptureId to ChatContent
+            sculptureId={sculptureId}
           />
           
           {activeView === "chat" && currentThreadId && (

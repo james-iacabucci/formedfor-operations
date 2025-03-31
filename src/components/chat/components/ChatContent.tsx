@@ -13,7 +13,7 @@ interface ChatContentProps {
   uploadingFiles: UploadingFile[];
   editingMessage: Message | null;
   setEditingMessage: (message: Message | null) => void;
-  sculptureId?: string; // Add sculptureId prop
+  sculptureId?: string;
 }
 
 export function ChatContent({
@@ -23,7 +23,7 @@ export function ChatContent({
   uploadingFiles,
   editingMessage,
   setEditingMessage,
-  sculptureId // Use the prop
+  sculptureId
 }: ChatContentProps) {
   if (!currentThreadId) {
     return (
@@ -44,7 +44,7 @@ export function ChatContent({
               key={`${currentThreadId}-${resetScroll}`} // Force remount when topic changes
               editingMessage={editingMessage}
               setEditingMessage={setEditingMessage}
-              sculptureId={sculptureId} // Pass sculptureId to MessageList
+              sculptureId={sculptureId}
             />
           </div>
         ) : (
