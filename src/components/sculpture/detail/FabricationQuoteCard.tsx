@@ -81,10 +81,9 @@ export function FabricationQuoteCard({
 
   // Determine if user can edit this quote based on role and status
   const canEditQuote = 
-    // Admin/Sales can edit any quote except approved ones
+    // Admin/Sales can edit any quote (will be restricted in the form)
     ((role === 'admin' || role === 'sales') && 
-      hasPermission('quote.edit') && 
-      quote.status !== 'approved') || 
+      hasPermission('quote.edit')) || 
     // Fabrication can only edit requested quotes
     (role === 'fabrication' && 
       quote.status === 'requested' && 
@@ -101,6 +100,14 @@ export function FabricationQuoteCard({
   
   // Determine if this quote can be selected (only approved quotes)
   const canBeSelected = quote.status === 'approved' && !quote.is_selected;
+
+  // Determine if the requote button should be visible
+  // Only for APPROVED quotes and only for admin/sales with requote permission
+  const showRequoteButton = 
+    quote.status === 'approved' && 
+    (role === 'admin' || role === 'sales') && 
+    hasPermission('quote.requote') &&
+    onRequote;
 
   return (
     <div 
@@ -174,21 +181,19 @@ export function FabricationQuoteCard({
                 )}
               </PermissionGuard>
               
-              {/* Requote - Admin/Sales can request requote for any quote */}
-              <PermissionGuard requiredPermission="quote.requote">
-                {(role === 'admin' || role === 'sales') && onRequote && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRequote(quote)}
-                    title="Request requote"
-                  >
-                    <RefreshCcwIcon className="h-4 w-4" />
-                  </Button>
-                )}
-              </PermissionGuard>
+              {/* Requote - Only show for approved quotes and users with permission */}
+              {showRequoteButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onRequote(quote)}
+                  title="Request requote"
+                >
+                  <RefreshCcwIcon className="h-4 w-4" />
+                </Button>
+              )}
               
-              {/* Edit Quote - Based on canEditQuote logic above */}
+              {/* Edit Quote - Only show if user has permission to edit */}
               {canEditQuote && (
                 <Button
                   variant="ghost"
