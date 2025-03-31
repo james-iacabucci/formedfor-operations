@@ -57,6 +57,21 @@ export function EditFabricationQuoteSheet({
   };
 
   const handleSave = async () => {
+    // For admin/sales in restricted editing mode, only allow markup and notes changes
+    if (canOnlyEditMarkup && editingQuoteId) {
+      const updatedQuote = {
+        ...initialQuote,
+        markup: newQuote.markup,
+        notes: newQuote.notes
+      } as NewQuote;
+      
+      const success = await saveQuote(updatedQuote, editingQuoteId, onQuoteSaved);
+      if (success) {
+        onOpenChange(false);
+      }
+      return;
+    }
+    
     const success = await saveQuote(newQuote, editingQuoteId, onQuoteSaved);
     if (success) {
       onOpenChange(false);
@@ -108,10 +123,11 @@ export function EditFabricationQuoteSheet({
      hasPermission('quote.edit_requested') && 
      newQuote.status === 'requested');
 
-  // For Admin/Sales, determine if they can only edit the markup (submitted status)
+  // For Admin/Sales, determine if they can only edit the markup and notes (submitted or approved status)
   const canOnlyEditMarkup = 
     (role === 'admin' || role === 'sales') && 
-    newQuote.status === 'submitted';
+    hasPermission('quote.edit') &&
+    (newQuote.status === 'submitted' || newQuote.status === 'approved');
 
   console.log("Quote status:", newQuote.status);
   console.log("Can edit:", canEdit);
@@ -122,7 +138,12 @@ export function EditFabricationQuoteSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{editingQuoteId ? "Edit Quote" : "Add New Quote"}</SheetTitle>
+          <SheetTitle>
+            {editingQuoteId ? 
+              (canOnlyEditMarkup ? "Edit Markup & Notes" : "Edit Quote") : 
+              "Add New Quote"
+            }
+          </SheetTitle>
         </SheetHeader>
         
         <div className="py-6">
@@ -137,7 +158,7 @@ export function EditFabricationQuoteSheet({
             formatNumber={formatNumber}
             isInSheet={true}
             isVariantMode={true}
-            isReadOnly={!canEdit}
+            isReadOnly={!canEdit && !canOnlyEditMarkup}
             canOnlyEditMarkup={canOnlyEditMarkup}
           />
         </div>
@@ -157,7 +178,7 @@ export function EditFabricationQuoteSheet({
                 onClick={handleSave}
                 disabled={isSaving || isSubmitting}
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : (canOnlyEditMarkup ? "Update Markup & Notes" : "Save")}
               </Button>
             )}
             

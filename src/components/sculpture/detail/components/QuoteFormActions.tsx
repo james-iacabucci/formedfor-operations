@@ -7,6 +7,8 @@ interface QuoteFormActionsProps {
   isEditing: boolean;
   isReadOnly?: boolean;
   canOnlyEditMarkup?: boolean;
+  onSubmitForApproval?: () => void;
+  showSubmitButton?: boolean;
 }
 
 export function QuoteFormActions({ 
@@ -14,7 +16,9 @@ export function QuoteFormActions({
   onCancel,
   isEditing,
   isReadOnly = false,
-  canOnlyEditMarkup = false
+  canOnlyEditMarkup = false,
+  onSubmitForApproval,
+  showSubmitButton = false
 }: QuoteFormActionsProps) {
   // Don't render any buttons if in read-only mode
   if (isReadOnly && !canOnlyEditMarkup) {
@@ -35,6 +39,15 @@ export function QuoteFormActions({
       {onSave && (
         <Button onClick={onSave}>
           {isEditing ? (canOnlyEditMarkup ? "Update Markup" : "Update") : "Save"}
+        </Button>
+      )}
+
+      {showSubmitButton && onSubmitForApproval && (
+        <Button 
+          onClick={onSubmitForApproval}
+          variant="secondary"
+        >
+          Submit for Approval
         </Button>
       )}
     </div>

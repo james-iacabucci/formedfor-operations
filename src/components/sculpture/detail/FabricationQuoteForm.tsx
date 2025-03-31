@@ -21,6 +21,8 @@ interface FabricationQuoteFormProps {
   isVariantMode?: boolean;
   isReadOnly?: boolean;
   canOnlyEditMarkup?: boolean;
+  onSubmitForApproval?: () => void;
+  showSubmitButton?: boolean;
 }
 
 export function FabricationQuoteForm({
@@ -37,7 +39,9 @@ export function FabricationQuoteForm({
   isInSheet = false,
   isVariantMode = false,
   isReadOnly = false,
-  canOnlyEditMarkup = false
+  canOnlyEditMarkup = false,
+  onSubmitForApproval,
+  showSubmitButton = false
 }: FabricationQuoteFormProps) {
   const handleNotesChange = (newNotes: string) => {
     onQuoteChange({ ...newQuote, notes: newNotes });
@@ -90,7 +94,7 @@ export function FabricationQuoteForm({
       <NotesSection 
         notes={newQuote.notes} 
         onChange={handleNotesChange}
-        isReadOnly={isReadOnly || canOnlyEditMarkup}
+        isReadOnly={isReadOnly}
       />
 
       {/* Only show buttons if not in sheet mode */}
@@ -101,6 +105,8 @@ export function FabricationQuoteForm({
           isEditing={!!editingQuoteId}
           isReadOnly={isReadOnly && !canOnlyEditMarkup}
           canOnlyEditMarkup={canOnlyEditMarkup}
+          onSubmitForApproval={onSubmitForApproval}
+          showSubmitButton={showSubmitButton}
         />
       )}
     </div>

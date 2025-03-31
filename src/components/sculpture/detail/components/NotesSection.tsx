@@ -6,12 +6,21 @@ interface NotesSectionProps {
   notes: string | null;
   onChange: (notes: string) => void;
   isReadOnly?: boolean;
+  canOnlyEditMarkup?: boolean;
 }
 
-export function NotesSection({ notes, onChange, isReadOnly = false }: NotesSectionProps) {
+export function NotesSection({ 
+  notes, 
+  onChange, 
+  isReadOnly = false,
+  canOnlyEditMarkup = false
+}: NotesSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Notes</h3>
+      <h3 className={`text-lg font-medium ${canOnlyEditMarkup ? "text-primary" : ""}`}>
+        Notes
+        {canOnlyEditMarkup && <span className="ml-1 text-xs">(Editable)</span>}
+      </h3>
       <div>
         <Label htmlFor="quote_notes" className="sr-only">Notes</Label>
         {isReadOnly ? (
@@ -24,7 +33,7 @@ export function NotesSection({ notes, onChange, isReadOnly = false }: NotesSecti
             value={notes || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Add any additional notes about this quote..."
-            className="min-h-[100px]"
+            className={`min-h-[100px] ${canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}`}
           />
         )}
       </div>

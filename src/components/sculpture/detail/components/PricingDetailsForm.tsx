@@ -179,7 +179,10 @@ export function PricingDetailsForm({
         {!hidePricingDetails && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="markup">Markup Multiplier</Label>
+              <Label htmlFor="markup" className={canOnlyEditMarkup ? "font-semibold text-primary" : ""}>
+                Markup Multiplier
+                {canOnlyEditMarkup && <span className="ml-1 text-xs">(Editable)</span>}
+              </Label>
               {isMarkupReadOnly ? (
                 <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
                   {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
