@@ -38,7 +38,7 @@ export function QuoteFormActions({
       
       {onSave && (
         <Button onClick={onSave}>
-          {isEditing ? (canOnlyEditMarkup ? "Update Markup" : "Update") : "Save"}
+          {isEditing ? "Save" : "Save"}
         </Button>
       )}
 

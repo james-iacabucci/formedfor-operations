@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NewQuote } from "@/types/fabrication-quote-form";
 import { FabricationQuoteForm } from "./FabricationQuoteForm";
@@ -139,10 +138,7 @@ export function EditFabricationQuoteSheet({
       <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
-            {editingQuoteId ? 
-              (canOnlyEditMarkup ? "Edit Markup & Notes" : "Edit Quote") : 
-              "Add New Quote"
-            }
+            {editingQuoteId ? "Fabrication Quote" : "Add New Quote"}
           </SheetTitle>
         </SheetHeader>
         
@@ -178,7 +174,7 @@ export function EditFabricationQuoteSheet({
                 onClick={handleSave}
                 disabled={isSaving || isSubmitting}
               >
-                {isSaving ? "Saving..." : (canOnlyEditMarkup ? "Update Markup & Notes" : "Save")}
+                {isSaving ? "Saving..." : "Save"}
               </Button>
             )}
             

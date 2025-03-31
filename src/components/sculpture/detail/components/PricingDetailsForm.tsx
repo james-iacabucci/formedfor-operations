@@ -92,9 +92,10 @@ export function PricingDetailsForm({
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Pricing Details</h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Cost fields - all on one line */}
+      <div className="grid grid-cols-5 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="fabrication_cost">Fabrication Cost ($)</Label>
+          <Label htmlFor="fabrication_cost">Fabrication</Label>
           {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.fabrication_cost !== null ? formatNumber(newQuote.fabrication_cost) : "0.00"}
@@ -113,7 +114,7 @@ export function PricingDetailsForm({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="shipping_cost">Shipping Cost ($)</Label>
+          <Label htmlFor="shipping_cost">Shipping</Label>
           {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.shipping_cost !== null ? formatNumber(newQuote.shipping_cost) : "0.00"}
@@ -132,7 +133,7 @@ export function PricingDetailsForm({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="customs_cost">Customs Cost ($)</Label>
+          <Label htmlFor="customs_cost">Customs</Label>
           {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.customs_cost !== null ? formatNumber(newQuote.customs_cost) : "0.00"}
@@ -151,7 +152,7 @@ export function PricingDetailsForm({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="other_cost">Other Cost ($)</Label>
+          <Label htmlFor="other_cost">Other</Label>
           {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.other_cost !== null ? formatNumber(newQuote.other_cost) : "0.00"}
@@ -170,53 +171,51 @@ export function PricingDetailsForm({
         </div>
         
         <div className="space-y-2">
-          <Label>Total Cost</Label>
+          <Label>Total</Label>
           <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
             ${formatNumber(totalCost)}
           </div>
         </div>
-        
-        {!hidePricingDetails && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="markup" className={canOnlyEditMarkup ? "font-semibold text-primary" : ""}>
-                Markup Multiplier
-                {canOnlyEditMarkup && <span className="ml-1 text-xs">(Editable)</span>}
-              </Label>
-              {isMarkupReadOnly ? (
-                <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
-                  {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
-                </div>
-              ) : (
-                <Input
-                  id="markup"
-                  type="number"
-                  value={newQuote.markup}
-                  onChange={(e) => handleChange('markup', e.target.value)}
-                  placeholder="1"
-                  min="1"
-                  step="0.1"
-                  className={canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}
-                />
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Trade Price</Label>
-              <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
-                ${formatNumber(tradePrice)}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Retail Price</Label>
-              <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
-                ${formatNumber(retailPrice)}
-              </div>
-            </div>
-          </>
-        )}
       </div>
+      
+      {/* Markup and price fields - on second line */}
+      {!hidePricingDetails && (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="markup">Markup</Label>
+            {isMarkupReadOnly ? (
+              <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+                {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
+              </div>
+            ) : (
+              <Input
+                id="markup"
+                type="number"
+                value={newQuote.markup}
+                onChange={(e) => handleChange('markup', e.target.value)}
+                placeholder="1"
+                min="1"
+                step="0.1"
+                className={canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}
+              />
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Trade Price</Label>
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              ${formatNumber(tradePrice)}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Retail Price</Label>
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
+              ${formatNumber(retailPrice)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Weight Fields */}
       <h4 className="text-md font-medium mt-6">Sculpture Weight</h4>
