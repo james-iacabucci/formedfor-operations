@@ -16,13 +16,11 @@ export function NotesSection({
   canOnlyEditMarkup = false
 }: NotesSectionProps) {
   return (
-    <div className="space-y-4">
-      <h3 className={`text-lg font-medium ${canOnlyEditMarkup ? "text-primary" : ""}`}>
+    <div className="space-y-2">
+      <Label htmlFor="quote_notes" className={canOnlyEditMarkup ? "text-primary" : ""}>
         Notes
-        {canOnlyEditMarkup && <span className="ml-1 text-xs">(Editable)</span>}
-      </h3>
+      </Label>
       <div>
-        <Label htmlFor="quote_notes" className="sr-only">Notes</Label>
         {isReadOnly ? (
           <div className="min-h-[100px] p-3 rounded-md border border-input bg-background text-muted-foreground whitespace-pre-wrap">
             {notes || "No notes provided."}

@@ -90,8 +90,6 @@ export function PricingDetailsForm({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Pricing Details</h3>
-      
       {/* Cost fields - all on one line */}
       <div className="grid grid-cols-5 gap-4">
         <div className="space-y-2">
@@ -222,8 +220,7 @@ export function PricingDetailsForm({
       )}
 
       {/* Weight Fields */}
-      <h4 className="text-md font-medium mt-6">Sculpture Weight</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <div className="space-y-2">
           <Label htmlFor="weight_kg">Weight (kg)</Label>
           {isBaseCostReadOnly ? (
