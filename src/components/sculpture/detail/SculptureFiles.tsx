@@ -1,8 +1,10 @@
 
+import { useQueryClient } from "@tanstack/react-query";
 import { FileUploadField } from "../FileUploadField";
 import { FileUpload } from "@/types/sculpture";
 import { supabase } from "@/integrations/supabase/client";
 import { FileIcon, ImageIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SculptureFilesProps {
   sculptureId: string;
@@ -12,6 +14,9 @@ interface SculptureFilesProps {
 }
 
 export function SculptureFiles({ sculptureId, models = [], renderings = [], dimensions = [] }: SculptureFilesProps) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
   console.log('SculptureFiles - Component props:', {
     sculptureId,
     models: models?.length || 0,
@@ -29,10 +34,24 @@ export function SculptureFiles({ sculptureId, models = [], renderings = [], dime
       
       if (error) {
         console.error(`Error updating ${type}:`, error);
+        toast({
+          title: "Update failed",
+          description: `Failed to update ${type}. Please try again.`,
+          variant: "destructive",
+        });
         return;
       }
+      
+      // Invalidate the sculpture query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["sculpture", sculptureId] });
+      
     } catch (err) {
       console.error(`Exception updating ${type}:`, err);
+      toast({
+        title: "Update failed",
+        description: `An error occurred while updating ${type}.`,
+        variant: "destructive",
+      });
     }
   };
 
