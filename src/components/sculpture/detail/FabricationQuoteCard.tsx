@@ -79,11 +79,16 @@ export function FabricationQuoteCard({
     setIsDeleteDialogOpen(false);
   };
 
-  // Determine if we should allow editing 
-  // Fabrication role can only edit requested quotes
+  // Determine if user can edit this quote based on role and status
   const canEditQuote = 
-    (hasPermission('quote.edit') && role !== 'fabrication') || 
-    (role === 'fabrication' && quote.status === 'requested' && hasPermission('quote.edit_requested'));
+    // Admin/Sales can edit any quote except approved ones
+    ((role === 'admin' || role === 'sales') && 
+      hasPermission('quote.edit') && 
+      quote.status !== 'approved') || 
+    // Fabrication can only edit requested quotes
+    (role === 'fabrication' && 
+      quote.status === 'requested' && 
+      hasPermission('quote.edit_requested'));
   
   // Whether to display pricing details
   const canViewPricingDetails = hasPermission('quote.view_pricing') && role !== 'fabrication';
@@ -91,9 +96,11 @@ export function FabricationQuoteCard({
   // Hide pricing details if user doesn't have pricing view permission or is fabrication role
   const hidePricingDetails = !canViewPricingDetails;
 
-  // Fabrication role cannot see any action buttons for approved or submitted quotes
-  const isFabricationRoleWithRestrictedStatus = 
-    role === 'fabrication' && (quote.status === 'approved' || quote.status === 'submitted');
+  // Fabrication role cannot see action buttons for approved quotes
+  const canSeeActionButtons = !(role === 'fabrication' && quote.status === 'approved');
+  
+  // Determine if this quote can be selected (only approved quotes)
+  const canBeSelected = quote.status === 'approved' && !quote.is_selected;
 
   return (
     <div 
@@ -117,10 +124,11 @@ export function FabricationQuoteCard({
             {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
           </Badge>
           
-          {!isFabricationRoleWithRestrictedStatus && (
+          {canSeeActionButtons && (
             <>
+              {/* Select Quote - Admin/Sales can select approved quotes */}
               <PermissionGuard requiredPermission="quote.select">
-                {role !== 'fabrication' && quote.status === 'approved' && !quote.is_selected && (
+                {(role === 'admin' || role === 'sales') && canBeSelected && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -132,8 +140,11 @@ export function FabricationQuoteCard({
                 )}
               </PermissionGuard>
               
+              {/* Approve Quote - Admin/Sales can approve submitted quotes */}
               <PermissionGuard requiredPermission="quote.approve">
-                {role !== 'fabrication' && quote.status === 'submitted' && onApprove && (
+                {(role === 'admin' || role === 'sales') && 
+                  quote.status === 'submitted' && 
+                  onApprove && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -146,8 +157,11 @@ export function FabricationQuoteCard({
                 )}
               </PermissionGuard>
               
+              {/* Reject Quote - Admin/Sales can reject submitted quotes */}
               <PermissionGuard requiredPermission="quote.reject">
-                {role !== 'fabrication' && quote.status === 'submitted' && onReject && (
+                {(role === 'admin' || role === 'sales') && 
+                  quote.status === 'submitted' && 
+                  onReject && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -160,8 +174,9 @@ export function FabricationQuoteCard({
                 )}
               </PermissionGuard>
               
+              {/* Requote - Admin/Sales can request requote for any quote */}
               <PermissionGuard requiredPermission="quote.requote">
-                {role !== 'fabrication' && quote.status === 'approved' && onRequote && (
+                {(role === 'admin' || role === 'sales') && onRequote && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -173,6 +188,7 @@ export function FabricationQuoteCard({
                 )}
               </PermissionGuard>
               
+              {/* Edit Quote - Based on canEditQuote logic above */}
               {canEditQuote && (
                 <Button
                   variant="ghost"
@@ -184,7 +200,24 @@ export function FabricationQuoteCard({
                 </Button>
               )}
               
-              {hasPermission('quote.delete') && role !== 'fabrication' && (
+              {/* Submit for Approval - Fabrication can submit requested quotes */}
+              {role === 'fabrication' && 
+                quote.status === 'requested' && 
+                hasPermission('quote.submit_approval') && 
+                onSubmitForApproval && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSubmitForApproval(quote.id)}
+                  title="Submit for approval"
+                  className="gap-1"
+                >
+                  <SendIcon className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {/* Delete Quote - Admin/Sales can delete quotes */}
+              {(role === 'admin' || role === 'sales') && hasPermission('quote.delete') && (
                 <Button
                   variant="ghost"
                   size="sm"

@@ -12,6 +12,7 @@ interface PricingDetailsFormProps {
   calculateRetailPrice: (tradePrice: number) => number;
   formatNumber: (num: number) => string;
   isReadOnly?: boolean;
+  canOnlyEditMarkup?: boolean;
 }
 
 export function PricingDetailsForm({
@@ -21,7 +22,8 @@ export function PricingDetailsForm({
   calculateTradePrice,
   calculateRetailPrice,
   formatNumber,
-  isReadOnly = false
+  isReadOnly = false,
+  canOnlyEditMarkup = false
 }: PricingDetailsFormProps) {
   const { hasPermission, role } = useUserRoles();
   
@@ -40,14 +42,9 @@ export function PricingDetailsForm({
   // Hide pricing details if user doesn't have view_pricing permission
   const hidePricingDetails = !hasPermission('quote.view_pricing') || role === 'fabrication';
 
-  // Determine if the user can edit the pricing fields
-  // Fabrication can only edit requested quotes
-  const canEditPricing = 
-    (hasPermission('quote.edit') && role !== 'fabrication') || 
-    (hasPermission('quote.edit_requested') && newQuote.status === 'requested');
-
-  // If the user can't edit, we show read-only fields
-  const finalIsReadOnly = isReadOnly || !canEditPricing;
+  // Determine if each field should be readonly
+  const isBaseCostReadOnly = isReadOnly || canOnlyEditMarkup;
+  const isMarkupReadOnly = isReadOnly;
 
   // Calculate kg from lbs
   const handleLbsChange = (field: string, lbsValue: string) => {
@@ -98,7 +95,7 @@ export function PricingDetailsForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fabrication_cost">Fabrication Cost ($)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.fabrication_cost !== null ? formatNumber(newQuote.fabrication_cost) : "0.00"}
             </div>
@@ -117,7 +114,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="shipping_cost">Shipping Cost ($)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.shipping_cost !== null ? formatNumber(newQuote.shipping_cost) : "0.00"}
             </div>
@@ -136,7 +133,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="customs_cost">Customs Cost ($)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.customs_cost !== null ? formatNumber(newQuote.customs_cost) : "0.00"}
             </div>
@@ -155,7 +152,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="other_cost">Other Cost ($)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.other_cost !== null ? formatNumber(newQuote.other_cost) : "0.00"}
             </div>
@@ -183,7 +180,7 @@ export function PricingDetailsForm({
           <>
             <div className="space-y-2">
               <Label htmlFor="markup">Markup Multiplier</Label>
-              {finalIsReadOnly ? (
+              {isMarkupReadOnly ? (
                 <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
                   {newQuote.markup !== null ? formatNumber(newQuote.markup) : "1"}
                 </div>
@@ -196,6 +193,7 @@ export function PricingDetailsForm({
                   placeholder="1"
                   min="1"
                   step="0.1"
+                  className={canOnlyEditMarkup ? "border-primary ring-1 ring-primary" : ""}
                 />
               )}
             </div>
@@ -222,7 +220,7 @@ export function PricingDetailsForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="weight_kg">Weight (kg)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.weight_kg !== null ? formatNumber(newQuote.weight_kg) : "Not specified"}
             </div>
@@ -241,7 +239,7 @@ export function PricingDetailsForm({
         
         <div className="space-y-2">
           <Label htmlFor="weight_lbs">Weight (lbs)</Label>
-          {finalIsReadOnly ? (
+          {isBaseCostReadOnly ? (
             <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
               {newQuote.weight_lbs !== null ? formatNumber(newQuote.weight_lbs) : "Not specified"}
             </div>
@@ -252,47 +250,6 @@ export function PricingDetailsForm({
               value={newQuote.weight_lbs ?? ''}
               onChange={(e) => handleLbsChange('weight_lbs', e.target.value)}
               placeholder="Weight in lbs"
-              min="0"
-              step="0.01"
-            />
-          )}
-        </div>
-      </div>
-
-      <h4 className="text-md font-medium mt-6">Base Weight</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="base_weight_kg">Weight (kg)</Label>
-          {finalIsReadOnly ? (
-            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
-              {newQuote.base_weight_kg !== null ? formatNumber(newQuote.base_weight_kg) : "Not specified"}
-            </div>
-          ) : (
-            <Input
-              id="base_weight_kg"
-              type="number"
-              value={newQuote.base_weight_kg ?? ''}
-              onChange={(e) => handleKgChange('base_weight_kg', e.target.value)}
-              placeholder="Base weight in kg"
-              min="0"
-              step="0.01"
-            />
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="base_weight_lbs">Weight (lbs)</Label>
-          {finalIsReadOnly ? (
-            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-muted-foreground">
-              {newQuote.base_weight_lbs !== null ? formatNumber(newQuote.base_weight_lbs) : "Not specified"}
-            </div>
-          ) : (
-            <Input
-              id="base_weight_lbs"
-              type="number"
-              value={newQuote.base_weight_lbs ?? ''}
-              onChange={(e) => handleLbsChange('base_weight_lbs', e.target.value)}
-              placeholder="Base weight in lbs"
               min="0"
               step="0.01"
             />

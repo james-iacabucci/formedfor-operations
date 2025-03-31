@@ -20,6 +20,7 @@ interface FabricationQuoteFormProps {
   isInSheet?: boolean;
   isVariantMode?: boolean;
   isReadOnly?: boolean;
+  canOnlyEditMarkup?: boolean;
 }
 
 export function FabricationQuoteForm({
@@ -35,7 +36,8 @@ export function FabricationQuoteForm({
   formatNumber,
   isInSheet = false,
   isVariantMode = false,
-  isReadOnly = false
+  isReadOnly = false,
+  canOnlyEditMarkup = false
 }: FabricationQuoteFormProps) {
   const handleNotesChange = (newNotes: string) => {
     onQuoteChange({ ...newQuote, notes: newNotes });
@@ -48,7 +50,7 @@ export function FabricationQuoteForm({
         newQuote={newQuote}
         onQuoteChange={onQuoteChange}
         fabricators={fabricators}
-        isReadOnly={isReadOnly}
+        isReadOnly={isReadOnly || canOnlyEditMarkup}
       />
 
       {/* Sculpture and Base Details are now read-only in variant mode */}
@@ -59,7 +61,7 @@ export function FabricationQuoteForm({
             sculptureId={newQuote.sculpture_id}
             newQuote={newQuote}
             onQuoteChange={onQuoteChange}
-            isReadOnly={isReadOnly}
+            isReadOnly={isReadOnly || canOnlyEditMarkup}
           />
 
           {/* Base Details Section */}
@@ -68,7 +70,7 @@ export function FabricationQuoteForm({
             newQuote={newQuote}
             onQuoteChange={onQuoteChange}
             isBase={true}
-            isReadOnly={isReadOnly}
+            isReadOnly={isReadOnly || canOnlyEditMarkup}
           />
         </>
       )}
@@ -81,12 +83,14 @@ export function FabricationQuoteForm({
         calculateTradePrice={calculateTradePrice}
         calculateRetailPrice={calculateRetailPrice}
         formatNumber={formatNumber}
+        isReadOnly={isReadOnly}
+        canOnlyEditMarkup={canOnlyEditMarkup}
       />
 
       <NotesSection 
         notes={newQuote.notes} 
         onChange={handleNotesChange}
-        isReadOnly={isReadOnly}
+        isReadOnly={isReadOnly || canOnlyEditMarkup}
       />
 
       {/* Only show buttons if not in sheet mode */}
@@ -95,7 +99,8 @@ export function FabricationQuoteForm({
           onSave={onSave}
           onCancel={onCancel}
           isEditing={!!editingQuoteId}
-          isReadOnly={isReadOnly}
+          isReadOnly={isReadOnly && !canOnlyEditMarkup}
+          canOnlyEditMarkup={canOnlyEditMarkup}
         />
       )}
     </div>

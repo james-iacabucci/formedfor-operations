@@ -13,7 +13,6 @@ import { useQuoteSave } from "./hooks/quotes/useQuoteSave";
 import { Button } from "@/components/ui/button";
 import { SendIcon } from "lucide-react";
 import { useUserRoles } from "@/hooks/use-user-roles";
-import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 
 interface EditFabricationQuoteSheetProps {
   open: boolean;
@@ -98,13 +97,25 @@ export function EditFabricationQuoteSheet({
     hasPermission('quote.submit_approval') && 
     !!onSubmitForApproval;
 
-  // Determine if the form is editable based on permission and quote status
+  // Determine if the form is editable based on role and quote status
   const canEdit = 
-    (hasPermission('quote.edit') && role !== 'fabrication') ||
-    (role === 'fabrication' && hasPermission('quote.edit_requested') && newQuote.status === 'requested');
+    // Admin and Sales can edit non-approved quotes
+    ((role === 'admin' || role === 'sales') && 
+     hasPermission('quote.edit') && 
+     newQuote.status !== 'approved') ||
+    // Fabrication can only edit requested quotes 
+    (role === 'fabrication' && 
+     hasPermission('quote.edit_requested') && 
+     newQuote.status === 'requested');
+
+  // For Admin/Sales, determine if they can only edit the markup (submitted status)
+  const canOnlyEditMarkup = 
+    (role === 'admin' || role === 'sales') && 
+    newQuote.status === 'submitted';
 
   console.log("Quote status:", newQuote.status);
   console.log("Can edit:", canEdit);
+  console.log("Can only edit markup:", canOnlyEditMarkup);
   console.log("Should show Submit for Approval button:", showSubmitForApproval);
 
   return (
@@ -127,6 +138,7 @@ export function EditFabricationQuoteSheet({
             isInSheet={true}
             isVariantMode={true}
             isReadOnly={!canEdit}
+            canOnlyEditMarkup={canOnlyEditMarkup}
           />
         </div>
         
@@ -140,7 +152,7 @@ export function EditFabricationQuoteSheet({
               Cancel
             </Button>
             
-            {canEdit && (
+            {(canEdit || canOnlyEditMarkup) && (
               <Button 
                 onClick={handleSave}
                 disabled={isSaving || isSubmitting}
