@@ -58,10 +58,25 @@ export function SculptureMainContent({
       </div>
 
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="files">Files</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-md border border-[#333333]">
+          <TabsTrigger 
+            value="details"
+            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          >
+            Details
+          </TabsTrigger>
+          <TabsTrigger 
+            value="files"
+            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          >
+            Files
+          </TabsTrigger>
+          <TabsTrigger 
+            value="tasks"
+            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          >
+            Tasks
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="details">
           <SculptureDescription 
