@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskList } from "@/components/tasks/TaskList";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { format } from "date-fns";
+import { SculpturePrompt } from "../SculpturePrompt"; // Add this import
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
