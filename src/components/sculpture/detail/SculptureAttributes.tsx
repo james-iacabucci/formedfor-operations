@@ -1,10 +1,8 @@
 
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sculpture } from "@/types/sculpture";
-import { SculpturePrompt } from "./SculpturePrompt";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,21 +38,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
           sculpture={sculpture} 
         />
         
-        <div>
-          <h2 className="text-lg font-semibold mb-2">AI Settings</h2>
-          <SculpturePrompt prompt={sculpture.prompt} />
-          <dl className="grid grid-cols-1 gap-2 text-sm mt-4">
-            {sculpture.creativity_level && (
-              <div className="flex justify-between py-2 border-b">
-                <dt className="font-medium">Variation Creativity</dt>
-                <dd className="text-muted-foreground capitalize">
-                  {sculpture.creativity_level}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
-
         <div className="space-y-4">
           <dl className="grid grid-cols-1 gap-2 text-sm">
             {originalSculpture && (
@@ -72,13 +55,6 @@ export function SculptureAttributes({ sculpture, originalSculpture, tags }: Scul
                 </dd>
               </div>
             )}
-            
-            <div className="flex py-2 border-b">
-              <dt className="font-medium">Created</dt>
-              <dd className="ml-4 text-muted-foreground">
-                {format(new Date(sculpture.created_at), "PPP")}
-              </dd>
-            </div>
           </dl>
         </div>
       </div>

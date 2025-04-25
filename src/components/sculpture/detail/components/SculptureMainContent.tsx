@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -11,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskList } from "@/components/tasks/TaskList";
 import { ChatSheet } from "@/components/chat/ChatSheet";
+import { format } from "date-fns";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
@@ -38,7 +38,6 @@ export function SculptureMainContent({
             userId={sculpture.created_by}
             onRegenerate={onRegenerate}
             onManageTags={() => {
-              // Placeholder for manage tags functionality
               toast({
                 title: "Feature not implemented",
                 description: "Tag management feature is not yet implemented.",
@@ -57,14 +56,8 @@ export function SculptureMainContent({
         </Button>
       </div>
 
-      <Tabs defaultValue="details" className="w-full">
+      <Tabs defaultValue="files" className="w-full">
         <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-md border border-[#333333]">
-          <TabsTrigger 
-            value="details"
-            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
-          >
-            Details
-          </TabsTrigger>
           <TabsTrigger 
             value="files"
             className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
@@ -77,15 +70,14 @@ export function SculptureMainContent({
           >
             Tasks
           </TabsTrigger>
+          <TabsTrigger 
+            value="details"
+            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          >
+            Details
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="details">
-          <SculptureDescription 
-            sculptureId={sculpture.id}
-            imageUrl={sculpture.image_url}
-            description={sculpture.ai_description}
-            name={sculpture.ai_generated_name}
-          />
-        </TabsContent>
+
         <TabsContent value="files">
           <SculptureFiles 
             sculptureId={sculpture.id}
@@ -97,6 +89,37 @@ export function SculptureMainContent({
         <TabsContent value="tasks">
           <div className="border rounded-md p-4">
             <TaskList sculptureId={sculpture.id} />
+          </div>
+        </TabsContent>
+        <TabsContent value="details">
+          <SculptureDescription 
+            sculptureId={sculpture.id}
+            imageUrl={sculpture.image_url}
+            description={sculpture.ai_description}
+            name={sculpture.ai_generated_name}
+          />
+
+          <div className="mt-6 space-y-6">
+            <div>
+              <h2 className="text-lg font-semibold mb-2">AI Settings</h2>
+              <SculpturePrompt prompt={sculpture.prompt} />
+              <dl className="grid grid-cols-1 gap-2 text-sm mt-4">
+                {sculpture.creativity_level && (
+                  <div className="flex justify-between py-2 border-b">
+                    <dt className="font-medium">Variation Creativity</dt>
+                    <dd className="text-muted-foreground capitalize">
+                      {sculpture.creativity_level}
+                    </dd>
+                  </div>
+                )}
+                <div className="flex py-2 border-b">
+                  <dt className="font-medium">Created</dt>
+                  <dd className="ml-4 text-muted-foreground">
+                    {format(new Date(sculpture.created_at), "PPP")}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
