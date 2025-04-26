@@ -1,4 +1,3 @@
-
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
 import { useCallback, useState } from "react";
@@ -8,8 +7,11 @@ import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
+import { SculptureMainContent2 } from "./components/SculptureMainContent2";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
+import { Toggle } from "@/components/ui/toggle";
+import { LayoutGrid, LayoutList } from "lucide-react";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -28,8 +30,8 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
-  // Move the useUserRoles hook call up here before it's used
   const { hasPermission } = useUserRoles();
+  const [layoutType, setLayoutType] = useState<'layout1' | 'layout2'>('layout1');
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id) || !hasPermission('sculpture.regenerate')) return;
@@ -58,7 +60,6 @@ export function SculptureDetailContent({
     regenerateImage: boolean;
     regenerateMetadata: boolean;
   }) => {
-    // Check permissions based on whether we're creating or updating
     const permissionRequired = options.updateExisting 
       ? 'sculpture.edit'
       : 'variant.create';
@@ -95,15 +96,39 @@ export function SculptureDetailContent({
 
   return (
     <div className="flex flex-col h-full">
-      <SculptureDetailHeader sculpture={sculpture} />
+      <div className="sticky top-0 bg-background z-10">
+        <div className="flex items-center justify-between">
+          <SculptureDetailHeader sculpture={sculpture} />
+          <Toggle
+            pressed={layoutType === 'layout2'}
+            onPressedChange={(pressed) => setLayoutType(pressed ? 'layout2' : 'layout1')}
+            aria-label="Toggle layout"
+            className="ml-2"
+          >
+            {layoutType === 'layout1' ? (
+              <LayoutGrid className="h-4 w-4" />
+            ) : (
+              <LayoutList className="h-4 w-4" />
+            )}
+          </Toggle>
+        </div>
+      </div>
 
       <div className="overflow-y-auto flex-1 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SculptureMainContent
-            sculpture={sculpture}
-            isRegenerating={isRegenerating(sculpture.id)}
-            onRegenerate={handleRegenerate}
-          />
+          {layoutType === 'layout1' ? (
+            <SculptureMainContent
+              sculpture={sculpture}
+              isRegenerating={isRegenerating(sculpture.id)}
+              onRegenerate={handleRegenerate}
+            />
+          ) : (
+            <SculptureMainContent2
+              sculpture={sculpture}
+              isRegenerating={isRegenerating(sculpture.id)}
+              onRegenerate={handleRegenerate}
+            />
+          )}
           <div>
             <SculptureAttributes
               sculpture={sculpture}
