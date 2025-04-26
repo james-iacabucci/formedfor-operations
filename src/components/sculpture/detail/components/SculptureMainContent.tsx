@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -12,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskList } from "@/components/tasks/TaskList";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { format } from "date-fns";
-import { SculpturePrompt } from "../SculpturePrompt"; // Add this import
+import { SculpturePrompt } from "../SculpturePrompt";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
@@ -88,10 +87,8 @@ export function SculptureMainContent({
             dimensions={sculpture.dimensions}
           />
         </TabsContent>
-        <TabsContent value="tasks">
-          <div className="border rounded-md p-4">
-            <TaskList sculptureId={sculpture.id} />
-          </div>
+        <TabsContent value="tasks" className="w-full">
+          <TaskList sculptureId={sculpture.id} />
         </TabsContent>
         <TabsContent value="details">
           <SculptureDescription 
