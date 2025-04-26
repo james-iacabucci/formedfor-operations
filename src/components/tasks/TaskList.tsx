@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSculptureTasks, useTaskMutations } from "@/hooks/useTasks";
 import { TaskItem } from "./TaskItem";
@@ -7,26 +6,6 @@ import { Plus, Filter } from "lucide-react";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 import { TaskWithAssignee } from "@/types/task";
 import { useAuth } from "@/components/AuthProvider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// For drag and drop
-import {
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import {
   Select,
   SelectContent,
@@ -35,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Sortable wrapper for TaskItem
 function SortableTaskItem({ task }: { task: TaskWithAssignee }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id
@@ -54,7 +32,7 @@ function SortableTaskItem({ task }: { task: TaskWithAssignee }) {
 }
 
 interface TaskListProps {
-  sculptureId?: string;  // Make sculptureId optional
+  sculptureId?: string;
 }
 
 export function TaskList({ sculptureId }: TaskListProps) {
@@ -65,7 +43,6 @@ export function TaskList({ sculptureId }: TaskListProps) {
   const [filteredTasks, setFilteredTasks] = useState<TaskWithAssignee[]>([]);
   const [filter, setFilter] = useState<string>("all");
 
-  // For drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -97,27 +74,21 @@ export function TaskList({ sculptureId }: TaskListProps) {
       const newIndex = filteredTasks.findIndex(task => task.id === over.id);
       
       if (oldIndex !== -1 && newIndex !== -1) {
-        // Update local state for optimistic UI update
         const newTaskOrder = arrayMove(filteredTasks, oldIndex, newIndex);
         setFilteredTasks(newTaskOrder);
         
-        // Calculate the new priority value based on surrounding tasks
         let newPriority;
         
         if (newIndex === 0) {
-          // Moving to the top
           newPriority = newTaskOrder[1] ? Math.floor(newTaskOrder[1].priority_order - 1) : 0;
         } else if (newIndex === newTaskOrder.length - 1) {
-          // Moving to the bottom
           newPriority = newTaskOrder[newIndex - 1] ? Math.ceil(newTaskOrder[newIndex - 1].priority_order + 1) : 1000;
         } else {
-          // Moving to the middle - calculate average of surrounding priorities
           newPriority = Math.floor(
             (newTaskOrder[newIndex - 1].priority_order + newTaskOrder[newIndex + 1].priority_order) / 2
           );
         }
         
-        // Update on the server
         await reorderTasks.mutateAsync({
           taskId: active.id.toString(),
           newPriorityOrder: newPriority
@@ -129,22 +100,17 @@ export function TaskList({ sculptureId }: TaskListProps) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <h3 className="text-lg font-semibold">Tasks</h3>
-          <div className="ml-4 flex items-center">
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-[150px] h-8">
             <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[150px] h-8">
-                <SelectValue placeholder="Filter tasks" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tasks</SelectItem>
-                <SelectItem value="me">Assigned to Me</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+            <SelectValue placeholder="Filter tasks" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tasks</SelectItem>
+            <SelectItem value="me">Assigned to Me</SelectItem>
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+          </SelectContent>
+        </Select>
         
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> Add Task
