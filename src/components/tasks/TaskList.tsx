@@ -133,19 +133,17 @@ export function TaskList({ sculptureId }: TaskListProps) {
     <div className="mt-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="ml-4 flex items-center">
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[150px] h-8">
-                <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Filter tasks" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tasks</SelectItem>
-                <SelectItem value="me">Assigned to Me</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[200px] h-8">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Filter tasks" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tasks</SelectItem>
+              <SelectItem value="me">Assigned to Me</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
