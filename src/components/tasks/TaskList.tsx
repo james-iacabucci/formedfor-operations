@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSculptureTasks, useTaskMutations } from "@/hooks/useTasks";
 import { TaskItem } from "./TaskItem";
@@ -7,7 +6,13 @@ import { Plus, Filter } from "lucide-react";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 import { TaskWithAssignee } from "@/types/task";
 import { useAuth } from "@/components/AuthProvider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 // For drag and drop
 import {
@@ -28,12 +33,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from "@/components/ui/avatar";
 
 // Sortable wrapper for TaskItem
 function SortableTaskItem({ task }: { task: TaskWithAssignee }) {
@@ -130,11 +133,10 @@ export function TaskList({ sculptureId }: TaskListProps) {
     <div className="mt-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <h3 className="text-lg font-semibold">Tasks</h3>
           <div className="ml-4 flex items-center">
-            <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
             <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-[150px] h-8">
+                <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Filter tasks" />
               </SelectTrigger>
               <SelectContent>
