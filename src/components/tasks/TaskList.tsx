@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSculptureTasks, useTaskMutations } from "@/hooks/useTasks";
 import { TaskItem } from "./TaskItem";
@@ -135,8 +136,10 @@ export function TaskList({ sculptureId }: TaskListProps) {
         <div className="flex items-center">
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className="w-[200px] h-8">
-              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Filter tasks" />
+              <div className="flex items-center w-full">
+                <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue className="text-left w-full" placeholder="Filter tasks" />
+              </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Tasks</SelectItem>
