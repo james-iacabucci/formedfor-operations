@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -17,22 +18,35 @@ interface SculptureMainContent2Props {
   sculpture: Sculpture;
   isRegenerating: boolean;
   onRegenerate: () => Promise<void>;
+  selectedVariantId?: string | null;
+  variantImageUrl?: string | null;
+  variantRenderings?: any[];
+  variantDimensions?: any[];
 }
 
 export function SculptureMainContent2({ 
   sculpture, 
   isRegenerating, 
-  onRegenerate 
+  onRegenerate,
+  selectedVariantId,
+  variantImageUrl,
+  variantRenderings = [],
+  variantDimensions = []
 }: SculptureMainContent2Props) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { toast } = useToast();
+
+  // Use variant image if available, otherwise fall back to sculpture image
+  const displayImageUrl = variantImageUrl || sculpture.image_url || "";
+  // Use thread ID based on variant if available, otherwise use sculpture ID
+  const chatThreadId = selectedVariantId || sculpture.id;
 
   return (
     <div className="flex flex-col space-y-4">
       <div className="relative border rounded-lg overflow-hidden">
         <AspectRatio ratio={1}>
           <SculptureDetailImage
-            imageUrl={sculpture.image_url || ""}
+            imageUrl={displayImageUrl}
             prompt={sculpture.prompt}
             isRegenerating={isRegenerating}
             sculptureId={sculpture.id}
@@ -83,8 +97,9 @@ export function SculptureMainContent2({
           <SculptureFiles 
             sculptureId={sculpture.id}
             models={sculpture.models}
-            renderings={sculpture.renderings}
-            dimensions={sculpture.dimensions}
+            renderings={variantRenderings.length > 0 ? variantRenderings : sculpture.renderings}
+            dimensions={variantDimensions.length > 0 ? variantDimensions : sculpture.dimensions}
+            variantId={selectedVariantId}
           />
         </TabsContent>
         <TabsContent value="tasks" className="w-full">
@@ -93,7 +108,7 @@ export function SculptureMainContent2({
         <TabsContent value="details">
           <SculptureDescription 
             sculptureId={sculpture.id}
-            imageUrl={sculpture.image_url}
+            imageUrl={displayImageUrl}
             description={sculpture.ai_description}
             name={sculpture.ai_generated_name}
           />
@@ -126,8 +141,9 @@ export function SculptureMainContent2({
       <ChatSheet
         open={isChatOpen}
         onOpenChange={setIsChatOpen}
-        threadId={sculpture.id}
+        threadId={chatThreadId}
         sculptureId={sculpture.id}
+        variantId={selectedVariantId}
       />
     </div>
   );

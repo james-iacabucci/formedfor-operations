@@ -1,6 +1,7 @@
+
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
@@ -12,6 +13,7 @@ import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Toggle } from "@/components/ui/toggle";
 import { LayoutGrid, LayoutList } from "lucide-react";
+import { useSculptureVariants } from "@/hooks/sculpture-variants";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -32,6 +34,22 @@ export function SculptureDetailContent({
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { hasPermission } = useUserRoles();
   const [layoutType, setLayoutType] = useState<'layout1' | 'layout2'>('layout1');
+  
+  // Get variants and selected variant
+  const { variants, isLoading: isLoadingVariants } = useSculptureVariants(sculpture.id);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  
+  // Set the selected variant when variants load
+  useEffect(() => {
+    if (variants && variants.length > 0 && !selectedVariantId) {
+      setSelectedVariantId(variants[0].id);
+    }
+  }, [variants, selectedVariantId]);
+  
+  // Get the currently selected variant
+  const selectedVariant = selectedVariantId && variants 
+    ? variants.find(v => v.id === selectedVariantId)
+    : null;
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id) || !hasPermission('sculpture.regenerate')) return;
@@ -121,19 +139,27 @@ export function SculptureDetailContent({
               sculpture={sculpture}
               isRegenerating={isRegenerating(sculpture.id)}
               onRegenerate={handleRegenerate}
+              selectedVariantId={selectedVariantId}
+              variantImageUrl={selectedVariant?.image_url || null}
+              variantRenderings={selectedVariant?.renderings || []}
+              variantDimensions={selectedVariant?.dimensions || []}
             />
           ) : (
             <SculptureMainContent2
               sculpture={sculpture}
               isRegenerating={isRegenerating(sculpture.id)}
               onRegenerate={handleRegenerate}
+              selectedVariantId={selectedVariantId}
+              variantImageUrl={selectedVariant?.image_url || null}
+              variantRenderings={selectedVariant?.renderings || []}
+              variantDimensions={selectedVariant?.dimensions || []}
             />
           )}
           <div>
             <SculptureAttributes
               sculpture={sculpture}
               originalSculpture={originalSculpture}
-              tags={tags}
+              tags={tags || []}
             />
           </div>
         </div>

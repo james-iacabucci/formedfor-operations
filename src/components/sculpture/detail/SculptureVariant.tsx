@@ -4,6 +4,7 @@ import { VariantNavigation } from "./components/VariantNavigation";
 import { VariantDeleteDialog } from "./components/VariantDeleteDialog";
 import { VariantDetailsSection } from "./components/VariantDetailsSection";
 import { useSculptureVariant } from "./hooks/useSculptureVariant";
+import { FileUpload } from "@/types/sculpture";
 
 export interface SculptureVariantDetails {
   id: string;
@@ -24,6 +25,10 @@ export interface SculptureVariantDetails {
   baseWeightLbs: number | null;
   orderIndex: number;
   isArchived?: boolean;
+  // New properties for variant-specific data
+  image_url?: string | null;
+  renderings?: FileUpload[];
+  dimensions?: FileUpload[];
 }
 
 interface SculptureVariantProps {

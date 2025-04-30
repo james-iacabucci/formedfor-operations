@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SculptureVariantDetails } from "@/components/sculpture/detail/SculptureVariant";
-import { SculptureVariantRow } from "./types";
+import { FileUpload } from "@/types/sculpture";
 
 export function useVariantsQuery(sculptureId: string) {
   return useQuery({
@@ -48,7 +48,11 @@ export function useVariantsQuery(sculptureId: string) {
           baseWeightKg: variant.base_weight_kg,
           baseWeightLbs: variant.base_weight_lbs,
           orderIndex: variant.order_index,
-          isArchived: variant.is_archived
+          isArchived: variant.is_archived,
+          // New fields for variant-specific data
+          image_url: variant.image_url || null,
+          renderings: Array.isArray(variant.renderings) ? variant.renderings : [],
+          dimensions: Array.isArray(variant.dimensions) ? variant.dimensions : []
         })) as SculptureVariantDetails[];
         
         console.log("Mapped variants:", mappedVariants);
@@ -111,7 +115,11 @@ async function generateFallbackVariants(sculptureId: string): Promise<SculptureV
         baseWeightKg: quote.base_weight_kg,
         baseWeightLbs: quote.base_weight_lbs,
         orderIndex: 0, // To be replaced with actual order
-        isArchived: false
+        isArchived: false,
+        // Using sculpture data for now
+        image_url: null,
+        renderings: [],
+        dimensions: []
       });
     }
   });
@@ -150,7 +158,11 @@ async function generateFallbackVariants(sculptureId: string): Promise<SculptureV
       baseWeightKg: sculpture.base_weight_kg,
       baseWeightLbs: sculpture.base_weight_lbs,
       orderIndex: 0,
-      isArchived: false
+      isArchived: false,
+      // Using sculpture data for now
+      image_url: sculpture.image_url,
+      renderings: sculpture.renderings || [],
+      dimensions: sculpture.dimensions || []
     });
   }
 
