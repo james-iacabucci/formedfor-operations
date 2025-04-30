@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { VariantNavigation } from "./components/VariantNavigation";
 import { VariantDeleteDialog } from "./components/VariantDeleteDialog";
