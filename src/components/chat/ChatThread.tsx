@@ -51,12 +51,22 @@ export function ChatThread({
     setUploadingFiles(files);
   };
 
+  // Convert activeTab to the type expected by ChatHeader
+  const getHeaderActiveView = (tab: "messages" | "files"): "chat" | "files" => {
+    return tab === "messages" ? "chat" : "files";
+  };
+
+  // Convert ChatHeader view change to our tab state
+  const handleViewChange = (view: "chat" | "files") => {
+    setActiveTab(view === "chat" ? "messages" : "files");
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
         threadId={threadId} 
-        activeView={activeTab}
-        onViewChange={setActiveTab}
+        activeView={getHeaderActiveView(activeTab)}
+        onViewChange={handleViewChange}
         onClose={() => {}} // We don't need to close in this context
         sculptureId={sculptureId}
         quoteMode={isQuote}
@@ -88,6 +98,7 @@ export function ChatThread({
               onUploadComplete={handleUploadComplete}
               isQuoteChat={isQuote}
               sculptureId={sculptureId}
+              variantId={variantId}
             />
           </TabsContent>
           
