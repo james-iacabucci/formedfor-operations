@@ -16,6 +16,7 @@ interface MessageInputProps {
   disabled?: boolean;
   isQuoteChat?: boolean;
   sculptureId?: string;
+  variantId?: string | null;
 }
 
 export function MessageInput({
@@ -25,7 +26,8 @@ export function MessageInput({
   onUploadComplete,
   disabled = false,
   isQuoteChat = false,
-  sculptureId
+  sculptureId,
+  variantId
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const { textareaRef, adjustHeight } = useTextareaAutosize(message);
@@ -44,7 +46,8 @@ export function MessageInput({
     resetTextarea: () => setMessage(""),
     adjustHeight,
     textareaRef,
-    sculptureId
+    sculptureId,
+    variantId
   });
 
   const { handlePaste } = usePasteHandler({
