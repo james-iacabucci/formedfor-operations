@@ -1,3 +1,4 @@
+
 import { Sculpture } from "@/types/sculpture";
 import { SculptureStatus } from "./SculptureStatus";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,35 @@ import { useToast } from "@/hooks/use-toast";
 import { ProductLineButton } from "./ProductLineButton";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductLine } from "@/types/product-line";
+import { VariantNavigation } from "./components/VariantNavigation";
 
 interface SculptureHeaderProps {
   sculpture: Sculpture;
+  currentVariantIndex?: number;
+  totalVariants?: number;
+  onPreviousVariant?: () => void;
+  onNextVariant?: () => void;
+  onAddVariant?: () => void;
+  onDeleteVariant?: () => void;
+  isCreatingVariant?: boolean;
+  isDeletingVariant?: boolean;
+  disableDeleteVariant?: boolean;
+  selectedVariantId?: string | null;
 }
 
-export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
+export function SculptureHeader({ 
+  sculpture,
+  currentVariantIndex,
+  totalVariants,
+  onPreviousVariant,
+  onNextVariant,
+  onAddVariant,
+  onDeleteVariant,
+  isCreatingVariant = false,
+  isDeletingVariant = false,
+  disableDeleteVariant = false,
+  selectedVariantId
+}: SculptureHeaderProps) {
   const { toast } = useToast();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
@@ -91,47 +115,66 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
   const showRegenerateButton = !sculpture.status || sculpture.status === "idea";
 
   return (
-    <div className="flex items-center gap-2">
-      <ProductLineButton
-        sculptureId={sculpture.id}
-        productLineId={sculpture.product_line_id}
-        productLines={productLines}
-        currentProductLine={currentProductLine}
-        variant="large"
-      />
-      <SculptureStatus
-        sculptureId={sculpture.id}
-        status={sculpture.status}
-      />
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setIsRegenerationSheetOpen(true)}
-      >
-        <Wand2Icon className="h-4 w-4" />
-      </Button>
-      {showRegenerateButton && (
-        <RegenerateButton
-          onClick={handleRegenerate}
-          isRegenerating={isRegenerating}
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        {totalVariants && currentVariantIndex !== undefined && onPreviousVariant && onNextVariant && onAddVariant && onDeleteVariant && (
+          <VariantNavigation
+            currentIndex={currentVariantIndex}
+            totalVariants={totalVariants}
+            handlePrevious={onPreviousVariant}
+            handleNext={onNextVariant}
+            handleAddVariant={onAddVariant}
+            handleDeleteClick={onDeleteVariant}
+            isCreatingVariant={isCreatingVariant}
+            isDeletingVariant={isDeletingVariant}
+            disableDelete={disableDeleteVariant}
+          />
+        )}
+        
+        <ProductLineButton
+          sculptureId={sculpture.id}
+          productLineId={sculpture.product_line_id}
+          productLines={productLines}
+          currentProductLine={currentProductLine}
+          variant="large"
         />
-      )}
-      <PDFGeneratorButton
-        sculptureId={sculpture.id}
-        sculptureName={sculpture.ai_generated_name}
-      />
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setIsChatSheetOpen(true)}
-      >
-        <MessageCircleIcon className="h-4 w-4" />
-      </Button>
-      <ActionsDropdown
-        imageUrl={sculpture.image_url}
-        sculptureName={sculpture.ai_generated_name}
-        onDelete={handleDelete}
-      />
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <SculptureStatus
+          sculptureId={sculpture.id}
+          status={sculpture.status}
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsRegenerationSheetOpen(true)}
+        >
+          <Wand2Icon className="h-4 w-4" />
+        </Button>
+        {showRegenerateButton && (
+          <RegenerateButton
+            onClick={handleRegenerate}
+            isRegenerating={isRegenerating}
+          />
+        )}
+        <PDFGeneratorButton
+          sculptureId={sculpture.id}
+          sculptureName={sculpture.ai_generated_name}
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsChatSheetOpen(true)}
+        >
+          <MessageCircleIcon className="h-4 w-4" />
+        </Button>
+        <ActionsDropdown
+          imageUrl={sculpture.image_url}
+          sculptureName={sculpture.ai_generated_name}
+          onDelete={handleDelete}
+        />
+      </div>
 
       <RegenerationSheet
         open={isRegenerationSheetOpen}
@@ -144,8 +187,9 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       <ChatSheet
         open={isChatSheetOpen}
         onOpenChange={setIsChatSheetOpen}
-        threadId={sculpture.id}
+        threadId={selectedVariantId || sculpture.id}
         sculptureId={sculpture.id}
+        variantId={selectedVariantId}
       />
     </div>
   );

@@ -36,8 +36,10 @@ export function SculptureDetailContent({
   const [layoutType, setLayoutType] = useState<'layout1' | 'layout2'>('layout1');
   
   // Get variants and selected variant
-  const { variants, isLoading: isLoadingVariants } = useSculptureVariants(sculpture.id);
+  const { variants, isLoading: isLoadingVariants, createVariant, deleteVariant, archiveVariant } = useSculptureVariants(sculpture.id);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [isCreatingVariant, setIsCreatingVariant] = useState(false);
+  const [isDeletingVariant, setIsDeletingVariant] = useState(false);
   
   // Set the selected variant when variants load
   useEffect(() => {
@@ -50,6 +52,11 @@ export function SculptureDetailContent({
   const selectedVariant = selectedVariantId && variants 
     ? variants.find(v => v.id === selectedVariantId)
     : null;
+    
+  // Get current variant index
+  const currentVariantIndex = selectedVariantId && variants 
+    ? variants.findIndex(v => v.id === selectedVariantId)
+    : 0;
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id) || !hasPermission('sculpture.regenerate')) return;
@@ -111,12 +118,60 @@ export function SculptureDetailContent({
       });
     }
   };
+  
+  // Navigation handlers for variants
+  const handlePreviousVariant = () => {
+    if (!variants || currentVariantIndex <= 0) return;
+    setSelectedVariantId(variants[currentVariantIndex - 1].id);
+  };
+  
+  const handleNextVariant = () => {
+    if (!variants || currentVariantIndex >= variants.length - 1) return;
+    setSelectedVariantId(variants[currentVariantIndex + 1].id);
+  };
+  
+  const handleAddVariant = async () => {
+    if (!createVariant || !selectedVariantId) return;
+    
+    try {
+      setIsCreatingVariant(true);
+      const newVariantId = await createVariant(selectedVariantId);
+      await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculpture.id] });
+      setSelectedVariantId(newVariantId);
+    } catch (error) {
+      console.error("Failed to create variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create new variant",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingVariant(false);
+    }
+  };
+  
+  const handleDeleteVariant = () => {
+    // Deletion is handled by the VariantDeleteDialog in the SculptureVariant component
+    // This is just a placeholder for the header button
+  };
 
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 bg-background z-10">
         <div className="flex items-center justify-between">
-          <SculptureDetailHeader sculpture={sculpture} />
+          <SculptureDetailHeader 
+            sculpture={sculpture}
+            currentVariantIndex={currentVariantIndex}
+            totalVariants={variants?.length}
+            onPreviousVariant={handlePreviousVariant}
+            onNextVariant={handleNextVariant}
+            onAddVariant={handleAddVariant}
+            onDeleteVariant={handleDeleteVariant}
+            isCreatingVariant={isCreatingVariant}
+            isDeletingVariant={isDeletingVariant}
+            disableDeleteVariant={variants?.length <= 1}
+            selectedVariantId={selectedVariantId}
+          />
           <Toggle
             pressed={layoutType === 'layout2'}
             onPressedChange={(pressed) => setLayoutType(pressed ? 'layout2' : 'layout1')}
