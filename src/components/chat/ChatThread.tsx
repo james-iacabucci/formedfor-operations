@@ -1,14 +1,14 @@
 
 import { useEffect, useState } from "react";
 import { useMessages } from "./hooks/useMessages";
-import { useMessageSend } from "./hooks/useMessageSend";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ChatHeader } from "./components/ChatHeader";
 import { FileList } from "./file-list/FileList";
 import { ChatContent } from "./components/ChatContent";
-import { ChatNavigation } from "./components/ChatNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UploadingFile } from "./types";
+import { Message } from "./types";
 
 interface ChatThreadProps {
   threadId: string;
@@ -24,37 +24,42 @@ export function ChatThread({
   variantId
 }: ChatThreadProps) {
   const [activeTab, setActiveTab] = useState<"messages" | "files">("messages");
-  const {
-    messages,
-    error,
-    isLoading,
-    isError,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-    isDeleting,
-    handleDeleteMessage,
-    handleEditMessage
-  } = useMessages(threadId);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [resetScrollKey, setResetScrollKey] = useState(0);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
   const {
-    handleSendMessage,
-    uploadingFiles,
-    setUploadingFiles,
-    isSending
-  } = useMessageSend(threadId, sculptureId, variantId);
+    messages,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useMessages(threadId);
 
   // Reset to messages tab when thread changes
   useEffect(() => {
     setActiveTab("messages");
+    setResetScrollKey(prev => prev + 1); // Force MessageList to remount when thread changes
   }, [threadId]);
+
+  const handleUploadComplete = (fileIds: string[]) => {
+    setUploadingFiles(current => current.filter(f => !fileIds.includes(f.id)));
+  };
+
+  const handleUploadingFilesChange = (files: UploadingFile[]) => {
+    setUploadingFiles(files);
+  };
 
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
         threadId={threadId} 
+        activeView={activeTab}
+        onViewChange={setActiveTab}
+        onClose={() => {}} // We don't need to close in this context
         sculptureId={sculptureId}
-        isQuote={isQuote}
+        quoteMode={isQuote}
       />
       
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "messages" | "files")}>
@@ -65,38 +70,31 @@ export function ChatThread({
           </TabsList>
         </div>
 
-        <ChatContent>
+        <div className="flex-grow flex flex-col h-full">
           <TabsContent value="messages" className="flex-grow mt-0 flex flex-col h-full">
-            <ChatNavigation
-              hasNextPage={hasNextPage}
-              fetchNextPage={fetchNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-            />
-            
-            <MessageList
-              messages={messages}
-              isLoading={isLoading}
-              isFetchingNextPage={isFetchingNextPage}
-              isError={isError}
-              error={error}
-              onDeleteMessage={handleDeleteMessage}
-              onEditMessage={handleEditMessage}
-              isDeleting={isDeleting}
-            />
-            
-            <MessageInput
-              onSendMessage={handleSendMessage}
+            <MessageList 
+              threadId={threadId}
               uploadingFiles={uploadingFiles}
-              setUploadingFiles={setUploadingFiles}
-              isSending={isSending}
-              isQuote={isQuote}
+              key={`${threadId}-${resetScrollKey}`}
+              editingMessage={editingMessage}
+              setEditingMessage={setEditingMessage}
+              sculptureId={sculptureId}
+            />
+            
+            <MessageInput 
+              threadId={threadId}
+              onUploadingFiles={handleUploadingFilesChange}
+              uploadingFiles={uploadingFiles}
+              onUploadComplete={handleUploadComplete}
+              isQuoteChat={isQuote}
+              sculptureId={sculptureId}
             />
           </TabsContent>
           
           <TabsContent value="files" className="flex-grow mt-0 overflow-hidden">
-            <FileList threadId={threadId} sculptureId={sculptureId} />
+            <FileList threadId={threadId} />
           </TabsContent>
-        </ChatContent>
+        </div>
       </Tabs>
     </div>
   );

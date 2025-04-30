@@ -1,6 +1,5 @@
 
-import { VariantProps } from "class-variance-authority";
-import { FileIcon, ImageIcon, MessageCircle, X } from "lucide-react";
+import { FileIcon, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
