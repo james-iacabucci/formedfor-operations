@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, RefreshCw, CheckIcon, XIcon } from "lucide-react";
+import { ArrowLeft, Pencil, RefreshCw, CheckIcon, XIcon, ChevronLeft, ChevronRight, PlusIcon, Trash2Icon } from "lucide-react";
 import { SculptureHeader } from "../SculptureHeader";
 import { Sculpture } from "@/types/sculpture";
 import { useState } from "react";
@@ -19,9 +19,30 @@ import {
 
 interface SculptureDetailHeaderProps {
   sculpture: Sculpture;
+  // Variant navigation props
+  currentVariantIndex?: number;
+  totalVariants?: number;
+  handlePrevious?: () => void;
+  handleNext?: () => void;
+  handleAddVariant?: () => void;
+  handleDeleteClick?: () => void;
+  isCreatingVariant?: boolean;
+  isDeletingVariant?: boolean;
+  disableDelete?: boolean;
 }
 
-export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps) {
+export function SculptureDetailHeader({ 
+  sculpture,
+  currentVariantIndex,
+  totalVariants,
+  handlePrevious,
+  handleNext,
+  handleAddVariant,
+  handleDeleteClick,
+  isCreatingVariant = false,
+  isDeletingVariant = false,
+  disableDelete = false
+}: SculptureDetailHeaderProps) {
   const { generateAIContent, isGeneratingName } = useAIGeneration();
   const [isNameEditing, setIsNameEditing] = useState(false);
   const [editedName, setEditedName] = useState(sculpture.ai_generated_name || "Untitled Sculpture");
@@ -283,7 +304,61 @@ export function SculptureDetailHeader({ sculpture }: SculptureDetailHeaderProps)
             )}
           </div>
         </div>
-        <SculptureHeader sculpture={sculpture} />
+        
+        <div className="flex items-center gap-2">
+          {/* Variant Navigation */}
+          {totalVariants && totalVariants > 0 && (
+            <div className="flex items-center gap-2 mr-2">
+              <div className="text-sm font-medium">
+                Variant {currentVariantIndex !== undefined ? currentVariantIndex + 1 : 1} of {totalVariants}
+              </div>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePrevious}
+                  disabled={!handlePrevious || currentVariantIndex === 0 || isCreatingVariant || isDeletingVariant}
+                  className="h-8 w-8"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNext}
+                  disabled={!handleNext || (currentVariantIndex !== undefined && totalVariants !== undefined && currentVariantIndex === totalVariants - 1) || isCreatingVariant || isDeletingVariant}
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleAddVariant}
+                  disabled={!handleAddVariant || isCreatingVariant || isDeletingVariant}
+                  className="h-8 w-8"
+                  title="Add Variant"
+                >
+                  <PlusIcon className="h-3.5 w-3.5" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleDeleteClick}
+                  disabled={!handleDeleteClick || isDeletingVariant || isCreatingVariant || disableDelete}
+                  className="h-8 w-8"
+                  title="Remove Variant"
+                >
+                  <Trash2Icon className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+          <SculptureHeader sculpture={sculpture} />
+        </div>
       </div>
     </div>
   );

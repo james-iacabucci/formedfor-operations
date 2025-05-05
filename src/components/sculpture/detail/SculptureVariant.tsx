@@ -35,6 +35,7 @@ interface SculptureVariantProps {
   onDeleteVariant?: (variantId: string) => Promise<void>;
   isCreatingVariant?: boolean;
   isDeletingVariant?: boolean;
+  hideNavigation?: boolean; // New prop to hide the navigation
 }
 
 export function SculptureVariant({ 
@@ -45,7 +46,8 @@ export function SculptureVariant({
   onArchiveVariant,
   onDeleteVariant,
   isCreatingVariant = false,
-  isDeletingVariant = false
+  isDeletingVariant = false,
+  hideNavigation = false // Default to showing navigation
 }: SculptureVariantProps) {
   const {
     currentIndex,
@@ -89,20 +91,23 @@ export function SculptureVariant({
     <>
       <Card className="mb-6">
         <CardContent className="pt-6 px-4 pb-4">
-          <VariantNavigation
-            currentIndex={currentIndex}
-            totalVariants={localVariants.length}
-            handlePrevious={handlePrevious}
-            handleNext={handleNext}
-            handleAddVariant={handleAddVariant}
-            handleDeleteClick={handleDeleteClick}
-            isCreatingVariant={isCreatingVariant}
-            isDeletingVariant={isDeletingVariant}
-            disableDelete={isLastVariant}
-            onCreateVariant={onCreateVariant}
-            onDeleteVariant={onDeleteVariant}
-            onArchiveVariant={onArchiveVariant}
-          />
+          {/* Only show navigation if not hidden */}
+          {!hideNavigation && (
+            <VariantNavigation
+              currentIndex={currentIndex}
+              totalVariants={localVariants.length}
+              handlePrevious={handlePrevious}
+              handleNext={handleNext}
+              handleAddVariant={handleAddVariant}
+              handleDeleteClick={handleDeleteClick}
+              isCreatingVariant={isCreatingVariant}
+              isDeletingVariant={isDeletingVariant}
+              disableDelete={isLastVariant}
+              onCreateVariant={onCreateVariant}
+              onDeleteVariant={onDeleteVariant}
+              onArchiveVariant={onArchiveVariant}
+            />
+          )}
           
           <VariantDetailsSection
             sculptureId={currentVariant.sculptureId}
