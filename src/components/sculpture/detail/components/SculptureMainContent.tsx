@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -12,20 +13,27 @@ import { TaskList } from "@/components/tasks/TaskList";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { format } from "date-fns";
 import { SculpturePrompt } from "../SculpturePrompt";
+import { TagsList } from "@/components/tags/TagsList";
+import { useUserRoles } from "@/hooks/use-user-roles";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
   isRegenerating: boolean;
   onRegenerate: () => Promise<void>;
+  tags: Array<{ id: string; name: string }>;
 }
 
 export function SculptureMainContent({ 
   sculpture, 
   isRegenerating, 
-  onRegenerate 
+  onRegenerate,
+  tags
 }: SculptureMainContentProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { toast } = useToast();
+  const { hasPermission } = useUserRoles();
+  const showTagsSection = hasPermission('settings.manage_tags');
 
   return (
     <div className="flex flex-col space-y-4">
@@ -72,6 +80,12 @@ export function SculptureMainContent({
             Tasks
           </TabsTrigger>
           <TabsTrigger 
+            value="tags"
+            className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
+          >
+            Tags
+          </TabsTrigger>
+          <TabsTrigger 
             value="details"
             className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
           >
@@ -89,6 +103,22 @@ export function SculptureMainContent({
         </TabsContent>
         <TabsContent value="tasks" className="w-full">
           <TaskList sculptureId={sculpture.id} />
+        </TabsContent>
+        <TabsContent value="tags" className="w-full">
+          {showTagsSection && (
+            <Card className="overflow-hidden">
+              <CardHeader className="px-6 py-4">
+                <CardTitle>Tags</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 py-4 pt-0">
+                <TagsList
+                  title=""
+                  tags={tags}
+                  readOnly={!hasPermission('settings.manage_tags')}
+                />
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
         <TabsContent value="details">
           <SculptureDescription 

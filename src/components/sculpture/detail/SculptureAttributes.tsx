@@ -1,7 +1,6 @@
 
 import { Sculpture } from "@/types/sculpture";
 import { SculptureVariant, SculptureVariantDetails } from "./SculptureVariant";
-import { TagsList } from "@/components/tags/TagsList";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
@@ -37,7 +36,6 @@ export function SculptureAttributes({
   const { hasPermission } = useUserRoles();
   const showVariantSection = hasPermission('variant.create');
   const showQuotesSection = hasPermission('quote.create');
-  const showTagsSection = hasPermission('settings.manage_tags');
   
   // Only use the hook if no props are provided
   const {
@@ -73,21 +71,6 @@ export function SculptureAttributes({
           isDeletingVariant={actualDeletingVariant}
           hideNavigation={true} // Hide the navigation since it's now in the header
         />
-      )}
-
-      {showTagsSection && (
-        <Card className="overflow-hidden">
-          <CardHeader className="px-6 py-4">
-            <CardTitle>Tags</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 py-4 pt-0">
-            <TagsList
-              title=""
-              tags={tags}
-              readOnly={!hasPermission('settings.manage_tags')}
-            />
-          </CardContent>
-        </Card>
       )}
       
       {showQuotesSection && (

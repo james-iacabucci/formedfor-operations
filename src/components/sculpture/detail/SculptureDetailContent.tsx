@@ -1,4 +1,3 @@
-
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
 import { useCallback, useState } from "react";
@@ -199,6 +198,7 @@ export function SculptureDetailContent({
             sculpture={sculpture}
             isRegenerating={isRegenerating(sculpture.id)}
             onRegenerate={handleRegenerate}
+            tags={tags}
           />
           <div>
             <SculptureAttributes
