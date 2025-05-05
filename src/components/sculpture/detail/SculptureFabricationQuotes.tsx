@@ -183,9 +183,7 @@ export function SculptureFabricationQuotes({ sculptureId, sculpture }: Sculpture
           open={isChatOpen}
           onOpenChange={setIsChatOpen}
           threadId={chatThreadId}
-          sculptureId={sculptureId}
           quoteMode={true}
-          variantId={selectedVariantId}
         />
       )}
     </div>

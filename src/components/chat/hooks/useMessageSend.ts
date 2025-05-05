@@ -15,7 +15,6 @@ interface UseMessageSendProps {
   adjustHeight: () => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   sculptureId?: string;
-  variantId?: string | null;
 }
 
 export function useMessageSend({
@@ -26,8 +25,7 @@ export function useMessageSend({
   resetTextarea,
   adjustHeight,
   textareaRef,
-  sculptureId,
-  variantId
+  sculptureId
 }: UseMessageSendProps) {
   const [isSending, setIsSending] = useState(false);
   const { user } = useAuth();
@@ -42,7 +40,7 @@ export function useMessageSend({
 
     try {
       // Log current thread ID and sculpture ID for debugging
-      console.log(`Sending message to thread ${threadId}, sculptureId: ${sculptureId || 'none'}, variantId: ${variantId || 'none'}`);
+      console.log(`Sending message to thread ${threadId}, sculptureId: ${sculptureId || 'none'}`);
       
       const filesToUpload = uploadingFiles;
       let uploadedFiles: any[] = [];
@@ -61,21 +59,14 @@ export function useMessageSend({
         console.log("Successfully uploaded files:", uploadedFiles);
       }
 
-      const messageData = {
-        thread_id: threadId,
-        user_id: user.id,
-        content: message.trim(),
-        attachments: uploadedFiles
-      };
-
-      // Add variant_id if provided
-      if (variantId) {
-        Object.assign(messageData, { variant_id: variantId });
-      }
-
-      const { data: insertedMessage, error: messageError } = await supabase
+      const { data: messageData, error: messageError } = await supabase
         .from("chat_messages")
-        .insert(messageData)
+        .insert({
+          thread_id: threadId,
+          user_id: user.id,
+          content: message.trim(),
+          attachments: uploadedFiles
+        })
         .select();
 
       if (messageError) {
@@ -83,8 +74,8 @@ export function useMessageSend({
         throw messageError;
       }
       
-      if (insertedMessage && insertedMessage.length > 0) {
-        messageId = insertedMessage[0].id;
+      if (messageData && messageData.length > 0) {
+        messageId = messageData[0].id;
         console.log("Created message with ID:", messageId, "and attachments:", uploadedFiles);
       }
 

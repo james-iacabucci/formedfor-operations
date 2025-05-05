@@ -1,19 +1,15 @@
 
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
 import { RegenerationSheet } from "../RegenerationSheet";
 import { SculptureDetailHeader } from "./components/SculptureDetailHeader";
 import { SculptureMainContent } from "./components/SculptureMainContent";
-import { SculptureMainContent2 } from "./components/SculptureMainContent2";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
-import { Toggle } from "@/components/ui/toggle";
-import { LayoutGrid, LayoutList } from "lucide-react";
-import { useSculptureVariants } from "@/hooks/sculpture-variants";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -32,31 +28,8 @@ export function SculptureDetailContent({
   const queryClient = useQueryClient();
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
+  // Move the useUserRoles hook call up here before it's used
   const { hasPermission } = useUserRoles();
-  const [layoutType, setLayoutType] = useState<'layout1' | 'layout2'>('layout1');
-  
-  // Get variants and selected variant
-  const { variants, isLoading: isLoadingVariants, createVariant, deleteVariant, archiveVariant } = useSculptureVariants(sculpture.id);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-  const [isCreatingVariant, setIsCreatingVariant] = useState(false);
-  const [isDeletingVariant, setIsDeletingVariant] = useState(false);
-  
-  // Set the selected variant when variants load
-  useEffect(() => {
-    if (variants && variants.length > 0 && !selectedVariantId) {
-      setSelectedVariantId(variants[0].id);
-    }
-  }, [variants, selectedVariantId]);
-  
-  // Get the currently selected variant
-  const selectedVariant = selectedVariantId && variants 
-    ? variants.find(v => v.id === selectedVariantId)
-    : null;
-    
-  // Get current variant index
-  const currentVariantIndex = selectedVariantId && variants 
-    ? variants.findIndex(v => v.id === selectedVariantId)
-    : 0;
 
   const handleRegenerate = useCallback(async () => {
     if (isRegenerating(sculpture.id) || !hasPermission('sculpture.regenerate')) return;
@@ -85,6 +58,7 @@ export function SculptureDetailContent({
     regenerateImage: boolean;
     regenerateMetadata: boolean;
   }) => {
+    // Check permissions based on whether we're creating or updating
     const permissionRequired = options.updateExisting 
       ? 'sculpture.edit'
       : 'variant.create';
@@ -118,103 +92,23 @@ export function SculptureDetailContent({
       });
     }
   };
-  
-  // Navigation handlers for variants
-  const handlePreviousVariant = () => {
-    if (!variants || currentVariantIndex <= 0) return;
-    setSelectedVariantId(variants[currentVariantIndex - 1].id);
-  };
-  
-  const handleNextVariant = () => {
-    if (!variants || currentVariantIndex >= variants.length - 1) return;
-    setSelectedVariantId(variants[currentVariantIndex + 1].id);
-  };
-  
-  const handleAddVariant = async () => {
-    if (!createVariant || !selectedVariantId) return;
-    
-    try {
-      setIsCreatingVariant(true);
-      const newVariantId = await createVariant(selectedVariantId);
-      await queryClient.invalidateQueries({ queryKey: ["sculpture-variants", sculpture.id] });
-      setSelectedVariantId(newVariantId);
-    } catch (error) {
-      console.error("Failed to create variant:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create new variant",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreatingVariant(false);
-    }
-  };
-  
-  const handleDeleteVariant = () => {
-    // Deletion is handled by the VariantDeleteDialog in the SculptureVariant component
-    // This is just a placeholder for the header button
-  };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="sticky top-0 bg-background z-10">
-        <div className="flex items-center justify-between">
-          <SculptureDetailHeader 
-            sculpture={sculpture}
-            currentVariantIndex={currentVariantIndex}
-            totalVariants={variants?.length}
-            onPreviousVariant={handlePreviousVariant}
-            onNextVariant={handleNextVariant}
-            onAddVariant={handleAddVariant}
-            onDeleteVariant={handleDeleteVariant}
-            isCreatingVariant={isCreatingVariant}
-            isDeletingVariant={isDeletingVariant}
-            disableDeleteVariant={variants?.length <= 1}
-            selectedVariantId={selectedVariantId}
-          />
-          <Toggle
-            pressed={layoutType === 'layout2'}
-            onPressedChange={(pressed) => setLayoutType(pressed ? 'layout2' : 'layout1')}
-            aria-label="Toggle layout"
-            className="ml-2"
-          >
-            {layoutType === 'layout1' ? (
-              <LayoutGrid className="h-4 w-4" />
-            ) : (
-              <LayoutList className="h-4 w-4" />
-            )}
-          </Toggle>
-        </div>
-      </div>
+      <SculptureDetailHeader sculpture={sculpture} />
 
       <div className="overflow-y-auto flex-1 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {layoutType === 'layout1' ? (
-            <SculptureMainContent
-              sculpture={sculpture}
-              isRegenerating={isRegenerating(sculpture.id)}
-              onRegenerate={handleRegenerate}
-              selectedVariantId={selectedVariantId}
-              variantImageUrl={selectedVariant?.image_url || null}
-              variantRenderings={selectedVariant?.renderings || []}
-              variantDimensions={selectedVariant?.dimensions || []}
-            />
-          ) : (
-            <SculptureMainContent2
-              sculpture={sculpture}
-              isRegenerating={isRegenerating(sculpture.id)}
-              onRegenerate={handleRegenerate}
-              selectedVariantId={selectedVariantId}
-              variantImageUrl={selectedVariant?.image_url || null}
-              variantRenderings={selectedVariant?.renderings || []}
-              variantDimensions={selectedVariant?.dimensions || []}
-            />
-          )}
+          <SculptureMainContent
+            sculpture={sculpture}
+            isRegenerating={isRegenerating(sculpture.id)}
+            onRegenerate={handleRegenerate}
+          />
           <div>
             <SculptureAttributes
               sculpture={sculpture}
               originalSculpture={originalSculpture}
-              tags={tags || []}
+              tags={tags}
             />
           </div>
         </div>
