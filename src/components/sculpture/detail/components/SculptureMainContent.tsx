@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MessageCircle, Plus } from "lucide-react";
+import { MessageCircle, Plus, Tags, X } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { SculptureDetailImage } from "../SculptureDetailImage";
@@ -13,10 +13,16 @@ import { TaskList } from "@/components/tasks/TaskList";
 import { ChatSheet } from "@/components/chat/ChatSheet";
 import { format } from "date-fns";
 import { SculpturePrompt } from "../SculpturePrompt";
-import { TagsList } from "@/components/tags/TagsList";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { useTagsManagement } from "@/components/tags/useTagsManagement";
 import { CreateTagForm } from "@/components/tags/CreateTagForm";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
@@ -33,6 +39,7 @@ export function SculptureMainContent({
 }: SculptureMainContentProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showTagForm, setShowTagForm] = useState(false);
+  const [selectedTagId, setSelectedTagId] = useState<string>("");
   const { toast } = useToast();
   const { hasPermission } = useUserRoles();
   const canManageTags = hasPermission('settings.manage_tags');
@@ -45,8 +52,23 @@ export function SculptureMainContent({
     createTagMutation
   } = useTagsManagement(sculpture.id);
 
+  // Filter out already assigned tags
+  const availableTags = allTags?.filter(tag => 
+    !tags.some(existingTag => existingTag.id === tag.id)
+  ) || [];
+
   const handleAddTag = (tagId: string) => {
-    addTagMutation.mutate(tagId);
+    if (!tagId) return;
+    
+    addTagMutation.mutate(tagId, {
+      onSuccess: () => {
+        setSelectedTagId("");
+        toast({
+          title: "Success",
+          description: "Tag added successfully"
+        });
+      }
+    });
   };
 
   const handleRemoveTag = (tagId: string) => {
@@ -137,7 +159,7 @@ export function SculptureMainContent({
         <TabsContent value="tags" className="w-full">
           <div className="space-y-4">
             {canManageTags && (
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex flex-col space-y-3">
                 {showTagForm ? (
                   <CreateTagForm
                     onCreateTag={handleCreateTag}
@@ -145,14 +167,49 @@ export function SculptureMainContent({
                     isSubmitting={createTagMutation.isPending}
                   />
                 ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowTagForm(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Tag
-                  </Button>
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Select value={selectedTagId} onValueChange={setSelectedTagId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select an existing tag" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTags.length > 0 ? (
+                            availableTags.map((tag) => (
+                              <SelectItem key={tag.id} value={tag.id}>
+                                {tag.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="" disabled>
+                              No available tags
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleAddTag(selectedTagId)}
+                        disabled={!selectedTagId || addTagMutation.isPending}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowTagForm(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Create New Tag
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -174,7 +231,7 @@ export function SculptureMainContent({
                           onClick={() => handleRemoveTag(tag.id)}
                         >
                           <span className="sr-only">Remove</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          <X className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
