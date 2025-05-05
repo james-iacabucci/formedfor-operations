@@ -313,47 +313,81 @@ export function SculptureDetailHeader({
                 Variant {currentVariantIndex !== undefined ? currentVariantIndex + 1 : 1} of {totalVariants}
               </div>
               <div className="flex items-center space-x-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handlePrevious}
-                  disabled={!handlePrevious || currentVariantIndex === 0 || isCreatingVariant || isDeletingVariant}
-                  className="h-8 w-8"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handlePrevious}
+                        disabled={!handlePrevious || currentVariantIndex === 0 || isCreatingVariant || isDeletingVariant}
+                        className="h-8 w-8"
+                      >
+                        <ChevronLeft className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Previous variant</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleNext}
-                  disabled={!handleNext || (currentVariantIndex !== undefined && totalVariants !== undefined && currentVariantIndex === totalVariants - 1) || isCreatingVariant || isDeletingVariant}
-                  className="h-8 w-8"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleNext}
+                        disabled={!handleNext || (currentVariantIndex !== undefined && totalVariants !== undefined && currentVariantIndex === totalVariants - 1) || isCreatingVariant || isDeletingVariant}
+                        className="h-8 w-8"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Next variant</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleAddVariant}
-                  disabled={!handleAddVariant || isCreatingVariant || isDeletingVariant}
-                  className="h-8 w-8"
-                  title="Add Variant"
-                >
-                  <PlusIcon className="h-3.5 w-3.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleAddVariant}
+                        disabled={!handleAddVariant || isCreatingVariant || isDeletingVariant}
+                        className="h-8 w-8"
+                      >
+                        <PlusIcon className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Create new variant</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleDeleteClick}
-                  disabled={!handleDeleteClick || isDeletingVariant || isCreatingVariant || disableDelete}
-                  className="h-8 w-8"
-                  title="Remove Variant"
-                >
-                  <Trash2Icon className="h-3.5 w-3.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleDeleteClick}
+                        disabled={!handleDeleteClick || isDeletingVariant || isCreatingVariant || disableDelete}
+                        className="h-8 w-8"
+                      >
+                        <Trash2Icon className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete variant</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           )}

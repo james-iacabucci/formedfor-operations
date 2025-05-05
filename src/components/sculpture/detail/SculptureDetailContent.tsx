@@ -1,6 +1,7 @@
+
 import { SculptureAttributes } from "./SculptureAttributes";
 import { Sculpture } from "@/types/sculpture";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useSculptureRegeneration } from "@/hooks/use-sculpture-regeneration";
@@ -10,6 +11,7 @@ import { SculptureMainContent } from "./components/SculptureMainContent";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { useSculptureVariants } from "@/hooks/sculpture-variants";
+import { VariantDeleteDialog } from "./components/VariantDeleteDialog";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;
@@ -29,6 +31,7 @@ export function SculptureDetailContent({
   const { regenerateImage, isRegenerating, generateVariant } = useSculptureRegeneration();
   const [isRegenerationSheetOpen, setIsRegenerationSheetOpen] = useState(false);
   const { hasPermission } = useUserRoles();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Get variant data using the hook
   const {
@@ -43,33 +46,50 @@ export function SculptureDetailContent({
   
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   
+  // Initialize selectedVariantId when variants are loaded
+  useEffect(() => {
+    if (!selectedVariantId && variants && variants.length > 0) {
+      setSelectedVariantId(variants[0].id);
+    }
+  }, [variants, selectedVariantId]);
+  
   // Find the current variant index
   const currentVariantIndex = variants?.findIndex(v => v.id === selectedVariantId) ?? 0;
   const totalVariants = variants?.length ?? 0;
+  
+  // Current variant
+  const currentVariant = variants && selectedVariantId 
+    ? variants.find(v => v.id === selectedVariantId) 
+    : variants?.[0];
 
   // Variant navigation handlers
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentVariantIndex > 0 && variants) {
       setSelectedVariantId(variants[currentVariantIndex - 1].id);
     }
-  };
+  }, [currentVariantIndex, variants]);
   
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (variants && currentVariantIndex < variants.length - 1) {
       setSelectedVariantId(variants[currentVariantIndex + 1].id);
     }
-  };
+  }, [variants, currentVariantIndex]);
   
-  const handleVariantChange = (variantId: string) => {
+  const handleVariantChange = useCallback((variantId: string) => {
     setSelectedVariantId(variantId);
-  };
+  }, []);
   
-  const handleAddVariant = async () => {
+  const handleAddVariant = useCallback(async () => {
     if (!createVariant || !selectedVariantId) return;
     
     try {
       const newVariantId = await createVariant(selectedVariantId);
       setSelectedVariantId(newVariantId);
+      
+      toast({
+        title: "Success",
+        description: "New variant created successfully",
+      });
     } catch (error) {
       console.error("Failed to create variant:", error);
       toast({
@@ -78,9 +98,9 @@ export function SculptureDetailContent({
         variant: "destructive",
       });
     }
-  };
+  }, [createVariant, selectedVariantId, toast]);
   
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     if (variants && variants.length <= 1) {
       toast({
         title: "Cannot Delete",
@@ -90,22 +110,64 @@ export function SculptureDetailContent({
       return;
     }
     
-    // Show delete dialog - we'll need to add this later
-    // for now just calling archiveVariant directly
-    if (selectedVariantId && archiveVariant) {
-      archiveVariant(selectedVariantId)
-        .then(() => {
-          if (variants && variants.length > 0) {
-            // Select another variant
-            const newIndex = Math.max(0, currentVariantIndex - 1);
-            setSelectedVariantId(variants[newIndex].id);
-          }
-        })
-        .catch(error => {
-          console.error("Error archiving variant:", error);
-        });
+    setShowDeleteDialog(true);
+  }, [variants, toast]);
+  
+  const handleArchive = useCallback(async () => {
+    if (!selectedVariantId || !archiveVariant) return;
+    
+    try {
+      await archiveVariant(selectedVariantId);
+      
+      // Select another variant
+      if (variants && variants.length > 1) {
+        const newIndex = Math.max(0, currentVariantIndex - 1);
+        setSelectedVariantId(variants[newIndex].id);
+      }
+      
+      setShowDeleteDialog(false);
+      
+      toast({
+        title: "Success",
+        description: "Variant archived successfully",
+      });
+    } catch (error) {
+      console.error("Failed to archive variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive variant",
+        variant: "destructive",
+      });
     }
-  };
+  }, [selectedVariantId, archiveVariant, variants, currentVariantIndex, toast]);
+  
+  const handleDelete = useCallback(async () => {
+    if (!selectedVariantId || !deleteVariant) return;
+    
+    try {
+      await deleteVariant(selectedVariantId);
+      
+      // Select another variant
+      if (variants && variants.length > 1) {
+        const newIndex = Math.max(0, currentVariantIndex - 1);
+        setSelectedVariantId(variants[newIndex].id);
+      }
+      
+      setShowDeleteDialog(false);
+      
+      toast({
+        title: "Success",
+        description: "Variant deleted successfully",
+      });
+    } catch (error) {
+      console.error("Failed to delete variant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete variant",
+        variant: "destructive",
+      });
+    }
+  }, [selectedVariantId, deleteVariant, variants, currentVariantIndex, toast]);
 
   // Original regenerate handler
   const handleRegenerate = useCallback(async () => {
@@ -170,11 +232,6 @@ export function SculptureDetailContent({
     }
   };
 
-  // Initialize selectedVariantId if it's null and we have variants
-  if (selectedVariantId === null && variants && variants.length > 0) {
-    setSelectedVariantId(variants[0].id);
-  }
-
   return (
     <div className="flex flex-col h-full">
       <SculptureDetailHeader 
@@ -229,6 +286,15 @@ export function SculptureDetailContent({
           defaultPrompt={sculpture.prompt}
         />
       </PermissionGuard>
+      
+      <VariantDeleteDialog
+        showDialog={showDeleteDialog}
+        setShowDialog={setShowDeleteDialog}
+        onArchive={handleArchive}
+        onDelete={handleDelete}
+        isLoading={isDeletingVariant}
+        isLastVariant={variants?.length <= 1}
+      />
     </div>
   );
 }
