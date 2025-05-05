@@ -47,7 +47,7 @@ export function SculptureVariant({
   onDeleteVariant,
   isCreatingVariant = false,
   isDeletingVariant = false,
-  hideNavigation = false // Default to showing navigation
+  hideNavigation = true // Default to hiding navigation since it's now in the main toolbar
 }: SculptureVariantProps) {
   const {
     currentIndex,
@@ -91,7 +91,7 @@ export function SculptureVariant({
     <>
       <Card className="mb-6">
         <CardContent className="pt-6 px-4 pb-4">
-          {/* Only show navigation if not hidden */}
+          {/* Navigation controls removed by default, but can be shown if explicitly needed */}
           {!hideNavigation && (
             <VariantNavigation
               currentIndex={currentIndex}
