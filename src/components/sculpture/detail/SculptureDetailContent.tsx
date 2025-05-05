@@ -10,7 +10,6 @@ import { SculptureMainContent } from "./components/SculptureMainContent";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { useSculptureVariants } from "@/hooks/sculpture-variants";
-import { SculptureVariantDetails } from "./SculptureVariant";
 
 interface SculptureDetailContentProps {
   sculpture: Sculpture;

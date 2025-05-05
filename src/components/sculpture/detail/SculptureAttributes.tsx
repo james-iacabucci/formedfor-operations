@@ -1,6 +1,6 @@
 
 import { Sculpture } from "@/types/sculpture";
-import { SculptureVariant, SculptureVariantDetails } from "./SculptureVariant";
+import { SculptureVariantDetails } from "./SculptureVariant";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SculptureFabricationQuotes } from "./SculptureFabricationQuotes";
@@ -34,45 +34,18 @@ export function SculptureAttributes({
   isDeletingVariant = false
 }: SculptureAttributesProps) {
   const { hasPermission } = useUserRoles();
-  const showVariantSection = hasPermission('variant.create');
   const showQuotesSection = hasPermission('quote.create');
   
   // Only use the hook if no props are provided
   const {
     variants: hookVariants,
     isLoading,
-    createVariant,
-    archiveVariant,
-    deleteVariant,
-    isCreatingVariant: isHookCreatingVariant,
-    isDeletingVariant: isHookDeletingVariant
+    refetch,
+    getQuotesForVariant
   } = useSculptureVariants(sculpture.id);
   
-  // Use props if provided, otherwise use hook
-  const variants = propVariants || hookVariants;
-  const isVariantsLoading = isLoading && !propVariants;
-  const actualCreateVariant = onCreateVariant || createVariant;
-  const actualArchiveVariant = onArchiveVariant || archiveVariant;
-  const actualDeleteVariant = onDeleteVariant || deleteVariant;
-  const actualCreatingVariant = isCreatingVariant || isHookCreatingVariant;
-  const actualDeletingVariant = isDeletingVariant || isHookDeletingVariant;
-  
   return (
-    <div className="space-y-6">
-      {showVariantSection && (
-        <SculptureVariant
-          variants={variants || []}
-          onVariantChange={onVariantChange || (() => {})}
-          selectedVariantId={propSelectedVariantId || null}
-          onCreateVariant={actualCreateVariant}
-          onArchiveVariant={actualArchiveVariant}
-          onDeleteVariant={actualDeleteVariant}
-          isCreatingVariant={actualCreatingVariant}
-          isDeletingVariant={actualDeletingVariant}
-          hideNavigation={true} // Hide the navigation since it's now in the header
-        />
-      )}
-      
+    <div className="space-y-6">      
       {showQuotesSection && (
         <SculptureFabricationQuotes 
           sculptureId={sculpture.id} 

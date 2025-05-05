@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MessageCircle, Plus, Tags, X } from "lucide-react";
+import { MessageCircle, Plus, X } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { SculptureDetailImage } from "../SculptureDetailImage";
