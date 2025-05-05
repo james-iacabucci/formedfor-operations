@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { SculptureDetailImage } from "../SculptureDetailImage";
@@ -15,7 +15,8 @@ import { format } from "date-fns";
 import { SculpturePrompt } from "../SculpturePrompt";
 import { TagsList } from "@/components/tags/TagsList";
 import { useUserRoles } from "@/hooks/use-user-roles";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTagsManagement } from "@/components/tags/useTagsManagement";
+import { CreateTagForm } from "@/components/tags/CreateTagForm";
 
 interface SculptureMainContentProps {
   sculpture: Sculpture;
@@ -31,9 +32,38 @@ export function SculptureMainContent({
   tags
 }: SculptureMainContentProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showTagForm, setShowTagForm] = useState(false);
   const { toast } = useToast();
   const { hasPermission } = useUserRoles();
-  const showTagsSection = hasPermission('settings.manage_tags');
+  const canManageTags = hasPermission('settings.manage_tags');
+
+  // Use the tags management hook to handle tag operations
+  const {
+    tags: allTags,
+    addTagMutation,
+    removeTagMutation,
+    createTagMutation
+  } = useTagsManagement(sculpture.id);
+
+  const handleAddTag = (tagId: string) => {
+    addTagMutation.mutate(tagId);
+  };
+
+  const handleRemoveTag = (tagId: string) => {
+    removeTagMutation.mutate(tagId);
+  };
+
+  const handleCreateTag = (name: string) => {
+    createTagMutation.mutate(name, {
+      onSuccess: () => {
+        setShowTagForm(false);
+        toast({
+          title: "Success",
+          description: "Tag created and added successfully"
+        });
+      }
+    });
+  };
 
   return (
     <div className="flex flex-col space-y-4">
@@ -105,20 +135,56 @@ export function SculptureMainContent({
           <TaskList sculptureId={sculpture.id} />
         </TabsContent>
         <TabsContent value="tags" className="w-full">
-          {showTagsSection && (
-            <Card className="overflow-hidden">
-              <CardHeader className="px-6 py-4">
-                <CardTitle>Tags</CardTitle>
-              </CardHeader>
-              <CardContent className="px-6 py-4 pt-0">
-                <TagsList
-                  title=""
-                  tags={tags}
-                  readOnly={!hasPermission('settings.manage_tags')}
-                />
-              </CardContent>
-            </Card>
-          )}
+          <div className="space-y-4">
+            {canManageTags && (
+              <div className="flex justify-between items-center mb-2">
+                {showTagForm ? (
+                  <CreateTagForm
+                    onCreateTag={handleCreateTag}
+                    onCancel={() => setShowTagForm(false)}
+                    isSubmitting={createTagMutation.isPending}
+                  />
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowTagForm(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Tag
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              {tags.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {tags.map((tag) => (
+                    <div 
+                      key={tag.id} 
+                      className="bg-muted text-white px-3 py-2 rounded-md flex justify-between items-center"
+                    >
+                      <span>{tag.name}</span>
+                      {canManageTags && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 hover:bg-destructive/20"
+                          onClick={() => handleRemoveTag(tag.id)}
+                        >
+                          <span className="sr-only">Remove</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No tags assigned to this sculpture.</p>
+              )}
+            </div>
+          </div>
         </TabsContent>
         <TabsContent value="details">
           <SculptureDescription 
