@@ -35,9 +35,9 @@ export function SculptureAttributes({
   isDeletingVariant = false
 }: SculptureAttributesProps) {
   const { hasPermission } = useUserRoles();
-  const showVariantSection = hasPermission('sculpture.variant.view');
-  const showQuotesSection = hasPermission('fabrication_quote.view');
-  const showTagsSection = hasPermission('sculpture.tags.view');
+  const showVariantSection = hasPermission('variant.create');
+  const showQuotesSection = hasPermission('quote.create');
+  const showTagsSection = hasPermission('settings.manage_tags');
   
   // Only use the hook if no props are provided
   const {
@@ -82,8 +82,9 @@ export function SculptureAttributes({
           </CardHeader>
           <CardContent className="px-6 py-4 pt-0">
             <TagsList
-              initialTags={tags}
-              readOnly={!hasPermission('sculpture.tags.manage')}
+              title=""
+              tags={tags}
+              readOnly={!hasPermission('settings.manage_tags')}
             />
           </CardContent>
         </Card>
