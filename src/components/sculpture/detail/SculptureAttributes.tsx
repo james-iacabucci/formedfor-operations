@@ -82,7 +82,6 @@ export function SculptureAttributes({
           </CardHeader>
           <CardContent className="px-6 py-4 pt-0">
             <TagsList
-              sculptureId={sculpture.id}
               initialTags={tags}
               readOnly={!hasPermission('sculpture.tags.manage')}
             />
@@ -93,7 +92,6 @@ export function SculptureAttributes({
       {showQuotesSection && (
         <SculptureFabricationQuotes 
           sculptureId={sculpture.id} 
-          selectedVariantId={propSelectedVariantId || null}
         />
       )}
     </div>

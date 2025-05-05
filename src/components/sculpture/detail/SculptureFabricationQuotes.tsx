@@ -20,7 +20,7 @@ import { RequestQuoteDialog } from "./components/RequestQuoteDialog";
 
 interface SculptureFabricationQuotesProps {
   sculptureId: string;
-  sculpture: any; // For accessing initial values if needed
+  sculpture?: any; // For accessing initial values if needed
 }
 
 export function SculptureFabricationQuotes({ sculptureId, sculpture }: SculptureFabricationQuotesProps) {
