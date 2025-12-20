@@ -97,7 +97,7 @@ export function SculptureMainContent({
             sculptureId={sculpture.id}
             imageUrl={sculpture.image_url}
             description={sculpture.ai_description}
-            name={sculpture.ai_generated_name}
+            name={sculpture.name}
             prompt={sculpture.prompt}
             creativityLevel={sculpture.creativity_level}
             createdAt={sculpture.created_at}

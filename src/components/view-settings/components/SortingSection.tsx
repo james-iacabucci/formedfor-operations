@@ -4,9 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SortingSectionProps {
-  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
+  sortBy: 'created_at' | 'name' | 'updated_at';
   sortOrder: 'asc' | 'desc';
-  onSortByChange: (value: 'created_at' | 'ai_generated_name' | 'updated_at') => void;
+  onSortByChange: (value: 'created_at' | 'name' | 'updated_at') => void;
   onSortOrderChange: (value: 'asc' | 'desc') => void;
 }
 
@@ -29,7 +29,7 @@ export function SortingSection({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="created_at">Creation Date</SelectItem>
-            <SelectItem value="ai_generated_name">Sculpture Name</SelectItem>
+            <SelectItem value="name">Sculpture Name</SelectItem>
             <SelectItem value="updated_at">Last Modified</SelectItem>
           </SelectContent>
         </Select>

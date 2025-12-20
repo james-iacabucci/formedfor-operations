@@ -25,7 +25,7 @@ export function useTaskRelatedEntity(
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sculptures")
-        .select("id, ai_generated_name")
+        .select("id, name")
         .order("created_at", { ascending: false });
       
       if (error) {
@@ -35,7 +35,7 @@ export function useTaskRelatedEntity(
       
       return (data || []).map(s => ({
         id: s.id || "unknown-id",
-        name: s.ai_generated_name || "Unnamed Sculpture"
+        name: s.name || "Unnamed Sculpture"
       })) as EntityOption[];
     },
     enabled: open && relatedType === "sculpture",

@@ -15,7 +15,7 @@ interface EditableFieldProps {
   value: string;
   type: "input" | "textarea" | "select" | "number";
   sculptureId: string;
-  field: "ai_generated_name" | "ai_description" | "status" | "height_in" | "width_in" | "depth_in";
+  field: "name" | "ai_description" | "status" | "height_in" | "width_in" | "depth_in";
   className?: string;
   label?: string;
   options?: Array<{ value: string; label: string }>;

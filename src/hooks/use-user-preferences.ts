@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export interface ViewSettings {
-  sortBy: 'created_at' | 'ai_generated_name' | 'updated_at';
+  sortBy: 'created_at' | 'name' | 'updated_at';
   sortOrder: 'asc' | 'desc';
   productLineId: string | null;
   materialIds: string[];
@@ -44,7 +44,7 @@ function ensureValidViewSettings(data: any): ViewSettings {
   const settings: ViewSettings = { ...defaultViewSettings };
 
   // Only override with valid values from data
-  if (data.sortBy && ['created_at', 'ai_generated_name', 'updated_at'].includes(data.sortBy)) {
+  if (data.sortBy && ['created_at', 'name', 'updated_at'].includes(data.sortBy)) {
     settings.sortBy = data.sortBy;
   }
   

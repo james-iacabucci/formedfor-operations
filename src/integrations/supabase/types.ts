@@ -606,6 +606,7 @@ export type Database = {
           material_id: string | null
           method_id: string | null
           models: Json | null
+          name: string
           original_sculpture_id: string | null
           product_line_id: string | null
           prompt: string
@@ -650,6 +651,7 @@ export type Database = {
           material_id?: string | null
           method_id?: string | null
           models?: Json | null
+          name?: string
           original_sculpture_id?: string | null
           product_line_id?: string | null
           prompt: string
@@ -694,6 +696,7 @@ export type Database = {
           material_id?: string | null
           method_id?: string | null
           models?: Json | null
+          name?: string
           original_sculpture_id?: string | null
           product_line_id?: string | null
           prompt?: string

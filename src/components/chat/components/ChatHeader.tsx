@@ -57,7 +57,7 @@ export function ChatHeader({
       
       const { data, error } = await supabase
         .from("sculptures")
-        .select("ai_generated_name")
+        .select("name")
         .eq("id", sculptureId)
         .single();
       
@@ -76,8 +76,8 @@ export function ChatHeader({
     ? "Loading..." 
     : quoteMode 
       ? "Quote Chat" 
-      : sculptureInfo?.ai_generated_name
-        ? `${sculptureInfo.ai_generated_name} Chat`
+      : sculptureInfo?.name
+        ? `${sculptureInfo.name} Chat`
         : "Sculpture Chat";
 
   return (

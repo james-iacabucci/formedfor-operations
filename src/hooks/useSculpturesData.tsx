@@ -24,7 +24,7 @@ export function useSculpturesData(
 
       // Apply search filter if query exists
       if (searchQuery) {
-        query = query.or(`ai_generated_name.ilike.%${searchQuery}%,manual_name.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%`);
       }
 
       // Apply other filters

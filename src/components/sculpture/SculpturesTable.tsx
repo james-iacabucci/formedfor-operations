@@ -69,7 +69,7 @@ export function SculpturesTable({
 
   const previewFiles = sculptures.map(sculpture => ({
     id: sculpture.id,
-    name: sculpture.ai_generated_name || "Untitled Sculpture",
+    name: sculpture.name || "Untitled Sculpture",
     url: sculpture.image_url || "",
     created_at: sculpture.created_at,
   }));
@@ -102,7 +102,7 @@ export function SculpturesTable({
                   className="font-medium cursor-pointer hover:text-primary"
                   onClick={() => navigate(`/sculpture/${sculpture.id}`)}
                 >
-                  {sculpture.ai_generated_name || "Untitled Sculpture"}
+                  {sculpture.name || "Untitled Sculpture"}
                 </div>
               </TableCell>
               <TableCell>

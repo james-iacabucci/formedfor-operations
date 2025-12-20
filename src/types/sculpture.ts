@@ -13,7 +13,7 @@ export type Sculpture = {
   created_at: string;
   creativity_level: "none" | "low" | "medium" | "high" | null;
   original_sculpture_id?: string | null;
-  ai_generated_name?: string | null;
+  name: string;
   ai_description?: string | null;
   created_by: string;
   ai_engine: "runware" | "manual";
