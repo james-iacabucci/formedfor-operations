@@ -14,8 +14,8 @@ export function useAllTasks() {
         .from("tasks")
         .select(`
           *,
-          assignee:assigned_to(id, username, avatar_url),
-          sculpture:sculpture_id(id, ai_generated_name, image_url)
+          assignee:assigned_to(id, username),
+          sculpture:sculpture_id(id, ai_generated_name)
         `)
         .order("priority_order", { ascending: true });
 
@@ -57,8 +57,8 @@ export function useAllTasks() {
           category_name: item.category_name || null,
           related_type: item.related_type as TaskRelatedType || null,
           attachments: (item.attachments || []) as any,
-          assignee: item.assignee,
-          sculpture: item.sculpture
+          assignee: item.assignee as any,
+          sculpture: item.sculpture as any
         };
       });
 

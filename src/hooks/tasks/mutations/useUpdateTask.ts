@@ -52,8 +52,8 @@ export function useUpdateTask() {
         .eq("id", taskData.id)
         .select(`
           *,
-          assignee:assigned_to(id, username, avatar_url),
-          sculpture:sculpture_id(id, ai_generated_name, image_url)
+          assignee:assigned_to(id, username),
+          sculpture:sculpture_id(id, ai_generated_name)
         `)
         .single();
       
@@ -96,8 +96,8 @@ export function useUpdateTask() {
         attachments: (data.attachments || []) as any,
         // Fix: Properly cast the related_type to TaskRelatedType or null
         related_type: data.related_type as TaskRelatedType || null,
-        assignee: data.assignee,
-        sculpture: data.sculpture
+        assignee: data.assignee as any,
+        sculpture: data.sculpture as any
       };
       
       return updatedTask;
