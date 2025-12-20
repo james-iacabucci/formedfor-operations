@@ -18,6 +18,7 @@ interface ImportBatch {
   total_rows: number | null;
   successful_rows: number | null;
   failed_rows: number | null;
+  actualCount?: number; // Real count of sculptures still linked to this batch
 }
 
 export function BulkSculptureDelete() {
@@ -53,7 +54,25 @@ export function BulkSculptureDelete() {
       .order('created_at', { ascending: false });
 
     if (batchData) {
-      setBatches(batchData);
+      // Get actual sculpture counts for each batch
+      const batchesWithCounts: ImportBatch[] = [];
+      
+      for (const batch of batchData) {
+        const { count } = await supabase
+          .from('sculptures')
+          .select('*', { count: 'exact', head: true })
+          .eq('import_batch_id', batch.id);
+        
+        // Only include batches that still have sculptures
+        if (count && count > 0) {
+          batchesWithCounts.push({
+            ...batch,
+            actualCount: count
+          });
+        }
+      }
+      
+      setBatches(batchesWithCounts);
     }
 
     // Load counts for different import sources
@@ -135,11 +154,11 @@ export function BulkSculptureDelete() {
     if (deleteType === 'zip_import') return counts.zipImport;
     if (deleteType === 'excel_import') return counts.excelImport;
     
-    // For 'imported', if specific batches selected, sum their successful rows
+    // For 'imported', if specific batches selected, sum their actual counts
     if (selectedBatches.length > 0) {
       return batches
         .filter(b => selectedBatches.includes(b.id))
-        .reduce((sum, b) => sum + (b.successful_rows || 0), 0);
+        .reduce((sum, b) => sum + (b.actualCount || 0), 0);
     }
     
     return counts.imported;
@@ -258,10 +277,7 @@ export function BulkSculptureDelete() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Badge variant="outline">{batch.successful_rows || 0} sculptures</Badge>
-                      {(batch.failed_rows || 0) > 0 && (
-                        <Badge variant="destructive">{batch.failed_rows} failed</Badge>
-                      )}
+                      <Badge variant="outline">{batch.actualCount || 0} sculptures</Badge>
                     </div>
                   </div>
                 ))}

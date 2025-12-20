@@ -210,8 +210,43 @@ serve(async (req) => {
 
     console.log(`Successfully deleted ${sculptureIds.length} sculptures`);
 
+    // STEP 7: Clean up empty import batches
+    console.log('Checking for empty import batches to clean up...');
+    const { data: allBatches } = await supabase
+      .from('import_batches')
+      .select('id');
+
+    if (allBatches && allBatches.length > 0) {
+      for (const batch of allBatches) {
+        const { count } = await supabase
+          .from('sculptures')
+          .select('*', { count: 'exact', head: true })
+          .eq('import_batch_id', batch.id);
+
+        if (count === 0) {
+          // Delete import logs for this batch
+          await supabase
+            .from('import_logs')
+            .delete()
+            .eq('batch_id', batch.id);
+
+          // Delete the empty batch
+          const { error: batchDeleteError } = await supabase
+            .from('import_batches')
+            .delete()
+            .eq('id', batch.id);
+
+          if (batchDeleteError) {
+            console.error(`Error deleting empty batch ${batch.id}:`, batchDeleteError);
+          } else {
+            console.log(`Deleted empty import batch: ${batch.id}`);
+          }
+        }
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, deleted: sculptureIds.length }),
+      JSON.stringify({ success: true, deleted: sculptureIds.length, message: `Successfully deleted ${sculptureIds.length} sculpture(s)` }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
