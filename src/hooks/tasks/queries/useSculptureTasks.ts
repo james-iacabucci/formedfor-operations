@@ -14,7 +14,7 @@ export function useSculptureTasks(sculptureId: string) {
         .from("tasks")
         .select(`
           *,
-          assignee:assigned_to(id, username, avatar_url)
+          assignee:assigned_to(id, username)
         `)
         .eq("sculpture_id", sculptureId)
         .order("priority_order", { ascending: true });
@@ -57,7 +57,7 @@ export function useSculptureTasks(sculptureId: string) {
           category_name: item.category_name || null,
           related_type: item.related_type as TaskRelatedType || null,
           attachments: (item.attachments || []) as any,
-          assignee: item.assignee
+          assignee: item.assignee as any
         };
       });
 
