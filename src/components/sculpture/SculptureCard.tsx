@@ -35,7 +35,7 @@ export function SculptureCard({
     if (sculpture?.image_url) {
       const link = document.createElement("a");
       link.href = sculpture.image_url;
-      link.download = `${sculpture.ai_generated_name || 'sculpture'}.png`;
+      link.download = `${sculpture.name || 'sculpture'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -75,7 +75,7 @@ export function SculptureCard({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${sculpture.ai_generated_name || 'sculpture'}.pdf`);
+      link.setAttribute('download', `${sculpture.name || 'sculpture'}.pdf`);
       
       document.body.appendChild(link);
       link.click();

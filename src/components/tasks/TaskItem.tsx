@@ -99,7 +99,7 @@ export function TaskItem({ task, isDragging = false }: TaskItemProps) {
     
     switch (task.related_type) {
       case "sculpture":
-        return task.sculpture?.ai_generated_name || "Unnamed Sculpture";
+        return task.sculpture?.name || "Unnamed Sculpture";
       case "client":
         return task.client?.name || "Unnamed Client";
       case "order":

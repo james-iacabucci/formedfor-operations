@@ -45,7 +45,7 @@ export function SculptureDetailHeader({
 }: SculptureDetailHeaderProps) {
   const { generateAIContent, isGeneratingName } = useAIGeneration();
   const [isNameEditing, setIsNameEditing] = useState(false);
-  const [editedName, setEditedName] = useState(sculpture.ai_generated_name || "Untitled Sculpture");
+  const [editedName, setEditedName] = useState(sculpture.name || "Untitled Sculpture");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -72,8 +72,8 @@ export function SculptureDetailHeader({
           // Check if the name is already used
           const { data: existingNames } = await supabase
             .from("sculptures")
-            .select("ai_generated_name")
-            .eq("ai_generated_name", newName)
+            .select("name")
+            .eq("name", newName)
             .neq("id", sculpture.id);
           
           if (existingNames && existingNames.length > 0) {
@@ -89,7 +89,7 @@ export function SculptureDetailHeader({
           
           const { error } = await supabase
             .from("sculptures")
-            .update({ ai_generated_name: newName })
+            .update({ name: newName })
             .eq("id", sculpture.id);
           
           if (error) throw error;
@@ -171,8 +171,8 @@ export function SculptureDetailHeader({
       // Check if name is already used
       const { data: existingNames } = await supabase
         .from("sculptures")
-        .select("ai_generated_name")
-        .eq("ai_generated_name", editedName)
+        .select("name")
+        .eq("name", editedName)
         .neq("id", sculpture.id);
       
       if (existingNames && existingNames.length > 0) {
@@ -190,7 +190,7 @@ export function SculptureDetailHeader({
       
       const { error } = await supabase
         .from('sculptures')
-        .update({ ai_generated_name: finalName })
+        .update({ name: finalName })
         .eq('id', sculpture.id);
 
       if (error) throw error;
@@ -249,7 +249,7 @@ export function SculptureDetailHeader({
                   size="sm"
                   onClick={() => {
                     setIsNameEditing(false);
-                    setEditedName(sculpture.ai_generated_name || "Untitled Sculpture");
+                    setEditedName(sculpture.name || "Untitled Sculpture");
                   }}
                 >
                   <XIcon className="h-4 w-4" />
@@ -258,7 +258,7 @@ export function SculptureDetailHeader({
             ) : (
               <div className="flex items-center">
                 <h1 className="text-2xl font-bold mr-2">
-                  {sculpture.ai_generated_name || "Untitled Sculpture"}
+                  {sculpture.name || "Untitled Sculpture"}
                 </h1>
                 <div className="flex items-center gap-1">
                   <TooltipProvider>

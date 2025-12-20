@@ -43,7 +43,7 @@ export function SculpturePDF({ sculpture }: SculpturePDFProps) {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${sculpture.ai_generated_name || 'sculpture'}.pdf`;
+      link.download = `${sculpture.name || 'sculpture'}.pdf`;
       link.target = "_self"; // Force same window
       link.setAttribute("type", "application/pdf"); // Set MIME type
       

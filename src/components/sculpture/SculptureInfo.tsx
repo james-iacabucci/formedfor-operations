@@ -101,7 +101,7 @@ export function SculptureInfo({
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <h3 className="font-semibold line-clamp-1">
-            {sculpture.ai_generated_name || "Untitled Sculpture"}
+            {sculpture.name || "Untitled Sculpture"}
           </h3>
         </div>
         <div className="flex items-center gap-2">

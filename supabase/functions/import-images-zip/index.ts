@@ -125,11 +125,11 @@ serve(async (req) => {
       console.log(`Processing: ${actualFilename} -> "${sculptureName}"`)
 
       try {
-        // Check if sculpture already exists (case-insensitive match on manual_name)
+        // Check if sculpture already exists (case-insensitive match on name)
         const { data: existingSculpture } = await supabase
           .from('sculptures')
-          .select('id, manual_name')
-          .ilike('manual_name', sculptureName)
+          .select('id, name')
+          .ilike('name', sculptureName)
           .limit(1)
           .single()
 
@@ -141,7 +141,7 @@ serve(async (req) => {
             sculptureName,
             success: true,
             action: 'skipped',
-            message: `Already exists as "${existingSculpture.manual_name}"`,
+            message: `Already exists as "${existingSculpture.name}"`,
           })
 
           // Log to import_logs
@@ -189,7 +189,7 @@ serve(async (req) => {
           .from('sculptures')
           .insert({
             id: sculptureId,
-            manual_name: sculptureName,
+            name: sculptureName,
             prompt: `Imported: ${sculptureName}`,
             image_url: imageUrl,
             product_line_id: FORMED_FOR_PRODUCT_LINE_ID,

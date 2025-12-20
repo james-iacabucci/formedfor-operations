@@ -137,7 +137,7 @@ export function CreateSculptureSheet({ open, onOpenChange }: CreateSculptureShee
             status: "idea",
             image_url: publicUrl,
             creativity_level: creativity,
-            ai_generated_name: aiName,
+            name: aiName,
             ai_description: aiDescription,
             product_line_id: selectedProductLineId || null
           }

@@ -119,7 +119,7 @@ export function useSculptureRegeneration() {
       const { error: updateError } = await supabase
         .from('sculptures')
         .update({
-          ai_generated_name: aiName,
+          name: aiName,
           ai_description: aiDescription,
           image_url: publicUrl
         })

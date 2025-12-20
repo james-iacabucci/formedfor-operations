@@ -118,7 +118,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       )}
       <PDFGeneratorButton
         sculptureId={sculpture.id}
-        sculptureName={sculpture.ai_generated_name}
+        sculptureName={sculpture.name}
       />
       <Button
         variant="outline"
@@ -129,7 +129,7 @@ export function SculptureHeader({ sculpture }: SculptureHeaderProps) {
       </Button>
       <ActionsDropdown
         imageUrl={sculpture.image_url}
-        sculptureName={sculpture.ai_generated_name}
+        sculptureName={sculpture.name}
         onDelete={handleDelete}
       />
 

@@ -10,7 +10,7 @@ interface GroupTitleRendererProps {
   users: any[];
   sculptures: {
     id: string;
-    ai_generated_name: string;
+    name: string;
     image_url?: string;
   }[];
 }
@@ -55,7 +55,7 @@ export function GroupTitleRenderer({ groupBy, groupKey, users, sculptures }: Gro
             <Paintbrush className="h-3 w-3" />
           </div>
         )}
-        <span>{sculptureInfo?.ai_generated_name || "Unknown sculpture"}</span>
+        <span>{sculptureInfo?.name || "Unknown sculpture"}</span>
       </div>
     );
   }

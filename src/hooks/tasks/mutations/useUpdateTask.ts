@@ -53,7 +53,7 @@ export function useUpdateTask() {
         .select(`
           *,
           assignee:assigned_to(id, username),
-          sculpture:sculpture_id(id, ai_generated_name)
+          sculpture:sculpture_id(id, name)
         `)
         .single();
       
