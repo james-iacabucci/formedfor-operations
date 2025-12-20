@@ -57,7 +57,7 @@ export function useSculptureTasks(sculptureId: string) {
           category_name: item.category_name || null,
           related_type: item.related_type as TaskRelatedType || null,
           attachments: (item.attachments || []) as any,
-          assignee: item.assignee
+          assignee: item.assignee as any
         };
       });
 

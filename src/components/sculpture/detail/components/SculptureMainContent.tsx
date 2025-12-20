@@ -45,7 +45,7 @@ export function SculptureMainContent({
       />
 
       <Tabs defaultValue="files" className="w-full">
-        <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-md border border-[#333333]">
+        <TabsList className="inline-flex h-auto bg-transparent p-1 rounded-md border border-border">
           <TabsTrigger 
             value="files"
             className="h-9 px-5 py-2 text-sm font-medium rounded-md text-foreground dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"
