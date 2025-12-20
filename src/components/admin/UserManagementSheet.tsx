@@ -7,13 +7,17 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { UserCog, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { RoleManagement } from "@/components/admin/RoleManagement";
 import { RolePermissionsManagement } from "@/components/admin/RolePermissionsManagement";
+import { SculptureImport } from "@/components/admin/SculptureImport";
+import { ZipImageImport } from "@/components/admin/ZipImageImport";
+import { BulkSculptureDelete } from "@/components/admin/BulkSculptureDelete";
 import { useAuth } from "@/components/AuthProvider";
 import { useUserRoles } from "@/hooks/use-user-roles";
 import { PermissionGuard } from "@/components/permissions/PermissionGuard";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { markClosedPortals, fixUIAfterPortalClose } from "@/lib/portalUtils";
 
 interface UserManagementSheetProps {
@@ -99,10 +103,37 @@ export function UserManagementSheet({ open, onOpenChange }: UserManagementSheetP
           </SheetHeader>
           
           <div className="flex-1 overflow-y-auto px-6">
-            <div className="py-6 space-y-8">
+            <div className="py-6">
               <PermissionGuard requiredPermission="settings.manage_roles">
-                <RoleManagement />
-                <RolePermissionsManagement />
+                <Tabs defaultValue="users" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="users">Users</TabsTrigger>
+                    <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                    <TabsTrigger value="zip-import">ZIP Import</TabsTrigger>
+                    <TabsTrigger value="excel-import">Excel</TabsTrigger>
+                    <TabsTrigger value="delete">Delete</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="users" className="mt-6">
+                    <RoleManagement />
+                  </TabsContent>
+                  
+                  <TabsContent value="permissions" className="mt-6">
+                    <RolePermissionsManagement />
+                  </TabsContent>
+                  
+                  <TabsContent value="zip-import" className="mt-6">
+                    <ZipImageImport />
+                  </TabsContent>
+                  
+                  <TabsContent value="excel-import" className="mt-6">
+                    <SculptureImport />
+                  </TabsContent>
+                  
+                  <TabsContent value="delete" className="mt-6">
+                    <BulkSculptureDelete />
+                  </TabsContent>
+                </Tabs>
               </PermissionGuard>
             </div>
           </div>
