@@ -54,8 +54,55 @@ serve(async (req) => {
     const sculptureIds = sculptures.map(s => s.id);
     console.log(`Deleting ${sculptureIds.length} sculptures`);
 
-    // Delete in order to respect foreign key constraints:
-    // 1. Delete chat_messages (via chat_threads)
+    // STEP 1: Delete storage files first
+    console.log('Deleting storage files...');
+    
+    for (const sculptureId of sculptureIds) {
+      // Delete from sculptures bucket (contains thumbnail images)
+      try {
+        const { data: sculptureFiles } = await supabase.storage
+          .from('sculptures')
+          .list(sculptureId);
+        
+        if (sculptureFiles && sculptureFiles.length > 0) {
+          const filePaths = sculptureFiles.map(f => `${sculptureId}/${f.name}`);
+          const { error: deleteStorageError } = await supabase.storage
+            .from('sculptures')
+            .remove(filePaths);
+          if (deleteStorageError) {
+            console.error(`Error deleting sculpture files for ${sculptureId}:`, deleteStorageError);
+          } else {
+            console.log(`Deleted ${filePaths.length} files from sculptures bucket for ${sculptureId}`);
+          }
+        }
+      } catch (e) {
+        console.error(`Error listing/deleting sculptures bucket for ${sculptureId}:`, e);
+      }
+      
+      // Delete from sculpture_files bucket (contains models, renderings, dimensions, etc.)
+      try {
+        const { data: extraFiles } = await supabase.storage
+          .from('sculpture_files')
+          .list(sculptureId);
+        
+        if (extraFiles && extraFiles.length > 0) {
+          const filePaths = extraFiles.map(f => `${sculptureId}/${f.name}`);
+          const { error: deleteExtraError } = await supabase.storage
+            .from('sculpture_files')
+            .remove(filePaths);
+          if (deleteExtraError) {
+            console.error(`Error deleting sculpture_files for ${sculptureId}:`, deleteExtraError);
+          } else {
+            console.log(`Deleted ${filePaths.length} files from sculpture_files bucket for ${sculptureId}`);
+          }
+        }
+      } catch (e) {
+        console.error(`Error listing/deleting sculpture_files bucket for ${sculptureId}:`, e);
+      }
+    }
+
+    // STEP 2: Delete database records in order to respect foreign key constraints
+    // Get chat threads and their messages to delete chat attachments
     const { data: threads } = await supabase
       .from('chat_threads')
       .select('id')
@@ -63,6 +110,49 @@ serve(async (req) => {
     
     if (threads && threads.length > 0) {
       const threadIds = threads.map(t => t.id);
+      
+      // Get chat messages with attachments to delete from storage
+      const { data: messages } = await supabase
+        .from('chat_messages')
+        .select('attachments')
+        .in('thread_id', threadIds);
+      
+      // Delete chat attachments from storage
+      if (messages && messages.length > 0) {
+        const attachmentPaths: string[] = [];
+        for (const msg of messages) {
+          if (msg.attachments && Array.isArray(msg.attachments)) {
+            for (const attachment of msg.attachments) {
+              const att = attachment as { url?: string; path?: string };
+              // Extract path from URL or use path directly
+              if (att.path) {
+                attachmentPaths.push(att.path);
+              } else if (att.url && att.url.includes('chat_attachments')) {
+                // Extract path from URL like: .../chat_attachments/threadId/filename
+                const match = att.url.match(/chat_attachments\/(.+)$/);
+                if (match) {
+                  attachmentPaths.push(match[1]);
+                }
+              }
+            }
+          }
+        }
+        
+        if (attachmentPaths.length > 0) {
+          try {
+            const { error: deleteAttachmentsError } = await supabase.storage
+              .from('chat_attachments')
+              .remove(attachmentPaths);
+            if (deleteAttachmentsError) {
+              console.error('Error deleting chat attachments:', deleteAttachmentsError);
+            } else {
+              console.log(`Deleted ${attachmentPaths.length} chat attachments from storage`);
+            }
+          } catch (e) {
+            console.error('Error deleting chat attachments:', e);
+          }
+        }
+      }
       
       // Delete chat messages
       await supabase
@@ -83,7 +173,7 @@ serve(async (req) => {
         .in('sculpture_id', sculptureIds);
     }
 
-    // 2. Delete fabrication quotes
+    // 3. Delete fabrication quotes
     await supabase
       .from('fabrication_quotes')
       .delete()
