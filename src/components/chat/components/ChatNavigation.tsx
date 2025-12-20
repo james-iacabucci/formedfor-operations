@@ -22,7 +22,7 @@ export function ChatNavigation({
           <Tabs
             value={activeView}
             onValueChange={(value) => onViewChange(value as "chat" | "files")}
-            className="rounded-full border border-[#333333] p-1"
+            className="rounded-full border border-border p-1"
           >
             <TabsList className="bg-transparent border-0 h-9 p-0">
               <TabsTrigger 
@@ -45,7 +45,7 @@ export function ChatNavigation({
           <Tabs
             value={currentTopic}
             onValueChange={(value) => onTopicChange(value as "pricing" | "fabrication" | "operations")}
-            className="rounded-full border border-[#333333] p-1 flex-grow flex"
+            className="rounded-full border border-border p-1 flex-grow flex"
           >
             <TabsList className="bg-transparent border-0 h-9 p-0 w-full flex">
               <TabsTrigger 

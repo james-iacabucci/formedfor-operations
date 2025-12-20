@@ -99,7 +99,7 @@ export function useCreateTask() {
         related_type: data.related_type as TaskRelatedType || null,
         // Cast the attachments back to our expected type
         attachments: (data.attachments || []) as any, 
-        assignee: data.assignee
+        assignee: data.assignee as any
       };
       
       return createdTask;
