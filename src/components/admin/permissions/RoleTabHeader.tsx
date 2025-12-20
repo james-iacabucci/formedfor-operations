@@ -15,7 +15,7 @@ export function RoleTabHeader({
 }: RoleTabHeaderProps) {
   return (
     <div className="mb-4">
-      <TabsList className="w-full inline-flex h-auto bg-transparent p-1 rounded-md border border-border">
+      <TabsList className="w-full inline-flex h-auto bg-transparent p-1 rounded-md border border-[#333333]">
         <TabsTrigger 
           value="admin" 
           onClick={() => setActiveTab("admin")}

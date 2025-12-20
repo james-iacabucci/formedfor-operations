@@ -57,8 +57,8 @@ export function useAllTasks() {
           category_name: item.category_name || null,
           related_type: item.related_type as TaskRelatedType || null,
           attachments: (item.attachments || []) as any,
-          assignee: item.assignee as any,
-          sculpture: item.sculpture as any
+          assignee: item.assignee,
+          sculpture: item.sculpture
         };
       });
 

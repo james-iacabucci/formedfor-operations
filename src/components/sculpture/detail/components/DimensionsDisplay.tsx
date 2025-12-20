@@ -63,7 +63,7 @@ export function DimensionsDisplay({
           className="h-4 flex items-center"
           onClick={handleTabClick}
         >
-          <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-border">
+          <TabsList className="inline-flex h-auto bg-transparent p-0.5 rounded-full border border-[#333333]">
             <TabsTrigger 
               value="inches" 
               className="h-4 px-2 text-xs rounded-full text-black dark:text-white data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all duration-200"

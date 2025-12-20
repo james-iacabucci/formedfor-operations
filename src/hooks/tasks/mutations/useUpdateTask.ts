@@ -96,8 +96,8 @@ export function useUpdateTask() {
         attachments: (data.attachments || []) as any,
         // Fix: Properly cast the related_type to TaskRelatedType or null
         related_type: data.related_type as TaskRelatedType || null,
-        assignee: data.assignee as any,
-        sculpture: data.sculpture as any
+        assignee: data.assignee,
+        sculpture: data.sculpture
       };
       
       return updatedTask;
