@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { setupScene } from './three/setupScene';
-import { createPointCloud, generateOrganicPositions } from './three/generatePoints';
+import { createPointCloud, generateTeardropPositions } from './three/generatePoints';
 import { MouseState, setupMouseHandlers } from './three/mouseHandlers';
 
 export const DotCloud = () => {
@@ -27,13 +27,13 @@ export const DotCloud = () => {
     };
 
     // Initialize target positions
-    let targetPositions = generateOrganicPositions(gridSize);
+    let targetPositions = generateTeardropPositions(gridSize);
 
     // Setup mouse handlers
     const cleanup = setupMouseHandlers(
       containerRef.current, 
       mouseState, 
-      () => { targetPositions = generateOrganicPositions(gridSize); }
+      () => { targetPositions = generateTeardropPositions(gridSize); }
     );
 
     // Animation
