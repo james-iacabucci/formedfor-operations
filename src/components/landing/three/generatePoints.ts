@@ -107,6 +107,16 @@ export const loadSculptureModel = async (): Promise<Float32Array> => {
   return loadPromise;
 };
 
+// Calculate visible height at a given distance from camera
+// Using FOV of 75 degrees and camera at z=50
+const getVisibleHeight = () => {
+  const fov = 75; // degrees
+  const cameraZ = 50;
+  const fovRad = (fov * Math.PI) / 180;
+  // Visible height = 2 * tan(fov/2) * distance
+  return 2 * Math.tan(fovRad / 2) * cameraZ;
+};
+
 // Sample vertices from the model to create target positions
 export const generateModelPositions = (
   modelVertices: Float32Array,
@@ -142,13 +152,12 @@ export const generateModelPositions = (
   const centerY = (minY + maxY) / 2;
   const centerZ = (minZ + maxZ) / 2;
   
-  const sizeX = maxX - minX;
   const sizeY = maxY - minY;
-  const sizeZ = maxZ - minZ;
-  const maxSize = Math.max(sizeX, sizeY, sizeZ);
   
-  // Scale to fit nicely in the scene (target size ~30 units)
-  const scale = 30 / maxSize;
+  // Calculate scale to fill 80% of viewport height (10% margin top and bottom)
+  const visibleHeight = getVisibleHeight();
+  const targetHeight = visibleHeight * 0.8; // 80% of visible height
+  const scale = targetHeight / sizeY;
   
   // Sample vertices evenly or with some variation
   for (let i = 0; i < targetCount; i++) {
