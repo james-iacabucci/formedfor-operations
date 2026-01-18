@@ -1,5 +1,6 @@
 
 import * as THREE from 'three';
+import { FBXLoader } from 'three-stdlib';
 
 export const createPointCloud = () => {
   const gridSize = 70;
@@ -12,7 +13,7 @@ export const createPointCloud = () => {
       const index = (i * gridSize + j) * 3;
       scatteredPositions[index] = (i - gridSize/2) * 0.9;
       scatteredPositions[index + 1] = (j - gridSize/2) * 0.9;
-      scatteredPositions[index + 2] = (Math.random() - 0.5) * 20; // Reduced from 50 to 20 for less depth
+      scatteredPositions[index + 2] = (Math.random() - 0.5) * 20;
     }
   }
   
@@ -30,69 +31,198 @@ export const createPointCloud = () => {
   return { points, gridSize };
 };
 
+// Store the loaded model vertices globally for reuse
+let cachedModelVertices: Float32Array | null = null;
+let isLoading = false;
+let loadPromise: Promise<Float32Array> | null = null;
+
+export const loadSculptureModel = async (): Promise<Float32Array> => {
+  // Return cached vertices if already loaded
+  if (cachedModelVertices) {
+    return cachedModelVertices;
+  }
+  
+  // If already loading, wait for existing promise
+  if (loadPromise) {
+    return loadPromise;
+  }
+  
+  isLoading = true;
+  
+  loadPromise = new Promise((resolve, reject) => {
+    const loader = new FBXLoader();
+    
+    loader.load(
+      '/models/sculpture.fbx',
+      (fbx) => {
+        const allVertices: number[] = [];
+        
+        // Traverse the loaded model and extract all vertices
+        fbx.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.geometry) {
+            const geometry = child.geometry;
+            const positions = geometry.attributes.position;
+            
+            if (positions) {
+              // Get world matrix to transform local positions to world space
+              child.updateWorldMatrix(true, false);
+              const worldMatrix = child.matrixWorld;
+              
+              for (let i = 0; i < positions.count; i++) {
+                const vertex = new THREE.Vector3(
+                  positions.getX(i),
+                  positions.getY(i),
+                  positions.getZ(i)
+                );
+                
+                // Transform to world space
+                vertex.applyMatrix4(worldMatrix);
+                
+                allVertices.push(vertex.x, vertex.y, vertex.z);
+              }
+            }
+          }
+        });
+        
+        cachedModelVertices = new Float32Array(allVertices);
+        isLoading = false;
+        console.log(`Loaded sculpture with ${allVertices.length / 3} vertices`);
+        resolve(cachedModelVertices);
+      },
+      (progress) => {
+        console.log(`Loading sculpture: ${(progress.loaded / progress.total * 100).toFixed(1)}%`);
+      },
+      (error) => {
+        console.error('Error loading sculpture model:', error);
+        isLoading = false;
+        reject(error);
+      }
+    );
+  });
+  
+  return loadPromise;
+};
+
+// Sample vertices from the model to create target positions
+export const generateModelPositions = (
+  modelVertices: Float32Array,
+  targetCount: number,
+  time: number
+): Float32Array => {
+  const positions = new Float32Array(targetCount * 3);
+  const vertexCount = modelVertices.length / 3;
+  
+  if (vertexCount === 0) {
+    return positions;
+  }
+  
+  // Calculate bounding box to center and scale the model
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  let minZ = Infinity, maxZ = -Infinity;
+  
+  for (let i = 0; i < vertexCount; i++) {
+    const x = modelVertices[i * 3];
+    const y = modelVertices[i * 3 + 1];
+    const z = modelVertices[i * 3 + 2];
+    
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+    minZ = Math.min(minZ, z);
+    maxZ = Math.max(maxZ, z);
+  }
+  
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const centerZ = (minZ + maxZ) / 2;
+  
+  const sizeX = maxX - minX;
+  const sizeY = maxY - minY;
+  const sizeZ = maxZ - minZ;
+  const maxSize = Math.max(sizeX, sizeY, sizeZ);
+  
+  // Scale to fit nicely in the scene (target size ~30 units)
+  const scale = 30 / maxSize;
+  
+  // Sample vertices evenly or with some variation
+  for (let i = 0; i < targetCount; i++) {
+    // Use deterministic but varied sampling with slight time-based offset
+    const sampleIndex = Math.floor((i / targetCount) * vertexCount + time * 0.1) % vertexCount;
+    
+    // Get the vertex position
+    let x = modelVertices[sampleIndex * 3];
+    let y = modelVertices[sampleIndex * 3 + 1];
+    let z = modelVertices[sampleIndex * 3 + 2];
+    
+    // Center and scale
+    x = (x - centerX) * scale;
+    y = (y - centerY) * scale;
+    z = (z - centerZ) * scale;
+    
+    // Add subtle organic movement
+    const noiseScale = 0.15;
+    x += Math.sin(time * 0.5 + i * 0.1) * noiseScale;
+    y += Math.cos(time * 0.5 + i * 0.15) * noiseScale;
+    z += Math.sin(time * 0.7 + i * 0.12) * noiseScale;
+    
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+  }
+  
+  return positions;
+};
+
+// Legacy fallback - teardrop shape (used while model is loading)
 export const generateTeardropPositions = (gridSize: number) => {
   const positions = new Float32Array(gridSize * gridSize * 3);
   const time = Date.now() * 0.001;
   
-  // Split points between outer surface and inner hollow surface
   const outerPoints = Math.floor(gridSize * 0.7);
-  const innerPoints = gridSize - outerPoints;
   
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
       const index = (i * gridSize + j) * 3;
-      const u = (i / gridSize) * Math.PI * 2;  // Around (0 to 2π)
-      const v = j / gridSize;                   // Up (0 to 1)
+      const u = (i / gridSize) * Math.PI * 2;
+      const v = j / gridSize;
       
-      // Teardrop profile: wide at bottom, pointed at top
-      // Using a combination of sine and power functions for the shape
       const heightParam = v;
       
-      // Main teardrop profile - wide at bottom (v=0.3), tapers to point at top (v=1)
       let baseRadius;
       if (heightParam < 0.15) {
-        // Bottom tip - rounded
         baseRadius = Math.sin(heightParam / 0.15 * Math.PI / 2) * 8;
       } else if (heightParam < 0.5) {
-        // Lower bulge - widest part
         const bulgeParam = (heightParam - 0.15) / 0.35;
         baseRadius = 8 + Math.sin(bulgeParam * Math.PI) * 6;
       } else {
-        // Upper taper to point
         const taperParam = (heightParam - 0.5) / 0.5;
         baseRadius = 14 * Math.pow(1 - taperParam, 1.5);
       }
       
-      // Determine if this point is on outer or inner surface
       const isInnerSurface = i >= outerPoints;
-      
-      // Define hollow region (elliptical void in the middle)
       const hollowStart = 0.25;
       const hollowEnd = 0.8;
       
       let radius = baseRadius;
       
       if (isInnerSurface && heightParam > hollowStart && heightParam < hollowEnd) {
-        // Inner surface of the hollow
         const hollowV = (heightParam - hollowStart) / (hollowEnd - hollowStart);
-        const hollowDepth = Math.sin(hollowV * Math.PI) * 0.6; // How deep the hollow goes
+        const hollowDepth = Math.sin(hollowV * Math.PI) * 0.6;
         radius = baseRadius * (1 - hollowDepth * 0.7);
       } else if (!isInnerSurface) {
-        // Outer surface - keep as is
         radius = baseRadius;
       } else {
-        // Inner points outside hollow region - place on outer surface with slight offset
         radius = baseRadius * 0.95;
       }
       
-      // Add subtle organic variation for natural look
       const organicNoise = Math.sin(u * 4 + heightParam * 6 + time * 0.5) * 0.4 +
                           Math.sin(u * 7 - heightParam * 3) * 0.2;
       radius += organicNoise;
       
-      // Convert to 3D coordinates
       const x = radius * Math.cos(u);
-      const y = (heightParam - 0.5) * 35;  // Centered vertically, scaled height
+      const y = (heightParam - 0.5) * 35;
       const z = radius * Math.sin(u);
       
       positions[index] = x;
