@@ -30,33 +30,74 @@ export const createPointCloud = () => {
   return { points, gridSize };
 };
 
-export const generateOrganicPositions = (gridSize: number) => {
-  const pointsCount = gridSize * gridSize;
-  const positions = new Float32Array(pointsCount * 3);
+export const generateTeardropPositions = (gridSize: number) => {
+  const positions = new Float32Array(gridSize * gridSize * 3);
   const time = Date.now() * 0.001;
+  
+  // Split points between outer surface and inner hollow surface
+  const outerPoints = Math.floor(gridSize * 0.7);
+  const innerPoints = gridSize - outerPoints;
   
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
       const index = (i * gridSize + j) * 3;
+      const u = (i / gridSize) * Math.PI * 2;  // Around (0 to 2π)
+      const v = j / gridSize;                   // Up (0 to 1)
       
-      const phi = (i / gridSize) * Math.PI;
-      const theta = (j / gridSize) * Math.PI * 2;
+      // Teardrop profile: wide at bottom, pointed at top
+      // Using a combination of sine and power functions for the shape
+      const heightParam = v;
       
-      const radius = 15 + Math.cos(phi * 5 + time) * 4;
-      const distortion = Math.sin(theta * 6 + phi * 6 + time) * 2;
+      // Main teardrop profile - wide at bottom (v=0.3), tapers to point at top (v=1)
+      let baseRadius;
+      if (heightParam < 0.15) {
+        // Bottom tip - rounded
+        baseRadius = Math.sin(heightParam / 0.15 * Math.PI / 2) * 8;
+      } else if (heightParam < 0.5) {
+        // Lower bulge - widest part
+        const bulgeParam = (heightParam - 0.15) / 0.35;
+        baseRadius = 8 + Math.sin(bulgeParam * Math.PI) * 6;
+      } else {
+        // Upper taper to point
+        const taperParam = (heightParam - 0.5) / 0.5;
+        baseRadius = 14 * Math.pow(1 - taperParam, 1.5);
+      }
       
-      positions[index] = (radius + distortion) * Math.sin(phi) * Math.cos(theta);
-      positions[index + 1] = (radius + distortion) * Math.sin(phi) * Math.sin(theta);
-      positions[index + 2] = (radius + distortion) * Math.cos(phi);
+      // Determine if this point is on outer or inner surface
+      const isInnerSurface = i >= outerPoints;
       
-      positions[index] += Math.sin(phi * 10) * 0.8;
-      positions[index + 1] += Math.sin(theta * 10) * 0.8;
-      positions[index + 2] += Math.cos((phi + theta) * 6) * 0.8;
+      // Define hollow region (elliptical void in the middle)
+      const hollowStart = 0.25;
+      const hollowEnd = 0.8;
       
-      const bulge = Math.sin(phi * 3) * Math.cos(theta * 3) * 2;
-      positions[index] *= 1 + bulge * 0.1;
-      positions[index + 1] *= 1 + bulge * 0.1;
-      positions[index + 2] *= 1 + bulge * 0.1;
+      let radius = baseRadius;
+      
+      if (isInnerSurface && heightParam > hollowStart && heightParam < hollowEnd) {
+        // Inner surface of the hollow
+        const hollowV = (heightParam - hollowStart) / (hollowEnd - hollowStart);
+        const hollowDepth = Math.sin(hollowV * Math.PI) * 0.6; // How deep the hollow goes
+        radius = baseRadius * (1 - hollowDepth * 0.7);
+      } else if (!isInnerSurface) {
+        // Outer surface - keep as is
+        radius = baseRadius;
+      } else {
+        // Inner points outside hollow region - place on outer surface with slight offset
+        radius = baseRadius * 0.95;
+      }
+      
+      // Add subtle organic variation for natural look
+      const organicNoise = Math.sin(u * 4 + heightParam * 6 + time * 0.5) * 0.4 +
+                          Math.sin(u * 7 - heightParam * 3) * 0.2;
+      radius += organicNoise;
+      
+      // Convert to 3D coordinates
+      const x = radius * Math.cos(u);
+      const y = (heightParam - 0.5) * 35;  // Centered vertically, scaled height
+      const z = radius * Math.sin(u);
+      
+      positions[index] = x;
+      positions[index + 1] = y;
+      positions[index + 2] = z;
     }
   }
   
