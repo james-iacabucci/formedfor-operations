@@ -109,10 +109,25 @@ export const loadSculptureModel = async (index: number): Promise<Float32Array> =
   return promise;
 };
 
-// Load all sculptures
+// Load all sculptures - resilient to individual failures
 export const loadAllSculptures = async (): Promise<Float32Array[]> => {
-  const promises = SCULPTURE_PATHS.map((_, index) => loadSculptureModel(index));
-  return Promise.all(promises);
+  const results = await Promise.allSettled(
+    SCULPTURE_PATHS.map((_, index) => loadSculptureModel(index))
+  );
+  
+  // Filter out failed loads and return only successful ones
+  const successfulLoads = results
+    .filter((result): result is PromiseFulfilledResult<Float32Array> => 
+      result.status === 'fulfilled'
+    )
+    .map(result => result.value);
+  
+  if (successfulLoads.length === 0) {
+    throw new Error('No sculptures could be loaded');
+  }
+  
+  console.log(`Successfully loaded ${successfulLoads.length} of ${SCULPTURE_PATHS.length} sculptures`);
+  return successfulLoads;
 };
 
 export const getSculptureCount = () => SCULPTURE_PATHS.length;
