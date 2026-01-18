@@ -50,19 +50,20 @@ export const DotCloud = () => {
     let phaseStartTime = Date.now();
     let lastPositionsBeforeTransition: Float32Array = targetPositions;
 
-    // Load all sculptures
+    // Load all sculptures - handles partial failures gracefully
     loadAllSculptures()
       .then((models) => {
         sculptureModels = models;
-        console.log(`Loaded ${models.length} sculpture models`);
-        // Start with first sculpture
+        console.log(`Loaded ${models.length} sculpture(s) for cycling`);
+        // Start with first sculpture (Capture the Light)
         if (models.length > 0) {
           targetPositions = generateModelPositions(models[0], pointsCount, 0);
           currentPositions = new Float32Array(targetPositions);
         }
       })
       .catch((error) => {
-        console.warn('Failed to load sculptures, using fallback:', error);
+        console.warn('Failed to load any sculptures, using fallback shape:', error);
+        // Keep using the teardrop fallback
       });
 
     // Setup mouse handlers
