@@ -33,8 +33,13 @@ export const createPointCloud = () => {
 
 // Store the loaded model vertices globally for reuse
 let cachedModelVertices: Float32Array | null = null;
-let isLoading = false;
 let loadPromise: Promise<Float32Array> | null = null;
+
+// Reset cache to force reload (call when model file changes)
+export const resetModelCache = () => {
+  cachedModelVertices = null;
+  loadPromise = null;
+};
 
 export const loadSculptureModel = async (): Promise<Float32Array> => {
   // Return cached vertices if already loaded
@@ -47,7 +52,7 @@ export const loadSculptureModel = async (): Promise<Float32Array> => {
     return loadPromise;
   }
   
-  isLoading = true;
+  
   
   loadPromise = new Promise((resolve, reject) => {
     const loader = new FBXLoader();
@@ -85,7 +90,6 @@ export const loadSculptureModel = async (): Promise<Float32Array> => {
         });
         
         cachedModelVertices = new Float32Array(allVertices);
-        isLoading = false;
         console.log(`Loaded sculpture with ${allVertices.length / 3} vertices`);
         resolve(cachedModelVertices);
       },
@@ -94,7 +98,7 @@ export const loadSculptureModel = async (): Promise<Float32Array> => {
       },
       (error) => {
         console.error('Error loading sculpture model:', error);
-        isLoading = false;
+        
         reject(error);
       }
     );
